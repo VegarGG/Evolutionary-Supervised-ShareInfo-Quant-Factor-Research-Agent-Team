@@ -1,12 +1,16 @@
 # Appendix B — Research notes and sources (October 2026)
 
+**Status after alignment:** historical research notes, retained for provenance. PLAN_ALIGNMENT.md and its freshly checked official compatibility sources govern the active plan. Claude/Anthropic recommendations, prices, SDK pins, client limits and host peer-auth assumptions below are superseded, not deployment requirements. Other historical research claims retain their original verification status; this revision does not claim to have re-audited every cited paper.
+
 These notes justify the technology and protocol choices in `HYBRID_V1_DEVELOPMENT_PLAN.md`. They were gathered on October 23, 2026 by four parallel research passes over primary sources (specifications, SDK documentation, release pages, repositories, papers) with secondary sources only where a primary one was unreachable. Several publisher hosts were blocked from the research sandbox; a claim that could not be checked against a primary source is marked **UNVERIFIED**. Version numbers and dates are as read on that day and will drift; this file is the place to update them when a choice changes.
 
 Sections: B.1 MCP and Claude agent tooling · B.2 LLM-driven factor evolution systems · B.3 Evaluation statistics, feedback governance and point-in-time data · B.4 Infrastructure · B.5 Claude models and API notes.
 
 ---
 
-## B.1 MCP and Claude agent tooling
+## B.1 MCP and Claude agent tooling (historical client comparison)
+
+The product now uses standard MCP with Codex/generic-client acceptance; the Claude-specific subsections below are background only.
 
 ### Protocol state
 
@@ -172,6 +176,8 @@ Artifact fields (`mechanism_card`, `formulation`, `variables`, `complexity`) in 
 
 ## B.4 Infrastructure
 
+Active decisions: three databases and service identities in multi-platform Docker; deterministic checkpointed research with optional DBOS; no LLM keys in evaluation; target-host sandbox validation. Vendor workspace controls and world-readable report directories below must not be carried into the implementation.
+
 ### Durable orchestration (versions read from PyPI on October 23, 2026)
 
 | Option | Version (date) | Shape | Assessment for a solo builder |
@@ -224,7 +230,9 @@ Artifact fields (`mechanism_card`, `formulation`, `variables`, `complexity`) in 
 
 ---
 
-## B.5 Claude models and API notes used in the plan
+## B.5 Claude models and API notes (superseded, not used)
+
+No model or API assumption in this section is an active requirement. Use configurable online Kimi, GLM, DeepSeek and optional OpenAI profiles from PLAN_ALIGNMENT instead.
 
 From the Claude API reference loaded in this session (price table cached October 6, 2026; verify at build time):
 

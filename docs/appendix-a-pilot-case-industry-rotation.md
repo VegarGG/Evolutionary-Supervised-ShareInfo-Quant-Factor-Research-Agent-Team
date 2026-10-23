@@ -1,6 +1,6 @@
 # Appendix A — Pilot case: the P0 / P1 industry-rotation packages
 
-This appendix describes the first real job the hybrid v1 system must handle. It is written so that a coding agent can use it as the specification of the pilot fixture without re-reading the two ZIP deliveries. Every number below was read from the delivery documents or data files dated October 22, 2026 (data frozen through October 16, 2026).
+This appendix describes the first preservation/reproduction fixture the hybrid v1 system must handle. It is a case profile, not the only accepted input format. PLAN_ALIGNMENT.md governs generic intake, deployment, provider configuration and exit gates. It is written so that a coding agent can use it as the specification of the pilot fixture without re-reading the two ZIP deliveries. Every number below was read from the delivery documents or data files dated October 22, 2026 (data frozen through October 16, 2026).
 
 Companion documents: the main plan (`HYBRID_V1_DEVELOPMENT_PLAN.md`) and the research notes (`appendix-b-research-notes.md`).
 
@@ -31,7 +31,7 @@ Random-selection reference for a 7-of-31 group is 22.58%. Every adjusted interva
 
 ## A.2 Anatomy of the "chaotic folder"
 
-The delivery is 150–190 files per package. The intake agent (Claude Code on the user's machine) must classify a folder like this into five classes before anything reaches the research system. The table maps this delivery to those classes; the same taxonomy should drive the intake skill for future folders.
+The delivery is 150–190 files per package. The intake agent (Codex or another host MCP client) must classify a folder like this into five classes before anything reaches the research system. The table maps this delivery to those classes; the same taxonomy should drive the intake skill for future folders.
 
 | Folder / file | What it actually is | Intake class |
 |---|---|---|
@@ -65,7 +65,7 @@ All figures from the P1 package's `run_snapshot/` (identical in P0).
 
 Total size is about 10 MB. Everything fits in memory; the evaluator can be a single process.
 
-**Point-in-time (PIT) quality, as stated by the packages themselves and graded with the plan's scheme (plan section 4.2):** prices and the exchange calendar are grade A (exact dates). Financial availability dates are approximations set by rule rather than by announcement; the latest `available_date` of 2026-09-01 for the June 30 report matches the Chinese regulatory interim-report deadline (two months after June 30) plus one day, so the fundamentals are grade B, usable with an extra-lag sensitivity run. Index membership is current membership mapped backward, grade D. Historical index revisions are not verified, and the 31-industry Shenwan scheme was published in 2021 with the current indices launched in December 2021, so index history before that date is back-calculated and must carry a `reconstructed` note. Only half-year financials exist. The pilot should prefer price- and volume-derived features, which are the only inputs with clean timing.
+**Point-in-time (PIT) quality, as stated by the packages themselves and graded with the plan's scheme (plan section 4.2):** price observation/calendar dates are explicit, but historical revision vintages are unverified. Record timing, value-vintage and membership quality separately instead of assigning a blanket clean-PIT label. Financial availability dates are approximations set by rule rather than by announcement; the latest `available_date` of 2026-09-01 for the June 30 report matches the Chinese regulatory interim-report deadline (two months after June 30) plus one day, so the fundamentals are grade B, usable with an extra-lag sensitivity run. Index membership is current membership mapped backward, grade D. Historical index revisions are not verified, and the 31-industry Shenwan scheme was published in 2021 with the current indices launched in December 2021, so pre-2021 index-vintage reconstruction is a concern recorded as unverified in Appendix B; retain `vintage_status=unknown` with that concern rather than claim the data lineage has been proved. Only half-year financials exist. Prefer price/volume hypotheses while retaining the stated limitations; breadth may inherit current-membership bias and is not automatically PIT-clean.
 
 **Licensing and quota:** data are licensed iFinD caches; the packages made zero new supplier requests and the research system must not fetch anything new in the pilot. New data is a separate, human-authorized step that creates a new dataset version.
 
@@ -103,7 +103,7 @@ These come from the operating manual, the configs and `research/evaluation.py`. 
 
 ## A.5 Baseline artifacts to register at version 0
 
-Register these so the evaluator's first official reports reproduce known numbers and so the evolutionary worker has real parents.
+Register frozen P0 and P1 so official reproduction reports match the source and the worker has preserved baselines. P2–P4 below are historical provenance only; the standalone packages prohibit executing/fitting other models. Any later use requires a separate contract and authorization.
 
 | Artifact | Definition (as in the delivery) | Cycle |
 |---|---|---|
@@ -111,7 +111,7 @@ Register these so the evaluator's first official reports reproduce known numbers
 | `p0_monthly_m20_c40` | fundamentals 40% (cash quality, inventory gap, revenue acceleration, profit acceleration, ROE floor), market 20% (moderate-trend preference at position 0.6 / 0.8 / 1.0 by group, breadth change), crowding 40% | monthly |
 | `p0_quarterly_review_v2` | fundamentals 60%, crowding 40%, quarter-frozen ranking with the monthly replacement rule | quarterly |
 | `p1_reversal_momentum` | `0.5 × percentile(−5 or −20 session return) + 0.5 × percentile(P[t−20]/P[t−120] − 1)`, fallback to P0 where not ready | all |
-| `p2_reversal_lowvol`, `p3_rank_ridge`, `p4_blended_ridge` | historical comparison arms from `research_v4/models.py` (P3/P4 need annual ridge fits with a five-session embargo) | all |
+| Historical P2/P3/P4 definitions (optional provenance) | dormant comparison code; not required baseline executions and not authorization for new fits | not run by this fixture |
 
 The six frozen price features in `research_v4/features.py` are the natural first operator vocabulary for the factor DSL: `reverse5`, `reverse20`, `momentum120_20`, `momentum250_20`, `lowvol60`, `drawdown120`, each as raw value and full-31 percentile, joined as-of with a backward fill of at most the latest price date.
 
@@ -121,7 +121,7 @@ Crowding, breadth and style features from the P0 manual (participation Z-scores 
 
 ## A.6 Golden numbers for acceptance tests
 
-Phase 2 of the plan is complete when the new evaluator reproduces these from the raw inputs (tolerance: exact for hit counts and ranks; 1e-9 relative for means unless a documented accounting difference is accepted and recorded).
+Phase 2 reproduction uses the original machine-readable ledgers/CSV outputs as the oracle (exact hit counts/ranks; numerical tolerances declared before comparison). The tables below are rounded explanatory summaries and cannot supply 1e-9 expected values. An accounting/protocol change is a new comparison, not permission to overwrite the original oracle.
 
 **Primary window 2024-01-01 → 2026-10-16, group p60, matched entry/exit:**
 
@@ -144,7 +144,7 @@ Phase 2 of the plan is complete when the new evaluator reproduces these from the
 ## A.7 Lessons from the packages that shape the system design
 
 1. **Selection by a human is still a search.** P1 has no fitted coefficients, yet the audit treats the choice of lookbacks, weights and candidate among many as a multiple-testing problem. The system therefore counts every evaluated artifact version, human- or agent-authored, in its family-wise accounting.
-2. **"Already inspected" history is never a holdout.** The evaluator must seal a confirmation window before the first agent run and release nothing from it until a human decides to spend a query.
+2. **"Already inspected" history is never a holdout.** Sealing previously inspected history does not restore an unseen holdout. The evaluator can restrict access for a new controlled experiment but must retain the prior-exposure label; only genuinely prospective evidence can support an unseen-performance claim.
 3. **Hit rates and after-cost returns disagree.** Weekly P1 improves hit rate while its 10 bps net excess is negative. Objectives must be cost-aware and the report must show both.
 4. **Small universes give wide intervals.** With 31 names, a single period's hit rate has a no-skill standard deviation of about 14 percentage points and a single period's Rank IC about 0.18. With 33 monthly periods a 1 pp improvement is far inside the noise, and even the full 2020–2026 history can establish P1-sized effects for the weekly cycle only (plan section 7.10). The release policy must coarsen feedback, the search must avoid reacting to noise, and the brief must say which cycle the success criterion applies to.
 5. **Year concentration is a real failure mode.** Monthly P1's edge disappears without 2026. Leave-one-year-out is a mandatory diagnostic, not an optional appendix.
@@ -156,7 +156,7 @@ Phase 2 of the plan is complete when the new evaluator reproduces these from the
 
 ## A.8 What the intake agent should emit for this folder
 
-The local Claude Code agent reads the folder and produces three objects (field lists, not code):
+The host intake agent reads the folder and produces three objects (field lists, not code):
 
 **Research brief**
 
@@ -165,13 +165,13 @@ The local Claude Code agent reads the folder and produces three objects (field l
 | objective | Improve cross-sectional ranking skill of 31 Shenwan L1 industries over weekly, monthly and quarterly decision cycles, measured primarily by extreme-group recall and secondarily by Rank IC and 10 bps net excess vs equal-31 |
 | universe | 31 industry codes from `industry_labels.csv`; benchmarks 000300.SH, 000905.SH, 000852.SH |
 | decision cycles | weekly, monthly, quarterly with monthly review (rules in A.4) |
-| baseline artifacts | P0 three cycles, P1, with P2–P4 as reference arms |
+| baseline artifacts | frozen P0 and accepted P1 only; P2–P4 optional historical provenance, not automatic executions |
 | constraints | no new data fetches; price/volume/breadth features preferred; fundamentals flagged PIT-weak; costs 0/10/30 bps; no shorting assumption |
 | windows | development 2020-01-01 to 2022-12-31 (research-visible), validation 2023-01-01 to 2024-12-31 (official, Ladder-released), confirmation 2025-01-01 to 2026-10-16 (sealed, one human query), no diagnostic window; minimum detectable effects per cycle stated from plan section 7.10 |
 | success criteria | weekly cycle primary: an artifact whose paired improvement over P1 on validation has a family-wise-adjusted interval excluding zero at 10 bps, positive incremental Rank IC after controlling for P0 and P1, improvement in a majority of yearly folds with leave-one-year-out point estimates all positive, placebo percentile above 90, maximum correlation to the pool below 0.7, turnover within cap; monthly and quarterly candidates report consistency flags only |
-| budget | token and wall-clock caps per generation; number of evaluator queries |
+| budget and exit | explicit spend/token/query limits; no default job elapsed-time or generation ceiling; frozen research-delivery gate and permitted conclusions |
 
-**Dataset manifest**: one entry per file in A.3 with path, physical and logical hashes, rows, columns, date range, grain, `pit_grade` (A for prices and calendar, B for fundamentals with the deadline rule recorded, D for the constituent snapshot, with `reconstructed` noted on index history before December 2021) and licence note.
+**Dataset manifest**: one entry per file in A.3 with path, physical and logical hashes, rows, columns, date range, grain, licence note and separate timing, value-vintage and membership quality. Record explicit observation/calendar dates, B for the fundamentals' stated availability rule, D for backfilled membership, and unknown historical revision/index vintages with the reconstruction concern. Do not turn an observation date into a blanket clean-PIT claim.
 
 **Baseline artifact package**: the definitions in A.5 with their configs and the golden numbers from A.6 as expected results.
 
@@ -180,8 +180,8 @@ The local Claude Code agent reads the folder and produces three objects (field l
 ## A.9 Pilot-specific do-nots
 
 - Do not import the frozen runtime as a library. Re-implement the needed features in the new canonical layer and prove parity against the oracle.
-- Do not let the 2026 window become a selection window. It is diagnostic only.
+- Do not silently repurpose the original audit's diagnostic periods. Keep original replay windows distinct from a newly approved research protocol, and label all already inspected pilot periods as previously seen.
 - Do not merge fixed-quarter and monthly-review conventions in one statistic.
 - Do not treat repeated p60 / p80 / p100 rows as independent samples.
 - Do not fetch provider data or query account quota during the pilot.
-- Do not describe any pilot result as out-of-sample until a sealed confirmation query has been spent and logged.
+- Do not describe a sealed query on already inspected pilot history as unseen out-of-sample confirmation. A logged query changes access/exposure accounting, not the historical fact of prior inspection.

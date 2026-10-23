@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-23",
+  "repository": "VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team",
+  "source_commit": "89f39f66b0314549cfe4d12c4054106aaab97b6e",
+  "brainstorm_page": "page_01cc4d43aa90819196816d335c0e6f1c",
+  "brainstorm_sequence": 8,
+  "local_originals": {
+    "00-overview.md": "aa327fa7db9ec78f90955c2dd04873ebc26da49fc0b14c445d6b2f971fb6c02c",
+    "01-architecture.md": "fc92074b11b5166cc196952d7ecb04c3b9d7d7a28473df37de35b0754304d3ef",
+    "02-data-dsl.md": "b569ccbf00e5ee591d48b75d0a0d33973de36533021c38156bfae761ac17a439",
+    "03-evaluation.md": "1c93fd9ed32643893cea892fc63917d1d66f3866da7718d73a63d0a0f380d958",
+    "04-research-evolution.md": "44c92ded379eb26992abf9ab5c8325d2b8dc2f0c1c9a9a2bed4aaf51ae1f9acb",
+    "05-data-model-apis.md": "f51aed8f4567cef6ce38d64996806e72ff75751d1d0197c6ebd965829ce5be5b",
+    "06-ops-testing.md": "d0f8368e9874bf4de6a5affc4f00f6e8eb36e742f561d912fb38bce75ee35dee",
+    "07-roadmap.md": "c94f8609c3989bcb33834e3f26980379d21e789775e8e416e31d69db53f52c73",
+    "08-reference.md": "6cc2d30789070d8ac14a80168cdb820d69e1ed7fac6a7582dcfca1c38015f2f3"
+  },
+  "samples": {
+    "P0": {
+      "manifest_files": 151,
+      "mismatches": [],
+      "reference_csvs": 24,
+      "tree_digest": "7d3bf2edc9e3b9929d72ee3ef295a20cbb048c4bee36422e033a9c0584ca0289",
+      "manifest_sha256": "6ef7f71418aee33f802a93955745e8bb9d99cd12a9bbc1bb51abfb14bf086535"
+    },
+    "P1": {
+      "manifest_files": 188,
+      "mismatches": [],
+      "reference_csvs": 24,
+      "tree_digest": "9bdc554980249cd79163ae6cc97cb93bf0bcec8ba7f1421b4c355c88fddcec03",
+      "manifest_sha256": "2eee8d569f887d2b0cbd52c1c16c8d803b7bf5d4b69d980156cf0b8cb2ae37aa"
+    }
+  },
+  "note": "Original local chapter hashes refer to the preserved local backup. Sample hashes are integrity evidence only; sample data are not committed. No runtime replay or provider call was made for this revision."
+}
