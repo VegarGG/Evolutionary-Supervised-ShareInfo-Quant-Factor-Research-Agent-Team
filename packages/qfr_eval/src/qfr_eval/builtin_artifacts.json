@@ -1,0 +1,60 @@
+{
+  "definition_version": "frozen-pilot-p60-v1",
+  "schema_version": "1",
+  "fingerprint_reference": {
+    "reference": "original_P0",
+    "window": ["2020-01-01", "2022-12-31"],
+    "decision_rule": "mature_weekly_entry_and_exit_inside_window_including_initial",
+    "periods": 122,
+    "points": 3782,
+    "grid_sha256": "5dfe255578041e00934cf7ae84415be903e3dcc3fcf35bafdba9ecf29863621a",
+    "period_source_sha256": "6c72e2e892d96e68a781b6478b9d4608eacdfd6674191eec71260d07c52fc113",
+    "signal_source_sha256": "13fc7b021d0fde9192b16997544bae62a5f3661d0dab2baae809fd740108fc81"
+  },
+  "source_robustness_sha256": "f10b358f5bcf291af12ff79871e6affebe03d69c762353c0c8d5b1f430fb91e0",
+  "variants": {
+    "N1_reversal_weight040": {
+      "momentum_lookback": 120,
+      "monthly_quarterly_reversal_lag": 20,
+      "reversal_weight": 0.4,
+      "weekly_reversal_lag": 5
+    },
+    "N2_reversal_weight060": {
+      "momentum_lookback": 120,
+      "monthly_quarterly_reversal_lag": 20,
+      "reversal_weight": 0.6,
+      "weekly_reversal_lag": 5
+    },
+    "N3_reversal_lag_short": {
+      "momentum_lookback": 120,
+      "monthly_quarterly_reversal_lag": 16,
+      "reversal_weight": 0.5,
+      "weekly_reversal_lag": 4
+    },
+    "N4_reversal_lag_long": {
+      "momentum_lookback": 120,
+      "monthly_quarterly_reversal_lag": 24,
+      "reversal_weight": 0.5,
+      "weekly_reversal_lag": 6
+    },
+    "N5_momentum_lookback100": {
+      "momentum_lookback": 100,
+      "monthly_quarterly_reversal_lag": 20,
+      "reversal_weight": 0.5,
+      "weekly_reversal_lag": 5
+    },
+    "N6_momentum_lookback140": {
+      "momentum_lookback": 140,
+      "monthly_quarterly_reversal_lag": 20,
+      "reversal_weight": 0.5,
+      "weekly_reversal_lag": 5
+    },
+    "P1_reversal_momentum": {
+      "momentum_lookback": 120,
+      "monthly_quarterly_reversal_lag": 20,
+      "reversal_weight": 0.5,
+      "weekly_reversal_lag": 5
+    },
+    "baseline": null
+  }
+}

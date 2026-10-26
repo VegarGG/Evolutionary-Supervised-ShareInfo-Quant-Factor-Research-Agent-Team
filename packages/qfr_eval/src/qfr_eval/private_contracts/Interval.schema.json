@@ -1,0 +1,125 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "block_length": {
+      "exclusiveMinimum": 0,
+      "title": "Block Length",
+      "type": "integer"
+    },
+    "ci_lower": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Ci Lower"
+    },
+    "ci_upper": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Ci Upper"
+    },
+    "confidence": {
+      "title": "Confidence",
+      "type": "number"
+    },
+    "draws": {
+      "minimum": 0,
+      "title": "Draws",
+      "type": "integer"
+    },
+    "estimate": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Estimate"
+    },
+    "index_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Index Sha256"
+    },
+    "seed": {
+      "minimum": 0,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "small_sample_warning": {
+      "title": "Small Sample Warning",
+      "type": "boolean"
+    },
+    "standard_error": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Standard Error"
+    },
+    "status": {
+      "enum": [
+        "estimated",
+        "insufficient_data"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "time_slots": {
+      "minimum": 0,
+      "title": "Time Slots",
+      "type": "integer"
+    },
+    "valid_draws": {
+      "minimum": 0,
+      "title": "Valid Draws",
+      "type": "integer"
+    },
+    "valid_periods": {
+      "minimum": 0,
+      "title": "Valid Periods",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "status",
+    "estimate",
+    "ci_lower",
+    "ci_upper",
+    "standard_error",
+    "valid_periods",
+    "time_slots",
+    "block_length",
+    "draws",
+    "valid_draws",
+    "seed",
+    "confidence",
+    "index_sha256",
+    "small_sample_warning"
+  ],
+  "title": "Interval",
+  "type": "object"
+}

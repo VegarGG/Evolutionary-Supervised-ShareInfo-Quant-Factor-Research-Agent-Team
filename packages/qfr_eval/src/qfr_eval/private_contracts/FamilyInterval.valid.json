@@ -1,0 +1,24 @@
+{
+  "adjusted_p": [
+    null
+  ],
+  "block_length": 4,
+  "ci_lower": [
+    null
+  ],
+  "ci_upper": [
+    null
+  ],
+  "draws": 10000,
+  "index_sha256": null,
+  "interval_method": "simultaneous_full_family_maxT_envelope",
+  "means": [
+    null
+  ],
+  "method": "romano_wolf_stepdown_studentized_maxT",
+  "raw_trials": 1,
+  "standard_errors": [
+    null
+  ],
+  "status": "insufficient_data"
+}

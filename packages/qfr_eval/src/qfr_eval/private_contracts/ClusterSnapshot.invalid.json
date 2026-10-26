@@ -1,0 +1,22 @@
+{
+  "algorithm": "mean_absolute_spearman_single_linkage",
+  "basis": "behavioral_clusters",
+  "effective_trials": null,
+  "fingerprint_hashes": {
+    "fixture": null
+  },
+  "groups": [],
+  "maximum_trials": 20000,
+  "missing_trials": [
+    "fixture"
+  ],
+  "raw_trials": 1,
+  "reason": "missing_fingerprint",
+  "schema_version": "1",
+  "status": "insufficient_data",
+  "threshold": 0.7,
+  "trial_ids": [
+    "fixture"
+  ],
+  "unapproved": true
+}

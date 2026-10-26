@@ -370,9 +370,11 @@ def fingerprint(
 
 
 def behavioral_similarity(a: pl.DataFrame, b: pl.DataFrame) -> MetricValue:
-    joined = a.join(b, on=["instrument", "date"], suffix="_other", validate="1:1")
+    joined = a.join(b, on=["instrument", "date"], suffix="_other", validate="1:1").sort(
+        "date", "instrument"
+    )
     values = [
         correlation(g["rank"].to_numpy(), g["rank_other"].to_numpy(), ranked=True)
-        for _, g in joined.group_by("date")
+        for _, g in joined.group_by("date", maintain_order=True)
     ]
     return measurement(mean([abs(value) for value in values if value is not None]))

@@ -1,0 +1,16 @@
+{
+  "block_length": 4,
+  "ci_lower": null,
+  "ci_upper": null,
+  "confidence": 0.95,
+  "draws": 10000,
+  "estimate": null,
+  "index_sha256": null,
+  "seed": 123,
+  "small_sample_warning": true,
+  "standard_error": null,
+  "status": "insufficient_data",
+  "time_slots": 0,
+  "valid_draws": 0,
+  "valid_periods": 0
+}

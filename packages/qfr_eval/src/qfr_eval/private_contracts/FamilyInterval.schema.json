@@ -1,0 +1,136 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "adjusted_p": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Adjusted P",
+      "type": "array"
+    },
+    "block_length": {
+      "minimum": 0,
+      "title": "Block Length",
+      "type": "integer"
+    },
+    "ci_lower": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Ci Lower",
+      "type": "array"
+    },
+    "ci_upper": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Ci Upper",
+      "type": "array"
+    },
+    "draws": {
+      "minimum": 0,
+      "title": "Draws",
+      "type": "integer"
+    },
+    "index_sha256": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Index Sha256"
+    },
+    "interval_method": {
+      "const": "simultaneous_full_family_maxT_envelope",
+      "title": "Interval Method",
+      "type": "string"
+    },
+    "means": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Means",
+      "type": "array"
+    },
+    "method": {
+      "const": "romano_wolf_stepdown_studentized_maxT",
+      "title": "Method",
+      "type": "string"
+    },
+    "raw_trials": {
+      "minimum": 0,
+      "title": "Raw Trials",
+      "type": "integer"
+    },
+    "standard_errors": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Standard Errors",
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "estimated",
+        "insufficient_data"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "raw_trials",
+    "means",
+    "standard_errors",
+    "adjusted_p",
+    "ci_lower",
+    "ci_upper",
+    "block_length",
+    "draws",
+    "index_sha256",
+    "method",
+    "interval_method"
+  ],
+  "title": "FamilyInterval",
+  "type": "object"
+}

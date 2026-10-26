@@ -1,0 +1,99 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "eligible_decisions": {
+      "minimum": 0,
+      "title": "Eligible Decisions",
+      "type": "integer"
+    },
+    "exceedances": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Exceedances"
+    },
+    "excluded_initial": {
+      "minimum": 0,
+      "title": "Excluded Initial",
+      "type": "integer"
+    },
+    "maximum": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Maximum"
+    },
+    "mean": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Mean"
+    },
+    "missing_decisions": {
+      "minimum": 0,
+      "title": "Missing Decisions",
+      "type": "integer"
+    },
+    "p95": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "P95"
+    },
+    "status": {
+      "enum": [
+        "pass",
+        "fail",
+        "insufficient_data",
+        "not_applicable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "threshold": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Threshold"
+    }
+  },
+  "required": [
+    "status",
+    "eligible_decisions",
+    "missing_decisions",
+    "excluded_initial",
+    "exceedances",
+    "threshold",
+    "mean",
+    "p95",
+    "maximum"
+  ],
+  "title": "TurnoverResult",
+  "type": "object"
+}

@@ -2,13 +2,14 @@
 
 import calendar
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
 from typing import Literal
 
 import numpy as np
 import polars as pl
-from pydantic import Field, PositiveInt
+from pydantic import Field, PositiveInt, ValidationInfo, field_validator
 
 from qfr_core.contracts.base import Contract
 from qfr_core.metrics.core import Array
@@ -49,6 +50,23 @@ class P0Config(Contract):
     monthly_fundamental_internal: dict[str, float]
     monthly_market_internal: dict[str, float]
     quarterly_noncrowding_scale: float
+
+    @field_validator("monthly_fundamental_internal", "monthly_market_internal")
+    @classmethod
+    def original_arithmetic_order(
+        cls, weights: dict[str, float], info: ValidationInfo
+    ) -> dict[str, float]:
+        # JSON objects have no semantic order; PostgreSQL JSONB and canonical
+        # JSON reorder keys differently. Preserve the delivered P0 addition
+        # order explicitly so a protocol round-trip cannot alter score bits.
+        order = (
+            ("cash", "inventory", "revenue_acceleration", "profit_acceleration", "roe_floor")
+            if info.field_name == "monthly_fundamental_internal"
+            else ("moderate_trend", "breadth_change")
+        )
+        if set(weights) != set(order):
+            raise ValueError("P0 monthly weights must name the original feature set")
+        return {name: weights[name] for name in order}
 
 
 def sample_dates(panel: pl.DataFrame, cycle: Cycle) -> list[date]:
@@ -121,9 +139,20 @@ def p0_scores(panel: pl.DataFrame, cycle: Cycle, config: P0Config) -> Array:
     return result
 
 
-def p0_signals(panel: pl.DataFrame, cycle: Cycle, config: P0Config) -> pl.DataFrame:
+def p0_signals(
+    panel: pl.DataFrame,
+    cycle: Cycle,
+    config: P0Config,
+    scores: Array | None = None,
+    *,
+    allow_empty: bool = False,
+) -> pl.DataFrame:
     frame = panel.with_columns(
-        pl.Series("factor_score", p0_scores(panel, cycle, config), nan_to_null=True)
+        pl.Series(
+            "factor_score",
+            p0_scores(panel, cycle, config) if scores is None else scores,
+            nan_to_null=True,
+        )
     )
     dates = sample_dates(panel, cycle)
     rows = []
@@ -146,6 +175,18 @@ def p0_signals(panel: pl.DataFrame, cycle: Cycle, config: P0Config) -> pl.DataFr
         )
         rows.append(cross.select(CORE_COLUMNS))
     if not rows:
+        if allow_empty:
+            return (
+                frame.head(0)
+                .with_columns(
+                    pl.lit(cycle).alias("model"),
+                    pl.col("factor_score").alias("original"),
+                    pl.lit(0, dtype=pl.Int64).alias("rank"),
+                    pl.lit(False).alias("selected"),
+                    pl.lit(0.0).alias("relative"),
+                )
+                .select(CORE_COLUMNS)
+            )
         raise ValueError(f"no eligible P0 {cycle} dates")
     return pl.concat(rows)
 
@@ -157,12 +198,23 @@ class P0History:
     review_actions: pl.DataFrame
 
 
-def p0_history(panel: pl.DataFrame, config: P0Config) -> P0History:
+def p0_history(
+    panel: pl.DataFrame,
+    config: P0Config,
+    scores: Mapping[Cycle, Array] | None = None,
+    *,
+    allow_empty: bool = False,
+) -> P0History:
     cycles: tuple[Cycle, ...] = ("weekly", "monthly", "quarterly")
-    signals = {cycle: p0_signals(panel, cycle, config) for cycle in cycles}
+    signals = {
+        cycle: p0_signals(
+            panel, cycle, config, None if scores is None else scores[cycle], allow_empty=allow_empty
+        )
+        for cycle in cycles
+    }
     quarters = signals["quarterly"]
     qdates = set(quarters["date"])
-    months = [d for d in sample_dates(panel, "monthly") if d >= min(qdates)]
+    months = [d for d in sample_dates(panel, "monthly") if qdates and d >= min(qdates)]
     frozen: pl.DataFrame | None = None
     held: set[str] = set()
     events, actions = [], []
@@ -234,22 +286,30 @@ def p0_history(panel: pl.DataFrame, config: P0Config) -> P0History:
             if event["selected"].sum() != math.ceil(event.height * config.selection_fraction):
                 raise ValueError("quarter review selection count changed")
             events.append(event)
-    signals["quarterly"] = pl.concat(events)
+    signals["quarterly"] = (
+        pl.concat(events)
+        if events
+        else quarters.with_columns(pl.lit(None, dtype=pl.String).alias("event_type"))
+    )
     rankings = {}
     for cycle, signal in signals.items():
         last = signal["date"].max()
         latest = (
-            signal.filter(pl.col("date") == last)
+            (signal.filter(pl.col("date") == last) if last is not None else signal.head(0))
             .sort("rank")
             .with_columns(
                 pl.col("selected").alias("candidate"),
                 pl.col("factor_score").alias("score_" + cycle),
-                pl.lit(max(months) if cycle == "quarterly" else last).alias("last_review_date"),
+                pl.lit(
+                    max(months) if cycle == "quarterly" and months else last, dtype=pl.Date
+                ).alias("last_review_date"),
                 pl.lit("p60").alias("preference_group"),
                 pl.lit(cycle == "monthly").alias("preference_applies"),
             )
         )
         if cycle == "quarterly":
-            latest = latest.with_columns(pl.lit(max(qdates)).alias("quarter_signal_date"))
+            latest = latest.with_columns(
+                pl.lit(max(qdates) if qdates else None, dtype=pl.Date).alias("quarter_signal_date")
+            )
         rankings[cycle] = latest
     return P0History(signals, rankings, pl.DataFrame(actions))

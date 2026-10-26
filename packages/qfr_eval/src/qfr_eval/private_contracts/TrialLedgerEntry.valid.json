@@ -1,0 +1,55 @@
+{
+  "counted_at": "2026-01-01T00:00:00Z",
+  "epoch_id": "fixture",
+  "family_id": "fixture",
+  "fingerprint_ref": null,
+  "identity": {
+    "artifact_version_id": "00000000-0000-0000-0000-000000000001",
+    "content_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "dataset_version_id": "4444444444444444444444444444444444444444444444444444444444444444",
+    "evaluator_version": "1111111111111111111111111111111111111111",
+    "protocol_version": "0.1.0"
+  },
+  "kurt_raw": {
+    "missing_reason": "insufficient_data",
+    "value": null
+  },
+  "n_obs": 0,
+  "observation": {
+    "artifact_version_id": "fixture",
+    "cohort_id": "fixture",
+    "economic_lineage_id": "fixture",
+    "family_id": "fixture",
+    "generation_id": "fixture",
+    "observation_ids": [
+      "date1"
+    ],
+    "program_id": "fixture",
+    "protocol_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "returns": [
+      null
+    ],
+    "sampling_unit": "mature_matched_decision",
+    "selectable": false,
+    "snapshot_id": "fixture",
+    "status": "failed",
+    "trial_id": "fixture",
+    "window": "validation"
+  },
+  "official_record_id": "fixture",
+  "program_id": "fixture",
+  "sampling_unit": "mature_matched_decision",
+  "schema_version": "1",
+  "selectable": false,
+  "sharpe_per_period": {
+    "missing_reason": "insufficient_data",
+    "value": null
+  },
+  "skew": {
+    "missing_reason": "insufficient_data",
+    "value": null
+  },
+  "status": "failed",
+  "trial_id": "fixture",
+  "window": "validation"
+}

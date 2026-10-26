@@ -1,0 +1,50 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "bytes": {
+      "minimum": 0,
+      "title": "Bytes",
+      "type": "integer"
+    },
+    "logical_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Logical Sha256"
+    },
+    "media_type": {
+      "enum": [
+        "application/json",
+        "application/vnd.apache.parquet",
+        "text/markdown"
+      ],
+      "title": "Media Type",
+      "type": "string"
+    },
+    "relative_path": {
+      "minLength": 1,
+      "title": "Relative Path",
+      "type": "string"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "sha256",
+    "bytes",
+    "relative_path",
+    "media_type",
+    "logical_sha256"
+  ],
+  "title": "StoredFile",
+  "type": "object"
+}
