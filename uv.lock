@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = "==3.12.*"
 
 [manifest]
@@ -671,11 +671,17 @@ name = "qfr-registry"
 version = "0.1.0"
 source = { editable = "packages/qfr_registry" }
 dependencies = [
+    { name = "alembic" },
+    { name = "psycopg", extra = ["binary"] },
     { name = "qfr-core" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "qfr-core", editable = "packages/qfr_core" }]
+requires-dist = [
+    { name = "alembic" },
+    { name = "psycopg", extras = ["binary"] },
+    { name = "qfr-core", editable = "packages/qfr_core" },
+]
 
 [[package]]
 name = "qfr-research"

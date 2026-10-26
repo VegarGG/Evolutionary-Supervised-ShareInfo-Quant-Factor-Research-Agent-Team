@@ -7,6 +7,7 @@ import psycopg
 import pytest
 from psycopg.conninfo import make_conninfo
 from qfr_eval.db import migrate
+from qfr_registry.storage.migrations import migrate as migrate_registry
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -29,9 +30,10 @@ def migrated_evaluator():
     if os.environ.get("QFR_TEST_POSTGRES_DSN"):
         try:
             migrate(database_dsn())
+            migrate_registry(database_dsn(database="registry_db"))
         except Exception as error:
             # Never render a driver/SQLAlchemy frame with the credential-bearing DSN.
-            pytest.fail(f"Evaluator migration failed ({type(error).__name__})", pytrace=False)
+            pytest.fail(f"Database migration failed ({type(error).__name__})", pytrace=False)
 
 
 @pytest.fixture
@@ -39,6 +41,17 @@ def eval_connect():
     def factory(role="eval_rw"):
         try:
             return psycopg.connect(database_dsn(role), autocommit=True)
+        except psycopg.OperationalError as error:
+            raise psycopg.OperationalError(str(error)) from None
+
+    return factory
+
+
+@pytest.fixture
+def registry_connect():
+    def factory(role="registry_app"):
+        try:
+            return psycopg.connect(database_dsn(role, "registry_db"), autocommit=True)
         except psycopg.OperationalError as error:
             raise psycopg.OperationalError(str(error)) from None
 
