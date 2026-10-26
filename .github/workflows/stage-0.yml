@@ -49,6 +49,7 @@ jobs:
         env:
           QFR_TEST_POSTGRES_DSN: postgresql://127.0.0.1:55432/postgres
         run: |
+          uv run --locked --all-packages python scripts/verify_postgres_startup.py
           just up
           uv run --locked --all-packages python -m pytest tests/boundary/test_database.py
           just down

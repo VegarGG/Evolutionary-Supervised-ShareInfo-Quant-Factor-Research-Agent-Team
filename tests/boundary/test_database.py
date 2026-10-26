@@ -51,6 +51,17 @@ def test_postgres16_databases_and_roles(connect):
         assert all(row[1:] == (False, False, False, False) for row in roles)
 
 
+def test_all_application_passwords_are_scram_credentials(connect):
+    with connect("postgres", "postgres") as conn:
+        # Select only booleans: neither plaintext credentials nor hashes enter evidence.
+        rows = conn.execute(
+            "SELECT rolpassword IS NOT NULL AND rolpassword LIKE 'SCRAM-SHA-256$%' "
+            "FROM pg_authid WHERE rolname IN "
+            "('research_rw','registry_app','eval_rw','feedback_ro')"
+        ).fetchall()
+        assert rows == [(True,)] * 4
+
+
 @pytest.mark.parametrize(
     "role,allowed,forbidden",
     [

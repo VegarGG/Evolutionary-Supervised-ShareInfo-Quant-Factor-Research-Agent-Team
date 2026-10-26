@@ -6,6 +6,8 @@ read_setting() {
   python3 -c 'import json, sys; print(json.load(open("configs/local-ci.json"))[sys.argv[1]])' "$1"
 }
 just up 2>&1 | tee build/local-ci/compose-up.txt
+uv run --locked --all-packages python scripts/verify_postgres_startup.py \
+  2>&1 | tee build/local-ci/postgres-startup-regressions.txt
 docker buildx build --load -f infra/docker/Dockerfile.ci \
   --tag "$(read_setting image)" --metadata-file build/local-ci/test-image.json . \
   2>&1 | tee build/local-ci/test-image-build.txt
