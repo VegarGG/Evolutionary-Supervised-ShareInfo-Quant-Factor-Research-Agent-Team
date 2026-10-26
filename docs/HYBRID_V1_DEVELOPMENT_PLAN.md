@@ -1,468 +1,420 @@
-# Hybrid v1 — Development Plan for Vibe Coding
+# Hybrid v1 — Aligned Development Plan
 
-**System:** Supervisor–worker coordination + shared research blackboard + evolutionary factor development, supported by parallel specialists, iterative review and standardized artifact preparation, with a strictly independent evaluation service.
+**Revision 2.0 · October 26, 2026 · Planning specification. Nothing here claims an implemented system, a live-provider run or a production acceptance.**
 
-**Front door:** a vendor-neutral MCP server in a Docker Compose deployment. A host agent such as Codex normalizes a folder, file, standalone factor/model/strategy, or natural-language idea into a validated input bundle and submits it through MCP. Internal research agents use independently configured online providers.
+**System.** Supervisor–worker coordination + shared research blackboard + evolutionary factor development, supported by parallel specialists, iterative review and standardized artifact preparation, with a strictly independent, deterministic evaluation service.
 
-**First job:** the P0 / P1 A-share industry-rotation packages (Appendix A).
+**Delivery form.** One Docker Compose bundle with native `linux/amd64` and `linux/arm64` images. A standard MCP front door on the host's loopback. A host agent (Codex or any conforming MCP client) normalizes a folder, a file, a standalone idea, factor, model or strategy into a typed input bundle and submits it. Internal research agents run on independently configured online LLM providers; Kimi, GLM and DeepSeek are mandatory in the first production release. Jobs run on demand until a frozen exit gate passes; there is no default elapsed-time or generation ceiling.
 
-**Status of this document:** planning only, revision 1.1 aligned October 23, 2026. No system implementation or live-provider acceptance is claimed. Read [PLAN_ALIGNMENT.md](PLAN_ALIGNMENT.md) first: it records the owner's requirements, reconciles this plan with the local QFR chapters, and governs conflicting defaults. [LOCAL_IMPLEMENTATION_REFERENCE.md](LOCAL_IMPLEMENTATION_REFERENCE.md) preserves those aligned technical chapters.
-
-Companion files in this folder: `appendix-a-pilot-case-industry-rotation.md` (the pilot fixture, business rules, golden numbers) and `appendix-b-research-notes.md` (external research with sources that justify the technology and protocol choices).
+**First fixture.** The P0/P1 A-share industry-rotation packages (Appendix A), preserved and reproduced byte-exactly, labelled as previously inspected history.
 
 ---
 
-## 0. How to use this document
+## 0. How to use this plan
 
-This plan is written for the project owner and whichever coding agent implements it; no particular agent product is required. Sections 1–7 are the design. Section 8 is the technology shortlist. Section 9 is repository layout and the rules to put in `AGENTS.md`. Section 10 is the phased build, where every phase has an acceptance test and a kickoff prompt that can be given to the coding agent. Sections 11–13 are verification, risks and open decisions.
+**Authority order when documents disagree:** the owner's current instructions → the Hybrid v1 architecture in the brainstorm's Final Recommendation → `docs/PLAN_ALIGNMENT.md` (the owner's requirements and reconciliation contract, revision 1.1) → this plan → `docs/LOCAL_IMPLEMENTATION_REFERENCE.md` (the detailed technical chapters) → Appendices A and B.
 
-Working rule for vibe coding this system: **build and verify the deterministic parts (data layer, evaluator, registry) against the original machine-readable golden outputs before production LLM research.** Small offline experiments with supervisor/worker coordination, blackboard sharing and justified revisions may run alongside the early phases, as the brainstorming Page recommends; they do not establish financial or production acceptance.
+**Document map.**
+
+| Document | Role | Read when |
+|---|---|---|
+| `PLAN_ALIGNMENT.md` | Requirements R1–R6, reconciliation decisions, provider/intake/MCP/lifecycle/Docker contracts, acceptance checklist AC-01–AC-14 | Before any stage; whenever a conflict appears |
+| This plan | The single ordered build plan: product definition, architecture, contracts, stages with entry and exit gates, verification | Every stage |
+| `LOCAL_IMPLEMENTATION_REFERENCE.md` | Detailed specifications: DSL grammar and operators, metric formulas, database tables, API routes, invariants and named tests, defaults for the `stock_daily_v1` profile, local work-package IDs | When implementing the component it specifies |
+| `appendix-a-pilot-case-industry-rotation.md` | The P0/P1 fixture: folder taxonomy, data assets, business rules, baseline definitions, golden evidence, lessons | Stages 1–3 and 7 |
+| `appendix-b-research-notes.md` | Historical research notes with sources; Claude-specific items are superseded and marked | When a design choice needs its evidence |
+| `examples/llm-profiles.example.json` | Illustrative four-level provider/model/role/task configuration | Stage 0 schemas, Stage 5 adapters |
+| `DEVELOPMENT_KICKOFF_PROMPT.md` | The prompt that starts development and the per-stage continuation template | Start of every stage |
+
+**What changed from revision 1.x.** The product is now host-agnostic (no Claude runtime, SDK or client dependency anywhere), Docker-first on two CPU architectures, generic-input, multi-provider and on-demand with an independent exit gate. Vocabulary is unified on the local reference's package, service, database and test names. Development is organized as nine stages with explicit entry conditions, work packages mapped to both plans' IDs, and exit gates. Pilot history is labelled previously seen everywhere; sealing changes access, not evidential independence.
+
+**Keywords.** MUST and MUST NOT are enforced by tests. SHOULD is the default; deviations are recorded in `docs/decisions.md`. MAY is optional.
+
+**Working rule.** Build and prove the deterministic parts (data layer, evaluator, registry, release policy, MCP) against the original machine-readable oracles before any production LLM research runs. Small offline supervisor/worker/blackboard experiments with scripted models may run alongside the early stages to prove evidence sharing and justified revisions; they establish nothing about financial performance or production readiness.
 
 ---
 
-## 1. What we are building
+## 1. Product definition
 
 ### 1.1 Goal
 
-An on-demand system that accepts a research objective with an idea, factor, model, strategy or mixed package and runs an auditable **propose → publish → independently evaluate → read feedback → propose again** loop. It preserves the Hybrid v1 research architecture and produces the deliverables required by a frozen exit gate. Factor evolution remains central; imported models and strategies retain their own execution semantics. Jobs may run as long as needed within authorized resource/spend controls; success is an independently validated delivery, not merely stopping a loop.
+An on-demand system that accepts a research objective with an idea, factor, model, strategy or mixed package, and runs an auditable loop of **propose → publish → independently evaluate → read released feedback → propose again** over a population of immutable research artifacts. The system delivers what a frozen exit gate requires, with evidence a skeptical reader can verify, and never lets the proposing side touch the measuring side.
 
-### 1.2 Non-goals for v1
+### 1.2 Requirements inherited from the owner (R1–R6)
 
-- Live or paper trading against a broker. Simulated tracking of published artifacts on newly arriving data is in scope as a module; brokers are not.
-- Automated data acquisition from licensed providers. New data is a human-authorized step that creates a new dataset version.
-- Autonomous parallel research lanes and discovery of new factor-composition strategies (Hybrid v2). Importing, evaluating and revising an existing model/strategy under a declared v1 contract is in scope.
-- A mandatory web UI. MCP is the required interface; the local plan's dashboard remains an optional operator feature. Local LLM hosting and a compulsory 24/7 deployment are also out of scope.
-- Proving alpha. The system is designed to produce defensible evidence either way; the pilot data (Appendix A) may well end with "no candidate clears the bar", and that is a successful run.
-
-### 1.3 The governing principle, made operational
-
-The brainstorm's Final Recommendation reduces to one rule: **separation of proposal and measurement**. In this plan that rule is enforced four ways, not by prompt instructions:
-
-1. **By construction:** research agents have no tool that can start, configure, cancel or read unreleased evaluation work. The evaluator is not an LLM agent; it is deterministic code with its own process, credentials and schedule.
-2. **By storage permissions:** three databases (`research_db`, `registry_db`, `eval_db`) with distinct least-privilege service roles. Research writes its blackboard, publishes through the Registry API, and reads only the Feedback API. The feedback service alone holds the restricted role for released evaluation views.
-3. **By data access:** the research plane sees only the development window of the data. The validation and confirmation windows (and any optional diagnostic window) are mounted read-only into the evaluator's sandbox and nowhere else.
-4. **By release policy:** what the evaluator publishes back is coarsened, budgeted and version-linked, so iterating against feedback cannot quietly become fitting the test set.
-
----
-
-## 2. The job it must do first
-
-The user's real task was "optimize the models in this folder". The folder (Appendix A) contains four generations of research code, Chinese and English documents, caches at several as-of dates, reference outputs, audit protocols, hashes, a Windows scheduled-task deployment, and about 10 MB of data for 31 industry indices. The honest finding in the folder's own audit is that the accepted model P1 beats the original P0 by about one percentage point of hit rate, inside intervals that all contain zero, on history that had already been inspected.
-
-This shapes three requirements that a generic "quant agent" would miss:
-
-- **Intake is a first-class component.** The local agent normalizes supplied material into the common InputBundle, brief and available manifests. Baselines are optional unless the objective needs them. Resolve material ambiguity with the owner; existing explicit authorization need not be requested again. An unresolved idea may be admitted for clarification, but execution waits for required data and contracts.
-- **The evaluator must be at least as careful as the folder's own audit.** Paired comparisons, block bootstrap, family-wise adjustment, leave-one-year-out, placebo shifts and prefix tests already exist there as conventions; our evaluator must reproduce the folder's numbers before it is trusted on anything new.
-- **The data have known timing weaknesses.** Fundamentals are half-year with approximate availability dates and backfilled membership. The system has to carry a `pit_grade` label on every input and every artifact so that hypotheses can be marked "blocked on data" instead of silently evaluated on leaky inputs.
-
----
-
-## 3. System architecture
-
-### 3.1 Component map
-
-Three planes plus a boundary object. Names in brackets refer to the nodes of the brainstorm's hybrid architecture diagram.
-
-**Intake plane (runs on the user's device)**
-
-- **Host MCP client + portable intake instructions.** Codex or another agent inventories supplied assets, drafts the typed input bundle, preserves originals, resolves missing information and submits through MCP. It also reads job status, released reports and delivery exports. No Claude harness or local model is required.
-
-**Research plane (the system; agent-writable)**
-
-- **Supervisor [S].** Plans and re-plans research tasks, allocates research token/task budgets within operator authorization, respects evaluator-published quotas, reads released reports and proposes a completion or pause. It cannot allocate the evaluator's own run budget or pass its own exit gate. Implemented as a planning step that produces a structured plan, not as a free-running loop.
-- **Specialist workers [W].** Research-data engineer, factor researcher, performance-report analyst (read-only), skeptical reviewer, factor-code and packaging agent. Each is an LLM loop over a closed, role-specific tool set.
-- **Evolutionary worker [E].** Maintains the candidate population and lineage, selects parents from released scores and diversity, proposes mutations and recombinations as new artifact versions.
-- **Review and packaging [P].** Freezes a proposal into an immutable artifact: canonicalizes the definition, computes the content hash, runs static causality checks and the research-side prefix test on the development window, attaches hypothesis text and data requirements, publishes to the registry.
-- **Shared research blackboard [B].** Hypotheses, tasks, notes, population and lineage, links to released report identifiers, archive of rejected ideas. Agent-writable.
-
-**Boundary object**
-
-- **Immutable artifact registry [A].** Append-only. An artifact version is content-addressed (hash of canonical definition + config + data requirements + protocol compatibility tag). Nothing is ever overwritten; revision creates a new version with a parent pointer.
-
-**Evaluation plane (independent; evaluator-writable only)**
-
-- **Intake and scheduler [C].** Polls the registry for eligible, unevaluated versions; owns the queue, budget and order. Research cannot enqueue, reorder or cancel.
-- **Backtesting engine [T].** Deterministic replay under a frozen protocol: publication → execution → exit per decision cycle, paired against the designated baseline.
-- **Simulated tracking engine [M].** Forward tracker: when a new dataset version is registered by a human, records each published artifact's new signals and settles earlier ones. Opt-in and inactive in the frozen pilot (no new data); the schema exists from day one. A missed historical signal is replay, not prospective evidence.
-- **Output quality checks [Q].** Static analysis of artifact code, causality checks, prefix-consistency test across historical cutoffs, reproducibility (two runs, identical hashes), resource usage.
-- **Official records [O].** Per-version, per-protocol run records, period ledgers, metrics, diagnostics, receipts with hashes.
-- **Release policy [L] and read-only feedback interface [F].** Decides what the research plane may see and when; publishes released views.
-- **Final acceptance [G].** Sealed confirmation window; human-triggered, budgeted queries; promotion decision recorded outside agent authority.
-
-### 3.2 Boundary rules as enforceable checks
-
-| Rule from the brainstorm | How v1 enforces it |
-|---|---|
-| Agents cannot invoke, configure or cancel evaluation | The research service has no network route or credential to the evaluator process. Evaluator is driven only by its own poller and by the human CLI. Compose separates service identities, credentials, networks and read-only mounts. The trusted sandbox launcher accepts only validated run contracts; neither research/MCP nor untrusted artifacts receive a Docker socket. Host peer authentication is not assumed across containers. |
-| Official reports cannot be forged | Every report and receipt is signed by the evaluator with a key only its OS user can read; the MCP server verifies the signature before serving anything labelled official. |
-| Agents cannot change evaluation data, windows, costs or assumptions | Protocol is a frozen file whose hash is embedded in every report. The protocol directory is owned by the evaluator OS user. Data beyond the development window live only in the evaluator's mount. |
-| Agents cannot edit official results | `eval_db` is evaluator-owned; only feedback_ro can select released views. Research has no direct CONNECT privilege on eval_db. |
-| A report about an older version must never become the score of a newer one | Reports reference the immutable `artifact_version_id`, its separate content hash, `protocol_id`, dataset version and evaluator version. The blackboard stores report ids, never copies of metrics as facts about lineages. |
-| Final holdout stays outside iterative feedback | Confirmation evidence stays evaluator-only. An owner-authorized query produces only the policy-allowed decision; private measurements never enter research MCP. Prior exposure is recorded even if a window is sealed. |
-| Pending or failed evaluations are recorded explicitly | Every version has an evaluation status row: `queued`, `running`, `failed:<reason>`, `complete`, `withheld`. Research reads statuses, never infers from absence. |
-| Non-trading outputs get type-appropriate checks | Data-engineering artifacts are checked for reproducibility, schema and temporal quality; research notes get deterministic completeness, citation and released-value checks, not a trading backtest. |
-
-### 3.3 One full cycle, end to end
-
-1. The user gives Codex or another host agent an idea or source assets. Portable intake instructions produce an InputBundle and proposed brief, identifying unresolved fields and preservation constraints.
-2. The host agent uses MCP to create the project and validate the InputBundle, register datasets and baselines when required by the objective, and propose a protocol. Files use finalized upload IDs or declared read-only import mappings. The evaluator owner freezes the protocol separately; `submit_research_brief` returns a durable job id. Missing required inputs leave the job awaiting clarification rather than inventing a runnable contract.
-3. Trusted data ingest builds the permitted development-window slice, and the research service writes the brief to the blackboard, and the supervisor produces a first plan: for example, "data engineer: verify canonical tables and parity with baseline features; factor researcher: propose six hypotheses in the price/volume family; packaging: publish P0 and P1 as version 0 artifacts".
-4. Workers execute tasks, writing notes and proposals to the blackboard. Packaging freezes approved proposals into artifact versions and inserts them into the registry.
-5. The evaluator's poller finds new versions, runs quality checks, then the backtest under the frozen protocol, writes official records, and applies the release policy. Released views now show the Ladder-gated scalar and the flags for the new versions.
-6. The report analyst reads released results and writes interpretations to the blackboard. The skeptical reviewer challenges them. The evolutionary worker updates the population, selects parents and proposes the next generation. The supervisor re-plans and spends budget or stops.
-7. At configured checkpoints the user gets a summary through MCP (`get_job_status`, `get_report`) and can pause or redirect research. Evaluation keeps running on whatever is already published.
-8. The supervisor proposes delivery. An independent checker validates the frozen exit-gate specification and issues a version-linked receipt before the job becomes completed. A supported negative result may pass a research-delivery gate; budget exhaustion or missing evidence cannot. Investment promotion, if requested, follows its separate evaluator/human gates. See PLAN_ALIGNMENT sections G and I.
-
----
-
-## 4. Core contracts
-
-Contracts are written as field tables. They are the first thing to build (Phase 0) and the thing least allowed to drift later. Use one schema library for all of them and generate JSON Schema from it so the MCP tools, the database and the agents share one definition.
-
-### 4.1 Research brief
-
-| Field | Type | Notes |
+| ID | Requirement | Where this plan satisfies it |
 |---|---|---|
-| `project_id` | id | created by `create_project` |
-| `objective` | text | one paragraph, human-approved |
-| `universe` | list of codes + label map | industry codes for the pilot |
-| `benchmarks` | list of codes | with one `primary` |
-| `decision_cycles` | list | each with name, signal-date rule, publication rule, execution rule, review rule |
-| `selection_rule` | object | top fraction, rounding, tie-break, equal weight |
-| `eligibility_rule` | object | warm-up, coverage threshold, minimum eligible count, neutral fill |
-| `primary_metric`, `secondary_metrics` | names | from the evaluator's metric catalogue |
-| `cost_levels_bps` | list | e.g. 0, 10, 30 |
-| `protocol_proposal_ref`, `exposure` | objects | proposed public evaluation objectives plus prior data exposure. Exact private windows belong to the evaluator-owned protocol, not to ordinary research prompts. Pilot proposals in 7.10 are already historically exposed |
-| `baseline_artifact_ids` | list | the versions used for paired comparison |
-| `constraints` | list of text + machine flags | no data fetch; allowed feature families; PIT constraints |
-| `success_criteria` | object | the hurdle definition the supervisor should aim at (see 7.6) |
-| `budgets`, `exit_gate`, `role_profiles` | objects | authorized spend and token/concurrency limits; optional generation/wall-clock limits (unset by default); evaluator-owned quota references; frozen deliverables/checks and allowed conclusions; role and task profile references |
-| `human_checkpoints` | list | after intake, after protocol freeze, every N generations, before confirmation query |
+| R1 | Hybrid v1 multi-agent research and evolution, with the research/evaluation boundary, roles, blackboard, population, lineage and released-feedback loop preserved | Sections 3, 6, 7; invariants INV-1 to INV-12 |
+| R2 | Docker deployment on an unknown ARM64 or AMD64 host; same-computer agent access through standard MCP | Sections 3.3, 5.1, 8; Stages 0, 4, 7; ARCH and MCP test suites |
+| R3 | Work on call until deliverables pass an exit gate; no compulsory schedule; no default total elapsed-time or generation ceiling | Section 2; JOB and DLV test suites |
+| R4 | Accept packages and standalone ideas, factors, models or strategies; missing information stays explicit | Section 4.1; execution contracts in 7.3; INT test suite |
+| R5 | Online, heterogeneous, tunable LLMs through an OpenAI-compatible boundary; Kimi, GLM and DeepSeek required in the first production release | Sections 4.7, 6.1, 6.3; PRV test suite; AC-05, AC-06 |
+| R6 | Optimize the existing plans rather than rewrite the goal; keep both plans' useful detail and record conflict resolutions | This revision; reconciliation table in `PLAN_ALIGNMENT.md` section B |
 
-### 4.2 Dataset manifest and canonical data layer
+### 1.3 Non-goals for v1
 
-A dataset version is a set of canonical Parquet tables with pinned schemas plus a manifest. Its id is a Merkle-style hash of table hashes and the manifest. Each table carries two hashes: a physical SHA-256 of the file (for transfer and integrity) and a logical hash over canonically sorted rows and the schema (for identity), because Parquet bytes are not reproducible across writer versions and the evaluator must recognise the same data regardless of how it was written. The manifest also records the point-in-time cutoff used to build the tables.
+- Real-money or broker trading. Forward simulated tracking on newly arriving data is a module; brokers are not.
+- Automated acquisition of licensed data. New data is a human-authorized step producing a new dataset version.
+- Autonomous parallel research lanes and autonomous discovery of new factor-composition strategies (Hybrid v2). Importing, evaluating and revising an existing model or strategy under a declared contract is in scope.
+- A mandatory web UI. MCP is the required interface; the dashboard is an optional operator feature.
+- Local LLM hosting, GPU or CUDA dependencies, or a compulsory always-on deployment.
+- Proving alpha. A run that ends with "no candidate clears the hurdle", with evidence, is a successful run.
 
-| Canonical table | Key | Columns (minimum) | Pilot source |
+### 1.4 The governing principle, made operational
+
+**Separation of proposal and measurement**, enforced four ways rather than by prompt text:
+
+1. **By construction.** Research roles have no tool, endpoint or credential that can start, configure, prioritize, cancel or read unreleased evaluation work. The evaluator is deterministic code with no LLM, no network egress and no wall-clock dependence (INV-1, INV-8).
+2. **By storage and service identity.** Three databases (`research_db`, `registry_db`, `eval_db`) with least-privilege roles (`research_rw`, `registry_app`, `eval_rw`, `feedback_ro`), separate Compose services, private networks, role-specific credentials and mounts. Research reaches official evidence only through the GET-only Feedback API (INV-2, INV-4, INV-5).
+3. **By data zones.** Research containers mount only the research-zone snapshot, truncated by date. All later windows live only in the evaluation zone (INV-6, INV-9).
+4. **By release policy.** What the evaluator publishes back is coarsened, gated, rationed and version-linked, so iterating against feedback cannot quietly become fitting the test set (INV-7, INV-12).
+
+---
+
+## 2. Operating model: on-demand jobs and exit gates
+
+**Deployment lifecycle.** The operator starts the Compose bundle. An idle deployment starts no research, fetches no licensed data, runs no forward simulation and spends nothing (AC-13). Durable state lives in named volumes; the operator may stop the deployment without deleting them.
+
+**Job lifecycle.** `received → validating → ready → running → awaiting_evaluation → validating_delivery → completed`, with explicit side states `needs_input`, `paused`, `budget_paused`, `waiting_for_data`, `failed` and `cancelled`. Research generation state (local state machine: PENDING … CLOSED) and evaluator run state are separate records. A closed generation is not a completed job. Research can await evaluator work through released status but cannot drain, accelerate or cancel the evaluator queue.
+
+**No default ceilings.** `max_wall_clock` and `max_generations` are unset by default. The controls that remain mandatory are per-call timeouts, sandbox resource limits, authorized spend with atomic reservations, evaluator quotas and release budgets. Budget exhaustion checkpoints work and enters `budget_paused`; it never counts as completion and never silently renews an allowance.
+
+**Exit gates.** The brief freezes an exit-gate specification before execution: required deliverables and schemas, applicable protocol and checks, reproducibility criteria, evidence-release requirements, allowed conclusion types and any human sign-off. An **independent deterministic delivery checker** validates it and issues an immutable, signed receipt linked to exact artifact, data, protocol, configuration and report versions. The supervisor may propose completion; it cannot accept its own work.
+
+- `research_delivery` (default) passes with a supported positive or negative result, including an empty shortlist, when the frozen brief allows that conclusion and every required check and artifact is present. A data-blocked report counts only if the brief explicitly permits it. Budget exhaustion, a crash, an unresolved required input or a missing evaluator report cannot be relabelled success (AC-09, AC-10).
+- `investment_promotion` is a separately selected gate. It retains the applicable private holdout, prospective forward evidence and human approval. Historical replay cannot substitute for forward incubation; a job that needs new observations stays `waiting_for_data` with no hidden cutoff.
+
+**Crash recovery.** Completed tool results, LLM responses, artifacts and state are checkpointed before dependent work starts. Leases and fencing prevent duplicate commits; local side effects are idempotent. A provider timeout after a request was accepted may still have incurred cost, so an `outcome_unknown` attempt is preserved and retried under a bounded policy rather than claiming exactly-once billing. A client session is never the only copy of progress (AC-08).
+
+**After delivery.** When a valid receipt exists, the job creates no further research tasks and closes task-owned work. Results stay retrievable; other jobs and any separately authorized forward campaign are unaffected.
+
+---
+
+## 3. Architecture
+
+### 3.1 Zones and components
+
+Names in brackets are the brainstorm's hybrid-architecture nodes. Implementation names follow the local reference.
+
+| Component | Zone | Responsibility | Implemented as | Stage |
+|---|---|---|---|---|
+| Host agent + portable intake guide | Host (user's machine) | Inventory and interpret supplied material, preserve originals, prepare the InputBundle, resolve missing fields with the owner, submit, poll, export | Codex or any MCP client following `qfr_mcp` intake instructions | 4 |
+| MCP front door (`mcp-api`) | Research edge | Validate bundles, register datasets and baselines, propose protocols, submit/poll/pause/resume/cancel research, read registry and released reports, answer checkpoints, export deliveries | Standard Python MCP server, `qfr_mcp` | 4 |
+| Research API (`research-api`) | Research | Programs and charters, durable job admission and control, blackboard views, checkpoint answers, delivery export; wrapped by MCP | FastAPI, `qfr_research` | 4–5 |
+| Research orchestrator (`research-worker`) | Research | Deterministic generation state machine, agent calls, leased job queue, feedback sync | Python worker, `qfr_research` | 5 |
+| Supervisor [S] | Research | Plans a generation, allocates research budget within authorization, respects evaluator quotas, proposes completion; cannot pass its own gate | LLM planner + deterministic validator and fallback | 5 |
+| Specialists [W] | Research | Hypothesis researcher, factor engineer, critic, report analyst, interpretation reviewer, optional data engineer and literature researcher | Typed closed-tool loops | 5 |
+| Evolution engine [E] | Research | Islands, archive, fitness, selection, operators, bandit, lineage; LLM variation goes through the engineer | Deterministic module + prompts | 6 |
+| Workbench | Research | Research-zone metrics with the evaluator's own metric definitions | `qfr_core` facade | 1, 5 |
+| Packager [P] | Research | Final validation, canonical hashing, manifest assembly, publication | Deterministic code | 5 |
+| Blackboard [B] | Research | Hypotheses, tasks, candidates, reviews, population, lineage, cached released reports, interpretations, knowledge | `research_db` | 4 |
+| Registry [A] | Shared, write-once | Immutable, content-addressed artifact versions with lineage | `registry-api` + `registry_db` | 3 |
+| Data ingest and zone builder | Evaluation | Import adapters, as-of slicing, research-zone and full snapshots | `qfr_eval` ingest module + CLI | 1 |
+| Intake and scheduler [C] | Evaluation | Poll registry by sequence cursor, eligibility, dedup, quotas, fair enqueue | `eval-scheduler` | 2–3 |
+| Screening and quality checks [Q] | Evaluation | Static checks, coverage, prefix-invariance probe, perturbation, determinism, runtime limits, type-specific checks | `eval-worker` | 2–3 |
+| Backtest engine [T] | Evaluation | Deterministic replay under a frozen protocol, paired against baselines | `eval-worker` | 2 |
+| Statistics | Evaluation | Bootstrap, trial ledger, DSR, PBO, step-down intervals, minimum detectable effect, placebos | `qfr_core` metrics + `qfr_eval` | 2 |
+| Official records [O] | Evaluation | Insert-only records, period ledgers, receipts, hashes | `eval_db` | 2 |
+| Release engine [L] + Feedback API [F] | Evaluation edge | Release policy, coarsening, Ladder, batching, quotas; GET-only serving of released reports and public cards | `release-worker`, `feedback-api` | 4 |
+| Delivery checker | Evaluation | Validates the frozen exit-gate specification and issues the signed receipt | `qfr_eval` module + CLI | 4, 6 |
+| Simulated tracking [M] | Evaluation | Forward incubation on new data; replay mode for tests only | `sim-engine` | 8 (schema from Stage 2) |
+| Final acceptance [G] | Evaluation + human | Holdout check, acceptance cases, approver decision, library, monitoring | `eval-admin-api`, acceptance service | 8 |
+| Dashboard | Optional UI | Role-gated views for the three human roles | Next.js, optional | 8 |
+
+### 3.2 Trust boundaries
+
+| From | To | What crosses | Mechanism |
 |---|---|---|---|
-| `calendar` | date | is_open | trading_calendar.csv |
-| `universe` | code | name_zh, name_en, kind (industry / benchmark) | industry_labels.csv + config |
-| `prices_daily` | date, code | close | index_prices.csv + evaluation_prices.csv (overlap verified) |
-| `panel_weekly` | date, code | ret1, ret4, breadth, amount, turnover, stock_count, plus every engineered baseline feature with a documented formula | industry_signal_panel + features |
-| `fundamentals` | code, report_period, metric | value, available_date, pit_grade | stock_finance.csv.gz + available_date logic (grade B) |
-| `membership` | stock_code, industry_code | effective_from, effective_to, pit_grade | constituents snapshot (grade D, backfilled from a current snapshot) |
+| Host agent | MCP | InputBundle, upload or import-mount references, job controls, reads of released material | Authenticated MCP tools; server validates; neither filenames nor host prose authorize execution or policy changes |
+| Research | Registry | New artifact versions | `POST /v1/artifacts` with the publisher token, write-once, idempotent on publish key and content hash |
+| Evaluation | Registry | Versions since the intake cursor | GET with the evaluator token |
+| Evaluation | Research | Released reports, public protocol and policy cards, library membership | Feedback API, GET only, `feedback_ro` role on released views |
+| Evaluation | Research | Research-zone snapshot | Read-only volume produced by the zone builder, truncated by date |
+| Humans | Research | Charters, budgets, start and pause, checkpoint answers | Research API with the research-lead token |
+| Humans | Evaluation | Protocol freeze, policies, quotas, epochs, confirmation queries, acceptance decisions | Eval admin API and evaluator CLI with the evaluation-owner or approver token |
+| Research | Evaluation | Nothing else: no job submission, priority hints, cancellation, configuration or simulation control | None exists; BND-01, BND-02, BND-05 |
 
-Manifest fields per table: path, physical and logical hashes, rows, columns, date range, grain, `pit_grade`, `pit_notes`, licence note, source description. Manifest-level fields: dataset_version_id, as_of date, creator, parent dataset version, change log.
+Host peer authentication across containers is not assumed. Separation comes from service identities, networks, mounts and database roles; no shared superuser credential is exposed; import-linter is a code-level check, not the runtime boundary.
 
-`pit_grade` has four values, borrowed from the honest-labelling proposals in the 2026 literature (Appendix B.3): **A** exact availability timestamps; **B** availability set by a documented deadline rule; **C** approximate dates, to be used only with an extra-lag sensitivity run; **D** restated, backfilled or unknown. Observation dates and calendar dates are explicit; that alone does not certify historical data vintages or point-in-time revisions. The pilot's half-year fundamentals carry an `available_date` based on the package's interim-deadline-plus-one-day convention (B for that availability rule); value vintages and membership quality remain separately recorded and may be D/unknown. The constituent snapshot mapped backward is grade D. Historical index reconstruction is a concern marked unverified in Appendix B; preserve `vintage_status=unknown` until source evidence establishes it. Reports say "lookahead tested, not certified": the checks in 7.3 detect leaks they can reach and prove nothing by their silence.
+### 3.3 Runtime topology (Compose)
 
-**As-of slicing** is a core service, not a utility: `slice(dataset_version, upto)` returns views where every row satisfies `date ≤ upto` and `available_date ≤ upto`. The research plane is only ever given `slice(…, development_end)`. The evaluator builds one slice per decision date when running prefix tests and uses the full dataset with per-decision cutoffs otherwise.
+One PostgreSQL 16 instance hosts the three databases; the boundary comes from roles, credentials, networks and mounts, and must pass the boundary tests before production. Services, roles, reachability, secrets and mounts follow the local reference section 5.4: `mcp-api`, `research-api`, `research-worker`, `registry-api`, `eval-scheduler`, `eval-worker` (replicas), `release-worker`, `sim-engine`, `feedback-api`, `eval-admin-api`, `data-ingest`, optional `dashboard`. Only `research-worker` holds LLM keys and has egress to provider endpoints. No evaluation container holds LLM keys; only `data-ingest` has internet egress on the evaluation side, and only when a human authorizes a fetch. The MCP service listens on its container interface while Compose maps only `127.0.0.1:<port>` on the host; private remote access is a separate setting with TLS and authentication.
 
-### 4.3 Factor artifact
+Images are built natively for `linux/amd64` and `linux/arm64` from the same source and dependency locks with platform-specific digests recorded. No local LLM weights, Ollama, GPU or CUDA. Databases, immutable artifacts, checkpoints and authorized datasets persist in named volumes, never in writable image layers. No credentials or licensed pilot data are baked into images or committed as fixtures.
 
-Immutable. Content-addressed. The common manifest supports semantic kinds factor, model, strategy, research_note and data_product; the factor-specific tiers below remain the preferred representation for evolutionary factor proposals. See PLAN_ALIGNMENT section E for standalone model/strategy/package contracts.
+### 3.4 One full cycle, end to end
 
-| Field | Type | Notes |
-|---|---|---|
-| `artifact_version_id`, `content_hash` | opaque id, SHA-256 | registry-assigned immutable version id; separate hash of canonical immutable manifest and payload digests, excluding server-assigned IDs/timestamps. Implementation fingerprints are separate from full publication identity |
-| `artifact_id` | id | stable lineage name chosen by the author |
-| `parent_version_ids` | list | zero (seed), one (mutation) or two (recombination) |
-| `kind`, `implementation` | enum, tagged object | semantic kind factor/model/strategy/research_note/data_product; representation DSL, constrained Python, fixed composite or declared package runner. Existing factor tier labels map to representation, not separate product kinds |
-| `definition` | text or AST | Tier 1: expression AST over canonical columns and a fixed operator set. Tier 2: Python source implementing one function with a fixed signature against a constrained context API. Composite: list of (version_id, weight) with no fitting. |
-| `parameters` | object | numeric parameters named explicitly so the evolutionary worker can mutate them |
-| `data_requirements` | object | tables, columns, lookback length, minimum `pit_grade` |
-| `cycles` | list | which decision cycles it is intended for |
-| `hypothesis` | text | economic rationale, what would falsify it |
-| `mechanism_card` | object | five short fields borrowed from published schema-plan work: event (what happens), context (when it matters), qualities (which industries it touches), direction (sign and horizon), output (what the score means); used for hypothesis-level crossover and for the diversity requirement in 6.4 |
-| `formulation` | text | the formula in plain mathematical notation, independent of the code |
-| `variables` | list | canonical columns and derived series the definition reads, each with its `pit_grade` |
-| `complexity` | integer | AST node count (Tier 1) or statement count (Tier 2); a niche dimension and a cap |
-| `provenance` | object | source hashes, author/role/task, blackboard references, provider + endpoint + exact model ID, effective settings and prompt/config hashes, fallback events, prior exposure and dependency locks |
-| `research_side_checks` | object | DSL validation, static analysis result, development-window prefix test result, correlation to existing population on development window |
-| `created_at`, `created_by` | | |
+1. The user gives the host agent an idea or source assets. The portable intake guide produces an InputBundle and a proposed brief, naming unresolved fields and preservation constraints, and preserves originals.
+2. Through MCP the host agent creates the project, validates the bundle, registers datasets and baselines when the objective needs them, and proposes a protocol. Files arrive through a finalized authenticated upload or a declared read-only import mount. The evaluation owner freezes the protocol separately. `submit_research_brief` admits a durable job and returns its id promptly. Missing required inputs leave the job in `needs_input` or `waiting_for_data` rather than inventing a runnable contract.
+3. The zone builder materializes the research-zone slice. The research service writes the brief to the blackboard. The supervisor produces a validated generation plan.
+4. Specialists work tasks in parallel: hypotheses, drafts checked on the workbench, critic review with bounded rounds. The packager freezes approved candidates into immutable versions and publishes them.
+5. The evaluator polls the registry on its own schedule, screens, runs the frozen protocol, writes official records and the trial ledger in one transaction, and the release engine applies the policy at its batch time. Released views now show the policy-permitted scalar and flags, or the profile's coarsened metric set, for the new versions.
+6. The report analyst interprets released results; the interpretation reviewer challenges a sample; the evolution engine updates fitness, archive and bandit state and proposes the next generation; the supervisor re-plans or proposes completion.
+7. At configured checkpoints the user reads status and summaries through MCP and may pause, redirect or answer questions. Evaluation of already-published versions continues regardless.
+8. When the supervisor proposes delivery, the delivery checker validates the frozen exit gate and issues the signed receipt. Only then is the job `completed`. Investment promotion, if selected, follows its own evaluator and approver gates.
 
-**Tier 1 — expression DSL.** A small typed language: time-series operators that look only backward (`delay`, `delta`, `ts_return`, `ts_mean`, `ts_std`, `ts_min`, `ts_max`, `ts_rank`, `ts_zscore`, `ewm`), cross-sectional operators (`cs_rank`, `cs_percentile`, `cs_zscore`, `cs_demean`), arithmetic, `clip`, `where`, `fill_neutral`. Operands are canonical columns. The interpreter enforces causality by construction and produces a canonical string for hashing. This is the representation the evolutionary worker mutates. The six v4 price features in Appendix A are all expressible in it.
+### 3.5 Case profiles
 
-**Tier 2 — constrained Python.** For things the DSL cannot express (rolling regressions, breadth from stock-level data). The function receives a context object exposing as-of views only (`ctx.prices(upto)`, `ctx.panel(upto)`, `ctx.fundamentals(upto)`) and returns a score per code for one decision date. Static checks reject imports outside an allowlist, file and network access, randomness without a seed, and wall-clock calls. Only the evaluator's sandbox executes Tier 2 against non-development data.
+The product contract is generic; numerical rules belong to named profiles bound to a job at protocol freeze. Thresholds and fitness weights are never copied between profiles by name alone.
 
-**Composite.** Fixed-weight combination of existing versions, preserving supplied P0/P1 definitions. Existing trained models and strategies may be imported with frozen weights and declared inference/training interfaces. New fitting/evolution is allowed only within an explicitly frozen case contract and training slice; autonomous v2 composition is not introduced by intake support.
+| Aspect | `pilot_industry_v1` (first fixture) | `stock_daily_v1` (optional supported profile) | Generic factor / model / strategy case |
+|---|---|---|---|
+| Universe and grain | 31 Shenwan level-1 industry indices; weekly snapshots, monthly and quarterly cycles with monthly review | CSI 300 point-in-time constituents; daily bars from the Qlib-format community dataset, fetched only on authorization | Declared by the InputBundle and frozen protocol |
+| Primary metric | Extreme-group recall (top-7 and bottom-7 hit rates), Rank IC, 10 bps net excess versus equal-31 | Daily RankIC mean, IR, Newey–West t, long-short net Sharpe, turnover | Declared metric identity, sampling unit, period count, cost basis, baseline |
+| Windows | Candidate research protocol: development 2020–2022, validation 2023–2024, confirmation 2025 to data end; all previously inspected | W0 research to 2019-12-31, W1 feedback, W2 validation, W3 private holdout, W4 forward, with embargoes | Declared per case |
+| Release policy | One Ladder-gated scalar per lineage plus pass/fail flags | Coarsened multi-metric W1 reports, W2 pass/fail with Ladder, nothing from W3 | Declared; bound to the fitness profile |
+| Fitness profile | Single released scalar plus flags, incremental contribution and diversity | Weighted percentile formula over the released W1 metric set | Must read only what its release policy releases |
+| Baselines | Frozen P0 and accepted P1; P2–P4 optional provenance, never executed by the fixture | Classic seed expressions (optional) | Optional unless the objective needs them |
+| Oracle | Original machine-readable ledgers and 24 reference CSVs per package | Synthetic planted, null and decay worlds | Declared reproduction evidence |
 
-### 4.4 Evaluation protocol and report
+---
 
-**Protocol** (frozen file, hashed, human-approved):
+## 4. Contracts (schema-first)
+
+All contracts are Pydantic v2 models in `qfr_core` (public) or `qfr_eval` (private official records), with generated JSON Schema shared by MCP tools, databases and agents. Build them in Stage 0; change them only through the schema.
+
+### 4.1 InputBundle (generic intake)
+
+| Field | Contract |
+|---|---|
+| `schema_version`, `input_kind` | Versioned envelope; kind is `idea`, `factor`, `model`, `strategy` or `bundle` |
+| `objective`, `requested_deliverables` | Requested research or change, frozen-baseline preservation rules, required files and evidence |
+| `source_assets` | Immutable upload or mounted-import references with hashes, media type, provenance and intended use; source text and code are data, never service instructions |
+| `definition` | Type-specific: formula, model specification and weights with entry point, strategy rules, or natural-language hypothesis; no fake executable for an idea |
+| `data_refs`, `data_requirements` | Existing authorized dataset ids, or required fields, universe, frequency and availability; may be unresolved at intake |
+| `baseline_refs` | Exact versions, required only when the comparison objective needs them |
+| `execution_contract` | For executable inputs: runner or image digest, dependency lock, command or function interface, input and output schemas, seeds, resource limits |
+| `exposure_and_quality` | Previously inspected periods, training and tuning history, PIT limitations, licence constraints, unknowns |
+| `job_config` | Role-profile references, permitted data and provider access, cost authorization, stop and pause policy, proposed exit gate, human checkpoint policy |
+| `protocol_proposal_ref` | Non-authoritative draft; the evaluation owner freezes the official protocol |
+
+Rules: an idea may be admitted for clarification before data exists and becomes runnable only when its data and evaluation requirements are resolved. A factor needs no model; a model needs no factor decomposition; a strategy is not reduced to an expression. Missing prices, labels, weights, calendars or business rules yield `needs_input` or `waiting_for_data` with a `blocked_on_data` reason, never invented values. Unsupported executable formats are rejected explicitly. Unsafe deserialization and source code are inspected or executed only in the approved sandbox. Imported packages stay quarantined until inventory and schema checks pass.
+
+### 4.2 Research brief and job record
+
+The brief is the human-approved statement of the job; the job record freezes it with its configuration.
 
 | Field | Notes |
 |---|---|
-| `protocol_id`, `protocol_hash` | hash of the canonical file |
-| `dataset_version_id` | the exact data it binds to |
-| `brief_id` | the brief it implements |
-| cycles, publication / execution / exit rules, selection, eligibility, review rule | copied from the brief, then frozen |
-| `windows` | development, validation, confirmation (sealed), optional diagnostic |
-| `baseline_version_ids` | for paired comparison |
-| `metrics` | catalogue subset; `primary_metric` |
-| `costs_bps` | list |
-| `bootstrap` | method, draws, seed, block lengths per cycle, confidence |
-| `multiple_testing` | family definition, method, how the trial count is maintained |
-| `release_policy` | Ladder step rule, fields released per window, per-lineage query budgets, confirmation query count, withholding rules |
-| `diagnostics` | leave-one-year-out, placebo shift settings, prefix-test cutoffs, neighbourhood rule if any |
-| `pit_grade_requirements` | minimum quality per table for an artifact to be eligible |
+| `project_id`, `job_id`, `input_bundle_ref` | Identities and the admitted bundle |
+| `objective`, `constraints`, `success_criteria` | Plain-language objective; machine flags such as allowed feature families, no data fetch, PIT constraints; the hurdle definition the supervisor aims at (7.6) |
+| `universe`, `benchmarks`, `decision_cycles`, `selection_rule`, `eligibility_rule`, `cost_levels_bps` | Public evaluation objectives proposed to the protocol; frozen by the evaluator |
+| `windows` and `exposure` | Proposed public windows with the minimum detectable effect per cycle (7.9); prior exposure of every period, with pilot history marked `previously_seen` |
+| `baseline_artifact_ids` | Versions for paired comparison, when the objective needs them |
+| `role_profiles`, `task_overrides` | References to frozen provider/model/role configuration (4.7) |
+| `budgets` | Authorized spend, token and concurrency limits, evaluator quota references; optional generation and wall-clock limits, unset by default |
+| `exit_gate` | Gate type, required deliverables and schemas, checks, reproducibility criteria, allowed conclusions, human sign-off |
+| `human_checkpoints` | Intake approval, protocol freeze, optional periodic review, before any confirmation query, final delivery sign-off if selected |
 
-**Report** (one per artifact version per protocol):
+Effective settings are frozen and hashed at admission; a change creates a new job or configuration revision and never relabels an existing result.
 
-| Section | Content |
+### 4.3 Dataset manifest, PIT grades and data zones
+
+A dataset version is a set of canonical Parquet tables with pinned schemas plus a manifest; its id is a hash over table hashes and the manifest. Each table carries a physical SHA-256 (transfer integrity) and a logical hash over canonically sorted rows and schema (identity), because Parquet bytes are not reproducible across writers. The manifest records source, licence, grain, date range, row counts, the point-in-time cutoff used, and three separate quality labels: **timing** (`pit_grade` A exact availability timestamps; B availability set by a documented regulatory-deadline rule; C approximate dates usable only with an extra-lag sensitivity; D restated, backfilled or unknown), **value vintage** (`vintage_status` verified or unknown), and **membership** quality. Observation dates alone never earn a blanket clean-PIT label; the pilot's index history before the December 2021 Shenwan scheme carries a `reconstructed` note and `vintage_status=unknown`.
+
+Pilot canonical tables: `calendar`, `universe`, `prices_daily`, `panel_weekly`, `fundamentals` (grade B availability rule), `membership` (grade D). Stock-profile tables follow the local reference section 6.3. Both are produced by import adapters behind one as-of contract.
+
+**As-of slicing and zones.** `slice(dataset_version, upto)` returns rows with `date ≤ upto` and `available_date ≤ upto`. The zone builder writes a date-truncated research snapshot and a full snapshot with distinct snapshot ids; research containers mount only the former (BND-06). The evaluator builds per-cutoff slices for prefix tests. Record any data already exposed to the host agent; later restriction cannot make it unseen.
+
+### 4.4 Artifact manifest (common) and implementations
+
+Immutable and content-addressed. Semantic kind is separate from representation.
+
+| Field | Notes |
 |---|---|
-| identity | artifact_version_id, protocol_hash, dataset_version_id, evaluator code hash, run id, timestamps |
-| quality checks | static analysis, reproducibility (two independent runs, identical ledger hash), prefix test results per cutoff, resource usage |
-| coverage ledger | expected / published / evaluated / immature / excluded decisions per cycle and window |
-| per-window metrics | means and paired deltas vs each baseline, with bootstrap intervals, for the validation window and any optional diagnostic window; confirmation withheld; minimum detectable effect for the window and cycle |
-| multiple-testing context | trial count in the family at time of report, adjusted interval or hurdle, rank among evaluated versions |
-| diagnostics | leave-one-year-out, placebo percentiles, turnover and cost sensitivity |
-| flags | `small_sample_warning`, `pit_grade_downgrade`, `fallback_rows_fraction`, `duplicate_of` (if scores are identical or correlation ≥ threshold with an earlier version) |
-| release | which fields were released, rounding applied, release timestamp |
-| card | a one-row summary in the style of open-source asset-pricing signal documentation (identifier, mechanism, sample, sign, primary metric, t-statistic, costs, data grade), plus model-card sections (intended use, out-of-scope use, limitations, evaluation data) and a seven-point backtesting-protocol checklist (motivation, multiple testing, data and sample, cross-validation, dynamics, complexity, culture); templates in Appendix B.3 |
+| `artifact_version_id`, `content_hash` | Registry-assigned opaque id; SHA-256 of the canonical manifest and payload digests excluding server-assigned ids and timestamps; implementation fingerprints (DSL canonical hash, behavioral fingerprint) are separate |
+| `family_id`, `version_no`, `parent_version_ids`, `relation`, `operator` | Lineage: seed, mutation, crossover, revision, repair, human seed |
+| `kind` | `factor`, `model`, `strategy`, `research_note`, `data_product` |
+| `implementation` | `qfr-dsl/1` expression; constrained Python with a fixed function signature over as-of context views; fixed composite of existing versions; declared package runner with image digest, dependency lock and interface |
+| `definition`, `parameters`, `declared` | The payload; named numeric parameters the evolution engine may mutate; declared expected sign, horizon or cycles, fields used and maximum lookback, checked against the parsed implementation |
+| `data_requirements` | Tables, columns, lookback, minimum PIT grade |
+| `rationale` | Hypothesis, mechanism, falsification, change summary; plus a five-field `mechanism_card` (event, context, qualities, direction, output) used for hypothesis-level crossover and the diversity requirement |
+| `complexity` | AST node count or statement count; a niche dimension and a cap |
+| `provenance` | Source hashes, program, generation, island, task, agent runs with provider, endpoint, exact model id, effective settings, prompt template id and hash, fallback events, research snapshot id, model knowledge exposure (known or unknown), dependency locks, `qfr_core` version |
+| `self_assessment` | Research-side workbench numbers, labelled non-official; never used by the evaluator |
+| `review` | Critic verdict id and rounds |
 
-Research agents see only the released projection of this report (7.7).
+Publication is idempotent on content hash; any edit creates a new version and a new trial; there is no retraction. P0 and P1 are preserved as frozen baselines; the accepted P1 is never overwritten or automatically replaced. Fitting weights or training is allowed only inside an explicitly frozen case contract and training slice.
 
-### 4.5 Blackboard records
+### 4.5 Protocol, official record and released report
 
-| Record | Key fields | Who writes |
-|---|---|---|
-| `hypothesis` | id, text, family, status (`open`, `in_progress`, `published`, `rejected`, `blocked_on_data`), supporting note ids | factor researcher, reviewer |
-| `task` | id, role, input refs, status, budget, result refs | supervisor (create), workers (update) |
-| `note` | id, author role, task id, text, structured claims, refs to report ids | any worker |
-| `population_member` | artifact_version_id, generation, niche key, released primary metric (coarse), status (`alive`, `parent`, `retired`) | evolutionary worker |
-| `lineage_edge` | child_version_id, parent_version_id, operator (`mutate_param`, `mutate_op`, `crossover`, `rewrite`) | packaging |
-| `rejected_idea` | text, reason, refs | reviewer, supervisor |
-| `plan` | generation, tasks, budgets, stop criteria, rationale | supervisor |
+**Protocol** (versioned YAML, immutable once activated): id and version; supported kinds and profile; universe and eligibility; label and horizons or decision cycles with publication, execution, exit and review rules; preprocessing; windows or epoch reference; metric identity with sampling unit, period count, cost basis and baseline; bootstrap settings; multiple-testing family and method; release policy reference; diagnostics (leave-one-year-out, placebo shifts, prefix cutoffs, neighbourhood rule); PIT requirements; runtime limits; fingerprint seed. The evaluator derives a public protocol card; window dates, holdout rules and acceptance thresholds stay private.
 
-Append-only event log beside the tables: every write is also an event (`who`, `what`, `when`, `refs`). Agents are activated by events ("new released report for version X", "task assigned"), which is the blackboard-as-dispatcher pattern from the brainstorm.
+**Official record** (insert-only): pinned artifact version id and content hash, protocol id and version, epoch or window set, data snapshot id, evaluator code version and image digest, seed; full-precision metrics, series files, a results hash; the trial-ledger row in the same transaction (INV-5, INV-7).
 
-### 4.6 Event log and job model
+**Released report** (policy projection): identity references; quality-check outcomes as enum codes; coverage ledger; the policy-permitted metric content (pilot: one gated scalar, hurdle component flags, rank bucket; stock: coarsened W1 set); multiple-testing context (trial count, adjusted interval or hurdle, rank in family); diagnostic flags from a fixed vocabulary; release metadata; a report card (one-row signal-documentation summary, model-card sections, backtesting-protocol checklist). Never released: holdout metrics, per-period series beyond permitted aggregates, private window dates, free text or timings produced by executing artifact code (INV-6, INV-12). A re-released lineage best is labelled with its originating version id and is never assigned as the current child's measurement.
 
-Both planes persist durable state in Postgres. Research uses the local plan's deterministic generation state machine with checkpointed steps and a leased queue. An optional DBOS backend may implement research checkpoints after a compatibility spike; it is not required in the evaluator. Evaluation uses its own queue, leases, fencing and idempotency keys, claimed with skip-locked semantics.
+### 4.6 Blackboard records and events
 
-Persist each completed LLM/tool result before advancing. A provider timeout can leave a paid call with unknown outcome, so audit ambiguous attempts and bound retries instead of promising exactly-once billing. Client disconnects and container restarts do not discard admitted jobs.
+Tables follow the local reference section 13.2: programs, islands, generations, tasks, hypotheses, candidates, reviews, population members, archive cells, lineage edges, report cache and links, feedback cursor, interpretations and challenges, knowledge items, bandit state, budget ledger, agent runs, jobs, events; plus the production records `input_bundles`/`source_assets`, `research_jobs`, `provider_profiles`/`role_profiles`, `llm_attempts` and `delivery_refs`. Every write is also an append-only event with principal, request id and timestamp (INV-10). Agents are activated by events (new released report, task assigned), which is the brainstorm's blackboard-as-dispatcher pattern.
 
-The job lifecycle, required state records, independent delivery receipt and uncapped default elapsed time are defined in PLAN_ALIGNMENT section G. Generation CLOSED is distinct from job completed. Spend/input/data pauses preserve work and never count as successful delivery.
+### 4.7 Provider, model, role and task configuration
 
-### 4.7 Generic intake and delivery contracts
+Four levels: **provider endpoint → model capability profile → role profile → task override**. Required fields per group follow `PLAN_ALIGNMENT.md` section D: connection (vendor, endpoint, base URL, API dialect, secret reference, timeouts, retry and concurrency limits); capabilities (exact model id, context and output limits, modalities, tool calling, structured-output mode, streaming, reasoning settings, compatible sampling parameters, optional batch or cache); role/task policy (provider and model profile, prompt template version, tool allowlist, sampling and reasoning settings, output-token limit, tool-turn cap, context allocation and compaction, pricing snapshot, budget reservations, fallback allowlist); audit (requested and effective settings, override sources, capability-test revision, actual provider/model/endpoint, prompt and config hashes, usage and cost with unknowns explicit, retry and fallback events).
 
-Implement the InputBundle and type-specific execution contracts in PLAN_ALIGNMENT section E. Ideas, factors, models, strategies and mixed packages are first-class intake fixtures. Missing dependencies produce needs_input or waiting_for_data with a blocked_on_data reason rather than fabricated executable inputs.
+Rules: unset is distinct from zero; different roles may use the same model with different settings or through different endpoints; invalid combinations fail preflight with field-specific reasons; no global override may collapse all roles to one model; fallback only within an operator allowlist meeting the role's capability and data-sharing policy; never a silent switch to an unapproved provider, a local model or an endpoint lacking required tools. Secrets are references injected into `research-worker` only. The illustrative configuration is `examples/llm-profiles.example.json`.
 
-The frozen job record references its input bundle, authorized provider/role configuration, public protocol card, allowed spending and exit-gate specification. The final delivery bundle contains artifacts, released evidence and a signed/version-linked delivery receipt; private evaluator protocols/data and credentials are excluded.
+### 4.8 Delivery receipt and export bundle
+
+The receipt records job id, gate specification hash, artifact, report, configuration, data and protocol references, result, reason codes and the evaluator's signature. The export bundle contains frozen artifact payloads with checksums, dependency and configuration references, source and data manifests, public protocol cards, **released** reports, provenance and the receipt. Full private protocols, unreleased records, holdout data and secrets never enter it (AC-12). The evaluator may provide a separate authenticated operator export outside the research MCP surface.
 
 ---
 
-## 5. The MCP front door
+## 5. Interfaces
 
-### 5.1 Tool surface
+### 5.1 MCP front door
 
-Few, coarse tools, each with a short description written for an agent that has never seen the system. Portable conventions are based on the MCP specification and tested client behavior; PLAN_ALIGNMENT section F governs client compatibility:
+**Transport.** Streamable HTTP inside the Compose bundle, published on the host loopback by default, bearer authentication and project/role checks on every call. An optional stdio bridge only transports requests; losing it does not affect durable jobs. Pin a maintained Python MCP SDK (FastMCP optional) and test the actual supported protocol generations with Codex and a second independent client; no single vendor client's behaviour defines the product (AC-01).
 
-- Use stable names within the pinned MCP specification limits. The table gives logical operation names; a consistent namespace may be applied in the exported tool schema and client guide. Released-report reads never imply evaluator-admin access.
-- Honest annotations describe actual read/write, idempotency and cancellation behavior; they do not grant permissions. Enforce role/project access in handlers. Submit/retry uses a caller-supplied idempotency key; a conflicting payload is rejected.
-- An `outputSchema` on every tool, with the structured result mirrored into a text block, since some clients drop structured content.
-- Concise descriptions lead with purpose, required input and effects; test discovery and schema handling in Codex and a second MCP client. Do not build correctness around one vendor's truncation limits.
-- Return bounded summaries and resource links with pagination. Payload limits are server configuration tested against supported clients; model packages use the upload/import path, not large inline tool bodies.
+**Tool families** (logical names; a consistent namespace is applied in the exported schema): project setup and input validation; dataset and baseline registration; protocol proposal; research submit, status, pause, resume, cancel; registry reads; released-report reads; blackboard reads; human checkpoint answers; delivery and shortlist export. A factor-only job may omit baseline registration. Not exposed through MCP, by design: protocol activation, evaluation scheduling or cancellation, private holdout reads, official-record writes, promotion.
 
-| Tool | Purpose | Notes |
-|---|---|---|
-| `create_project` | new project with name and description | returns project_id |
-| `register_dataset` | register canonical tables or raw files + manifest | accepts only a declared read-only import-mount reference with an explicit host-to-container mapping; otherwise the client first uploads a tarball to a plain HTTPS upload endpoint served beside the MCP app and passes the upload id, under configured upload limits rather than inlining binary packages into model/tool context; returns dataset_version_id and a validation report |
-| `register_baseline_artifacts` | publish frozen baseline artifacts with expected golden evidence | optional unless the objective needs a baseline; publication through Registry API |
-| `propose_protocol` | submit the protocol derived from the brief | returns protocol draft id; freezing happens only in the evaluator CLI by a human |
-| `submit_research_brief` | admit an InputBundle and brief as a durable research job | returns job_id promptly; validates dependencies, role profiles, spend authorization, exit gate and frozen protocol compatibility |
-| `get_job_status` | progress, generation, budget spent, open checkpoints | cheap; polled |
-| `pause_research`, `resume_research`, `cancel_research` | control research only | never touches evaluation queue |
-| `list_artifacts`, `get_artifact` | registry reads | includes evaluation status |
-| `list_reports`, `get_report` | released reports only | returns a resource link for large bodies |
-| `read_blackboard` | summaries, hypotheses, plans, notes | read-only, paginated |
-| `answer_checkpoint` | human answers a supervisor question | the human-in-the-loop channel |
-| `export_shortlist` | artifacts + released reports + public protocol card + dataset/source manifests + delivery receipt | supports an empty shortlist with an allowed evidence-backed conclusion; never exports private protocols or data |
+**Behaviour.** Stable job ids and caller-supplied idempotency keys; the same key with a different payload is a conflict. Submission returns promptly after admission with job id, status, next action and polling guidance; no tool call waits for research. Application job state is independent of connection or session state; disconnecting or cancelling a status request never cancels a committed job; repeating a lost submit with the same key recovers the same job. Tools declare JSON schemas, return concise structured results mirrored into short text, and reference large bodies through paginated resources (`report://`, `artifact://`, `blackboard://`). Annotations describe real semantics and grant nothing; handlers enforce access. Optional protocol task features are added only after capability negotiation; submit-and-poll is always available.
 
-Not exposed through MCP on purpose: anything that freezes a protocol, releases confirmation results, or edits evaluation records. Those live in the evaluator's own CLI, run as the evaluator OS user.
+**Files.** Same computer does not mean same filesystem namespace. Files reach the container through an explicit read-only import mount with a declared path mapping, or an authenticated upload endpoint whose finalized upload id is passed to MCP, with size and hash limits, chunking, checksum verification, staging then atomic finalization, and path, symlink and archive-expansion validation. Never an arbitrary host path, a `../` escape, an undeclared URL fetch, or a model package base64-encoded into tool or model context.
 
-### 5.2 Long-running work
+### 5.2 Internal APIs
 
-The job is durable application state, independent of a client session or request lifetime. Submission validates and returns a job ID promptly; status polling carries research progress, budget, checkpoints and released evaluator status only. Jobs may run for days or longer without a default total-time/generation limit.
+Registry API (publish and read, write-once), Feedback API (GET only, released views and public cards), Research API (programs, charters, durable jobs, blackboard views, checkpoint answers, export; wrapped by MCP) and Eval admin API (protocols, policies, quotas, runs, records, acceptance, library) follow the local reference sections 13.4–13.8. v1 uses static bearer tokens per principal mapped to roles; every request logs principal and request id. No API may mark a job completed without an independent passing receipt.
 
-Disconnecting or cancelling an MCP request does not cancel an admitted research job. Explicit pause/resume/cancel tools affect research only. Repeating a lost submit with the same key recovers the same job. Optional MCP task features are capability-negotiated; submit-and-poll is always available. No unverified Claude-specific timeout or extension behavior is a product dependency.
+### 5.3 Portable host intake guide
 
-### 5.3 Resources
-
-- `report://{artifact_version_id}` — the released report as JSON plus a Markdown rendering.
-- `artifact://{artifact_version_id}` — the frozen definition and metadata.
-- `blackboard://{project_id}/summary` — the supervisor's latest plan and the population table.
-
-Tool results reference these resources instead of inlining large bodies. Use the supported MCP resource interface or a paginated read-tool fallback, with authorization rechecked on every access. Cache immutable reports by report ID and invalidate listings as new released reports arrive; no client-specific mention syntax is required.
-
-### 5.4 Transport and auth
-
-Deploy the MCP server in the Docker bundle over Streamable HTTP, publishing the host port on loopback by default; use bearer authentication and project/role checks. Configure private remote access with TLS and appropriate authorization separately. An optional stdio bridge only transports requests and does not own job lifetime. Pin and test the SDK against actual supported protocol generations, including legacy negotiation where needed. OAuth is an extension for clients/deployments that require it; never pass provider LLM keys through as MCP credentials.
-
-Same-host files require an explicit read-only import mount/path mapping, or authenticated uploads with finalized IDs, checksums and size/path/archive controls. Generic host paths are not assumed visible inside a container. See PLAN_ALIGNMENT section F.
-
-### 5.5 Portable host intake instructions
-
-Provide an agent-neutral intake guide usable by Codex and other MCP clients: classify sources, extract business rules, identify prior evidence and exposure, preserve original assets, prepare InputBundle/brief/manifests, resolve required missing fields and submit. A skill wrapper may be added for a client, but cannot become a required Claude SDK or harness dependency. The server validates contracts and never executes uploaded instructions as service policy.
+An agent-neutral guide shipped in the repository: classify sources with the Appendix A.2 taxonomy; extract business rules; identify prior evidence and exposure; preserve originals; prepare InputBundle, brief and manifests; resolve required missing fields with the owner; submit in order; read status and export. A client-specific wrapper MAY exist but can never become a required SDK or harness dependency. The server validates contracts and never executes uploaded instructions as policy.
 
 ---
 
-## 6. The research plane
+## 6. Research plane
 
-### 6.1 Agent runtime choice
+### 6.1 Runtime
 
-Retain closed-tool loops with typed outputs and a deterministic orchestrator. Use the local plan's PydanticAI abstraction with OpenAI-compatible Chat Completions and Responses adapters; a thin OpenAI SDK adapter is the fallback if a provider capability is not represented correctly by the framework. Neither the Anthropic SDK nor Claude Agent SDK is a foundation of this system.
+Typed closed-tool loops with structured outputs, orchestrated by a deterministic generation state machine persisted in Postgres with a leased queue. The LLM abstraction is PydanticAI over OpenAI-compatible adapters, with a thin OpenAI SDK adapter where a provider capability is not represented correctly. Both `openai_chat_completions` (portable baseline for the three required providers) and `openai_responses` (enabled per endpoint after testing) sit behind one normalized request and result interface. Adapters normalize text, tool-call ids and arguments, tool results, structured-output validation, usage, finish reasons, errors and streaming completion; provider-specific continuation state stays in that provider's session record and is never passed to another provider. Schema validation is always local, including after provider-native structured output; bounded repair attempts consume budget. Caching, batch submission, hosted tools and server-side conversation state are optional capabilities, never foundations. No Anthropic SDK, Claude harness or local model is part of the system. An optional step-checkpoint library (DBOS) MAY back research checkpoints after a compatibility spike; it is never an evaluator dependency.
 
-Supervisor planning remains structured and validated, with bounded planning/tool steps and durable external context. Framework/library choices must pass the provider and recovery contracts in PLAN_ALIGNMENT; they do not own the evaluator's permissions.
+Long tasks use external durable memory: versioned brief, current plan, evidence references, accepted decisions, unresolved questions and checkpoint summaries, with per-role context allocation and compaction that preserves citations and retrieval of originals.
 
-### 6.2 Roles, tools and models
+### 6.2 Roles and tools
 
-| Role | Tools | Configurable capability profile |
-|---|---|---|
-| Supervisor | blackboard/released reports/budgets read; plan/tasks write; human checkpoint | strong planning, reliable tools, long context and durable task reasoning |
-| Research-data engineer | manifest/schema read; research-slice queries; propose data products | structured data reasoning and efficient tool use |
-| Factor/quant researcher | research evidence/statistics read; propose hypotheses and typed definitions | financial reasoning and report interpretation |
-| Performance-report analyst | released reports/population read; interpretation notes write | evidence-grounded synthesis, never private metrics |
-| Skeptical reviewer | proposals/research checks read; critique/verdict write | independent scrutiny; no evaluation or promotion authority |
-| Factor-code helper and deterministic packager | validate/repair DSL or declared implementation on development data; publish only after deterministic checks | configurable helper model; hashing, freezing and permissions remain code |
-| Evolution worker | population/released scores; mutations/recombinations through role tools | deterministic population/selection; configurable LLM variation profiles |
-| Literature researcher | authorized search/fetch and notes | optional, with separate external-data authorization |
+| Role | Tools (closed set) | Capability profile | Output |
+|---|---|---|---|
+| Supervisor | blackboard read/write (plans, tasks), feedback read, budget read, human checkpoint | reliable planning, tool use, long context, durable-task reasoning | GenerationPlan, validated deterministically with one repair attempt then fallback |
+| Hypothesis researcher | blackboard, knowledge search, similarity search, registry read | financial reasoning | Hypothesis objects: generic mechanism, expected sign, horizon or cycles, fields, falsification, novelty note |
+| Factor engineer | DSL validate and explain, workbench evaluate on the research zone, similarity search, registry read | fast, structured output | CandidateDraft objects with parameter rationale and change summary |
+| Critic | candidate, hypothesis, workbench summary, similar factors | independent scrutiny | ReviewVerdict with alignment, plausibility, parsimony, originality and lookahead-risk scores; approve, revise or reject |
+| Report analyst | released reports, population, registry read | evidence-grounded synthesis | ReportInterpretation restating only released values; KnowledgeItem |
+| Interpretation reviewer | interpretations and cited reports | critic prompt in interpretation mode | InterpretationChallenge on a sampled share |
+| Research-data engineer (optional) | manifest and schema read, research-zone queries | structured data reasoning | `data_product` proposals |
+| Literature researcher (optional) | authorized search and fetch | separate external-data authorization | KnowledgeItem |
+| Evolution engine | deterministic; LLM variation through the engineer | not applicable | GenerationProposal |
+| Packager | DSL validate, registry publish | deterministic; a helper model may draft the hypothesis card | Manifest and publication |
 
-Models are selected by provider endpoint, exact model ID, capability profile, role profile and task override. Temperature, reasoning/thinking effort, context budget, max output, tools, retries, concurrency and fallback are per profile; unsupported values fail preflight. Preserve requested and effective settings with every call. The same model may serve different roles with different settings or through different infrastructure.
+The tool layer checks the calling role on every invocation and logs it; a snapshot test proves no research tool can affect evaluation (BND-02). Write scopes per role follow the local reference section 11.3. Prompting rules: state the separation and coarsening explicitly; never justify with tickers, company names, specific dates or events; prefer simple expressions and justify every window; treat research-zone numbers as optimistic; return only the output schema with uncertainty; generate the DSL reference card from the operator registry.
 
-First production acceptance requires online Kimi, GLM and DeepSeek support and a job using all three. The owner's model examples are capability illustrations, not final assignments. OpenAI/Responses can be selected for a compatible supervisor without forcing that provider onto other roles. No local LLM deployment is planned.
+### 6.3 Providers, budgets and conformance
 
-Atomic cost reservations, local schema validation, persisted call results and explicit unknown-outcome accounting are mandatory. Cache and batch APIs are optional provider capabilities, not Anthropic dependencies. See PLAN_ALIGNMENT sections C–D and the illustrative `examples/llm-profiles.example.json`.
+The first production release MUST support online Kimi (Moonshot), GLM (Z.ai) and DeepSeek and MUST demonstrate all three in one job with at least two role profiles using different effective settings (AC-05, AC-06). An OpenAI profile is supported by design but not required. Owner-supplied model names are capability examples, not fixed assignments or invented API ids. Each provider passes a conformance suite against its configured online endpoint: text, multi-turn tools, schema validation, supported streaming, effective-setting verification, error and usage handling; offline mocks are reported separately. Unsupported settings fail preflight; allowed fallback is visible; unavailable provider, rate limit, malformed JSON and context overflow recover within policy without inventing evidence (AC-07).
 
-### 6.3 The research-side sandbox
+Budgets: every call reserves cost atomically and reconciles actual usage; unknown prices or usage stay unknown and require a conservative configured reservation; per-run usage limits, per-generation caps and the authorized job spend are enforced in code; `budget_paused` is a job state, not an exit. Every call logs role, provider, endpoint, exact model id, prompt template id and hash, tokens, cost, latency, run and task ids. Tests never call real models.
 
-Research agents are allowed to compute on the development window. They get a research slice (as-of the development end date) and a set of deterministic tools: evaluate a DSL factor on the slice and return Rank IC series, hit rates, turnover and correlation to existing population members; run the prefix test on the slice; profile a table. This is ordinary research hygiene, not official evaluation. It keeps the evaluator's queue short, because obviously broken or duplicate ideas die before publication, and it gives the evolutionary worker a cheap novelty signal. Nothing computed here is ever written to `evaluation` or quoted as performance in a report.
+### 6.4 Generation workflow
 
-### 6.4 Evolutionary worker design
+States PENDING → SYNCING → PROPOSING → PLANNING → DEVELOPING → SELECTING → PUBLISHING → CLOSED, with FAILED and ABORTED terminal, persisted after every step, idempotent and resumable (local reference section 11.6). A failed task never fails a generation. Research cannot drain the evaluator; it may await released status before proposing delivery. Generation CLOSED is not job `completed`.
 
-**What the evidence says first.** The 2025–2026 literature on LLM-driven alpha mining (Appendix B.2) is consistent on four points: in-sample gains mostly vanish out of sample and after costs; "replace the best on any small improvement" loops overfit; LLM mutation chains without real selection collapse to templates while classical subtree mutation does not; and the quality of what comes out depends on the loop and the evaluator far more than on which model writes the code. The design below therefore mixes classical operators with LLM rewrites, forces mechanism diversity, and rewards marginal contribution to the pool rather than standalone scores.
+### 6.5 Research-side workbench
 
-- **Population and archive.** Every published version with a released primary metric, plus seeds (baselines). A quality-diversity archive organized by niche: decision cycle × mechanism family (from the `mechanism_card`) × complexity bucket, so weekly reversal and quarterly breadth ideas do not compete for the same slots and simple factors are not crowded out by complex ones. Archive size around 40–100 members; two or three islands with rare migration (every tenth generation, a small fraction), which published systems found necessary to avoid premature convergence. The `rejected_idea` table doubles as veto memory: before proposing, the worker checks it so dead ideas are not re-proposed.
-- **Parent selection.** Use the published weighted rule rather than greedy best: a parent's weight is a sigmoid of its released score's robust distance from the population median, divided by one plus the number of children it already has, so good parents are preferred but over-sampled parents fade. Inspirations shown to the LLM rewrite operator: one elite and one diverse member, ordered from worst to best. Always include at least one baseline and one random alive member per generation.
-- **Operators.** Parameter mutation (lookbacks, weights, clip bounds, with step sizes per parameter), operator mutation (swap a time-series operator for a neighbour in the same family), subtree crossover between two DSL parents, and LLM rewrite given two parents' mechanism cards and released outcomes. Target mix roughly 60% small edits, 30% larger rewrites, 10% crossover, adjusted by what produces published children. Each child records its operator in `lineage_edge`.
-- **Diversity requirement per generation.** The supervisor requires children to span at least three distinct mechanism themes; published ablations show that dropping this requirement reduces the number of useful mechanisms found and raises pairwise correlation among survivors.
-- **Novelty gates before publication.** Structural: AST similarity (largest common subtree against the population and against the baseline feature zoo) and a near-duplicate check on the canonical form. Statistical: correlation of the child's development-slice scores with every alive member above a threshold (0.7 is the published convention) fails the child unless its released outcome later proves incremental. Failing children are recorded as rejected with the reason.
-- **Children per generation.** Small, 8–16, because the evaluator's family-wise accounting makes every evaluated version more expensive in evidence terms. Research-side filters (duplicate, correlation, prefix test, fallback fraction too high, complexity cap) remove most candidates before publication.
-- **Budgets.** Counted in tokens and in evaluations, not in rounds. Published runs of comparable loops cost between a few and a few tens of dollars and several hours per five-to-ten-generation run; plan the pilot at that scale and run at least three seeds, since seed variance in these loops is large.
-- **Stopping.** Configured lineage stagnation may trigger reseeding or review. A job completes only after its frozen delivery gate passes. Budget exhaustion pauses; explicit cancellation ends as cancelled. Total elapsed-time and generation limits are optional, unset by default. A supported negative result may satisfy the delivery gate; no loop is required to manufacture profitable alpha.
-- **What the worker never sees.** Per-period details, confirmation results, unrounded metrics, or anything from an optional diagnostic window beyond its labelled flags. It also never sees evaluator configuration.
+Research roles compute freely on the research-zone snapshot with deterministic tools: evaluate a candidate and return Rank IC series, hit rates, turnover, coverage and correlation to population members, using the evaluator's own metric definitions; run the prefix test on the research zone; profile tables. These numbers are in-sample and non-official; they never enter official records or reports.
 
-Appendix B.2 records the external systems whose design choices informed these settings and the failure modes they reported.
+### 6.6 Evolution engine
 
-### 6.5 Human checkpoints
+The 2025–2026 evidence (Appendix B.2) says in-sample gains mostly vanish out of sample and after costs, "replace the best on any small improvement" overfits, LLM mutation without real selection collapses to templates while classical subtree mutation does not, and the loop and evaluator matter more than the model. The engine therefore mixes classical operators with LLM rewrites, forces mechanism diversity, and rewards marginal contribution to the pool.
 
-Human decisions are required for unresolved material intake choices, evaluator protocol freeze, new data/spending outside authorization, private confirmation queries and investment promotion. Existing authorization persists. Periodic one-page summaries need not pause the run; optional review checkpoints and final delivery sign-off are set in the frozen brief. Checkpoints are blackboard tasks of type `human` with the question text, surfaced through `get_job_status` and answered through `answer_checkpoint`.
+- **Population and archive.** Islands by mechanism theme (the stock profile defaults to six; the pilot uses decision cycle × mechanism family × complexity bucket niches) with a MAP-Elites archive; official members have a released report, provisional members have workbench numbers only and may parent at most one child per generation. The `rejected_idea` and knowledge records act as veto memory.
+- **Fitness.** Bound to the job's release policy at freeze. The pilot uses the single released scalar with hurdle flags, incremental contribution and diversity; the stock profile uses its weighted percentile formula over released W1 metrics (local reference section 12.2). Selectors MUST NOT read metrics the policy withholds, substitute zeros, or infer from a lineage-best score belonging to another version.
+- **Selection.** Weighted parent rule (sigmoid of robust score distance divided by one plus child count) or the stock profile's tournament/explore mix; inspirations are one elite and one diverse member; at least one baseline and one random alive member per generation; crossover pairs parents of low behavioural similarity.
+- **Operators.** Parameter mutation, operator mutation within a class, subtree crossover, LLM mutation targeted at released flags, LLM crossover of mechanism cards, repair; a default mix tuned by what produces published children; every child records its operator on a lineage edge and counts as a trial.
+- **Diversity.** Children per generation span at least three mechanism themes; structural (largest common subtree) and behavioural (fingerprint correlation) novelty gates before publication; exploration floor rises when archive coverage or top-member similarity degrades; Thompson-sampling slot allocation across islands with stagnation rules and ring migration.
+- **Throughput.** Few children per generation (the stock profile publishes at most twelve); research-side filters remove duplicates, correlated, leaky or over-complex candidates before publication so the official trial count grows slowly.
+- **Stopping.** Lineage stagnation triggers reseeding or review. A job completes only when its frozen delivery gate passes; budget exhaustion pauses; cancellation ends as cancelled; elapsed-time and generation limits are optional and unset by default.
+- **What the engine never sees.** Per-period details, private holdout results, unrounded metrics, evaluator configuration, or anything from an optional diagnostic window beyond its labelled flags.
+
+### 6.7 Human roles and checkpoints
+
+Research lead (charters, budgets, start and pause, blackboard and released reports), evaluation owner (protocols, policies, quotas, epochs, baselines, records, retirement), approver (promotion decisions with rationale). One principal SHOULD NOT hold research lead and approver together; the system warns. Human decisions are required for unresolved material intake choices, protocol freeze, new data or spend outside authorization, private confirmation queries and investment promotion. Existing authorization persists; periodic summaries need not pause a run; optional review checkpoints and final sign-off are set in the frozen brief. Checkpoints are blackboard tasks of type `human`, surfaced through status and answered through MCP.
 
 ---
 
-## 7. The evaluation plane
+## 7. Evaluation plane
 
 ### 7.1 Principles
 
-Deterministic, reproducible, boring. No LLM in the measurement path. Everything the evaluator does is a function of (artifact version, protocol, dataset version, evaluator code hash), and the report carries all four.
+Deterministic, reproducible, boring. No LLM, no network and no wall-clock dependence in the measurement path. Everything is a function of artifact version, protocol, dataset snapshot and evaluator code version, and every record carries all four. Reproduction is hash-exact within a pinned runtime where the source promised it; across CPU architectures, exact identifiers, ranks, membership, counts and schemas plus declared floating tolerances are predeclared, and native-host evidence is recorded separately from emulated builds. A failing P0/P1 oracle is never weakened to pass.
 
-### 7.2 Scheduler
+### 7.2 Intake, dedup and quotas
 
-A single poller: find registry versions with no `evaluation_status` row for the active protocol, create `queued` rows, process in a fixed order (oldest first, baselines first), under a run budget per day. Research cannot see the queue beyond each version's status. Failures are recorded with reasons and retried a fixed number of times; persistent failures are released as `failed` so research does not wait forever.
+While an authorized job or campaign is active, the scheduler polls the registry by sequence cursor (no push path exists, INV-3): schema and kind checks; exact dedup on canonical hash; behavioural dedup on fingerprint similarity (duplicates are not evaluated and not trials, but are logged); evaluator-owned quotas with deferral and expiry; fair round-robin across families. Research cannot influence priority. Idle deployments create no evaluation work.
 
-### 7.3 Sandbox for artifact execution
+### 7.3 Execution contracts and sandbox
 
-Tier 1 definitions run in the evaluator's interpreter. Tier 2 Python and declared package runners execute only in an isolation backend proven on the target Linux/VM and CPU architecture (gVisor is the candidate backend), with all these controls from their first executable release: no network, a read-only root filesystem, all capabilities dropped, no new privileges, a non-root user, memory, CPU and process-count limits, a small writable scratch directory in memory, an external wall-clock timeout, a single size-capped result file, and a fixed interpreter image with pinned libraries. In-process "restricted Python" and browser-style WebAssembly sandboxes are rejected: both had published escapes in 2025–2026 and their authors say they are not security boundaries (Appendix B.4).
+DSL factors run in the evaluator's interpreter. Constrained Python, declared package runners, imported models and strategies execute only in an isolation backend proven on the target Linux host or VM and CPU architecture. gVisor is the candidate backend, not a promise that every Docker Desktop or ARM host supports it; an unavailable backend fails readiness for that artifact kind rather than falling back to unsafe execution, and a DSL-only deployment is not production-ready for a requested model or strategy scope (AC-11). Controls from the first executable release: no network, read-only root filesystem, dropped capabilities, no new privileges, non-root user, memory, CPU and process limits, in-memory scratch only, external wall-clock timeout, one size-capped result file, pinned interpreter image. In-process restricted-Python and WebAssembly sandboxes are rejected (published escapes, Appendix B.4). Neither research, MCP nor artifact sandboxes receive a Docker socket; evaluator code, protocol files, scoring data and signing keys are never mounted into any sandbox except as read-only slices.
 
-**Lookahead prevention by construction, not by inspection.** For each cutoff the evaluator materializes a data slice containing only rows observable at that cutoff into the read-only mount, so generated code cannot see future rows whatever it does. The runner executes the artifact once per decision date with the as-of slice, or, when the artifact declares vectorized support, once with the full history and then verifies prefix consistency on sampled cutoffs. Two further checks run on every Tier 2 version: a perturbation test (alter rows after the cutoff and assert that values at and before the cutoff are unchanged) and a determinism re-run (identical outputs across two executions). Any attempt to read outside the mount, reach the network or exceed limits fails the version with a quality-check flag.
+Each kind has an evaluator plugin declaring eligibility, ordered stages, a run function per stage producing an official-record payload, and a release mapping. Model artifacts are reproduced from frozen weights and preprocessing with declared inference interfaces; strategy artifacts are replayed with their own position, cost and rebalance rules; research notes and data products receive deterministic completeness, citation, released-value, schema and temporal checks.
 
-**Knowledge lookahead is a separate problem the sandbox cannot solve.** The language model proposing a factor has read about 2020–2025 markets; a hypothesis such as "coal momentum" may encode hindsight rather than insight. Published work in 2026 shows LLM-generated strategies' backtest performance decaying out of sample relative to point-in-time models. The system therefore records the proposing model's identifier and knowledge cutoff in artifact provenance, labels windows before that cutoff as `knowledge_exposed` in reports, and requires genuinely prospective tracking for claims of unseen performance, while still checking data quality and protocol integrity. For the pilot the source documentation says all history was inspected; model knowledge cutoffs are separately recorded as known or unknown, which is one more reason the pilot's deliverable is evidence and a tracking setup, not a promotion.
+### 7.4 Lookahead defences
 
-**Evaluator assets are never inside any sandbox-writable or research-writable path.** Documented escapes in 2025–2026 came from exposed container sockets, writable host mounts, privileged containers and outbound channels such as an LLM proxy's fetch feature. The evaluator's code, protocol files, scoring data and signing key live under the evaluator OS user with no mount into any container except the read-only slices.
+By construction: per-cutoff slices in read-only mounts; the DSL has no date or identifier access and only backward operators. By test: the prefix-invariance probe (recompute at seeded historical cutoffs and compare), the perturbation test (alter post-cutoff rows, assert pre-cutoff outputs unchanged), the determinism re-run, declared-versus-parsed consistency, coverage and degeneracy checks. Knowledge lookahead is separate: provenance records the proposing model's documented knowledge cutoff or `unknown`; reports label exposed windows; only genuinely prospective evidence supports an unseen-performance claim. Prefix tests certify nothing by their silence; reports say "lookahead tested, not certified".
 
-### 7.4 Backtest engine
+### 7.5 Metrics, uncertainty and multiple testing
 
-Port the conventions in Appendix A.4 exactly: publication schedule, first-close execution, exits at the next decision's execution, immature intervals kept as NaN slots, eligibility hash per decision, top and bottom groups with tie-break by name, portfolio drift between events, costs on traded notional at each level, quarterly review rule, paired comparison with explicit `pair_status`, split purging at window boundaries. Acceptance is reproduction of the golden numbers in Appendix A.6.
+Metric identity is declared per protocol (3.5). Pilot metrics follow Appendix A.4 (extreme-group recall, Rank IC, action Rank IC, three-class accuracy, returns and net excess at each cost level, turnover, coverage ledger, immature slots kept as nulls). Stock metrics follow the local reference section 8.5 (RankIC statistics with Newey–West errors, decay, quantile returns, long-short net Sharpe, turnover, library correlation, size-neutral diagnostic).
 
-### 7.5 Uncertainty and multiple testing
+- **Trial ledger first.** Every evaluated version, including failures and withheld results, is a trial written with its official record (INV-7). Missing metrics are null with reasons, never zero. Duplicates are excluded only with matching artifact, data and protocol semantics. A new lineage or protocol name cannot reset exposure history.
+- **Uncertainty.** Paired circular or stationary block bootstrap on per-period deltas with automatic block length recorded and at least ten thousand draws for official reports (the pilot oracle's fixed 2,000 and 4,000-draw settings are reproduced exactly in the golden tests); paired studentized bootstrap for child-versus-parent; HAC errors where horizons overlap.
+- **Family-wise accounting.** Deflated statistics with an effective trial count from behavioural clustering, per-cohort probability of backtest overfitting (CSCV), step-down adjusted intervals against the baseline, the Harvey–Liu–Zhu hurdle where the metric allows, the version's rank in its family, and the trial count at report time. Insufficient data yields `not_applicable` or `insufficient_data` with the frozen policy's consequence; it is never an automatic pass. A planted lookahead oracle is known to pass these statistics, so structural defences come first.
+- **Placebos and diagnostics.** Calendar-shift placebo with its resolution stated (never a zero p-value), within-date permutation, leave-one-year-out, neighbourhood robustness for hurdle-passing candidates (non-selectable, still logged, with predeclared multiple-testing treatment), **incremental contribution** (residual Rank IC after controlling for the baseline pool), maximum correlation to the pool, and the fold-majority flag.
 
-- **Trial ledger first.** Every evaluated version, including failures and withheld ones, is a trial. The ledger is the input to every multiple-testing statistic below; omitting failed trials biases all of them toward optimism. A published 2026 experiment also showed that a planted lookahead oracle passes deflated-Sharpe and backtest-overfitting tests, which is why leakage safety in this plan is structural (7.3) and statistics are only the second line.
-- **Per-period uncertainty.** Paired circular or stationary block bootstrap on per-period deltas per cycle and window, with the block length chosen automatically by the standard rule and recorded, at least ten thousand draws for official reports, seeds from the protocol, and small-sample warnings as in the pilot's own code. Child-versus-parent differences use a paired studentized bootstrap. For the pilot's golden-number tests the package's exact settings (2,000 or 4,000 draws, fixed blocks) are reproduced as written.
-- **Family-wise accounting.** A family is "all artifact versions evaluated under this protocol for this cycle". For each version the evaluator reports: the trial count at report time; a deflated test statistic that uses an effective trial count (clustering correlated trials rather than counting them all); the per-generation probability of backtest overfitting from the generation's period-by-trial matrix; step-down adjusted intervals against the baseline (Holm or Romano-Wolf style, implemented through the stepwise tests in a maintained statistics library); and the version's rank in the family. The selection-aware hurdle is a protocol field; the published convention for new factors is a t-statistic above three or a false-discovery-rate calibrated equivalent, and the hurdle rises as the ledger grows.
-- **Placebos.** Calendar-shift placebo as in the pilot's audit, with the resolution of its percentile stated (one over the number of eligible shifts; never report zero), plus a within-date cross-sectional permutation test that asks whether the ranking carries any information at all.
-- **Diagnostics as flags.** Leave-one-year-out and placebo results are computed for every version on the validation window and released as flags (all-years-positive yes or no; placebo percentile bucket), not as raw tables.
-- **Marginal contribution, not standalone score.** For every version the evaluator also reports the incremental Rank IC after controlling for the baseline pool (the residual of the candidate's cross-sectional scores regressed on the baselines' and current elites' scores, then correlated with returns), the maximum return-correlation to the pool, and the fold-majority flag (improvement over the baseline in a strict majority of yearly folds). Published benchmarks show standalone in-sample IC gains disappearing after neutralization and out of sample; the released gate record therefore leads with these incremental measures.
-- **Neighbourhood robustness** for hurdle-passing candidates only: the evaluator re-runs a fixed set of one-step parameter neighbours (the pilot's audit used six) and releases the range as a diagnostic. Neighbours are not selectable but every diagnostic evaluation is logged. Their treatment in multiple-testing statistics is frozen in the protocol; diagnostic labels cannot erase evaluation or feedback exposure.
+### 7.6 Hurdles and gates
 
-### 7.6 Success criteria and hurdle
-
-The brief's `success_criteria` becomes the protocol's hurdle. For the pilot: paired primary-metric improvement over the designated baseline on the validation window whose family-adjusted interval excludes zero at the primary cost level; positive incremental Rank IC after controlling for the baseline pool; improvement in a strict majority of yearly folds, with leave-one-year-out point estimates all positive; placebo percentile above a threshold; maximum correlation to the pool below the novelty threshold; turnover below a cap. The evaluator reports hurdle status as a flag with each component's status; it never promotes. The evaluation runs as a cascade: quality checks, then development-window sanity, then validation, with the sealed confirmation window computed last and stored locked.
+The brief's success criteria become protocol hurdles reported as flags, never promotions. Pilot hurdle: paired primary-metric improvement over the designated baseline on the validation window with a family-adjusted interval excluding zero at the primary cost level; positive incremental Rank IC; improvement in a strict majority of yearly folds with all leave-one-year-out point estimates positive; placebo percentile above threshold; maximum pool correlation below the novelty threshold; turnover within cap; weekly is the primary cycle (7.9). Stock-profile W1, W2, holdout and acceptance gates follow the local reference sections 8.8 and 10.3. Evaluation runs as a cascade: quality checks, research-window sanity, validation, with the sealed confirmation or holdout window computed last and stored locked.
 
 ### 7.7 Release policy
 
-The policy follows two published results (Appendix B.3): the amount of feedback leaked per query matters more than its precision (releasing one score per submission cost about 1.4 points of held-out performance in a 2026 study, releasing eighteen cost over four; coarser feedback delays the harm but does not remove it), and detailed feedback to research agents roughly doubles evaluator-gaming attempts in a 2026 agent study. So the research plane gets one gated scalar and flags, nothing else.
+Two published results govern (Appendix B.3): leaking more fields per query costs held-out performance more than precision does, and detailed feedback roughly doubles evaluator-gaming attempts by agents. The release engine is a versioned, tested, evaluator-owned component. Each policy declares exactly which metrics and flags are available, their precision, batch timing, per-family and per-program quotas and leakage budgets, and is bound to a compatible fitness profile at job freeze.
 
-- **Development window:** not evaluated officially (research computes its own).
-- **Validation window, one scalar through a Ladder.** For each lineage the evaluator keeps the best released primary-metric value. A new version's primary metric is released only if it exceeds the lineage best by at least one step; otherwise the lineage best is re-released unchanged. The step equals one block-bootstrap standard error of the metric on the window, and released values are rounded to that step. This is a Ladder-inspired policy whose concrete step rule and flags need validation; no theorem about a different setting is assumed to guarantee this implementation. Re-released lineage bests carry the originating artifact ID, never the current child's score.
-- **Flags, not metrics.** Alongside the scalar: hurdle component flags (incremental contribution positive, fold majority, placebo bucket, cost-aware net result positive, turnover cap met, novelty threshold met), quality-check flags, and the version's rank bucket in the family. Secondary metrics are released in full only for versions whose hurdle flag is set, and in aggregate (family-level distributions) at the end of each generation.
-- **Budgets.** A per-lineage query budget limits how many versions of one lineage can be released per generation; excess versions are evaluated but released later or marked `withheld:budget`. The budget is public to the supervisor so it can plan.
-- **Confirmation window:** computed and locked. A human may spend one of a small fixed number of queries per protocol version; the evaluator stores the complete answer privately and releases only the approved decision/category to research, logged with the version id. A human-only report may include its paired interval; it cannot enter research MCP. After a query the confirmation window is treated as burned for that protocol version: further confirmation evidence comes from the forward tracker (7.9) as new data accrue, which is the only way to grow a holdout that nobody has looked at.
-- **Optional diagnostic window:** if a protocol defines one, it is released with the same gating, labelled `not_for_selection`, and excluded from parent selection by the evolutionary worker's tool, not by instruction. The pilot defines none (7.10).
+- **Pilot policy.** One Ladder-gated scalar per lineage: a new version's primary metric is released only if it exceeds the lineage best by at least one step (one block-bootstrap standard error, values rounded to the step); otherwise the lineage best is re-released, labelled with its originating version. Alongside: hurdle component flags, quality flags and a rank bucket. Secondary metrics in full only for hurdle-passing versions and in family-level aggregate at generation end. Per-lineage release budgets; excess versions are evaluated but `withheld:budget`. The confirmation window is computed and locked; a human may spend one query per protocol version, receiving a decision and a human-only interval, after which the window is burned for that protocol and further evidence comes only from forward tracking.
+- **Stock policy.** Coarsened W1 report set at batch intervals, W2 pass/fail with a Ladder on the family best, advancement as one bit after a delay, nothing from W3, enum-only diagnostics and reason codes, quotas and burn meters (local reference sections 9.2–9.4). Optional Thresholdout mode for W2 is a Stage 8 extension.
+- **Common rules.** Ladder, coarsening and quotas reduce information release; they do not guarantee that a noise candidate can never improve. Mechanism invariants and statistical error behaviour are tested on declared synthetic seeds (REL-06, DLV-04); the inherited fixed-seed null benchmark is a regression test, not universal proof.
 
-The mechanisms borrowed, the constants and their caveats are in Appendix B.3.
+### 7.8 Records, receipts and signing
 
-### 7.8 Reports and receipts
+Each run writes a JSON record, a Markdown rendering, period ledger files and a receipt with hashes of protocol, dataset manifest, artifact, evaluator code and ledger. A second run of the same inputs must produce the same results hash (`qfr eval reproduce`). The evaluator signs released reports, receipts and delivery receipts with a key only its service identity can read; the MCP server verifies signatures before labelling anything official.
 
-Each run writes: a JSON report (4.4), a Markdown rendering, a period ledger file, and a receipt with hashes of protocol, dataset manifest, artifact definition, evaluator code and the ledger. Reproducibility check: a second run of the same inputs must produce the same ledger hash; the report records both run ids.
+### 7.9 Detectability and the pilot's windows
 
-### 7.9 Forward tracking (simulated trading engine)
+With 31 industries, a single period's Rank IC has a no-skill standard deviation near 0.18 and a single period's top-7 hit rate near 14 percentage points. Using the pilot's full history (about 354 weekly, 82 monthly and 27 quarterly periods), the smallest mean effects detectable at t = 2 or 3 are roughly 0.019 / 0.029 Rank IC weekly, 0.040 / 0.060 monthly and 0.070 / 0.105 quarterly; P1's one-point edge over P0 is detectable for weekly decisions only. Consequences: weekly is the pilot's primary cycle; every released report and the supervisor's planning context carry the minimum detectable effect per window and cycle; the candidate research windows (development 2020–2022, validation 2023–2024, confirmation 2025 to data end, no diagnostic window) are a configuration to confirm at protocol freeze, labelled `previously_seen` throughout; the golden-number tests reproduce the package's own windows separately (Appendix A.6, B.3).
 
-In an explicitly authorized forward campaign, newly available data produce timestamped signals from frozen definitions; later observations settle those previously recorded signals. Uploading a later historical snapshot cannot retroactively create prospective predictions: missed decisions are labelled replay. The schema exists from day one; the frozen pilot starts no forward campaign. A job requiring forward acceptance may wait for data without a fixed deadline.
+### 7.10 Forward tracking and promotion (opt-in)
 
-### 7.10 Detectability and the pilot's windows
-
-With 31 industries the per-period noise is large and fixed by arithmetic: under no skill, the standard deviation of a single period's Rank IC is about 0.18 and of a single period's top-7 hit rate about 14 percentage points. The number of periods therefore decides what any window can detect. Using the pilot's history (January 2020 to October 2026), the smallest mean effects detectable at a t-statistic of two or three, assuming independent periods, are roughly:
-
-| Cycle | Periods in full history | Mean Rank IC at t=2 / t=3 | Hit rate at t=2 / t=3 (random 22.6%) |
-|---|---|---|---|
-| Weekly | about 354 | 0.019 / 0.029 | 24.1% / 24.8% |
-| Monthly | about 82 | 0.040 / 0.060 | 25.7% / 27.3% |
-| Quarterly | about 27 | 0.070 / 0.105 | 28.0% / 30.7% |
-
-The pilot's accepted model P1 improves on P0 by about one percentage point of hit rate and 0.03 of Rank IC in the 2024–2026 window (Appendix A.6). On the full history that is detectable for weekly decisions only; monthly and quarterly improvements of that size cannot be established with this data at any conventional hurdle. A one-year validation window makes it worse by a factor of two to three.
-
-Consequences for the pilot protocol, proposed here and confirmed at the protocol freeze:
-
-- **Windows (candidate pilot configuration, not a clean holdout).** Development 2020-01-01 to 2022-12-31 (research-visible; effectively 2021 onward after warm-up), validation 2023-01-01 to 2024-12-31 (official, Ladder-released), confirmation 2025-01-01 to the data end (sealed, one human query per protocol version, then extended by the forward tracker). No diagnostic window. The pilot's own audit used different windows for the human-era comparison of P0 and P1; the golden-number tests in Appendix A.6 reproduce those windows exactly, while a separately approved research protocol may use these. All periods remain previously seen; sealing changes access, not evidential independence.
-- **Minimum detectable effect in every report.** Each released report states, for its window and cycle, the smallest mean effect the window can detect, and the supervisor's planning prompt carries the same numbers, so research effort is not spent chasing monthly or quarterly improvements that no window here can confirm.
-- **Weekly is the primary cycle for the pilot.** Monthly and quarterly candidates are evaluated and released under the same rules, but the brief's success criterion applies to weekly; for the slower cycles the deliverable is directional consistency flags plus forward tracking.
-- **Overlap and dependence.** Weekly counts are inflated if holding horizons overlap or regimes persist; the bootstrap block length and the effective-trial clustering in 7.5 are the mitigation, and the report states both.
-
-Appendix B.3 gives the derivation and sources for the noise levels and detectability figures.
+In an explicitly authorized forward campaign, newly imported data produce timestamped signals from frozen definitions and later observations settle them; uploading a later historical snapshot cannot retroactively create prospective predictions, and missed decisions are labelled replay. The frozen pilot starts no campaign. Investment promotion follows the stock profile's holdout check, incubation, acceptance gates (DSR, PBO, HLZ, forward consistency, novelty, operations) and approver decision (local reference section 10); a research-delivery job does not inherit these unless its frozen gate requires them.
 
 ---
 
-## 8. Technology choices for v1
+## 8. Technology stack
 
-Shortlist with the reasoning the plan depends on. Versions and current-status notes are maintained in Appendix B, which is the place to update when a choice changes.
-
-| Component | v1 choice | Why | Rejected for now |
-|---|---|---|---|
-| Language and runtime | Python 3.12, `uv` for environments, pinned lockfile | matches the data stack and the pilot's own pins | mixed-language services |
-| Data tables | Parquet files + a Polars or pandas access layer behind the as-of slicing API | small data, columnar, hashable, no server | a database for market data |
-| Blackboard, registry index, evaluation records | PostgreSQL 16, three databases and distinct service roles as in the local reference | least-privilege grants, durable state, released feedback through its own API | a shared all-powerful service account |
-| Job durability (research service) | deterministic state machine, Postgres leased queue and persisted step results; optional DBOS research-only backend after a spike | combines both plans without binding correctness to a harness or exactly-once paid calls | adding a mandatory workflow server before evidence of need |
-| Job durability (evaluator) | plain queue table with leases, idempotency keys and skip-locked claiming | deterministic, cheap to recompute, minimal dependencies for auditability | a workflow framework inside the component that must stay boring |
-| Artifact storage | content-addressed files under a registry directory (sha256-named, OCI-compatible digests) + insert-only Postgres index | simple, auditable, matches the pilot's hash culture, a later move to an OCI registry is a rename | DVC (git-coupled dataset tool, now part of lakeFS), lakeFS (server + object store), MLflow registry (model-centric, tracking server) |
-| Boundary enforcement | Compose service identities, private networks, role-specific credentials and mounts; no LLM keys in evaluation | portable across Linux AMD64/ARM64 and Docker host VMs; independent evaluator | host peer-authentication assumptions or Anthropic workspace controls |
-| Report authenticity | evaluator signs each report and receipt with an Ed25519 key readable only by its OS user (minisign-style); the MCP server verifies before labelling anything official | research-side code cannot forge an official result | unsigned files in a shared directory |
-| MCP server | pinned maintained Python MCP SDK, optionally FastMCP, over Streamable HTTP; tested current/legacy clients | standard schemas, authenticated submit/poll/resources and explicit upload mapping | hand-rolled protocol or Claude-only client assumptions |
-| LLM access | OpenAI-compatible Chat Completions and Responses adapters; typed PydanticAI loops or a thin OpenAI SDK adapter | online Kimi, GLM and DeepSeek; per-role/task capabilities and settings | Anthropic SDK/harness dependency or local LLM hosting |
-| Sandbox | validated target-host backend (gVisor candidate), offline, non-root, read-only, resource-limited and externally timed | same security contract for factors, models and strategies on both target architectures | silently falling back when isolation is unsupported |
-| Observability | structured logs; OpenTelemetry traces for LLM calls into a single-container trace viewer (Arize Phoenix, SQLite-backed); per-task token and cost ledger in Postgres; hash-chained event table; Postgres audit extension on the official schema | enough to debug, bill and audit, with nothing heavy to run | multi-service tracing stacks (Langfuse self-hosted needs ClickHouse, Redis and object storage) until a team exists |
-| Statistics | `arch` for block bootstraps, automatic block length and stepwise reality-check tests; `statsmodels` for multiple-testing corrections and HAC standard errors; deflated test statistics and probability-of-backtest-overfitting implemented in-repo from the papers with their own tests (they are short) | maintained, permissively licensed, and the in-repo pieces stay auditable | single-maintainer or stale packages for the overfitting statistics (audit before trusting), copyleft forks, and factor-analytics libraries in maintenance mode as dependencies of the evaluator |
-| Testing | pytest with the pilot package as a fixture and golden numbers as assertions; property tests for the DSL interpreter's causality | the evaluator cannot be trusted without them | end-to-end LLM tests as the primary test layer |
+| Concern | Choice | Rejected |
+|---|---|---|
+| Language and toolchain | Python 3.12, `uv` workspace, pinned locks; ruff, mypy (strict for `qfr_core`), pytest, hypothesis, import-linter | mixed-language services |
+| Numerics | Polars + NumPy (+ pyarrow, scipy); pandas allowed in tests and pilot parity comparisons against the original CSV oracle | pandas as the core |
+| DSL | Lark grammar, typed AST, canonicalizer, operator registry with naive reference implementations | ad-hoc expression strings |
+| Agents and LLM access | PydanticAI typed roles over OpenAI-compatible Chat Completions and Responses adapters; thin OpenAI SDK adapter where needed | Anthropic SDK or Claude Agent SDK; local model hosting |
+| MCP | pinned maintained Python MCP SDK (FastMCP optional), Streamable HTTP on loopback, bearer tokens, tested against Codex and a second client | hand-rolled protocol; deprecated SSE transport; Claude-only assumptions |
+| Services | FastAPI + uvicorn for registry, research, feedback and eval-admin APIs; typer CLIs | one monolithic service with shared credentials |
+| Persistence | PostgreSQL 16, three databases and four roles, SQLAlchemy 2 with psycopg 3, Alembic per database; insert-only tables protected by triggers | one shared schema or superuser |
+| Durability | deterministic state machines, Postgres queues with `FOR UPDATE SKIP LOCKED`, leases and fencing, persisted step results; optional DBOS research checkpoints after a spike | mandatory workflow servers (Temporal, Hatchet), LangGraph as a second agent framework |
+| Data | content-addressed Parquet snapshots on read-only mounts; physical and logical hashes | panels in the database |
+| Artifacts | content-addressed payload store (sha256-named, OCI-compatible digests) + insert-only Postgres index | DVC, lakeFS, MLflow registry |
+| Sandbox | Docker/OCI containers with a per-host-validated isolation backend (gVisor candidate), offline, non-root, read-only, resource-limited, externally timed | in-process restricted Python or WebAssembly; silent fallback when isolation is unsupported |
+| Signing | Ed25519 (minisign-style) signatures by the evaluator identity, verified by MCP | unsigned shared files |
+| Statistics | `arch` for block bootstraps, automatic block length and stepwise tests; `statsmodels` for multiple-testing corrections and HAC; PSR/DSR/PBO implemented in-repo with tests against worked examples | stale or copyleft overfitting packages as dependencies |
+| Observability | structlog JSON logs with request, run, generation and record ids; optional OpenTelemetry and Prometheus metrics; token and cost ledger in Postgres; hash-chained events | heavy multi-service tracing stacks in v1 |
+| Deployment | Docker Compose; native `linux/amd64` and `linux/arm64` images; named volumes; per-service networks, credentials and mounts | Kubernetes in v1; privileged or socket-mounted containers |
+| Dashboard (optional) | Next.js, TypeScript, role-gated server-side tokens | Streamlit (weak roles) |
 
 ---
 
@@ -470,166 +422,266 @@ Shortlist with the reasoning the plan depends on. Versions and current-status no
 
 ### 9.1 Layout
 
-```
-repo/
-  docs/                      this plan and appendices; architecture decisions
-  contracts/                 schema definitions and generated JSON Schema
-  data_layer/                canonical tables, manifests, as-of slicing, loaders for the pilot
-  dsl/                       expression language, interpreter, canonicalizer, mutation operators
-  registry/                  content-addressed artifact store and index
-  evaluator/                 protocol, scheduler, sandbox runner, backtest engine, statistics, release policy, CLI
-  research/                  blackboard, supervisor planner, worker loops, evolutionary worker, packaging
-  mcp_server/                tools, resources, auth, job status
-  skills/intake/             optional portable intake wrapper; no vendor SDK dependency
-  llm/                       provider adapters, capability profiles and role routing
-  configs/                   provider/model/role profiles, jobs, protocols and release policies
-  fixtures/pilot/            manifests and licensed local-fixture references; raw data gitignored
+```text
+qfr/
+  AGENTS.md
+  pyproject.toml                  uv workspace root
+  justfile                        check, test, up, down, seed, bench, build-images
+  .importlinter                   boundary contracts
+  configs/
+    protocols/                    pilot_industry_v1.yaml, cn_csi300_daily_v1.yaml
+    release_policies/             pilot_single_scalar_v1.yaml, default_v1.yaml
+    quotas/  epochs/  research/   quotas, window definitions (evaluation-only mount), charters, models.yaml
+    jobs/                         input bundles, authorized spend, exit-gate instances
+  prompts/                        versioned prompt templates (research only)
+  packages/
+    qfr_core/                     public schemas, DSL, operators, metrics, statistics, data readers, workbench facade
+    qfr_registry/                 registry API and database models
+    qfr_research/                 agents, tools, blackboard, generation workflow, evolution, packager, feedback sync, research API, provider adapters
+    qfr_eval/                     ingest and zone builder, intake, screening, backtest, statistics, release engine, feedback API, delivery checker, acceptance, admin API, private record schemas
+    qfr_mcp/                      MCP front door, InputBundle validation, upload/import handling, portable intake guide
+  apps/dashboard/                 optional Next.js
+  infra/
+    docker-compose.yml            services, networks, volumes, loopback port mapping
+    images/                       multi-platform Dockerfiles and sandbox image
+    postgres/init/                databases, roles, grants, triggers
+  fixtures/
+    pilot/                        manifests, hashes and golden-evidence references; raw licensed data gitignored and mounted locally
+    generic/                      idea, factor-only, model-only, strategy-only and mixed-bundle fixtures with declared runners
+    negative/                     lookahead, network, filesystem-escape, non-deterministic, oversize artifacts
   tests/
-  deploy/                    multi-platform Compose/images, service roles and sandbox configuration
+    boundary/ e2e/ benchmarks/ conformance/
+  docs/
+    HYBRID_V1_DEVELOPMENT_PLAN.md  PLAN_ALIGNMENT.md  LOCAL_IMPLEMENTATION_REFERENCE.md  appendices  decisions.md
 ```
 
-Logical deployment components (Compose isolates credentials and mounts): `research-service` (supervisor loop, workers, packaging) and `evaluator-service` (scheduler, sandbox runner, release). They share a Postgres instance with separate databases/roles; registry and read-only feedback APIs enforce cross-zone access. LLM keys exist only in the research worker.
+Import contracts (import-linter): `qfr_research` and `qfr_eval` never import each other; `qfr_registry` imports neither; `qfr_core` imports no other `qfr_*` package; `qfr_mcp` imports `qfr_core` and calls the research, registry and feedback APIs only. Official-record schemas live in `qfr_eval` so research code cannot construct them.
 
 ### 9.2 Rules for `AGENTS.md`
 
-Short, enforceable, and read by the coding agent on every session:
+Create `AGENTS.md` in Stage 0 from the local reference's section 18.1 block, reconciled with these rules (never overwrite existing instructions silently):
 
-1. The evaluator never imports from `research/`, and `research/` never imports from `evaluator/`. Shared code lives in `contracts/`, `data_layer/` and `dsl/`. Add an import-linter rule.
-2. Nothing in `research/` or `mcp_server/` may hold evaluator credentials, connect to eval_db or write official records. Tests assert the role grants.
-3. Every evaluator change must preserve independently verified golden evidence. Never update expected values merely to make a test pass; an evidence-backed protocol/oracle change requires a recorded decision.
-4. Contracts are schema-first. Change the schema, regenerate JSON Schema, then change code.
-5. Every artifact write goes through the registry API. No direct file writes under the registry directory.
-6. No LLM call without a budget argument. No LLM output consumed without structured-output validation.
-7. The DSL interpreter may only add backward-looking operators; every new operator ships with a causality property test.
-8. Do not add features to a phase that is not yet accepted. Finish the acceptance test first.
-9. Model identifiers are exact strings from the configuration file; never invent variants.
-10. Chinese text in fixtures is data; do not translate or normalize it in code.
-11. Read PLAN_ALIGNMENT.md first. Preserve v1 scope; notify the owner before a material goal/scope change.
-12. Do not replace a missing provider, elapsed-time wait or failed exit gate with a silent fallback/success state.
+1. Research code never invokes, configures, prioritizes or cancels evaluation and never touches simulated accounts; no such tool, endpoint or credential exists on the research side.
+2. Published artifact versions are immutable; any change is a new version. The evaluator pulls on its own schedule; there is no push or trigger from research.
+3. Research reads feedback only through the GET-only Feedback API; every official record and released report references artifact version id, content hash, protocol version, snapshot id and evaluator code version.
+4. Holdout and confirmation numbers never leave the evaluation zone; only decisions and reason categories do. Every evaluated version is a trial. Released diagnostics are enum codes only.
+5. Official measurement has no LLM, no network and no wall-clock dependence; results reproduce within the pinned runtime; cross-architecture checks follow predeclared tolerances.
+6. Research processes read only the research-zone snapshot. Every write is attributed and logged append-only. Promotion requires an approver after automated gates.
+7. Never update golden expected values to make a test pass; an evidence-backed protocol or oracle change requires a recorded decision in `docs/decisions.md`.
+8. Contracts are schema-first: change the schema, regenerate JSON Schema, then code. Every tunable lives in `configs/*.yaml`; no magic numbers.
+9. No LLM call without a budget reservation and a frozen profile; no LLM output consumed without local schema validation; tests never call real models.
+10. Model identifiers, endpoints and settings come from configuration; never invent variants; never route silently to an unapproved provider or a local model.
+11. The DSL only gains backward-looking operators, each with a causality property test and a naive reference implementation.
+12. Do not start a stage before the previous stage's exit gate is green; do not pull later-stage features forward.
+13. Never replace a missing provider, an elapsed-time wait, a budget pause or a failed exit gate with a silent fallback or success state.
+14. Chinese text in fixtures is data; do not translate or normalize it in code.
+15. Read `docs/PLAN_ALIGNMENT.md` first in every session; preserve v1 scope; surface material scope or goal changes to the owner before incorporating them.
 
 ---
 
-## 10. Phased build plan
+## 10. Development stages
 
-Each phase lists goal, scope, deliverables, acceptance, a kickoff prompt for the local MCP client, and what not to build yet. Effort assumes one developer assisted by a coding agent; treat the numbers as ordering, not commitments.
+### 10.0 Stage map
 
-### Phase 0 — Contracts, fixture and scaffolding (1–2 days)
+Stages keep the repository phase numbers (0–8) so IDs in `PLAN_ALIGNMENT.md` section J and in this plan's history stay valid; the local work-package IDs (P0.x–P8.x) are mapped into each stage. A stage starts only when its entry condition holds and ends only when its exit gate is green in CI with recorded evidence. Effort notes are ordering guidance for one developer assisted by a coding agent, not dates or caps.
 
-**Goal.** A repository where every later phase has a place, with the pilot data in place and the contracts defined.
+```mermaid
+flowchart LR
+  S0["Stage 0<br/>Foundation and contracts"] --> S1["Stage 1<br/>Data layer, DSL, metrics core"]
+  S1 --> S2["Stage 2<br/>Independent evaluator core<br/>pilot oracle reproduced"]
+  S2 --> S3["Stage 3<br/>Registry, execution contracts, sandbox"]
+  S3 --> S4["Stage 4<br/>Blackboard, release policy, MCP, delivery export"]
+  S4 --> S5["Stage 5<br/>Research roles and providers"]
+  S5 --> S6["Stage 6<br/>Evolution engine and closed loop"]
+  S6 --> S7["Stage 7<br/>Production acceptance AC-01..AC-14"]
+  S7 --> S8["Stage 8<br/>Extensions and continuing operations"]
+  M1(("M1")) -.- S2
+  M2(("M2")) -.- S4
+  M3(("M3")) -.- S5
+  M4(("M4")) -.- S6
+  M5(("M5")) -.- S7
+```
 
-**Scope.** Generic intake, role/provider configuration, durable-job and independent exit-gate schemas from PLAN_ALIGNMENT; multi-platform Docker build strategy; source integrity manifests; Repo layout from 9.1; `AGENTS.md` with the rules in 9.2; contracts for brief, manifest, artifact, protocol, report, blackboard records as schema definitions with generated JSON Schema; references/hashes for the six licensed pilot inputs and label map (local fixtures only; no raw data committed); exact golden values extracted from the original machine-readable ledgers/reference CSVs identified in Appendix A.6; a Postgres Compose file with three databases and distinct roles; `uv` project with pinned dependencies; pytest wired.
+| Stage | Name | Purpose | Local work packages reused | Exit gate (summary) | Milestone |
+|---|---|---|---|---|---|
+| 0 | Foundation and contracts | Repository, schemas, databases and roles, Compose skeleton, multi-arch build strategy, CI | P0.1–P0.7 | Schemas validate examples; three databases and roles up; BND-01, BND-04 green; both-architecture images build | |
+| 1 | Data layer, DSL and metrics core | Import adapters, zones and as-of slicing, pilot feature parity, synthetic worlds, DSL, operators, metrics, statistics primitives | P1.1–P1.10 | Pilot parity exact; operators match references; prefix-invariance property tests; golden metric fixtures; BND-06 | |
+| 2 | Independent evaluator core | Frozen protocols, pilot backtest engine, official records and trial ledger, statistics, diagnostics, reproduce command | P3.1 (eval_db), P3.4, P3.7 (partial), P6.3 (statistics) | Pilot oracle reproduced from machine-readable ledgers; EVL-02, EVL-04, EVL-06 | M1 Measurable artifacts |
+| 3 | Registry, execution contracts and sandbox | Immutable registry, publication, baselines and generic fixtures as artifacts, kind plugins, validated sandbox, screening and lookahead probes | P2.1–P2.5, P3.2, P3.3, required subset of P8.1/P8.2 | REG-01–04, EVL-01, EVL-03, EVL-05, SBX-01–05; registry versions of P0/P1 reproduce Stage 2 numbers | |
+| 4 | Blackboard, release policy, MCP front door and delivery export | research_db, release engine, Feedback API, signing, delivery checker, MCP server, upload/import, portable intake guide, Codex and second-client demonstrations | P3.5, P3.6, P3.8, P4.1, P4.9 | Human-driven end to end with no LLM; REL-01–06, BND-03, MCP-01–06, JOB-01–03, DLV-01–03 | M2 Human-driven loop |
+| 5 | Research roles and providers | Provider adapters and conformance, role loops, generation state machine, packager, budgets, one generation end to end | P4.2–P4.8, P4.10 | Offline scripted generation; PRV-01–07 against configured endpoints when authorized; BND-02, BND-05; JOB-04–06 | M3 Agents in the loop |
+| 6 | Evolution engine and closed loop | Islands, archive, fitness bound to policy, operators, bandit, lineage, multi-generation runs, pause/resume, exit-gate completion | P5.1–P5.7, P6.1, P6.2 (pilot confirmation query) | Multi-generation offline run completes through the delivery gate; planted-world improvement; null-world safety recorded; REL-05, DLV-04 | M4 Evolving system |
+| 7 | Production acceptance | Pilot run with control arm, generic-input fixtures, mixed-provider job, native AMD64 and ARM64 runs, recovery drills, delivery export; AC-01–AC-14 | P6.7 (applicable), benchmarks BM-PLANTED, BM-NULL | Every AC item passes with recorded evidence | M5 First production-ready release |
+| 8 | Extensions and continuing operations | Optional dashboard, forward campaigns and promotion flow, Thresholdout mode, epoch rollover, broader Python authoring, extra data adapters, v2 design review | P6.4–P6.6, P7.1–P7.5, P8.3–P8.7 | Per extension; core boundaries and recovery already proven in Stage 7 | M6 Hardened platform |
 
-**Acceptance.** Schemas validate example documents (one brief, one manifest, one artifact of each kind, one protocol, one report). A test loads each fixture file and checks hash, row count, column names and date range against Appendix A.3. Role grants are created by a migration and a test confirms the research role cannot connect to `eval_db` or mutate official records.
+**Critical path.** Stages 0–4 produce a complete, trustworthy system without any LLM; Stages 5–6 add autonomy; Stage 7 is the production gate. Parallel work allowed: provider conformance harness and adapter design (Stage 5) may start during Stage 3–4 against mocks; dashboard scaffolding may start any time but never gates a stage; synthetic-world benchmark harness may be built alongside Stage 2.
 
-**Kickoff prompt.**
-> Read `docs/HYBRID_V1_DEVELOPMENT_PLAN.md` sections 4 and 9 and `docs/appendix-a-pilot-case-industry-rotation.md` sections A.3 and A.6. Create the repository layout in section 9.1, write `AGENTS.md` with the rules in 9.2, and implement the contracts in section 4 as schema classes with generated JSON Schema and example documents. Reference the six pilot inputs as gitignored local fixtures and write a test that checks their hashes, row counts, columns and date ranges against Appendix A.3. Add a Postgres compose file with the three databases and roles and a test proving the research role cannot connect to eval_db. Do not implement any business logic yet.
+**Owner inputs by stage.** Stage 0: target host architectures to build for (both by default) and the local path of the pilot packages. Stage 2 and 4: evaluation-owner approval to freeze the pilot protocol and release policy, confirmation of windows, Ladder step and query budget. Stage 5: provider endpoints, exact model ids, credentials by secret reference, and explicit spend authorization for paid conformance and smoke runs (offline mocks otherwise). Stage 7: access to native AMD64 and ARM64 Linux hosts or VMs, and authorization of the single confirmation query if used.
 
-**Not yet.** No backtest logic, no DSL, no agents.
+### Stage 0 — Foundation and contracts
 
-### Phase 1 — Canonical data layer and parity with the baseline features (3–5 days)
+**Entry.** The repository exists with the plan documents; the owner has named the local path of the P0/P1 packages (never committed).
 
-**Goal.** Raw pilot files become canonical tables with an as-of slicing API, and the baseline features are recomputed from raw inputs with exact parity.
+**Scope.** `uv` workspace with `qfr_core`, `qfr_registry`, `qfr_research`, `qfr_eval`, `qfr_mcp` (P0.1); import-linter contracts (P0.2); Compose with PostgreSQL 16, init SQL for three databases, four roles, grants and insert-only triggers (P0.3); configuration loading for protocols, release policies, quotas, charters, epochs, provider/model/role/task profiles and jobs, with both profiles' defaults committed under `configs/` (P0.4); public schemas in `qfr_core` (InputBundle, brief and job record, dataset manifest, artifact manifest, released report, reason-code and flag enums, provider configuration, exit-gate specification, delivery receipt) and private official-record schemas in `qfr_eval` (P0.5); generated JSON Schema and one example document per contract; CI running lint, types, import-linter and tests against a Postgres service, plus multi-platform image builds for `linux/amd64` and `linux/arm64` with digests recorded (P0.6); `AGENTS.md`, `docs/decisions.md`, source-preservation manifests for the pilot packages and the golden evidence extracted from the original machine-readable ledgers and reference CSVs (P0.7).
 
-**Scope.** Loaders for the six pilot files into the canonical tables in 4.2 with manifest generation and `pit_grade` labels; the as-of slicing service; re-implementation of the six v4 price features (Appendix A.5) and of the P0 weekly, monthly and quarterly feature pipeline, each with a documented formula; a parity test comparing recomputed columns to the corresponding columns in `features.csv.gz`.
+**Deliverables.** Buildable workspace; schemas with examples; database init; CI; `AGENTS.md`; pilot fixture manifests with hashes, row counts, columns and date ranges.
 
-**Acceptance.** Recomputed `v4_raw_*` and `v4_p_*` columns match the fixture to 1e-12 on every weekly date. Recomputed P0 cycle scores and ranks match the fixture's `score_*` columns and the `reference_outputs/p60/*_ranking.csv` latest ranks exactly. `slice(upto)` never returns a row with `date` or `available_date` after `upto` (property test). Manifest round-trips: load → write → hash equals recorded hash.
+**Exit gate.** Schemas validate every example and reject malformed ones; `just up` starts Postgres with three databases; BND-01 and BND-04 pass; the research role cannot connect to `eval_db`; a fixture test checks each pilot input's hash, row count, columns and date range against Appendix A.3; both-architecture images build in CI (build only; native runtime acceptance is Stage 7).
 
-**Kickoff prompt.**
-> Implement `data_layer/` as described in section 4.2 of the plan using the fixture in `fixtures/pilot/`. Build loaders that produce the canonical Parquet tables and a manifest with SHA-256, row counts, date ranges and `pit_grade` labels. Implement `slice(dataset_version, upto)` with a property test that no returned row has `date` or `available_date` later than `upto`. Then re-implement the six price features from Appendix A.5 and the P0 weekly, monthly and quarterly scoring pipelines following the business rules in Appendix A.4, and write parity tests against `features.csv.gz` and the p60 ranking reference CSVs. Where you cannot reach exact parity, stop and report the first differing cell rather than loosening the tolerance.
+**Not yet.** No business logic, DSL, evaluator or agents.
 
-**Not yet.** No evaluation of returns, no DSL.
+### Stage 1 — Data layer, DSL and metrics core
 
-### Phase 2 — Independent evaluator core (5–8 days)
+**Entry.** Stage 0 green.
 
-**Goal.** A deterministic evaluator that reproduces the golden numbers for P0 and P1 under a frozen protocol file.
+**Scope.** Dense canonical panel format, snapshot manifest, content-addressed snapshot ids with physical and logical hashes (P1.1); synthetic market generator with planted, null and decay worlds and calibrated alphas (P1.2); the optional stock-profile Qlib binary reader and authorized ingest, inactive by default (P1.3); pilot import adapters for the six package inputs into the canonical tables with PIT, vintage and membership labels, the generic as-of contract, and the zone builder producing research and full snapshots with `qfr data build` (P1.4); DSL grammar, type checker, static constraints, canonicalizer, canonical hash, complexity score and AST similarity (P1.5); operator library in Polars with validity rules and naive references (P1.6); metrics library for both profiles, behavioural fingerprints (P1.7); PSR, DSR and PBO with worked-example tests (P1.8); stock reference backtester with golden tests (P1.9); workbench facade (P1.10). Pilot parity: re-implement the six v4 price features and the P0 weekly, monthly and quarterly feature pipelines and compare to the fixture columns and p60 ranking references.
 
-**Scope.** Protocol file format and freezing CLI (hash, human approval record); publication schedule and execution logic; period evaluation with portfolio drift and costs; quarterly review rule; eligibility hash; paired comparison with `pair_status`; block bootstrap with automatic block length plus the pilot's fixed settings; splits with boundary purging; coverage ledger; the trial ledger and family-wise statistics from 7.5 (deflated statistic with effective trial count, per-generation probability of backtest overfitting, step-down adjusted intervals); minimum-detectable-effect computation per window and cycle (7.10); leave-one-year-out; calendar-shift placebo and within-date permutation test; incremental-contribution metrics; prefix-consistency test harness; report and receipt writer including the report card; reproducibility check (two runs, equal ledger hash). P0 and P1 implemented at this stage as built-in scorers over the canonical tables, not yet as registry artifacts.
+**Exit gate.** Recomputed `v4_raw_*` and `v4_p_*` columns match the fixture at the predeclared tolerance on every weekly date; P0 scores and ranks match the reference CSVs exactly; the six v4 features expressed in the DSL match the Polars implementation; every operator matches its reference; prefix-invariance property tests pass for all operators; planted-world RankIC within 0.005 of target; golden tests for metrics, PSR, DSR, PBO and backtester; `slice(upto)` never returns a future row (property test); BND-06 for a built research snapshot. Any parity failure stops with the first differing cell reported; tolerances are never loosened to pass.
 
-**Acceptance.** All Appendix A.6 golden numbers reproduce: primary-window means and Rank IC for the three cycles, 2026 hit rates and coverage, bootstrap intervals with the stated seeds, the six-neighbour ranges, the leave-2026-out monthly difference, and the placebo percentiles. Prefix test passes at the six historical cutoffs. Running the evaluator twice gives identical ledger hashes.
+**Not yet.** No evaluation of returns under a protocol, no registry.
 
-**Kickoff prompt.**
-> Implement `evaluator/` per section 7 of the plan and the business rules in Appendix A.4, as deterministic code with no LLM calls. Start with the protocol file and its freeze command, then the publication schedule, period evaluation with drift and costs, quarterly review, pairing, block bootstrap, splits, coverage ledger, the trial ledger with the family-wise statistics and minimum detectable effect from sections 7.5 and 7.10, leave-one-year-out, placebo and permutation tests, and the prefix test. Implement P0 and P1 as built-in scorers for now. Write acceptance tests that reproduce the exact source ledgers/reference CSVs behind Appendix A.6 and fail loudly on the first mismatch. Keep every protocol parameter in the protocol file, never in code.
+### Stage 2 — Independent evaluator core (M1)
 
-**Not yet.** No registry polling, no sandbox, no release policy beyond writing full reports to disk.
+**Entry.** Stage 1 green; evaluation owner available to approve the pilot protocol draft.
 
-### Phase 3 — Registry, DSL and sandbox; baselines as artifacts (4–6 days)
+**Scope.** `eval_db` schema with insert-only protections, feedback views and the evaluation queue (P3.1); protocol YAML format, activation and hashing through the eval-admin CLI; pilot backtest engine porting Appendix A.4 exactly (publication schedule, first-close execution, exits, immature slots, eligibility hash, top and bottom groups, drift, costs, quarterly review, pairing with `pair_status`, split purging); block bootstrap with the pilot's fixed settings and automatic block length; trial ledger and family-wise statistics (deflated statistic with effective count, cohort PBO, step-down intervals, hurdle); minimum-detectable-effect computation; leave-one-year-out, calendar-shift placebo and within-date permutation; incremental-contribution metrics; prefix-consistency harness; official records with results hashes and receipts (P3.4); `qfr eval reproduce` (P3.7 partial); the trial-cluster job for effective counts (P6.3). P0 and P1 run as built-in scorers at this stage. Forward-tracking tables exist but no engine.
 
-**Goal.** Factors become immutable artifacts; the evaluator pulls them from the registry and evaluates them, Tier 1 in-process and Tier 2 in a container.
+**Exit gate.** The pilot oracle reproduces from raw inputs: exact hit counts, ranks and membership; declared tolerances for means, Rank IC and net excess; 2026 hit rates and coverage ledger; bootstrap intervals with the stated seeds; the six-neighbour ranges; leave-2026-out monthly difference; placebo percentiles (Appendix A.6, with the machine-readable ledgers as the oracle). Prefix test passes at the six historical cutoffs. EVL-02, EVL-04 and EVL-06 pass. Two runs give identical results hashes.
 
-**Scope.** Content-addressed registry with an index table and an append-only API; the Tier 1 DSL (parser, canonicalizer, interpreter, causality property tests, a first mutation operator set); the Tier 2 constrained context API and static checker; composite artifacts; P0 and P1 as frozen registry fixtures plus generic factor-only, model-only and strategy-only fixtures; dormant P2–P4 definitions remain optional historical provenance; evaluator scheduler polling the registry; sandbox image and runner for Tier 2 with the controls in 7.3 (validated isolation backend, with gVisor as candidate; no network, read-only mounts, dropped capabilities, resource limits, capped output); quality checks (static, prefix, perturbation, determinism, resources).
+**Not yet.** No registry polling, no sandboxed execution, no release policy beyond full private records.
 
-**Acceptance.** Evaluating the registry versions of P0 and P1 reproduces the Phase 2 numbers exactly. The six v4 features expressed in the DSL match the Phase 1 features to 1e-12. A deliberately leaky Tier 2 artifact (reads a future price) fails the prefix and perturbation tests and is reported `failed:lookahead`. A Tier 2 artifact that tries to open the network or write outside its output directory fails with a resource flag. Two identical definitions yield one `artifact_version_id`.
+### Stage 3 — Registry, execution contracts and sandbox
 
-**Kickoff prompt.**
-> Implement `registry/` and `dsl/` per sections 4.3 and 7.3 of the plan. The registry is append-only and content-addressed. The DSL has only backward-looking time-series operators and cross-sectional operators over canonical columns; every operator needs a causality property test. Add the Tier 2 constrained Python context and static checker, and a container sandbox runner using a target-host-validated isolation backend with every control listed in section 7.3, plus the perturbation and determinism checks. Register P0/P1 and the generic executable fixtures as artifacts without fitting dormant historical candidates and make the evaluator poll the registry and evaluate them, reproducing the Phase 2 numbers. Add negative tests: a lookahead artifact must fail the prefix test and a network-using artifact must fail with a resource flag.
+**Entry.** Stage 2 green; a Linux host or VM available to validate the isolation backend.
 
-**Not yet.** No release policy, no blackboard, no agents.
+**Scope.** `registry_db` with insert-only grants and triggers (P2.1); publish endpoint with declared-versus-parsed checks, server-side hashes, family and version assignment, lineage and idempotency (P2.2); read endpoints, sequence listing and lineage queries (P2.3); token authentication and audit events (P2.4); human seed and import publication: P0 and P1 as frozen artifacts, generic factor-only, model-only, strategy-only and mixed-bundle fixtures with declared runners, negative fixtures (P2.5); evaluator scheduler polling by cursor with exact and behavioural dedup, quotas and fair enqueueing (P3.2); screening with static constraints, single-pass computation, coverage, prefix probe, runtime limits and degeneracy (P3.3); kind plugins for factor, model, strategy, research note and data product (required subset of P8.1/P8.2); sandbox image and runner with the 7.3 controls, perturbation and determinism checks, validated on the target host.
 
-### Phase 4 — Blackboard, release policy, MCP front door and intake skill (3–5 days)
+**Exit gate.** REG-01 to REG-04; EVL-01, EVL-03, EVL-05; registry versions of P0 and P1 reproduce Stage 2 results exactly; the DSL-expressed v4 features evaluate identically; SBX-01 to SBX-05 (lookahead fixture fails prefix and perturbation tests with `failed:lookahead`; network, filesystem-escape, fork and timeout fixtures fail safely with the right codes; isolation backend readiness check reports the validated host); two identical definitions yield one version id; AUD-01 for the registry.
 
-**Goal.** The system can be driven end to end by a human through the local MCP client, with no research agents yet.
+**Not yet.** No release policy, blackboard or agents.
 
-**Scope.** Blackboard tables and event log (4.5, 4.6); released views and the release policy (7.7): Ladder gating with a bootstrap-standard-error step, flags, per-lineage budgets, the locked confirmation table and the human-only confirmation query command in the evaluator CLI; report signing by the evaluator and signature verification in the MCP server; MCP server with the tools and resources in section 5; documented Codex and generic MCP client connection examples with placeholder credentials; the intake skill with the folder taxonomy, brief and manifest drafting, and the tool call sequence.
+### Stage 4 — Blackboard, release policy, MCP front door and delivery export (M2)
 
-**Acceptance.** From a fresh Codex session with the pilot folder, the intake skill produces a brief and manifest matching Appendix A.8, registers the dataset and baselines, proposes the protocol; the human freezes it in the CLI; `list_reports` then shows released reports for P0 and P1 containing only the gated scalar and flags, with confirmation fields absent and valid signatures. A test confirms the research role cannot select from unreleased tables. A simulated adaptive noise submitter verifies release-step/budget invariants and reports false positives under a predeclared statistical test; zero improvements is not a universal requirement. Submitting the same brief twice with the same idempotency key creates one job.
+**Entry.** Stage 3 green; evaluation owner approves the pilot release policy (Ladder step, budgets, confirmation query count).
 
-**Kickoff prompt.**
-> Implement the blackboard and event log from sections 4.5 and 4.6, the release policy from section 7.7 (Ladder gating, flags, per-lineage budgets, locked confirmation table, signed reports), and the MCP server from section 5 using a pinned maintained Python MCP SDK (FastMCP optional) over streamable HTTP on localhost with a bearer token. Then write `skills/intake/SKILL.md` for the local MCP client following section 5.5 and Appendix A.2, A.8. Prove the end-to-end path manually with the pilot folder and add tests for role separation, Ladder gating against a noise submitter, signature verification and idempotent job submission. Research agents are not part of this phase.
+**Scope.** `research_db` schema and research queue (P4.1); release engine for both policies with batching, rounding, reason codes and flags (P3.5); GET-only Feedback API with policy and protocol cards (P3.6); report, receipt and delivery-receipt signing with MCP-side verification; the independent delivery checker for the `research_delivery` gate; authorized on-demand data import and snapshot builds with ingest inactive by default (P3.8); Research API job admission, status, pause, resume, cancel, checkpoint answers and export (P4.9); MCP server with the 5.1 tool families, resources, idempotency keys, upload endpoint and import-mount mapping, quarantine and validation; portable intake guide; documented Codex and second-client connection examples with placeholder credentials.
+
+**Exit gate.** With no LLM, a human drives the pilot end to end: the intake guide yields a brief and manifest matching Appendix A.8; datasets and baselines register; the protocol is frozen in the CLI; released reports for P0 and P1 contain only the gated scalar and flags, with confirmation fields absent and valid signatures; a delivery receipt is issued for a human-authored negative-result job. REL-01 to REL-06; BND-03; MCP-01 to MCP-06 (both clients connect, submit, disconnect, reconnect and export; lost-submit recovery by key; conflicting payload rejected; no evaluator-admin capability discoverable; oversized inline payload refused; import-mount escape refused); JOB-01 to JOB-03 (idle deployment spends nothing; cancelled status request does not cancel the job; restart preserves the admitted job); DLV-01 to DLV-03 (receipt links exact versions; export excludes private material; unreleased fields never cross).
 
 **Not yet.** No LLM research loops.
 
-### Phase 5 — Supervisor and specialist workers (5–8 days)
+### Stage 5 — Research roles and providers (M3)
 
-**Goal.** A brief produces published artifact versions from LLM workers under budgets, with human checkpoints, using the released feedback.
+**Entry.** Stage 4 green; provider endpoints, exact model ids and secret references configured; explicit spend authorization for any paid call (offline scripted models otherwise).
 
-**Scope.** The deterministic generation workflow with durable step checkpointing (4.6); closed-tool worker loops for the roles in 6.2; supervisor planning call with structured plan output; task lifecycle on the blackboard; research-side sandbox tools on the development slice (6.3); packaging agent that freezes, checks and publishes; token budgets and accounting per task; prompt-caching layout; structured outputs everywhere; capability-checked, operator-allowed provider fallbacks; checkpoint tasks surfaced through MCP.
+**Scope.** Tool layer with role allowlists and call logging (P4.2); feedback sync into the blackboard cache (P4.3); PydanticAI roles over the OpenAI-compatible adapters with versioned prompts and four-level configuration; Kimi, GLM and DeepSeek adapters and the conformance suite; capability preflight and fallback allowlists (P4.4); DSL reference card generated from the operator registry (P4.5); packager with full provenance (P4.6); generation state machine with persistence, resumability, retries, parallel tasks and plan validation with fallback (P4.7); budget ledger with atomic reservations, usage limits, caps and `budget_paused` (P4.8); scripted-model scenarios with real requests disabled in tests (P4.10); durable context memory per role.
 
-**Acceptance.** Given the pilot brief, one generation runs end to end: the supervisor plans, the factor researcher proposes at least six Tier 1 hypotheses in the price/volume family, the reviewer blocks at least one with a written reason, packaging publishes the rest, the evaluator releases reports, the analyst writes interpretation notes citing report ids. Every LLM call is logged with tokens and cost; the generation stays under its budget; a deliberately leaky proposal is caught by the packaging prefix test before publication. No official record in `eval_db` was written by the research role (assert by audit log).
+**Exit gate.** Offline end-to-end generation with scripted models: hypotheses, drafts, reviews with at least one block, publications within quota, released reports synced, interpretations citing report ids, costs recorded; a leaky proposal is caught by the research-side prefix test before publication. BND-02 and BND-05. PRV-01 to PRV-07 pass for each of the three providers against configured online endpoints when authorized, with offline mock results reported separately. JOB-04 to JOB-06 (worker crash mid-generation resumes without duplicate publications; `outcome_unknown` attempts audited; budget exhaustion pauses rather than completes). No official record was written by a research principal (audit log).
 
-**Kickoff prompt.**
-> Implement research roles through the typed OpenAI-compatible adapter described in section 6 and PLAN_ALIGNMENT sections C–D. Use configurable endpoint/model/role/task profiles; implement Kimi, GLM and DeepSeek conformance and a mixed-provider fixture. Validate tools and structured outputs locally, enforce atomic budget reservations, preserve effective settings and checkpoint completed results. Run offline scenarios first; execute paid provider smoke only with operator-authorized credentials and spend. Show released reports, notes, routing evidence and the cost ledger.
+**Not yet.** No multi-generation evolution.
 
-**Not yet.** No evolutionary operators beyond what packaging needs; no multi-generation loop.
+### Stage 6 — Evolution engine and closed loop (M4)
 
-### Phase 6 — Evolutionary worker and the closed loop (5–8 days)
+**Entry.** Stage 5 green.
 
-**Goal.** Multi-generation research under the release policy, with population management, diversity and stopping rules.
+**Scope.** Islands, population members, MAP-Elites archive and lineage edges (P5.1); fitness bound to the release policy for both profiles (P5.2); parent selection, syntactic mutation and subtree crossover (P5.3); LLM mutation and crossover prompts with flag-targeted instructions and the context assembler (P5.4); publication pre-screen and selection with per-island fairness (P5.5); Thompson-sampling allocation, stagnation rules, migration and diversity guardrails (P5.6); benchmark harness for planted and null worlds (P5.7); pilot confirmation query flow in the evaluator CLI (P6.1, P6.2 as applicable to the pilot policy); supervisor re-planning across generations; completion proposal and delivery-gate validation; optional batch generation through a capability-tested provider adapter.
 
-**Scope.** Population and lineage records; niche archive with islands (6.4); parent selection with the weighted rule from released Ladder scores plus development-slice diversity; mechanism cards and the per-generation mechanism-diversity requirement; novelty gates and veto memory; mutation and crossover operators over the DSL; LLM rewrite operator with two parents; per-lineage query budgets honoured; stopping rules; optional batch generation through a capability-tested provider adapter; supervisor re-planning across generations; periodic progress summaries and only the human checkpoints selected in the brief.
+**Exit gate.** A multi-generation offline run on the pilot (a demonstration configuration of, for example, ten generations; not a cap) completes through the delivery gate without human intervention beyond configured checkpoints; lineage edges record operators; no lineage exceeds its release budget; duplicates and highly correlated children are filtered before publication; pause through MCP halts research within one task boundary while evaluation continues; the final summary states hurdle status for every alive member. Planted world: best island fitness improves over the demonstration run and a factor correlated at least 0.7 with a planted alpha passes W1; null world: pass rates recorded and gates tightened by recorded decision if anything is accepted. REL-05, REL-06, DLV-04 (an adaptive noise submitter never raises a released lineage score beyond the predeclared error rate).
 
-**Acceptance.** A ten-generation run on the pilot completes within budget without human intervention except the configured checkpoints; the population table shows lineage edges with operators; no lineage exceeds its release budget; duplicates and highly correlated children are filtered before publication; a kill switch (pause through MCP) halts research within one task boundary while evaluation of already-published versions continues. The run's final summary states hurdle status for every alive member.
+### Stage 7 — Production acceptance (M5)
 
-**Kickoff prompt.**
-> Implement the evolutionary worker from section 6.4 and connect it to the supervisor loop so the system runs for multiple generations under the release policy of section 7.7. Add population, niche and lineage records, the weighted parent-selection rule combining released Ladder scores with development-slice diversity, mechanism cards with the diversity requirement, novelty gates and veto memory, DSL mutation and crossover operators, an LLM rewrite operator, per-lineage release budgets and stopping rules. Use a provider batch API only when the selected profile supports it; ordinary requests remain a complete path. Run ten generations on the pilot and produce the final summary with hurdle status per candidate.
+**Entry.** Stage 6 green; native AMD64 and ARM64 Linux hosts or VMs available; mandatory providers authorized.
 
-### Phase 7 — Pilot run and honest report (1–2 weeks of runs and analysis)
+**Scope.** Full pilot run with price, volume and breadth families only, fundamentals marked blocked on data, at least three seeds, budget sized to the trial count the family-wise accounting can absorb, at most one human confirmation query; a matched-token-budget control arm without parent feedback, evaluated under the same protocol and counted in the same family; generic-input fixtures (idea-only, factor-only, model-only, strategy-only, mixed bundle) each run under a valid contract or report specific missing inputs; a mixed-provider job using Kimi, GLM and DeepSeek with at least two role profiles on different effective settings; native runs on both architectures proving startup, imports, migrations, numerical parity under predeclared tolerances, sandbox restrictions, MCP path, stop and resume, and artifact export; client-loss, worker-crash and container-restart drills; delivery export; the written pilot report generated from the registry and released records only.
 
-**Goal.** Use the system on the real task and produce evidence a skeptical reader would accept.
+**Exit gate.** AC-01 through AC-14 pass with recorded evidence (see 11.4 for the mapping). The pilot report traces every number to a report id, shows leave-one-year-out and placebo flags for every shortlisted candidate, states which arm produced the shortlist and whether any candidate cleared the hurdle, and labels all historical evidence as previously seen with the model knowledge exposure recorded.
 
-**Scope.** Full run with the pilot brief; constraints: price, volume and breadth families only, fundamentals marked blocked on data; supervisor budget sized to the number of trials the family-wise accounting can absorb; at least three seeds; one confirmation query at most, spent by the human; final shortlist export; a written report comparing the best candidates with P1 and P0 on validation, with diagnostics, and a clear statement of what remains unknown.
+### Stage 8 — Extensions and continuing operations (M6)
 
-**Control arm.** Run a matched-token-budget control in which children are proposed independently from the brief without parent feedback (no evolution), evaluated under the same protocol and counted in the same family. The brainstorm asks for A/B comparisons of collaboration mechanisms; this is the first one, and the published evidence (Appendix B.2) suggests the evolutionary advantage at matched budget may be small. The report states which arm produced the shortlist.
+Core isolation, signed releases, provider budgets, backup and restore with a restore drill, restart recovery and both-architecture readiness are Stage 7 requirements, not deferred here. Extensions: simulated trading engine, holdout and incubation flow, acceptance cases, library and monitoring for the `investment_promotion` gate (P6.4–P6.6); optional dashboard (P7.1–P7.5); Thresholdout mode (P8.3); epoch rollover (P8.4); separate database instances and hash-chained audit automation (P8.5); industry and US adapters (P8.6); CUSUM monitoring and two-person override (P8.7); broader Python factor authoring beyond the required runners (P8.1 extension); stronger multi-user authentication; a separate Hybrid v2 design review for parallel lanes and composition. New remote infrastructure or hosted sandboxes require a documented need and an approved access policy.
 
-**Acceptance.** All PLAN_ALIGNMENT AC-01–AC-14 requirements pass with recorded evidence, including native AMD64/ARM64 and mandatory-provider checks. The report is generated from the registry and released records only; every number is traceable to a report id; the confirmation query, if spent, is logged; the leave-one-year-out and placebo flags are shown for every shortlisted candidate; the report states explicitly whether any candidate cleared the hurdle.
+### 10.1 Milestones
 
-### Phase 8 — Extensions and continuing operations
-
-Core isolation, signed releases, provider budgets, backup/restore, restart recovery and both-architecture readiness are required before the production acceptance in Phase 7, not deferred here. This phase extends the proven system: optional dashboard, additional data/runner adapters, explicitly enabled forward tracking and monitoring, stronger multi-user auth, and a separate v2 design review for parallel lanes/composition. New remote infrastructure or hosted sandboxes requires a documented need and approved access policy.
+| Milestone | After stage | Demonstration |
+|---|---|---|
+| M1 Measurable artifacts | 2 | The pilot oracle reproduces under a frozen protocol with official records and trial ledger |
+| M2 Human-driven loop | 4 | A human drives intake, registration, protocol freeze, evaluation, release and delivery export through MCP with no LLM |
+| M3 Agents in the loop | 5 | One autonomous generation with scripted models and, when authorized, with the three online providers |
+| M4 Evolving system | 6 | Multi-generation runs complete through the delivery gate; planted-world improvement and null-world safety recorded |
+| M5 First production-ready release | 7 | AC-01 to AC-14 with evidence on native AMD64 and ARM64 |
+| M6 Hardened platform | 8 | Promotion flow, dashboard, Thresholdout, rollover, broader authoring |
 
 ---
 
 ## 11. Verification strategy
 
-- **Golden-number tests** (Appendix A.6) are the evaluator's definition of correctness. They run on every change under `evaluator/`.
-- **Parity tests** between recomputed features and fixture columns guard the data layer.
-- **Causality property tests** for every DSL operator and for the slicing API: perturbing any future row must not change any past output.
-- **Prefix tests** at historical cutoffs for every artifact, both research-side (development window) and evaluator-side (all windows).
-- **Boundary tests**: role grants, import-linter rules, an attempted write from the research role, an attempted evaluator call from a research tool.
-- **Negative artifacts** in the fixture: lookahead, network, filesystem escape, non-deterministic, oversize output; each must fail with the right flag.
-- **Idempotency and crash tests**: kill a worker mid-task and confirm the lease expires and the task resumes without duplicate artifacts.
-- **Cost tests**: a generation must stop at its token budget; tests use a mocked model client.
-- **Statistical self-tests**: the in-repo deflated statistic and probability-of-backtest-overfitting implementations are checked against published worked examples; the Ladder is checked for step/budget/version-attribution invariants and calibrated error behavior under an adaptive noise submitter; the minimum-detectable-effect calculation is checked against the closed-form null variances in 7.10.
-- **Agent tests** are the smallest layer: a recorded transcript per role to catch prompt regressions, not a correctness oracle.
+### 11.1 Test layers
+
+Unit (operators against references, metrics against golden fixtures, PSR/DSR/PBO against worked examples); property-based (prefix invariance for random DSL expressions, canonicalization idempotence, parsing round-trips, slicing never returns future rows); integration (registry with its database, evaluation pipeline on synthetic snapshots, release schedules, feedback sync); end to end with scripted models and real requests forbidden; boundary and security against a real Postgres with production roles; benchmarks on fixed seeds nightly; provider conformance against configured online endpoints only when authorized, reported separately from mocks.
+
+### 11.2 Named suites
+
+Inherited from the local reference section 15.2: BND-01–06, REG-01–04, EVL-01–06, REL-01–06, ACC-01–03, AUD-01, and benchmarks BM-PLANTED, BM-NULL, BM-DECAY, BM-REAL-SMOKE.
+
+Added by this plan:
+
+| ID | Test |
+|---|---|
+| PIL-01 | Pilot feature parity against fixture columns at predeclared tolerance; first differing cell reported |
+| PIL-02 | Pilot oracle reproduction: exact counts, ranks and membership; declared tolerances for means; machine-readable ledgers as expected values |
+| PIL-03 | Original package replay (`run_p0.py`, `run_p1.py`) in an isolated authorized environment produces the 24 reference CSVs byte-exactly; no other model fitted or selected |
+| INT-01 | Each input kind (idea, factor, model, strategy, bundle) validates or reports specific missing fields; no fake executable is created for an idea |
+| INT-02 | Unsupported executable formats, `../` paths, symlink and archive-expansion attacks and undeclared URLs are rejected |
+| INT-03 | Imported packages stay quarantined until inventory and schema checks pass |
+| SBX-01 | Lookahead fixture fails prefix and perturbation tests with `failed:lookahead` |
+| SBX-02 | Network, filesystem-escape, fork and timeout fixtures fail safely with the right codes |
+| SBX-03 | Isolation backend readiness is verified on the target host; unavailable backend fails readiness for executable kinds |
+| SBX-04 | Determinism re-run yields identical outputs; non-deterministic fixture is flagged |
+| SBX-05 | No Docker socket, writable host mount or privileged flag in any research, MCP or artifact container (compose configuration test) |
+| MCP-01 | Codex and a second independent client connect, submit, poll, disconnect, reconnect and export without vendor-specific configuration |
+| MCP-02 | Repeating a lost submit with the same idempotency key returns the same job; same key with a different payload is a conflict |
+| MCP-03 | Cancelling a status request does not cancel the job |
+| MCP-04 | No evaluator-admin, private-holdout or official-record capability is discoverable through MCP |
+| MCP-05 | Oversized inline payloads are refused; upload and import-mount paths work with checksum verification |
+| MCP-06 | Unsigned or tampered reports are not served as official |
+| PRV-01–07 | Per provider: text, multi-turn tools, schema validation, streaming where supported, effective-setting verification, error handling, usage accounting; a mixed-provider job with two role profiles on different settings; unsupported settings fail preflight |
+| JOB-01 | Idle deployment creates no research, data requests or provider spend |
+| JOB-02 | Container restart preserves admitted jobs and checkpoints |
+| JOB-03 | No default wall-clock or generation limit ends a valid active job |
+| JOB-04 | Worker crash mid-generation resumes without duplicate publications |
+| JOB-05 | Ambiguous paid calls are recorded as `outcome_unknown` and retried within policy |
+| JOB-06 | Budget exhaustion yields `budget_paused`, never `completed` |
+| ARCH-01 | Native AMD64 and ARM64 runs: startup, imports, migrations, MCP path, stop and resume, export |
+| ARCH-02 | Cross-architecture numerical parity under predeclared tolerances with independent output hashes per runtime |
+| DLV-01 | A delivery receipt links exact artifact, data, protocol, configuration and report versions and is signed |
+| DLV-02 | Export bundles contain no secrets, unreleased results or private holdout payloads and reproduce their stated evidence |
+| DLV-03 | A supported negative result passes `research_delivery` when the brief allows; missing reports or failed checks cannot |
+| DLV-04 | Ladder and quota invariants hold under an adaptive noise submitter within the declared error rate; version attribution is correct |
+| STAT-01 | Minimum-detectable-effect calculation matches closed-form null variances |
+| STAT-02 | `insufficient_data` and `not_applicable` outcomes never pass a gate |
+
+### 11.3 Benchmarks and calibration
+
+Planted, null and decay synthetic worlds run nightly with fixed seeds as regression benchmarks. If the null world accepts anything, the evaluation owner tightens gates before any real-data campaign and records the change. These are regression tests, not proofs that noise can never pass.
+
+### 11.4 Acceptance checklist mapping (Stage 7)
+
+| AC | Demonstration | Primary suites |
+|---|---|---|
+| AC-01 | Codex and a second client: connect, submit, disconnect, reconnect, export | MCP-01–03 |
+| AC-02 | Every input kind runs under a valid contract or identifies missing inputs; runnable fixtures per executable kind | INT-01–03 |
+| AC-03 | Both P0/P1 manifests pass and produce their 24 CSVs against the exact oracle; no other model fitted | PIL-02, PIL-03 |
+| AC-04 | Research and MCP cannot invoke, configure, cancel or forge evaluation or read private assets | BND-01–06, MCP-04, MCP-06, SBX-05 |
+| AC-05 | Kimi, GLM and DeepSeek conformance against online endpoints; mocks reported separately | PRV-01–07 |
+| AC-06 | One job with all three providers and two role profiles on different settings | PRV-07 |
+| AC-07 | Preflight rejection, visible fallback, recovery from provider failures without invented evidence | PRV-01–07, JOB-05 |
+| AC-08 | Client loss, worker crash, container restart preserve work; no duplicate jobs or artifacts | JOB-02, JOB-04, MCP-02, REG-02 |
+| AC-09 | No default deadline ends a valid job; waits are explicit; only a passing receipt sets `completed` | JOB-03, JOB-06, DLV-01 |
+| AC-10 | Negative result passes the research-delivery gate when permitted; failed checks cannot; promotion needs its own evidence | DLV-03, ACC-01–03 |
+| AC-11 | Native AMD64 and ARM64 runs prove startup, parity, sandbox, MCP, resume, export | ARCH-01, ARCH-02, SBX-03 |
+| AC-12 | Exports retain exact references and checksums and contain no private material | DLV-02 |
+| AC-13 | Idle deployment generates nothing; active jobs survive client lifetime and remain controllable | JOB-01, JOB-02, MCP-03 |
+| AC-14 | Release schema, version attribution, metric identity, exposure labels and ledger accounting pass deterministic and synthetic error-rate checks | REL-01–06, DLV-04, STAT-01–02 |
 
 ---
 
@@ -637,43 +689,39 @@ Core isolation, signed releases, provider budgets, backup/restore, restart recov
 
 | Risk | Mitigation |
 |---|---|
-| The pilot data are too weak to show anything; the loop converges to noise | Coarsened releases, per-lineage budgets, family-wise accounting, stopping rules; the report says "no candidate clears the hurdle" without embarrassment |
-| Lookahead through code paths the DSL does not control | Tier 2 runs only in the evaluator sandbox on as-of views; prefix tests mandatory; negative fixtures |
-| Research agents probe the Ladder step or the flags with near-duplicate versions | One scalar only, Ladder re-releases the lineage best unless beaten by a full step, budgets per lineage, duplicate and correlation gates, the confirmation window never released automatically |
-| Scope creep into v2 (lanes, composition) before v1 is trusted | Phase gates with acceptance tests; `AGENTS.md` rule 8 |
-| Cost blowups from long agent loops | Budgets enforced in code, batch generation, prompt caching, cheaper models for mechanical roles, kill switch |
-| Protocol drift: parameters creep into code | Rule in `AGENTS.md`; protocol hash in every report; freeze command refuses unapproved hashes |
-| Sandbox escapes on a shared workstation | Target-host-validated isolation backend (gVisor candidate), non-root, no network, read-only mounts, dropped capabilities and resource limits from the first version; never expose the container socket, never mount a writable host path, never run privileged; evaluator assets outside every sandbox path |
-| Knowledge lookahead: the model has read about the historical period it is asked to predict | Record model id and knowledge cutoff in provenance; label exposed windows in reports; treat forward-tracked evidence as the only clean evidence; keep the pilot's deliverable framed as evidence plus a tracking setup |
-| Agents tamper with or game the evaluator (documented in 2025–2026 agent evaluations) | Evaluator locked away from research-writable paths; prefix, perturbation and determinism checks; hidden confirmation window; signed reports; budgets that make probing expensive |
-| The evolutionary loop adds little over independent proposals or parameter tuning, or collapses to templates | Classical operators mixed with LLM rewrites; mechanism-diversity requirement; veto memory; matched-budget control arm in the pilot; incremental-contribution metrics instead of standalone scores |
-| Chinese and English artifacts confuse the intake agent | Key on codes, keep names as labels, taxonomy in the intake skill, human confirmation of brief and manifest |
-| The user's MCP client times out on long tool calls | Submit-and-poll design, progress notifications, resource links for large bodies |
+| Pilot data are too weak; the loop converges to noise | Detectability stated in every report, weekly as primary cycle, Ladder single scalar, per-lineage budgets, family-wise accounting, matched-budget control arm, an honest negative result passes the gate |
+| Lookahead through code paths the DSL does not control | Sandboxed execution on as-of slices only, prefix, perturbation and determinism tests, negative fixtures, no date or identifier access in the DSL |
+| Knowledge lookahead from the model's training | Provenance records knowledge exposure, prompts forbid period narratives, critic flags them, exposed windows labelled, forward tracking the only clean evidence |
+| Agents probe the release step with near-duplicates or game the evaluator | One scalar and flags, Ladder re-releases the lineage best, dedup and correlation gates, quotas, hidden confirmation window, signed reports, evaluator assets outside research-writable paths |
+| Evolution adds little over independent proposals or collapses to templates | Classical operators mixed with LLM rewrites, mechanism-diversity requirement, veto memory, control arm, incremental-contribution metrics |
+| Provider heterogeneity breaks tool calling or structured output | Normalizing adapters, local schema validation, capability preflight, per-provider conformance suites, allowlisted fallback only |
+| Isolation backend unsupported on the owner's host | Readiness check fails executable kinds explicitly; alternate backend requires a decision and equivalent boundary tests; DSL-only mode is labelled as such |
+| Cross-architecture numerical drift | Predeclared tolerances and exact structural invariants, independent hashes per runtime, native evidence recorded separately |
+| Cost runaway in long on-demand jobs | Atomic reservations, per-run and per-generation limits, authorized job spend, `budget_paused`, kill switch through MCP |
+| Boundary erosion over time | Invariant tests in CI, import-linter, code owners on `qfr_eval`, separation of duties, pgaudit and hash-chained events |
+| Scope creep into v2 before v1 is trusted | Stage gates, rule 12 in `AGENTS.md`, v2 review placed in Stage 8 |
+| Chinese and English artifacts confuse intake | Key on codes, names as labels, taxonomy in the intake guide, human confirmation of brief and manifest |
 
 ---
 
-## 13. Deployment and job choices still to record
+## 13. Settled decisions and configurable choices
 
-The architecture, on-demand Docker deployment, generic intake and online Kimi/GLM/DeepSeek support are settled requirements. These remaining choices are configurable and do not reopen them.
+**Settled by the owner.** Hybrid v1 architecture; Docker Compose on native AMD64 and ARM64; standard MCP as the external entry point with Codex as the demonstrated host client; on-demand jobs with independent exit gates and no default ceilings; generic intake of ideas, factors, models, strategies and packages; OpenAI-compatible internal LLM access with Kimi, GLM and DeepSeek required online; no Claude runtime, local model or always-on service as a dependency; three databases with least-privilege roles; the pilot as a preservation and reproduction fixture labelled previously seen.
 
-1. **Target host/VM and sandbox backend:** support Linux AMD64 and ARM64, and prove native runtime/isolation on each. Docker Compose remains the deployment bundle.
-2. **Windows, Ladder step and query budgets for the pilot protocol** (7.7, 7.10). Proposed: development 2020–2022, validation 2023–2024, confirmation 2025 to data end; step equal to one bootstrap standard error; one confirmation query per protocol version. Confirm or change before the protocol freeze.
-3. **Whether fundamentals are in scope for the pilot at all.** The plan says blocked on data. If a grade-A or grade-B fundamentals table can be produced by a human-authorized data step, it enters as a new dataset version.
-4. **Endpoint/model/role profiles and spending authorization:** select exact model IDs and tested capability settings per role/task; OpenAI-compatible access is fixed, not a Claude runtime choice.
-5. **Confirmation query count** per pilot run (proposed: one).
-6. **Whether to include the literature researcher in v1** or defer it.
+**Recorded per deployment or job, not reasons to redesign.** Exact host or VM and sandbox backend; SDK pins; endpoint and model ids, role allocations, spending caps and data permissions; pilot protocol values (windows, Ladder step, confirmation query count); whether fundamentals enter the pilot through an authorized data step; whether the literature researcher and dashboard are enabled; the exit-gate instance of each job. A material scope change is surfaced to the owner before it is incorporated.
 
 ---
 
 ## 14. Glossary
 
-- **Artifact version:** immutable version ID plus content hash for a factor, model, strategy, research note or data product, with a declared implementation.
-- **As-of slice:** a view of the dataset containing only rows observable at a given date.
-- **Development / validation / confirmation windows:** date ranges with different access rules; only development is visible to research agents in raw form; validation feeds the Ladder; confirmation is sealed. A protocol may add an optional diagnostic window that is never used for selection.
-- **Minimum detectable effect:** the smallest mean improvement a window can establish at a stated t-statistic given its number of periods; reported with every release.
-- **Ladder:** release rule under which a lineage's score only updates when a new version beats the lineage's best by at least one step.
-- **Family:** the set of artifact versions evaluated under one protocol for one cycle; the unit of multiple-testing accounting.
-- **Prefix test:** recompute signals from data truncated at a cutoff and assert equality with the full-history run at the same date.
-- **Release:** the projection of an official report that research agents may read.
-- **Hurdle:** the protocol's definition of a success, reported as a flag, never as a promotion.
-- **PIT grade:** a label (A to D) on inputs and artifacts describing how trustworthy their timing is; see 4.2.
+- **InputBundle:** the typed, validated envelope a host agent submits; kinds idea, factor, model, strategy, bundle.
+- **Profile:** a named set of protocol, metric, release and fitness rules bound to a job at freeze (`pilot_industry_v1`, `stock_daily_v1`, generic).
+- **Artifact version:** immutable, content-addressed publication with lineage and provenance.
+- **Trial:** one version evaluated on one window, counted in the trial ledger including failures.
+- **Official record / released report:** the evaluator's full-precision result versus its policy-filtered projection.
+- **Ladder:** release rule under which a lineage's score updates only when a version beats the lineage best by at least one step.
+- **Exit gate / delivery receipt:** the frozen completion specification and the independent, signed proof that it passed.
+- **Research zone / evaluation zone:** physically separated data and services; research sees only the truncated snapshot.
+- **Minimum detectable effect:** the smallest mean improvement a window can establish at a stated t-statistic.
+- **PIT grade, vintage status:** separate labels for timing quality and value-vintage quality; dates alone never certify PIT.
+- **Previously seen:** history that humans or agents have already inspected; sealing changes access, not independence.
