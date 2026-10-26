@@ -1,0 +1,8 @@
+{
+  "revision": 1,
+  "max_page_size": 100,
+  "max_page_bytes": 16777216,
+  "max_lineage_depth": 16,
+  "max_lineage_nodes": 512,
+  "max_lineage_edges": 2048
+}

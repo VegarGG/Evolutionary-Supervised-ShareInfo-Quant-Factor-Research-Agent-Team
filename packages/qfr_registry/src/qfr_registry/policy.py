@@ -14,3 +14,12 @@ class RegistryPolicy(Contract):
     max_archive_expanded_bytes: PositiveInt
     max_compression_ratio: PositiveInt
     allowed_runners: list[Text]
+
+
+class RegistryReadPolicy(Contract):
+    revision: PositiveInt
+    max_page_size: PositiveInt
+    max_page_bytes: PositiveInt
+    max_lineage_depth: PositiveInt
+    max_lineage_nodes: PositiveInt
+    max_lineage_edges: PositiveInt

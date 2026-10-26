@@ -694,4 +694,57 @@ def examples(root: Path):
             weight_files=["weights.json"],
         ),
     ]
+    page = pub.ArtifactPage(
+        items=[
+            pub.PublishedArtifact(
+                manifest=a.ArtifactManifest.model_validate(artifact),
+                profile="pilot_industry_v1",
+                version_no=1,
+                published_seq=1,
+                dsl_policy_hash=H,
+                payload_digest=H,
+            )
+        ],
+        next_cursor=1,
+        has_more=False,
+    )
+    roots += [
+        pub.FamilyPage(
+            family_id="family-example",
+            program_id="program-example",
+            kind="factor",
+            name="synthetic-factor",
+            created_by="fixture-author",
+            created_at=AT,
+            versions=page,
+        ),
+        pub.ArtifactLineage(
+            root_version_id="artifact-example",
+            depth=1,
+            nodes=[
+                pub.LineageNode(
+                    artifact_version_id="artifact-example",
+                    content_hash=H,
+                    family_id="family-example",
+                    kind="factor",
+                    version_no=1,
+                ),
+                pub.LineageNode(
+                    artifact_version_id="child-example",
+                    content_hash=H,
+                    family_id="family-example",
+                    kind="factor",
+                    version_no=2,
+                ),
+            ],
+            edges=[
+                pub.LineageEdge(
+                    version_id="child-example",
+                    parent_version_id="artifact-example",
+                    relation="revision",
+                )
+            ],
+            truncated_at_depth=False,
+        ),
+    ]
     return roots

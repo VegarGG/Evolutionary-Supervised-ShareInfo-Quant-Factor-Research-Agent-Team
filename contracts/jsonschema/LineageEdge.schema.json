@@ -1,0 +1,35 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "parent_version_id": {
+      "minLength": 1,
+      "title": "Parent Version Id",
+      "type": "string"
+    },
+    "relation": {
+      "enum": [
+        "seed",
+        "mutation",
+        "crossover",
+        "revision",
+        "repair",
+        "human_seed",
+        "import"
+      ],
+      "title": "Relation",
+      "type": "string"
+    },
+    "version_id": {
+      "minLength": 1,
+      "title": "Version Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "version_id",
+    "parent_version_id",
+    "relation"
+  ],
+  "title": "LineageEdge",
+  "type": "object"
+}

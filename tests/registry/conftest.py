@@ -31,14 +31,19 @@ def registry_service(registry_connect, registry_policy, tmp_path):
 
 
 @pytest.fixture
-def publisher():
+def program():
+    return "test-program-" + uuid4().hex
+
+
+@pytest.fixture
+def publisher(program):
     return Principal(
-        "fixture-publisher-" + str(uuid4()), frozenset({"publisher"}), frozenset({"test-program"})
+        "fixture-publisher-" + str(uuid4()), frozenset({"publisher"}), frozenset({program})
     )
 
 
 @pytest.fixture
-def draft():
+def draft(program):
     def make(expression="Ref($close,1)"):
         manifest = json.loads(Path("contracts/examples/ArtifactDefinition.valid.json").read_text())
         manifest.update(
@@ -49,7 +54,7 @@ def draft():
                 "payload_files": [],
             }
         )
-        manifest["provenance"]["program_id"] = "test-program"
+        manifest["provenance"]["program_id"] = program
         manifest["implementation"] = {
             "type": "dsl",
             "language": "qfr-dsl/1",

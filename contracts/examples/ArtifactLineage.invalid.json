@@ -1,0 +1,27 @@
+{
+  "depth": 1,
+  "edges": [
+    {
+      "parent_version_id": "artifact-example",
+      "relation": "revision",
+      "version_id": "child-example"
+    }
+  ],
+  "nodes": [
+    {
+      "artifact_version_id": "artifact-example",
+      "content_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "family_id": "family-example",
+      "kind": "factor",
+      "version_no": 1
+    },
+    {
+      "artifact_version_id": "child-example",
+      "content_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "family_id": "family-example",
+      "kind": "factor",
+      "version_no": 2
+    }
+  ],
+  "truncated_at_depth": false
+}

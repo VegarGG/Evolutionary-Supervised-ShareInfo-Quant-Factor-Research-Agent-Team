@@ -59,8 +59,29 @@ or unpickling weights. Paths, symlinks, special members, expansion and undeclare
 payloads are rejected. Source inspection/execution requires the sandbox. Publication
 alone never establishes executable readiness or schedules evaluation.
 
-The HTTP app denies publication unless an explicit authorizer is configured.
-Its only artifact mutation is `POST /v1/artifacts`; token configuration and read
-endpoints are implemented in the following packages. No persistent token was created.
+The HTTP app denies access unless an explicit authorizer is configured.
+Its only artifact mutation is `POST /v1/artifacts`; token configuration follows
+in P2.4. No persistent token was created.
+
+## Registry reads
+
+Manifest, family, sequence-listing and bidirectional lineage reads enforce program
+scope. Global sequence listing requires a reader or evaluator role. A publisher
+can retrieve authorized individual artifacts, families, lineage and payloads.
+An inaccessible identifier returns the same 404 response as an absent identifier.
+
+`configs/registry/read_v1.json` pins page-size, byte, lineage-depth, node and edge
+bounds. Sequence pages are strictly ordered; the next cursor is the final returned
+publication, and an empty poll preserves its input cursor. Byte-limited pages do
+not skip remaining entries. Family reads default to the first page at the configured
+size and expose the same continuation cursor. Lineage results explicitly mark a
+depth-truncated graph; resource-limit overflow fails instead of returning an
+apparently complete graph.
+
+Reads verify canonical manifest bytes against content-addressed storage. The
+additional GET-only payload route resolves only an asset declared in an authorized
+manifest, verifies its digest, and serves it as an attachment with a digest ETag
+and `nosniff`. Client input never becomes a filesystem path. Missing read policy
+is an explicit readiness failure. Reads do not notify or control the evaluator.
 
 Full Stage 3 gate verification is pending implementation of the remaining packages.
