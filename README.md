@@ -19,3 +19,22 @@ Hybrid v1 multi-agent quantitative research and factor evolution: supervisor–w
 - [Source provenance](docs/alignment-source-manifest.json) and [documentation validation](docs/plan-alignment-validation.json) from the alignment revision.
 
 No licensed sample data or credentials are included in this repository.
+
+## License and use
+
+Copyright 2026 Ziwei Huang. This is source-available software under the unchanged
+[PolyForm Noncommercial License 1.0.0](LICENSE), with a separate
+[additional permission](ADDITIONAL-PERMISSION.md) for individuals researching and
+trading their own funds in personal accounts, including for personal financial
+gain. It is not offered as OSI-approved open-source software. The additional
+permission does not cover running a business, work for employers or clients,
+managing others' money, or paid products, signals, advice, or services; it does
+not withdraw broader rights already granted by the PolyForm license.
+
+For uses outside the public license and additional permission:
+Commercial use requires a separate written license from Ziwei Huang.
+Separately authorized companies may use the software within their written
+license's scope. These grants cover only rights Ziwei Huang owns or is authorized
+to license; [third-party materials retain their own licenses](THIRD-PARTY-NOTICES.md).
+
+This system was originally developed for research purposes only; it provides no guarantee of investment performance, and, to the extent permitted by law, Ziwei Huang accepts no liability for gains, losses, or other consequences arising from its use.

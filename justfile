@@ -6,6 +6,7 @@ check:
     uv run --locked --all-packages mypy
     uv run --locked --all-packages lint-imports
     uv run --locked --all-packages python -m scripts.generate_contracts --check
+    uv run --locked --all-packages python -m scripts.check_licenses
 
 test:
     uv run --locked --all-packages python -m pytest
