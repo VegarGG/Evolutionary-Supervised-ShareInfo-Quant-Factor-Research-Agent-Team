@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "ReleasedNumericClaim": {
+      "additionalProperties": false,
+      "description": "A machine-checkable claim about an already released scalar field.",
+      "properties": {
+        "field_path": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Field Path",
+          "type": "array"
+        },
+        "report_id": {
+          "minLength": 1,
+          "title": "Report Id",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "report_id",
+        "field_path",
+        "value"
+      ],
+      "title": "ReleasedNumericClaim",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "body": {
+      "minLength": 1,
+      "title": "Body",
+      "type": "string"
+    },
+    "citation_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Citation Refs",
+      "type": "array"
+    },
+    "numeric_claims": {
+      "items": {
+        "$ref": "#/$defs/ReleasedNumericClaim"
+      },
+      "title": "Numeric Claims",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "title",
+    "body",
+    "citation_refs",
+    "numeric_claims"
+  ],
+  "title": "ResearchNoteDocument",
+  "type": "object"
+}

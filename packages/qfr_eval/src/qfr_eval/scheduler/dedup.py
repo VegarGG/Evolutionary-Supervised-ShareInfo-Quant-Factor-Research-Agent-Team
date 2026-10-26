@@ -76,6 +76,10 @@ def semantic_scope(artifact: PublishedArtifact, campaign: IntakeCampaign) -> str
         # the registry's parsed canonical fingerprint binds the actual computation.
         payload.pop("formulation")
         payload.pop("mechanism_card")
+    elif manifest.kind.value == "model":
+        # A display description cannot bypass same-runtime/output dedup by
+        # renaming a model. Frozen weights and preprocessing remain declared.
+        payload.pop("specification")
     return digest(
         {
             "identity_spec": "qfr-intake-semantics/1",

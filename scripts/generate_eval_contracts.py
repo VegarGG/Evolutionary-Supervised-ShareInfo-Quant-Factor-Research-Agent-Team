@@ -17,11 +17,26 @@ from qfr_eval.records import (
     StoredFile,
     TrialLedgerEntry,
 )
+from qfr_eval.sandbox.models import SandboxProfile, SandboxReadiness
 from qfr_eval.scheduler.models import (
     DevelopmentBehavior,
     IntakeCampaign,
     IntakePolicy,
     PilotScreeningPolicy,
+)
+from qfr_eval.screening.models import (
+    CausalityEvidence,
+    CoverageEvidence,
+    KindAdapterProfile,
+    ScreeningExecutionPolicy,
+    ScreeningSessionConfiguration,
+)
+from qfr_eval.screening.records import (
+    ScreeningOutcome,
+    ScreeningReceipt,
+    ScreeningRecord,
+    ScreeningRequest,
+    ScreeningTrial,
 )
 from qfr_eval.statistics.bootstrap import Interval
 from qfr_eval.statistics.clustering import BehavioralFingerprint, ClusterSnapshot
@@ -387,7 +402,169 @@ def generate(check=False):
             "score_columns": {"scores": ["score"]},
         }
     )
-    for value in (screening, intake, campaign, behavior):
+    sandbox = SandboxProfile.model_validate_json(
+        (ROOT / "configs/evaluation/sandbox_pilot_v1.json").read_bytes()
+    )
+    readiness = SandboxReadiness(
+        schema_version="1",
+        status="unavailable",
+        profile_sha256=sandbox.sha256,
+        image_digest="sha256:" + "0" * 64,
+        host_os="unknown",
+        architecture="unknown",
+        runtime="runsc",
+        checks={},
+        reason_code="failed:backend_unavailable",
+    )
+    execution = ScreeningExecutionPolicy.model_validate_json(
+        (ROOT / "configs/evaluation/screening_execution_v1.json").read_bytes()
+    )
+    adapter = KindAdapterProfile.model_validate_json(
+        (ROOT / "configs/evaluation/kind_adapter_fixture_v1.json").read_bytes()
+    )
+    from qfr_core.contracts.publication import RegistryClientConfiguration
+    from qfr_core.dsl.language import DSLConfig
+
+    session = ScreeningSessionConfiguration(
+        schema_version="1",
+        campaign=campaign,
+        intake_policy=intake,
+        screening_policy=screening,
+        execution_policy=execution,
+        adapter_profiles={"generic": adapter},
+        registry_client=RegistryClientConfiguration.model_validate_json(
+            (ROOT / "contracts/examples/RegistryClientConfiguration.valid.json").read_bytes()
+        ),
+        dsl_configs={
+            "pilot_industry_v1": DSLConfig.load(ROOT / "configs/dsl/pilot_industry_v1.json")
+        },
+        protocol_version=protocol.version,
+        runtime=runtime,
+        sandbox_profile=None,
+        sandbox_image_digest=None,
+    )
+    causality = CausalityEvidence(
+        schema_version="1",
+        status="insufficient_data",
+        code="insufficient_data",
+        output_sha256=None,
+        deterministic=None,
+        prefix=[],
+        perturbation=[],
+        prefix_passed=None,
+        perturbation_passed=None,
+        label="lookahead tested, not certified",
+    )
+    coverage = CoverageEvidence(
+        schema_version="1",
+        status="insufficient_data",
+        reason_codes=["LOW_COVERAGE"],
+        required_observations=0,
+        complete_observations=0,
+        scored_cross_sections=0,
+        constant_cross_sections=0,
+        fixed_position_exempt=False,
+        diagnostics=[],
+    )
+    screening_outcome = ScreeningOutcome(
+        schema_version="1",
+        kind="factor",
+        execution="dsl",
+        status="insufficient_data",
+        reason_codes=["LOW_COVERAGE"],
+        coverage=coverage,
+        causality=causality,
+        output_sha256=None,
+        document_checks={},
+    )
+    screening_request = ScreeningRequest(
+        schema_version="1",
+        stage="screening",
+        window="development",
+        intake_id=UUID(int=11),
+        campaign_id=campaign.campaign_id,
+        artifact_version_id=request.artifact_version_id,
+        content_hash=request.content_hash,
+        program_id=request.program_id,
+        family_id=request.family_id,
+        protocol_id=protocol.protocol_id,
+        protocol_version=protocol.version,
+        protocol_hash=protocol.sha256,
+        snapshot_id=request.snapshot_id,
+        screening_policy_hash=screening.sha256,
+        execution_policy_hash="0" * 64,
+        adapter_profile_hash="0" * 64,
+        development_input_sha256="0" * 64,
+        probe_input_sha256=None,
+        runtime=runtime,
+        runner_image_digest=None,
+        generation_id=campaign.server_generation_id,
+    )
+    screening_identity = identity.model_copy(
+        update={"protocol_version": f"{protocol.protocol_id}@{protocol.version}"}
+    )
+    screening_record = ScreeningRecord(
+        schema_version="1",
+        stage="screening",
+        record_id=UUID(int=12),
+        trial_id=UUID(int=13),
+        identity=screening_identity,
+        request=screening_request,
+        request_hash=screening_request.sha256,
+        outcome=screening_outcome,
+        results_hash=screening_outcome.sha256,
+        feedback_disposition="eligible",
+        created_by="fixture",
+        request_id=UUID(int=14),
+        created_at=record.created_at,
+    )
+    screening_trial = ScreeningTrial(
+        schema_version="1",
+        stage="screening",
+        trial_id=screening_record.trial_id,
+        official_record_id=screening_record.record_id,
+        identity=screening_identity,
+        program_id=request.program_id,
+        family_id=request.family_id,
+        generation_id=campaign.server_generation_id,
+        window="development",
+        status="failed",
+        sampling_unit="eligible_observation",
+        required_observations=0,
+        complete_observations=0,
+        results_hash=screening_outcome.sha256,
+        counted_at=record.created_at,
+    )
+    screening_receipt = ScreeningReceipt(
+        schema_version="1",
+        kind="private_screening",
+        authenticity="internal_unsigned",
+        record_id=screening_record.record_id,
+        trial_id=screening_trial.trial_id,
+        identity=screening_identity,
+        request_hash=screening_request.sha256,
+        results_hash=screening_outcome.sha256,
+        files={"record": file},
+        receipt_hash="0" * 64,
+    )
+    for value in (
+        screening,
+        intake,
+        campaign,
+        behavior,
+        sandbox,
+        readiness,
+        execution,
+        adapter,
+        session,
+        causality,
+        coverage,
+        screening_outcome,
+        screening_request,
+        screening_record,
+        screening_trial,
+        screening_receipt,
+    ):
         model = type(value)
         sample = value.model_dump(mode="json")
         outputs.update(

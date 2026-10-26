@@ -53,3 +53,25 @@ class RunnerOutput(Contract):
     schema_version: Literal["1"]
     kind: ArtifactKind
     tables: dict[Text, RunnerTable] = Field(min_length=1)
+
+
+class ReleasedNumericClaim(Contract):
+    """A machine-checkable claim about an already released scalar field."""
+
+    report_id: Text
+    field_path: list[Text] = Field(min_length=1)
+    value: float
+
+
+class ResearchNoteDocument(Contract):
+    schema_version: Literal["1"]
+    title: Text
+    body: Text
+    citation_refs: list[Text]
+    numeric_claims: list[ReleasedNumericClaim]
+
+    @model_validator(mode="after")
+    def unique_citations(self) -> Self:
+        if len(set(self.citation_refs)) != len(self.citation_refs):
+            raise ValueError("research-note citations must be unique")
+        return self

@@ -5,7 +5,7 @@ here. A private owner supplies a frozen campaign; an idle campaign does nothing.
 """
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID, uuid4, uuid5
 
 from psycopg import Connection
@@ -442,7 +442,7 @@ class IntakeScheduler:
         identity: UUID,
         *,
         request_id: UUID,
-    ) -> str:
+    ) -> Literal["eligible", "withheld:budget"]:
         """Reserve a unique evaluated version, never stop its measurement at budget.
 
         Worker calls this inside the official-record/trial transaction, after
@@ -500,7 +500,7 @@ class IntakeScheduler:
                 ],
             )
             ordinals.append(ordinal[0])
-        disposition = (
+        disposition: Literal["eligible", "withheld:budget"] = (
             "eligible"
             if max(ordinals) <= self.screening.feedback_versions_per_lineage_generation
             else "withheld:budget"

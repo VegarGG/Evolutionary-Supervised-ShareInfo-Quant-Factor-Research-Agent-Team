@@ -1,0 +1,188 @@
+{
+  "$defs": {
+    "RuntimeIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluator_git_sha": {
+          "minLength": 1,
+          "title": "Evaluator Git Sha",
+          "type": "string"
+        },
+        "image_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Image Digest",
+          "type": "string"
+        },
+        "implementation_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Implementation Sha256",
+          "type": "string"
+        },
+        "software": {
+          "additionalProperties": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Software",
+          "type": "object"
+        }
+      },
+      "required": [
+        "evaluator_git_sha",
+        "implementation_sha256",
+        "image_digest",
+        "software"
+      ],
+      "title": "RuntimeIdentity",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "adapter_profile_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Adapter Profile Hash",
+      "type": "string"
+    },
+    "artifact_version_id": {
+      "format": "uuid",
+      "title": "Artifact Version Id",
+      "type": "string"
+    },
+    "campaign_id": {
+      "format": "uuid",
+      "title": "Campaign Id",
+      "type": "string"
+    },
+    "content_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "development_input_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Development Input Sha256",
+      "type": "string"
+    },
+    "execution_policy_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Execution Policy Hash",
+      "type": "string"
+    },
+    "family_id": {
+      "minLength": 1,
+      "title": "Family Id",
+      "type": "string"
+    },
+    "generation_id": {
+      "minLength": 1,
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "intake_id": {
+      "format": "uuid",
+      "title": "Intake Id",
+      "type": "string"
+    },
+    "probe_input_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Probe Input Sha256"
+    },
+    "program_id": {
+      "minLength": 1,
+      "title": "Program Id",
+      "type": "string"
+    },
+    "protocol_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Protocol Hash",
+      "type": "string"
+    },
+    "protocol_id": {
+      "minLength": 1,
+      "title": "Protocol Id",
+      "type": "string"
+    },
+    "protocol_version": {
+      "minLength": 1,
+      "title": "Protocol Version",
+      "type": "string"
+    },
+    "runner_image_digest": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Runner Image Digest"
+    },
+    "runtime": {
+      "$ref": "#/$defs/RuntimeIdentity"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "screening_policy_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Screening Policy Hash",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Snapshot Id",
+      "type": "string"
+    },
+    "stage": {
+      "const": "screening",
+      "title": "Stage",
+      "type": "string"
+    },
+    "window": {
+      "const": "development",
+      "title": "Window",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "stage",
+    "window",
+    "intake_id",
+    "campaign_id",
+    "artifact_version_id",
+    "content_hash",
+    "program_id",
+    "family_id",
+    "protocol_id",
+    "protocol_version",
+    "protocol_hash",
+    "snapshot_id",
+    "screening_policy_hash",
+    "execution_policy_hash",
+    "adapter_profile_hash",
+    "development_input_sha256",
+    "probe_input_sha256",
+    "runtime",
+    "runner_image_digest",
+    "generation_id"
+  ],
+  "title": "ScreeningRequest",
+  "type": "object"
+}

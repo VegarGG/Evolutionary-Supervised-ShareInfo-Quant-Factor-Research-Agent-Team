@@ -17,6 +17,7 @@ from qfr_eval.db import migrate
 from qfr_eval.protocols.models import FrozenProtocol
 from qfr_eval.protocols.store import activate_protocol, create_protocol
 from qfr_eval.records import EvaluationRequest
+from qfr_eval.screening.command import run_command
 from qfr_eval.service import evaluate
 
 
@@ -49,6 +50,13 @@ def main(arguments: list[str] | None = None) -> None:
     cluster = sub.add_parser("cluster-trials")
     cluster.add_argument("--request", type=Path, required=True)
     cluster.add_argument("--evidence-root", type=Path, required=True)
+    for action in ("intake-poll", "screen-one"):
+        command = sub.add_parser(action)
+        command.add_argument("--configuration", type=Path, required=True)
+        command.add_argument("--principal", required=True)
+        if action == "screen-one":
+            command.add_argument("--snapshot", type=Path, required=True)
+            command.add_argument("--evidence-root", type=Path, required=True)
     for command in (create, activate, run, cluster):
         command.add_argument("--principal", required=True)
         command.add_argument("--request-id", type=UUID, required=True)
@@ -57,6 +65,17 @@ def main(arguments: list[str] | None = None) -> None:
         print(load_yaml(args.file, FrozenProtocol).sha256)
         return
     try:
+        if args.action in ("intake-poll", "screen-one"):
+            command_result = run_command(
+                args.action,
+                args.configuration,
+                connection_dsn(),
+                principal=args.principal,
+                snapshot=getattr(args, "snapshot", None),
+                evidence_root=getattr(args, "evidence_root", None),
+            )
+            print(json.dumps(command_result))
+            return
         if args.action == "migrate":
             migrate(connection_dsn(migration=True))
             print(json.dumps({"migration": "complete"}))
@@ -108,7 +127,7 @@ def main(arguments: list[str] | None = None) -> None:
                     request_id=args.request_id,
                 )
         print(json.dumps({"protocol_sha256": result, "action": args.action}))
-    except (psycopg.Error, OSError, KeyError, ValueError) as error:
+    except (psycopg.Error, OSError, KeyError, ValueError, RuntimeError) as error:
         # CLI errors must not render driver frames, conninfo or secret values.
         parser.exit(1, f"evaluator command failed: {type(error).__name__}\n")
 

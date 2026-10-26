@@ -16,11 +16,26 @@ from qfr_eval.records import (
     StoredFile,
     TrialLedgerEntry,
 )
+from qfr_eval.sandbox.models import SandboxProfile, SandboxReadiness
 from qfr_eval.scheduler.models import (
     DevelopmentBehavior,
     IntakeCampaign,
     IntakePolicy,
     PilotScreeningPolicy,
+)
+from qfr_eval.screening.models import (
+    CausalityEvidence,
+    CoverageEvidence,
+    KindAdapterProfile,
+    ScreeningExecutionPolicy,
+    ScreeningSessionConfiguration,
+)
+from qfr_eval.screening.records import (
+    ScreeningOutcome,
+    ScreeningReceipt,
+    ScreeningRecord,
+    ScreeningRequest,
+    ScreeningTrial,
 )
 from qfr_eval.statistics.bootstrap import Interval
 from qfr_eval.statistics.clustering import BehavioralFingerprint, ClusterSnapshot
@@ -29,6 +44,18 @@ from qfr_eval.statistics.hurdles import TurnoverResult
 from qfr_eval.statistics.incremental import IncrementalResult
 
 MODELS = (
+    ScreeningSessionConfiguration,
+    KindAdapterProfile,
+    ScreeningOutcome,
+    ScreeningReceipt,
+    ScreeningRecord,
+    ScreeningRequest,
+    ScreeningTrial,
+    CoverageEvidence,
+    CausalityEvidence,
+    ScreeningExecutionPolicy,
+    SandboxProfile,
+    SandboxReadiness,
     DevelopmentBehavior,
     IntakeCampaign,
     IntakePolicy,

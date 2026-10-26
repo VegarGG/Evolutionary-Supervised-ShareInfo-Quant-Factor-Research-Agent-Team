@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "ReasonCode": {
+      "enum": [
+        "SCHEMA_INVALID",
+        "KIND_UNSUPPORTED",
+        "PARSE_ERROR",
+        "TYPE_ERROR",
+        "COMPLEXITY_LIMIT",
+        "FORBIDDEN_CONSTRUCT",
+        "DECLARATION_MISMATCH",
+        "DUPLICATE_OF",
+        "NEAR_DUPLICATE_OF",
+        "QUOTA_DEFERRED",
+        "QUOTA_EXPIRED",
+        "LOW_COVERAGE",
+        "LOOKAHEAD_DETECTED",
+        "RUNTIME_LIMIT",
+        "DEGENERATE",
+        "INTERNAL_ERROR"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "complete_observations": {
+      "minimum": 0,
+      "title": "Complete Observations",
+      "type": "integer"
+    },
+    "constant_cross_sections": {
+      "minimum": 0,
+      "title": "Constant Cross Sections",
+      "type": "integer"
+    },
+    "diagnostics": {
+      "items": {
+        "const": "some_constant_cross_sections",
+        "type": "string"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "fixed_position_exempt": {
+      "title": "Fixed Position Exempt",
+      "type": "boolean"
+    },
+    "reason_codes": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "required_observations": {
+      "minimum": 0,
+      "title": "Required Observations",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scored_cross_sections": {
+      "minimum": 0,
+      "title": "Scored Cross Sections",
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "passed",
+        "failed",
+        "insufficient_data"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "reason_codes",
+    "required_observations",
+    "complete_observations",
+    "scored_cross_sections",
+    "constant_cross_sections",
+    "fixed_position_exempt",
+    "diagnostics"
+  ],
+  "title": "CoverageEvidence",
+  "type": "object"
+}

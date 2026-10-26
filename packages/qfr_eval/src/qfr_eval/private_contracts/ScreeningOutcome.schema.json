@@ -1,0 +1,381 @@
+{
+  "$defs": {
+    "ArtifactKind": {
+      "enum": [
+        "factor",
+        "model",
+        "strategy",
+        "research_note",
+        "data_product"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "CausalityEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "enum": [
+                "ok",
+                "failed:backend_unavailable",
+                "failed:network",
+                "failed:filesystem",
+                "failed:process_limit",
+                "failed:memory",
+                "failed:cpu_limit",
+                "failed:timeout",
+                "failed:output_limit",
+                "failed:invalid_output",
+                "failed:runtime"
+              ],
+              "type": "string"
+            },
+            {
+              "enum": [
+                "failed:lookahead",
+                "failed:nondeterministic",
+                "insufficient_data"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Code"
+        },
+        "deterministic": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Deterministic"
+        },
+        "label": {
+          "const": "lookahead tested, not certified",
+          "title": "Label",
+          "type": "string"
+        },
+        "output_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Output Sha256"
+        },
+        "perturbation": {
+          "items": {
+            "$ref": "#/$defs/PrefixCheck"
+          },
+          "title": "Perturbation",
+          "type": "array"
+        },
+        "perturbation_passed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Perturbation Passed"
+        },
+        "prefix": {
+          "items": {
+            "$ref": "#/$defs/PrefixCheck"
+          },
+          "title": "Prefix",
+          "type": "array"
+        },
+        "prefix_passed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Prefix Passed"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "insufficient_data"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "status",
+        "code",
+        "output_sha256",
+        "deterministic",
+        "prefix_passed",
+        "perturbation_passed",
+        "prefix",
+        "perturbation",
+        "label"
+      ],
+      "title": "CausalityEvidence",
+      "type": "object"
+    },
+    "CoverageEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "complete_observations": {
+          "minimum": 0,
+          "title": "Complete Observations",
+          "type": "integer"
+        },
+        "constant_cross_sections": {
+          "minimum": 0,
+          "title": "Constant Cross Sections",
+          "type": "integer"
+        },
+        "diagnostics": {
+          "items": {
+            "const": "some_constant_cross_sections",
+            "type": "string"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "fixed_position_exempt": {
+          "title": "Fixed Position Exempt",
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "title": "Reason Codes",
+          "type": "array"
+        },
+        "required_observations": {
+          "minimum": 0,
+          "title": "Required Observations",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scored_cross_sections": {
+          "minimum": 0,
+          "title": "Scored Cross Sections",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "insufficient_data"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "status",
+        "reason_codes",
+        "required_observations",
+        "complete_observations",
+        "scored_cross_sections",
+        "constant_cross_sections",
+        "fixed_position_exempt",
+        "diagnostics"
+      ],
+      "title": "CoverageEvidence",
+      "type": "object"
+    },
+    "PrefixCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "compared_cells": {
+          "minimum": 0,
+          "title": "Compared Cells",
+          "type": "integer"
+        },
+        "cutoff": {
+          "format": "date",
+          "title": "Cutoff",
+          "type": "string"
+        },
+        "full_prefix_hashes": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Full Prefix Hashes",
+          "type": "object"
+        },
+        "rebuilt_hashes": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Rebuilt Hashes",
+          "type": "object"
+        }
+      },
+      "required": [
+        "cutoff",
+        "compared_cells",
+        "full_prefix_hashes",
+        "rebuilt_hashes"
+      ],
+      "title": "PrefixCheck",
+      "type": "object"
+    },
+    "ReasonCode": {
+      "enum": [
+        "SCHEMA_INVALID",
+        "KIND_UNSUPPORTED",
+        "PARSE_ERROR",
+        "TYPE_ERROR",
+        "COMPLEXITY_LIMIT",
+        "FORBIDDEN_CONSTRUCT",
+        "DECLARATION_MISMATCH",
+        "DUPLICATE_OF",
+        "NEAR_DUPLICATE_OF",
+        "QUOTA_DEFERRED",
+        "QUOTA_EXPIRED",
+        "LOW_COVERAGE",
+        "LOOKAHEAD_DETECTED",
+        "RUNTIME_LIMIT",
+        "DEGENERATE",
+        "INTERNAL_ERROR"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "causality": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CausalityEvidence"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "coverage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CoverageEvidence"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "document_checks": {
+      "additionalProperties": {
+        "enum": [
+          "pass",
+          "fail",
+          "insufficient_data",
+          "not_applicable"
+        ],
+        "type": "string"
+      },
+      "propertyNames": {
+        "enum": [
+          "schema",
+          "citations",
+          "released_values",
+          "temporal"
+        ]
+      },
+      "title": "Document Checks",
+      "type": "object"
+    },
+    "execution": {
+      "enum": [
+        "dsl",
+        "sandbox",
+        "document"
+      ],
+      "title": "Execution",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/ArtifactKind"
+    },
+    "output_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Output Sha256"
+    },
+    "reason_codes": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "passed",
+        "failed",
+        "insufficient_data"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "execution",
+    "status",
+    "reason_codes",
+    "coverage",
+    "causality",
+    "output_sha256",
+    "document_checks"
+  ],
+  "title": "ScreeningOutcome",
+  "type": "object"
+}

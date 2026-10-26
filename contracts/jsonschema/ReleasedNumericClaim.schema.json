@@ -1,0 +1,31 @@
+{
+  "additionalProperties": false,
+  "description": "A machine-checkable claim about an already released scalar field.",
+  "properties": {
+    "field_path": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Field Path",
+      "type": "array"
+    },
+    "report_id": {
+      "minLength": 1,
+      "title": "Report Id",
+      "type": "string"
+    },
+    "value": {
+      "title": "Value",
+      "type": "number"
+    }
+  },
+  "required": [
+    "report_id",
+    "field_path",
+    "value"
+  ],
+  "title": "ReleasedNumericClaim",
+  "type": "object"
+}

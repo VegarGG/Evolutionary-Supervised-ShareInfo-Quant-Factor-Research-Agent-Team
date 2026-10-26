@@ -1,0 +1,26 @@
+{
+  "authenticity": "internal_unsigned",
+  "files": {
+    "record": {
+      "bytes": 12,
+      "logical_sha256": null,
+      "media_type": "application/json",
+      "relative_path": "objects/fixture.json",
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+    }
+  },
+  "identity": {
+    "artifact_version_id": "00000000-0000-0000-0000-000000000001",
+    "content_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "dataset_version_id": "4444444444444444444444444444444444444444444444444444444444444444",
+    "evaluator_version": "1111111111111111111111111111111111111111",
+    "protocol_version": "pilot_p0_p1_verification_v1@0.1.0"
+  },
+  "kind": "private_screening",
+  "receipt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "record_id": "00000000-0000-0000-0000-00000000000c",
+  "request_hash": "65b1b1e53bb9207618b2d42bfbbec76bd1c5757da65f22e8c6aba6c0232b8efa",
+  "results_hash": "cc8917d5c5b0715c71dc88612537ccb216eaaf28ea1f178a3361b5ea28799e52",
+  "schema_version": "1",
+  "trial_id": "00000000-0000-0000-0000-00000000000d"
+}

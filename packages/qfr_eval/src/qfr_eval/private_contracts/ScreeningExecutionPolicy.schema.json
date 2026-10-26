@@ -1,0 +1,109 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "allowed_import_roots": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Allowed Import Roots",
+      "type": "array"
+    },
+    "document_rows": {
+      "exclusiveMinimum": 0,
+      "title": "Document Rows",
+      "type": "integer"
+    },
+    "forbidden_attributes": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Forbidden Attributes",
+      "type": "array"
+    },
+    "forbidden_calls": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Forbidden Calls",
+      "type": "array"
+    },
+    "future_numeric_scale": {
+      "maximum": 0.875,
+      "minimum": 0.875,
+      "title": "Future Numeric Scale",
+      "type": "number"
+    },
+    "lease_renewal_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Lease Renewal Seconds",
+      "type": "integer"
+    },
+    "lookahead_label": {
+      "const": "lookahead tested, not certified",
+      "title": "Lookahead Label",
+      "type": "string"
+    },
+    "note_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Note Bytes",
+      "type": "integer"
+    },
+    "perturbation": {
+      "const": "scale_future_finite_float_values",
+      "title": "Perturbation",
+      "type": "string"
+    },
+    "policy_id": {
+      "minLength": 1,
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "revision": {
+      "exclusiveMinimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_ast_nodes": {
+      "exclusiveMinimum": 0,
+      "title": "Source Ast Nodes",
+      "type": "integer"
+    },
+    "source_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Source Bytes",
+      "type": "integer"
+    },
+    "worker_lease_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Worker Lease Seconds",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "policy_id",
+    "revision",
+    "source_bytes",
+    "source_ast_nodes",
+    "allowed_import_roots",
+    "forbidden_calls",
+    "forbidden_attributes",
+    "note_bytes",
+    "document_rows",
+    "worker_lease_seconds",
+    "lease_renewal_seconds",
+    "perturbation",
+    "future_numeric_scale",
+    "lookahead_label"
+  ],
+  "title": "ScreeningExecutionPolicy",
+  "type": "object"
+}

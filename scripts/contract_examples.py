@@ -769,11 +769,30 @@ def examples(root: Path):
             truncated_at_depth=False,
         ),
     ]
-    from qfr_core.contracts.execution import RunnerInput, RunnerOutput, RunnerTable
+    from qfr_core.contracts.execution import (
+        ReleasedNumericClaim,
+        ResearchNoteDocument,
+        RunnerInput,
+        RunnerOutput,
+        RunnerTable,
+    )
 
     table = RunnerTable(columns=["value"], dtypes=["Float64"], rows=[[1.0], [None]])
     roots += [
         RunnerInput(schema_version="1", tables={"close": table}, seed=0),
         RunnerOutput(schema_version="1", kind="factor", tables={"scores": table}),
+        ResearchNoteDocument(
+            schema_version="1",
+            title="Synthetic note",
+            body="The structured claim cites a synthetic released report.",
+            citation_refs=["report-example"],
+            numeric_claims=[
+                ReleasedNumericClaim(
+                    report_id="report-example",
+                    field_path=["content", "scalar", "measurement", "value"],
+                    value=0.5,
+                )
+            ],
+        ),
     ]
     return roots

@@ -1,0 +1,690 @@
+{
+  "$defs": {
+    "ArtifactKind": {
+      "enum": [
+        "factor",
+        "model",
+        "strategy",
+        "research_note",
+        "data_product"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "CausalityEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "enum": [
+                "ok",
+                "failed:backend_unavailable",
+                "failed:network",
+                "failed:filesystem",
+                "failed:process_limit",
+                "failed:memory",
+                "failed:cpu_limit",
+                "failed:timeout",
+                "failed:output_limit",
+                "failed:invalid_output",
+                "failed:runtime"
+              ],
+              "type": "string"
+            },
+            {
+              "enum": [
+                "failed:lookahead",
+                "failed:nondeterministic",
+                "insufficient_data"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Code"
+        },
+        "deterministic": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Deterministic"
+        },
+        "label": {
+          "const": "lookahead tested, not certified",
+          "title": "Label",
+          "type": "string"
+        },
+        "output_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Output Sha256"
+        },
+        "perturbation": {
+          "items": {
+            "$ref": "#/$defs/PrefixCheck"
+          },
+          "title": "Perturbation",
+          "type": "array"
+        },
+        "perturbation_passed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Perturbation Passed"
+        },
+        "prefix": {
+          "items": {
+            "$ref": "#/$defs/PrefixCheck"
+          },
+          "title": "Prefix",
+          "type": "array"
+        },
+        "prefix_passed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Prefix Passed"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "insufficient_data"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "status",
+        "code",
+        "output_sha256",
+        "deterministic",
+        "prefix_passed",
+        "perturbation_passed",
+        "prefix",
+        "perturbation",
+        "label"
+      ],
+      "title": "CausalityEvidence",
+      "type": "object"
+    },
+    "CoverageEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "complete_observations": {
+          "minimum": 0,
+          "title": "Complete Observations",
+          "type": "integer"
+        },
+        "constant_cross_sections": {
+          "minimum": 0,
+          "title": "Constant Cross Sections",
+          "type": "integer"
+        },
+        "diagnostics": {
+          "items": {
+            "const": "some_constant_cross_sections",
+            "type": "string"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "fixed_position_exempt": {
+          "title": "Fixed Position Exempt",
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "title": "Reason Codes",
+          "type": "array"
+        },
+        "required_observations": {
+          "minimum": 0,
+          "title": "Required Observations",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scored_cross_sections": {
+          "minimum": 0,
+          "title": "Scored Cross Sections",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "insufficient_data"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "status",
+        "reason_codes",
+        "required_observations",
+        "complete_observations",
+        "scored_cross_sections",
+        "constant_cross_sections",
+        "fixed_position_exempt",
+        "diagnostics"
+      ],
+      "title": "CoverageEvidence",
+      "type": "object"
+    },
+    "EvidenceIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_id": {
+          "minLength": 1,
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "dataset_version_id": {
+          "minLength": 1,
+          "title": "Dataset Version Id",
+          "type": "string"
+        },
+        "evaluator_version": {
+          "minLength": 1,
+          "title": "Evaluator Version",
+          "type": "string"
+        },
+        "protocol_version": {
+          "minLength": 1,
+          "title": "Protocol Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_version_id",
+        "content_hash",
+        "protocol_version",
+        "dataset_version_id",
+        "evaluator_version"
+      ],
+      "title": "EvidenceIdentity",
+      "type": "object"
+    },
+    "PrefixCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "compared_cells": {
+          "minimum": 0,
+          "title": "Compared Cells",
+          "type": "integer"
+        },
+        "cutoff": {
+          "format": "date",
+          "title": "Cutoff",
+          "type": "string"
+        },
+        "full_prefix_hashes": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Full Prefix Hashes",
+          "type": "object"
+        },
+        "rebuilt_hashes": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Rebuilt Hashes",
+          "type": "object"
+        }
+      },
+      "required": [
+        "cutoff",
+        "compared_cells",
+        "full_prefix_hashes",
+        "rebuilt_hashes"
+      ],
+      "title": "PrefixCheck",
+      "type": "object"
+    },
+    "ReasonCode": {
+      "enum": [
+        "SCHEMA_INVALID",
+        "KIND_UNSUPPORTED",
+        "PARSE_ERROR",
+        "TYPE_ERROR",
+        "COMPLEXITY_LIMIT",
+        "FORBIDDEN_CONSTRUCT",
+        "DECLARATION_MISMATCH",
+        "DUPLICATE_OF",
+        "NEAR_DUPLICATE_OF",
+        "QUOTA_DEFERRED",
+        "QUOTA_EXPIRED",
+        "LOW_COVERAGE",
+        "LOOKAHEAD_DETECTED",
+        "RUNTIME_LIMIT",
+        "DEGENERATE",
+        "INTERNAL_ERROR"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "RuntimeIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluator_git_sha": {
+          "minLength": 1,
+          "title": "Evaluator Git Sha",
+          "type": "string"
+        },
+        "image_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Image Digest",
+          "type": "string"
+        },
+        "implementation_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Implementation Sha256",
+          "type": "string"
+        },
+        "software": {
+          "additionalProperties": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Software",
+          "type": "object"
+        }
+      },
+      "required": [
+        "evaluator_git_sha",
+        "implementation_sha256",
+        "image_digest",
+        "software"
+      ],
+      "title": "RuntimeIdentity",
+      "type": "object"
+    },
+    "ScreeningOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "causality": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CausalityEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CoverageEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "document_checks": {
+          "additionalProperties": {
+            "enum": [
+              "pass",
+              "fail",
+              "insufficient_data",
+              "not_applicable"
+            ],
+            "type": "string"
+          },
+          "propertyNames": {
+            "enum": [
+              "schema",
+              "citations",
+              "released_values",
+              "temporal"
+            ]
+          },
+          "title": "Document Checks",
+          "type": "object"
+        },
+        "execution": {
+          "enum": [
+            "dsl",
+            "sandbox",
+            "document"
+          ],
+          "title": "Execution",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "output_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Output Sha256"
+        },
+        "reason_codes": {
+          "items": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "title": "Reason Codes",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "insufficient_data"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "execution",
+        "status",
+        "reason_codes",
+        "coverage",
+        "causality",
+        "output_sha256",
+        "document_checks"
+      ],
+      "title": "ScreeningOutcome",
+      "type": "object"
+    },
+    "ScreeningRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_profile_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Adapter Profile Hash",
+          "type": "string"
+        },
+        "artifact_version_id": {
+          "format": "uuid",
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "campaign_id": {
+          "format": "uuid",
+          "title": "Campaign Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "development_input_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Development Input Sha256",
+          "type": "string"
+        },
+        "execution_policy_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Execution Policy Hash",
+          "type": "string"
+        },
+        "family_id": {
+          "minLength": 1,
+          "title": "Family Id",
+          "type": "string"
+        },
+        "generation_id": {
+          "minLength": 1,
+          "title": "Generation Id",
+          "type": "string"
+        },
+        "intake_id": {
+          "format": "uuid",
+          "title": "Intake Id",
+          "type": "string"
+        },
+        "probe_input_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Probe Input Sha256"
+        },
+        "program_id": {
+          "minLength": 1,
+          "title": "Program Id",
+          "type": "string"
+        },
+        "protocol_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Protocol Hash",
+          "type": "string"
+        },
+        "protocol_id": {
+          "minLength": 1,
+          "title": "Protocol Id",
+          "type": "string"
+        },
+        "protocol_version": {
+          "minLength": 1,
+          "title": "Protocol Version",
+          "type": "string"
+        },
+        "runner_image_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Runner Image Digest"
+        },
+        "runtime": {
+          "$ref": "#/$defs/RuntimeIdentity"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "screening_policy_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Screening Policy Hash",
+          "type": "string"
+        },
+        "snapshot_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Snapshot Id",
+          "type": "string"
+        },
+        "stage": {
+          "const": "screening",
+          "title": "Stage",
+          "type": "string"
+        },
+        "window": {
+          "const": "development",
+          "title": "Window",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "stage",
+        "window",
+        "intake_id",
+        "campaign_id",
+        "artifact_version_id",
+        "content_hash",
+        "program_id",
+        "family_id",
+        "protocol_id",
+        "protocol_version",
+        "protocol_hash",
+        "snapshot_id",
+        "screening_policy_hash",
+        "execution_policy_hash",
+        "adapter_profile_hash",
+        "development_input_sha256",
+        "probe_input_sha256",
+        "runtime",
+        "runner_image_digest",
+        "generation_id"
+      ],
+      "title": "ScreeningRequest",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "created_by": {
+      "minLength": 1,
+      "title": "Created By",
+      "type": "string"
+    },
+    "feedback_disposition": {
+      "enum": [
+        "eligible",
+        "withheld:budget"
+      ],
+      "title": "Feedback Disposition",
+      "type": "string"
+    },
+    "identity": {
+      "$ref": "#/$defs/EvidenceIdentity"
+    },
+    "outcome": {
+      "$ref": "#/$defs/ScreeningOutcome"
+    },
+    "record_id": {
+      "format": "uuid",
+      "title": "Record Id",
+      "type": "string"
+    },
+    "request": {
+      "$ref": "#/$defs/ScreeningRequest"
+    },
+    "request_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Request Hash",
+      "type": "string"
+    },
+    "request_id": {
+      "format": "uuid",
+      "title": "Request Id",
+      "type": "string"
+    },
+    "results_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Results Hash",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stage": {
+      "const": "screening",
+      "title": "Stage",
+      "type": "string"
+    },
+    "trial_id": {
+      "format": "uuid",
+      "title": "Trial Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "stage",
+    "record_id",
+    "trial_id",
+    "identity",
+    "request",
+    "request_hash",
+    "outcome",
+    "results_hash",
+    "feedback_disposition",
+    "created_by",
+    "request_id",
+    "created_at"
+  ],
+  "title": "ScreeningRecord",
+  "type": "object"
+}

@@ -89,6 +89,579 @@ def identity(scheduler, artifact):
     return uuid5(scheduler.campaign.campaign_id, artifact.manifest.artifact_version_id)
 
 
+@pytest.fixture
+def screening_transaction_case(intake_publication, scheduler_factory, eval_connect, tmp_path):
+    """Synthetic quality failure; this fixture proves atomic DB behavior, not inference."""
+    from qfr_eval.protocols.store import activate_protocol, create_protocol
+    from qfr_eval.records import RuntimeIdentity
+    from qfr_eval.runtime import implementation_hash, software_identity
+    from qfr_eval.scheduler.dedup import digest
+    from qfr_eval.screening.models import ScreeningExecutionPolicy
+    from qfr_eval.screening.records import ScreeningOutcome, ScreeningRequest
+
+    artifact = intake_publication()
+    scheduler = scheduler_factory({artifact.manifest.family_id: "atomic-screening-lineage"})
+    runtime = RuntimeIdentity(
+        evaluator_git_sha="1" * 40,
+        implementation_sha256=implementation_hash(),
+        image_digest="2" * 64,
+        software=software_identity(),
+    )
+    scheduler.campaign = scheduler.campaign.model_copy(
+        update={
+            "runtime_hash": digest(runtime.model_dump(mode="json")),
+        }
+    )
+    path = ROOT / "configs/evaluation/pilot_p0_p1_verification_v1.yaml"
+    protocol = load_yaml(path, FrozenProtocol)
+    with eval_connect() as conn:
+        create_protocol(conn, path, principal="screening-transaction-fixture", request_id=uuid4())
+        activate_protocol(
+            conn,
+            protocol.protocol_id,
+            protocol.version,
+            expected_hash=protocol.sha256,
+            principal="screening-transaction-fixture",
+            request_id=uuid4(),
+        )
+    execution = ScreeningExecutionPolicy.model_validate_json(
+        (ROOT / "configs/evaluation/screening_execution_v1.json").read_bytes()
+    )
+    adapter, inputs = screening_fixture_inputs()
+    outcome = ScreeningOutcome(
+        schema_version="1",
+        kind="factor",
+        execution="dsl",
+        status="insufficient_data",
+        reason_codes=["LOW_COVERAGE"],
+        coverage=None,
+        causality=None,
+        output_sha256=None,
+        document_checks={},
+    )
+
+    def claim_artifact(value):
+        scheduler.poll_once()
+        job = scheduler.claim(
+            worker="screening-transaction-fixture", lease_seconds=120, request_id=uuid4()
+        )
+        assert job is not None and job["payload"]["intake_id"] == str(identity(scheduler, value))
+        request = ScreeningRequest(
+            schema_version="1",
+            stage="screening",
+            window="development",
+            intake_id=identity(scheduler, value),
+            campaign_id=scheduler.campaign.campaign_id,
+            artifact_version_id=UUID(value.manifest.artifact_version_id),
+            content_hash=value.manifest.content_hash,
+            program_id=value.manifest.provenance.program_id,
+            family_id=value.manifest.family_id,
+            protocol_id=protocol.protocol_id,
+            protocol_version=protocol.version,
+            protocol_hash=protocol.sha256,
+            snapshot_id=scheduler.campaign.snapshot_id,
+            screening_policy_hash=scheduler.screening.sha256,
+            execution_policy_hash=digest(execution.model_dump(mode="json")),
+            adapter_profile_hash=digest(adapter.model_dump(mode="json")),
+            development_input_sha256=digest(inputs.model_dump(mode="json")),
+            probe_input_sha256=None,
+            runtime=runtime,
+            runner_image_digest=None,
+            generation_id=scheduler.campaign.server_generation_id,
+        )
+        return job, request
+
+    return (
+        scheduler,
+        artifact,
+        outcome,
+        execution,
+        EvidenceStore(tmp_path / "screening"),
+        claim_artifact,
+    )
+
+
+def screening_fixture_inputs():
+    from qfr_core.contracts.execution import RunnerInput
+    from qfr_eval.screening.models import KindAdapterProfile
+
+    profile = KindAdapterProfile.model_validate_json(
+        (ROOT / "configs/evaluation/kind_adapter_fixture_v1.json").read_bytes()
+    )
+    inputs = RunnerInput.model_validate(
+        {
+            "schema_version": "1",
+            "seed": 123,
+            "tables": {
+                "prices": {
+                    "columns": ["date", "code", "close"],
+                    "dtypes": ["Date", "String", "Float64"],
+                    "rows": [],
+                }
+            },
+        }
+    )
+    return profile, inputs
+
+
+def _persist_screening(conn, case, job, request, request_id, fence=None):
+    from qfr_eval.screening.persistence import persist_screening
+
+    scheduler, _, outcome, execution, store, _ = case
+    adapter, inputs = screening_fixture_inputs()
+    return persist_screening(
+        conn,
+        scheduler,
+        request,
+        outcome,
+        store,
+        execution_policy=execution,
+        adapter_profile=adapter,
+        development_input=inputs,
+        probe_input=None,
+        output=None,
+        behavior=None,
+        job_id=job["id"],
+        worker="screening-transaction-fixture",
+        fence=job["fence"] if fence is None else fence,
+        request_id=request_id,
+    )
+
+
+@pytest.fixture
+def screening_worker_case(screening_transaction_case):
+    """Real registry/DB and DSL execution; small synthetic temporal inputs."""
+    from datetime import date
+
+    import polars as pl
+    from qfr_core.contracts.execution import RunnerInput
+    from qfr_core.runner_tables import pack_table
+    from qfr_eval.records import RuntimeIdentity
+    from qfr_eval.runtime import implementation_hash, software_identity
+    from qfr_eval.screening.documents import ReleasedEvidence
+    from qfr_eval.screening.models import KindAdapterProfile
+    from qfr_eval.screening.worker import InputSlices, ScreeningWorker
+
+    scheduler, artifact, _, execution, store, _ = screening_transaction_case
+    protocol = load_yaml(
+        ROOT / "configs/evaluation/pilot_p0_p1_verification_v1.yaml", FrozenProtocol
+    )
+    days = [
+        date(2020, 1, 1),
+        date(2020, 2, 1),
+        *protocol.diagnostics.prefix_cutoffs,
+        date(2022, 12, 30),
+        date(2024, 12, 30),
+    ]
+    prices = pl.DataFrame(
+        [
+            (d, code, float(10 + i * j))
+            for i, d in enumerate(sorted(set(days)))
+            for j, code in enumerate(("a", "b"), start=1)
+        ],
+        schema={"date": pl.Date, "code": pl.String, "close": pl.Float64},
+        orient="row",
+    )
+    reads = []
+
+    def read(value, cutoff, seed):
+        reads.append((value.manifest.artifact_version_id, cutoff))
+        return RunnerInput(
+            schema_version="1",
+            seed=seed,
+            tables={"prices": pack_table(prices.filter(pl.col("date") <= cutoff))},
+        )
+
+    inputs = InputSlices(scheduler.campaign.snapshot_id, read)
+    runtime = RuntimeIdentity(
+        evaluator_git_sha="1" * 40,
+        implementation_sha256=implementation_hash(),
+        image_digest="2" * 64,
+        software=software_identity(),
+    )
+    profile = KindAdapterProfile.model_validate_json(
+        (ROOT / "configs/evaluation/kind_adapter_pilot_v1.json").read_bytes()
+    )
+    worker = ScreeningWorker(
+        scheduler,
+        protocol,
+        runtime,
+        inputs,
+        store,
+        execution,
+        {"pilot_industry_v1": profile},
+        None,
+        worker="screening-worker-test",
+        released=ReleasedEvidence({}, {}, frozenset()),
+    )
+    return worker, artifact, reads
+
+
+@pytest.mark.database
+def test_screening_worker_behavior_duplicate_never_reads_validation_or_counts_trial(
+    screening_worker_case,
+    registry_http,
+    draft,
+    eval_connect,
+):
+    from qfr_eval.screening.persistence import verify_screening_receipt
+
+    worker, original, reads = screening_worker_case
+    scheduler = worker.scheduler
+    scheduler.poll_once()
+    result = worker.run_once()
+    assert result.status == "recorded" and result.receipt is not None
+    verify_screening_receipt(result.receipt, worker.store)
+    with eval_connect() as conn:
+        row = conn.execute(
+            "SELECT payload FROM eval.official_records WHERE id=%s", [result.receipt.record_id]
+        ).fetchone()
+    assert row[0]["record"]["outcome"]["status"] == "passed"
+    assert [d for _, d in reads] == [
+        worker.protocol.windows[w].end for w in ("development", "validation")
+    ]
+    body = draft("Ref($close,1)*($close/$close)").model_dump(mode="json")
+    body["manifest"].update(
+        eligible_protocols=[worker.protocol.protocol_id],
+        parent_version_ids=[original.manifest.artifact_version_id],
+        family_id=original.manifest.family_id,
+        name=original.manifest.name,
+    )
+    body["manifest"]["rationale"]["change_summary"] = (
+        "Different AST; identical complete development behavior"
+    )
+    duplicate = registry_http.publish(PublicationRequest.model_validate(body)).artifact
+    assert duplicate.manifest.canonical_fingerprint != original.manifest.canonical_fingerprint
+    scheduler.poll_once()
+    before = len(reads)
+    result = worker.run_once()
+    assert result.status == "duplicate"
+    assert reads[before:] == [
+        (duplicate.manifest.artifact_version_id, worker.protocol.windows["development"].end)
+    ]
+    with eval_connect() as conn:
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.official_records WHERE artifact_version_id=%s",
+                [UUID(duplicate.manifest.artifact_version_id)],
+            ).fetchone()[0]
+            == 0
+        )
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.feedback_reservations WHERE artifact_version_id=%s",
+                [UUID(duplicate.manifest.artifact_version_id)],
+            ).fetchone()[0]
+            == 0
+        )
+        assert conn.execute(
+            "SELECT state,duplicate_of FROM eval.intake WHERE id=%s", [result.intake_id]
+        ).fetchone() == ("duplicate", identity(scheduler, original))
+
+
+@pytest.mark.database
+def test_screening_worker_development_failure_never_requests_validation(
+    screening_worker_case, eval_connect
+):
+    import polars as pl
+    from qfr_core.contracts.execution import RunnerInput
+    from qfr_core.runner_tables import pack_table, unpack_table
+    from qfr_eval.screening.worker import InputSlices
+
+    worker, artifact, reads = screening_worker_case
+    original_read = worker.inputs.read
+
+    def flat(value, cutoff, seed):
+        request = original_read(value, cutoff, seed)
+        frame = unpack_table(request.tables["prices"]).with_columns(pl.lit(1.0).alias("close"))
+        return RunnerInput(schema_version="1", seed=seed, tables={"prices": pack_table(frame)})
+
+    worker.inputs = InputSlices(worker.inputs.snapshot_id, flat)
+    worker.scheduler.poll_once()
+    result = worker.run_once()
+    assert result.status == "recorded" and result.receipt is not None
+    assert len(reads) == 1
+    with eval_connect() as conn:
+        row = conn.execute(
+            "SELECT payload FROM eval.official_records WHERE id=%s", [result.receipt.record_id]
+        ).fetchone()
+        assert row[0]["record"]["outcome"]["reason_codes"] == ["DEGENERATE"]
+        assert (
+            conn.execute(
+                "SELECT payload->>'status' FROM eval.trial_ledger WHERE official_record_id=%s",
+                [result.receipt.record_id],
+            ).fetchone()[0]
+            == "failed"
+        )
+
+
+@pytest.mark.database
+def test_worker_lease_renewal_is_fenced_without_elapsed_completion(
+    screening_worker_case, eval_connect
+):
+    from qfr_eval.screening.worker import LeaseKeeper, LeaseLost
+
+    worker, _, _ = screening_worker_case
+    scheduler = worker.scheduler
+    scheduler.poll_once()
+    job = scheduler.claim(worker=worker.worker, lease_seconds=120, request_id=uuid4())
+    keeper = LeaseKeeper(eval_connect, job["id"], job["fence"], worker.worker, worker.policy)
+    keeper.renew()
+    with eval_connect() as conn:
+        row = conn.execute("SELECT state,fence FROM eval.jobs WHERE id=%s", [job["id"]]).fetchone()
+        assert row == ("running", job["fence"])
+    stale = LeaseKeeper(eval_connect, job["id"], job["fence"] - 1, worker.worker, worker.policy)
+    with pytest.raises(LeaseLost):
+        stale.renew()
+
+
+@pytest.mark.database
+def test_missing_sandbox_defers_real_queued_model_without_record_or_budget(
+    screening_worker_case,
+    registry_http,
+    eval_connect,
+):
+    import hashlib
+    import json
+
+    from qfr_core.contracts.intake import ExecutionContract
+    from qfr_registry.seeds import package_seed
+
+    worker, original, reads = screening_worker_case
+    body = json.loads((ROOT / "contracts/examples/ExecutionContract.valid.json").read_bytes())
+    body.update(
+        runner="qfr-json-runner/1",
+        interface="function",
+        command=None,
+        function="runner.py:run",
+        input_schema_ref="RunnerInput/1",
+        output_schema_ref="RunnerOutput/1",
+        dependency_lock_sha256=hashlib.sha256((ROOT / "uv.lock").read_bytes()).hexdigest(),
+    )
+    request = package_seed(
+        ROOT,
+        original.manifest.provenance.program_id,
+        "unavailable-model",
+        "model",
+        ExecutionContract.model_validate(body),
+        source=(ROOT / "fixtures/artifacts/runners/generic.py").read_bytes(),
+        weights={"kind": "model", "coefficient": 0.5},
+        source_hashes=[],
+    )
+    request = request.model_copy(
+        update={
+            "profile": "pilot_industry_v1",
+            "manifest": request.manifest.model_copy(
+                update={"eligible_protocols": [worker.protocol.protocol_id]}
+            ),
+        }
+    )
+    artifact = registry_http.publish(request).artifact
+    scheduler = worker.scheduler
+    scheduler.campaign = scheduler.campaign.model_copy(
+        update={
+            "allowed_kinds": [artifact.manifest.kind],
+            "root_lineages": {UUID(artifact.manifest.family_id): "missing-backend-test"},
+        }
+    )
+    scheduler.poll_once()
+    assert worker.sandbox is None
+    result = worker.run_once()
+    assert result.status == "deferred" and result.reason == "BACKEND_UNAVAILABLE"
+    assert len(reads) == 1 and reads[0][1] == worker.protocol.windows["development"].end
+    with eval_connect() as conn:
+        assert (
+            conn.execute(
+                "SELECT state FROM eval.intake WHERE id=%s", [result.intake_id]
+            ).fetchone()[0]
+            == "queued"
+        )
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.official_records WHERE artifact_version_id=%s",
+                [UUID(artifact.manifest.artifact_version_id)],
+            ).fetchone()[0]
+            == 0
+        )
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.feedback_reservations WHERE artifact_version_id=%s",
+                [UUID(artifact.manifest.artifact_version_id)],
+            ).fetchone()[0]
+            == 0
+        )
+
+
+def test_model_description_rename_cannot_change_behavior_comparison_scope(screening_policy):
+    import json
+
+    from qfr_core.contracts.publication import PublishedArtifact
+
+    manifest = json.loads((ROOT / "contracts/examples/artifact_kinds/model.json").read_bytes())
+    original = PublishedArtifact.model_validate(
+        {
+            "manifest": manifest,
+            "profile": "pilot_industry_v1",
+            "version_no": 1,
+            "published_seq": 1,
+            "dsl_policy_hash": None,
+            "payload_digest": manifest["content_hash"],
+        }
+    )
+    campaign = IntakeCampaign.model_validate_json(
+        (
+            ROOT / "packages/qfr_eval/src/qfr_eval/private_contracts/IntakeCampaign.valid.json"
+        ).read_bytes()
+    )
+    renamed = original.model_copy(
+        update={
+            "manifest": original.manifest.model_copy(
+                update={
+                    "name": "renamed",
+                    "title": "Changed title",
+                    "payload": original.manifest.payload.model_copy(
+                        update={"specification": "Descriptive rename"}
+                    ),
+                }
+            )
+        }
+    )
+    assert semantic_scope(original, campaign) == semantic_scope(renamed, campaign)
+
+
+@pytest.mark.database
+def test_screening_records_budget_and_fenced_completion_rollback_together(
+    screening_transaction_case, eval_connect
+):
+    case = screening_transaction_case
+    scheduler, artifact, _, _, _, claim_artifact = case
+    job, request = claim_artifact(artifact)
+    audit_id = uuid4()
+    with pytest.raises(ValueError, match="stale or expired"):
+        with eval_connect() as conn, conn.transaction():
+            _persist_screening(conn, case, job, request, audit_id, job["fence"] + 1)
+    with eval_connect() as conn:
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.feedback_reservations WHERE program_id=%s",
+                [request.program_id],
+            ).fetchone()[0]
+            == 0
+        )
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.official_records WHERE artifact_version_id=%s",
+                [request.artifact_version_id],
+            ).fetchone()[0]
+            == 0
+        )
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.events WHERE request_id=%s", [audit_id]
+            ).fetchone()[0]
+            == 0
+        )
+        assert (
+            conn.execute(
+                "SELECT state FROM eval.intake WHERE id=%s", [request.intake_id]
+            ).fetchone()[0]
+            == "screening"
+        )
+    with eval_connect() as conn, conn.transaction():
+        record, receipt = _persist_screening(conn, case, job, request, audit_id)
+    assert record.outcome.status == "insufficient_data" and receipt.kind == "private_screening"
+    with eval_connect() as conn:
+        assert (
+            conn.execute("SELECT state FROM eval.jobs WHERE id=%s", [job["id"]]).fetchone()[0]
+            == "failed"
+        )
+        trial = conn.execute(
+            "SELECT payload FROM eval.trial_ledger WHERE id=%s", [record.trial_id]
+        ).fetchone()[0]
+        assert trial["status"] == "failed" and trial["sampling_unit"] == "eligible_observation"
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.events WHERE request_id=%s", [audit_id]
+            ).fetchone()[0]
+            >= 5
+        )
+
+
+@pytest.mark.database
+def test_screening_concurrent_retry_is_one_immutable_record_trial_and_budget_slot(
+    screening_transaction_case, eval_connect
+):
+    case = screening_transaction_case
+    _, artifact, _, _, store, claim_artifact = case
+    job, request = claim_artifact(artifact)
+    audit_id = uuid4()
+
+    def run():
+        with eval_connect() as conn, conn.transaction():
+            return _persist_screening(conn, case, job, request, audit_id)
+
+    with ThreadPoolExecutor(4) as pool:
+        receipts = list(pool.map(lambda _: run(), range(4)))
+    assert all(value == receipts[0] for value in receipts)
+    from qfr_eval.screening.persistence import verify_screening_receipt
+
+    verify_screening_receipt(receipts[0][1], store)
+    with eval_connect() as conn:
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.official_records WHERE artifact_version_id=%s",
+                [request.artifact_version_id],
+            ).fetchone()[0]
+            == 1
+        )
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.trial_ledger WHERE official_record_id=%s",
+                [receipts[0][0].record_id],
+            ).fetchone()[0]
+            == 1
+        )
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.feedback_reservations WHERE program_id=%s",
+                [request.program_id],
+            ).fetchone()[0]
+            == 1
+        )
+
+
+@pytest.mark.database
+def test_screening_fourth_unique_version_is_recorded_and_feedback_is_withheld(
+    screening_transaction_case, intake_publication, eval_connect
+):
+    case = screening_transaction_case
+    _, artifact, _, _, _, claim_artifact = case
+    records = []
+    for index in range(4):
+        if index:
+            artifact = intake_publication(offset=index, parent=artifact)
+        job, request = claim_artifact(artifact)
+        with eval_connect() as conn, conn.transaction():
+            record, _ = _persist_screening(conn, case, job, request, uuid4())
+        records.append(record)
+    assert [r.feedback_disposition for r in records] == ["eligible"] * 3 + ["withheld:budget"]
+    with eval_connect() as conn:
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.trial_ledger WHERE official_record_id=ANY(%s)",
+                [[r.record_id for r in records]],
+            ).fetchone()[0]
+            == 4
+        )
+        assert (
+            conn.execute(
+                "SELECT count(*) FROM eval.released_reports WHERE payload->>'program_id'=%s",
+                [records[0].request.program_id],
+            ).fetchone()[0]
+            == 0
+        )
+
+
 def queue_only_finish(scheduler, eval_connect):
     """A queue plumbing fixture; it never executes or claims to measure an artifact."""
     request = uuid4()

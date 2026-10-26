@@ -1,0 +1,74 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "architecture": {
+      "minLength": 1,
+      "title": "Architecture",
+      "type": "string"
+    },
+    "checks": {
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Checks",
+      "type": "object"
+    },
+    "host_os": {
+      "minLength": 1,
+      "title": "Host Os",
+      "type": "string"
+    },
+    "image_digest": {
+      "minLength": 1,
+      "title": "Image Digest",
+      "type": "string"
+    },
+    "profile_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Profile Sha256",
+      "type": "string"
+    },
+    "reason_code": {
+      "enum": [
+        "ok",
+        "failed:backend_unavailable"
+      ],
+      "title": "Reason Code",
+      "type": "string"
+    },
+    "runtime": {
+      "const": "runsc",
+      "title": "Runtime",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "profile_sha256",
+    "image_digest",
+    "host_os",
+    "architecture",
+    "runtime",
+    "checks",
+    "reason_code"
+  ],
+  "title": "SandboxReadiness",
+  "type": "object"
+}

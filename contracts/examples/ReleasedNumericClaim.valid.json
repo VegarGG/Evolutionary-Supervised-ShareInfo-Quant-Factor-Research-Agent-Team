@@ -1,0 +1,10 @@
+{
+  "field_path": [
+    "content",
+    "scalar",
+    "measurement",
+    "value"
+  ],
+  "report_id": "report-example",
+  "value": 0.5
+}

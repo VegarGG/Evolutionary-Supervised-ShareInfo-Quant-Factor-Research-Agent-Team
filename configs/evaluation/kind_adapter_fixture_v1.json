@@ -1,0 +1,12 @@
+{
+  "schema_version": "1",
+  "profile_id": "synthetic-kind-adapter-v1",
+  "revision": 1,
+  "scope": "synthetic_contract_fixtures_only",
+  "adapter": "price_panel_v1",
+  "warmup": "declared_source_observations",
+  "strategy_cost_bps": 0,
+  "strategy_execution": "next_close",
+  "strategy_cost_policy_ref": "synthetic-fixture-zero-cost/1",
+  "data_product_check": "identity-prices/1"
+}

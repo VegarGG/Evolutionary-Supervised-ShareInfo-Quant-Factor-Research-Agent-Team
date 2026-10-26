@@ -1,0 +1,79 @@
+{
+  "additionalProperties": false,
+  "description": "Explicit supported output conventions, never stock admission thresholds.",
+  "properties": {
+    "adapter": {
+      "enum": [
+        "pilot_rotation_v1",
+        "price_panel_v1"
+      ],
+      "title": "Adapter",
+      "type": "string"
+    },
+    "data_product_check": {
+      "const": "identity-prices/1",
+      "title": "Data Product Check",
+      "type": "string"
+    },
+    "profile_id": {
+      "minLength": 1,
+      "title": "Profile Id",
+      "type": "string"
+    },
+    "revision": {
+      "exclusiveMinimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "enum": [
+        "P0_P1_verification_only",
+        "synthetic_contract_fixtures_only"
+      ],
+      "title": "Scope",
+      "type": "string"
+    },
+    "strategy_cost_bps": {
+      "minimum": 0,
+      "title": "Strategy Cost Bps",
+      "type": "integer"
+    },
+    "strategy_cost_policy_ref": {
+      "minLength": 1,
+      "title": "Strategy Cost Policy Ref",
+      "type": "string"
+    },
+    "strategy_execution": {
+      "const": "next_close",
+      "title": "Strategy Execution",
+      "type": "string"
+    },
+    "warmup": {
+      "enum": [
+        "original_pilot_eligibility",
+        "declared_source_observations"
+      ],
+      "title": "Warmup",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "profile_id",
+    "revision",
+    "scope",
+    "adapter",
+    "warmup",
+    "strategy_cost_bps",
+    "strategy_execution",
+    "strategy_cost_policy_ref",
+    "data_product_check"
+  ],
+  "title": "KindAdapterProfile",
+  "type": "object"
+}

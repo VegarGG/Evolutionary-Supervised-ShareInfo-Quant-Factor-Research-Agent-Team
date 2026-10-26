@@ -158,4 +158,68 @@ intake state updates retain transactional audit events. Feedback cannot read the
 private tables. P3.2 tests use real loopback HTTP and PostgreSQL, with synthetic
 behavior fixtures explicitly distinguished from sandbox or financial acceptance.
 
-Full Stage 3 gate verification is pending implementation of the remaining packages.
+## Screening execution and kind adapters (in progress)
+
+`ScreeningWorker.run_once` claims one durable evaluator job. Operational leases are
+renewed independently of research deadlines; a stale fence cannot complete a job.
+It computes development output first, then holds a database semantic lock across
+behavior comparison and subsequent screening. A behavioral duplicate never requests
+validation inputs, creates an official record/trial or reserves a feedback slot.
+Missing runtime readiness explicitly returns `BACKEND_UNAVAILABLE` and leaves the
+job queued. Failed development coverage/degeneracy does not open validation data.
+
+Screening records, quality trials, feedback reservations, audit events and fenced
+completion share one transaction. Quality trials use eligible observations or
+documents, not invented return samples. Receipts bind actual output, exact input
+slices, adapter/execution policies and evaluator identity. They are private and
+unsigned; they neither release feedback nor constitute delivery acceptance.
+
+Each of factor, model, strategy, research note and data product has an eligibility
+function, ordered stage interface, screening function and fixed status projection.
+Only screening is currently enabled. Numeric financial release remains Stage 4.
+The synthetic adapter profile is expressly limited to contract fixtures; it is not
+a new financial protocol or a default for future jobs. The pilot profile keeps
+the original eligibility and business rules and validates submitted scores,
+rankings, quarterly actions and derived snapshots against those rules.
+
+DSL factors execute their published expression in the interpreter. Declared model
+packages must bind JSON weights to matching immutable payload assets; unsupported
+serialization or fitting interfaces fail explicitly. Constrained Python receives
+only numeric fields and anonymous series/observation indices. The evaluator
+restores original keys after checking the returned anonymous grid. All Python
+execution uses the accepted sandbox, including the kind-specific adapters.
+
+Strategies replay their submitted target weights at declared next-close prices,
+including cash and drift in turnover and preserving immature decisions. The
+synthetic fixture's zero cost is an explicit separate policy, not a pilot default.
+Data-product JSON/CSV/Parquet documents receive bounded schema, original-key and
+temporal/value checks; the supported fixture is explicitly `identity-prices/1`.
+Unknown strategy/data-product semantics require another declared adapter rather
+than an invented interpretation.
+
+Research-note numeric claims use `ResearchNoteDocument` and explicit released
+report/field/value references. Numeric prose is unsupported by this deterministic
+checker and must be moved into the typed claim array. Citations are resolved only
+against immutable released rows in the same program; private official records are
+never searched. Known release-policy granularity is required for numeric claims.
+Stage 3 does not create releases or invent missing granularity. Plain notes without
+numeric claims remain valid documents. These checks do not certify prose truth.
+
+The private owner commands are `qfr eval-admin intake-poll --configuration FILE
+--principal PRINCIPAL` and `qfr eval-admin screen-one --configuration FILE
+--principal PRINCIPAL --snapshot PATH --evidence-root PATH`. The configuration uses
+`ScreeningSessionConfiguration`; schema examples contain synthetic placeholders
+and are not deployment credentials or accepted runtime evidence. The commands are
+one-shot, have no HTTP trigger and are never invoked by idle container startup.
+No public publication API gained an evaluation-control route.
+
+Targeted evidence so far includes nine real PostgreSQL scheduler/screening tests,
+28 kind/document/causality tests and two new actual gVisor kind-adapter tests.
+The ordinary P3.3 working-tree regression passed 587 tests with zero skips in
+656.53 seconds (one unchanged dependency warning). Peak process RSS was 662 MiB;
+the external resource guard recorded no stop or executor OOM. A subsequent review
+made the inert status projection omit all outcome reasons for budget-withheld
+records; its focused 54-test run and `just check` pass. Exact-commit regression is
+still required for that checkpoint. Full registry-to-measurement P0/P1 replay, the core-only sandbox image,
+final Mac CI and the complete Stage 3 exit gate remain pending. No heavy cloud
+image validation or unfinished public branch publication has occurred.

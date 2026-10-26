@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "EvidenceIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_id": {
+          "minLength": 1,
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "dataset_version_id": {
+          "minLength": 1,
+          "title": "Dataset Version Id",
+          "type": "string"
+        },
+        "evaluator_version": {
+          "minLength": 1,
+          "title": "Evaluator Version",
+          "type": "string"
+        },
+        "protocol_version": {
+          "minLength": 1,
+          "title": "Protocol Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_version_id",
+        "content_hash",
+        "protocol_version",
+        "dataset_version_id",
+        "evaluator_version"
+      ],
+      "title": "EvidenceIdentity",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "complete_observations": {
+      "minimum": 0,
+      "title": "Complete Observations",
+      "type": "integer"
+    },
+    "counted_at": {
+      "format": "date-time",
+      "title": "Counted At",
+      "type": "string"
+    },
+    "family_id": {
+      "minLength": 1,
+      "title": "Family Id",
+      "type": "string"
+    },
+    "generation_id": {
+      "minLength": 1,
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "identity": {
+      "$ref": "#/$defs/EvidenceIdentity"
+    },
+    "official_record_id": {
+      "format": "uuid",
+      "title": "Official Record Id",
+      "type": "string"
+    },
+    "program_id": {
+      "minLength": 1,
+      "title": "Program Id",
+      "type": "string"
+    },
+    "required_observations": {
+      "minimum": 0,
+      "title": "Required Observations",
+      "type": "integer"
+    },
+    "results_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Results Hash",
+      "type": "string"
+    },
+    "sampling_unit": {
+      "enum": [
+        "eligible_observation",
+        "document"
+      ],
+      "title": "Sampling Unit",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stage": {
+      "const": "screening",
+      "title": "Stage",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "evaluated",
+        "failed",
+        "withheld"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "trial_id": {
+      "format": "uuid",
+      "title": "Trial Id",
+      "type": "string"
+    },
+    "window": {
+      "const": "development",
+      "title": "Window",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "stage",
+    "trial_id",
+    "official_record_id",
+    "identity",
+    "program_id",
+    "family_id",
+    "generation_id",
+    "window",
+    "status",
+    "sampling_unit",
+    "required_observations",
+    "complete_observations",
+    "results_hash",
+    "counted_at"
+  ],
+  "title": "ScreeningTrial",
+  "type": "object"
+}
