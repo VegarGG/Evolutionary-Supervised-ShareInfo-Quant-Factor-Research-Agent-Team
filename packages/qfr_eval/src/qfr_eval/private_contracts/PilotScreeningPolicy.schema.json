@@ -1,0 +1,105 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "approval_ref": {
+      "minLength": 1,
+      "title": "Approval Ref",
+      "type": "string"
+    },
+    "approved_proposal_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Approved Proposal Sha256",
+      "type": "string"
+    },
+    "duplicates": {
+      "const": "equivalent_development_outputs_all_declared_cycles",
+      "title": "Duplicates",
+      "type": "string"
+    },
+    "feedback_versions_per_lineage_generation": {
+      "const": 3,
+      "title": "Feedback Versions Per Lineage Generation",
+      "type": "integer"
+    },
+    "fixed_position_strategy_exempt": {
+      "const": true,
+      "title": "Fixed Position Strategy Exempt",
+      "type": "boolean"
+    },
+    "policy_id": {
+      "minLength": 1,
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "preserve_original_eligibility_and_warmup": {
+      "const": true,
+      "title": "Preserve Original Eligibility And Warmup",
+      "type": "boolean"
+    },
+    "protocol_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Protocol Sha256",
+      "type": "string"
+    },
+    "reject_constant_scorer_fraction": {
+      "const": 1,
+      "title": "Reject Constant Scorer Fraction",
+      "type": "integer"
+    },
+    "required_eligible_coverage": {
+      "const": 1,
+      "title": "Required Eligible Coverage",
+      "type": "integer"
+    },
+    "revision": {
+      "exclusiveMinimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "const": "P0_P1_verification_only",
+      "title": "Scope",
+      "type": "string"
+    },
+    "score_atol": {
+      "minimum": 0,
+      "title": "Score Atol",
+      "type": "number"
+    },
+    "score_rtol": {
+      "minimum": 0,
+      "title": "Score Rtol",
+      "type": "number"
+    },
+    "status": {
+      "const": "active",
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "policy_id",
+    "revision",
+    "status",
+    "scope",
+    "protocol_sha256",
+    "approval_ref",
+    "approved_proposal_sha256",
+    "duplicates",
+    "required_eligible_coverage",
+    "reject_constant_scorer_fraction",
+    "fixed_position_strategy_exempt",
+    "score_atol",
+    "score_rtol",
+    "preserve_original_eligibility_and_warmup",
+    "feedback_versions_per_lineage_generation"
+  ],
+  "title": "PilotScreeningPolicy",
+  "type": "object"
+}

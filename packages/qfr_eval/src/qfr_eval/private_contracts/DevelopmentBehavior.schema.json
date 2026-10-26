@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "RunnerTable": {
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Columns",
+          "type": "array"
+        },
+        "dtypes": {
+          "items": {
+            "enum": [
+              "Int8",
+              "Int16",
+              "Int32",
+              "Int64",
+              "UInt8",
+              "UInt16",
+              "UInt32",
+              "UInt64",
+              "Float32",
+              "Float64",
+              "Boolean",
+              "String",
+              "Date",
+              "Null"
+            ],
+            "type": "string"
+          },
+          "title": "Dtypes",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "array"
+          },
+          "title": "Rows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "columns",
+        "dtypes",
+        "rows"
+      ],
+      "title": "RunnerTable",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "complete_original_eligible_outputs": {
+      "const": true,
+      "title": "Complete Original Eligible Outputs",
+      "type": "boolean"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "score_columns": {
+      "additionalProperties": {
+        "items": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Score Columns",
+      "type": "object"
+    },
+    "semantic_scope_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Semantic Scope Sha256",
+      "type": "string"
+    },
+    "tables": {
+      "additionalProperties": {
+        "$ref": "#/$defs/RunnerTable"
+      },
+      "minProperties": 1,
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Tables",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "semantic_scope_sha256",
+    "complete_original_eligible_outputs",
+    "tables",
+    "score_columns"
+  ],
+  "title": "DevelopmentBehavior",
+  "type": "object"
+}

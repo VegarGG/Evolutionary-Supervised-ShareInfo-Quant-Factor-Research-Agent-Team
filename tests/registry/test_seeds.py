@@ -3,9 +3,7 @@ import io
 import json
 import os
 import secrets
-import socket
 import threading
-import time
 import zipfile
 from datetime import date
 from pathlib import Path
@@ -13,19 +11,14 @@ from uuid import UUID, uuid4
 
 import polars as pl
 import pytest
-import uvicorn
 from qfr_core.contracts.artifacts import ArtifactReference
 from qfr_core.contracts.execution import RunnerTable
 from qfr_core.contracts.intake import ExecutionContract
 from qfr_core.contracts.publication import (
-    RegistryAuthenticationConfiguration,
     RegistryClientConfiguration,
 )
 from qfr_core.registry_client import RegistryClient, RegistryTransportError
 from qfr_core.runner_tables import pack_table, unpack_table
-from qfr_registry.api.app import create_app
-from qfr_registry.auth import StaticTokenAuthorizer
-from qfr_registry.policy import RegistryReadPolicy
 from qfr_registry.seeds import (
     dsl_seeds,
     note_seed,
@@ -78,57 +71,6 @@ def seed_request(seed_contract, program):
         )
 
     return create
-
-
-@pytest.fixture
-def registry_http(registry_service, program):
-    token = secrets.token_urlsafe(32)
-    config = RegistryAuthenticationConfiguration(
-        revision=1,
-        enabled=True,
-        minimum_token_bytes=32,
-        maximum_token_bytes=512,
-        bindings=[
-            {
-                "principal": "seed-fixture",
-                "token_ref": "env:TEST_REGISTRY_TOKEN",
-                "roles": ["publisher", "evaluator"],
-                "programs": [program],
-            }
-        ],
-    )
-    app = create_app(
-        registry_service,
-        authorize=StaticTokenAuthorizer(config, {"TEST_REGISTRY_TOKEN": token}),
-        read_policy=RegistryReadPolicy.model_validate_json(
-            (ROOT / "configs/registry/read_v1.json").read_bytes()
-        ),
-    )
-    with socket.socket() as listener:
-        listener.bind(("127.0.0.1", 0))
-        server = uvicorn.Server(
-            uvicorn.Config(app, log_config=None, access_log=False, lifespan="off")
-        )
-        worker = threading.Thread(target=server.run, kwargs={"sockets": [listener]}, daemon=True)
-        worker.start()
-        try:
-            deadline = time.monotonic() + 5
-            while not server.started and worker.is_alive() and time.monotonic() < deadline:
-                time.sleep(0.01)
-            assert server.started
-            client_config = RegistryClientConfiguration(
-                revision=1,
-                base_url=f"http://127.0.0.1:{listener.getsockname()[1]}",
-                token_ref="env:TEST_REGISTRY_TOKEN",
-                timeout_seconds=5,
-                max_request_bytes=8 * 1024**2,
-                max_response_bytes=16 * 1024**2,
-            )
-            yield RegistryClient.from_environment(client_config, {"TEST_REGISTRY_TOKEN": token})
-        finally:
-            server.should_exit = True
-            worker.join(5)
-            assert not worker.is_alive()
 
 
 def test_runner_tables_roundtrip_dates_nulls_integers_boolean_empty_and_order():

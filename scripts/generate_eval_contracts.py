@@ -17,6 +17,12 @@ from qfr_eval.records import (
     StoredFile,
     TrialLedgerEntry,
 )
+from qfr_eval.scheduler.models import (
+    DevelopmentBehavior,
+    IntakeCampaign,
+    IntakePolicy,
+    PilotScreeningPolicy,
+)
 from qfr_eval.statistics.bootstrap import Interval
 from qfr_eval.statistics.clustering import BehavioralFingerprint, ClusterSnapshot
 from qfr_eval.statistics.family import FamilyInterval, FamilyStatistics, TrialObservation
@@ -340,6 +346,48 @@ def generate(check=False):
         fingerprint,
         clusters,
     ]:
+        model = type(value)
+        sample = value.model_dump(mode="json")
+        outputs.update(
+            {
+                model.__name__ + ".schema.json": model.model_json_schema(),
+                model.__name__ + ".valid.json": sample,
+                model.__name__ + ".invalid.json": {**sample, "unapproved": True},
+            }
+        )
+    screening = PilotScreeningPolicy.model_validate_json(
+        (ROOT / "configs/evaluation/pilot_screening_v1.json").read_bytes()
+    )
+    intake = IntakePolicy.model_validate_json(
+        (ROOT / "configs/evaluation/intake_v1.json").read_bytes()
+    )
+    campaign = IntakeCampaign.model_validate(
+        {
+            "schema_version": "1",
+            "campaign_id": "00000000-0000-4000-8000-000000000001",
+            "active": False,
+            "owner_authorization_ref": "synthetic-owner-scope",
+            "program_ids": ["synthetic-program"],
+            "protocol_ref": protocol.protocol_id,
+            "protocol_hash": protocol.sha256,
+            "snapshot_id": "0" * 64,
+            "runtime_hash": "0" * 64,
+            "screening_policy_hash": screening.sha256,
+            "server_generation_id": "synthetic-generation",
+            "allowed_kinds": ["factor"],
+            "root_lineages": {},
+        }
+    )
+    behavior = DevelopmentBehavior.model_validate(
+        {
+            "schema_version": "1",
+            "semantic_scope_sha256": "0" * 64,
+            "complete_original_eligible_outputs": True,
+            "tables": {"scores": {"columns": ["score"], "dtypes": ["Float64"], "rows": [[1.0]]}},
+            "score_columns": {"scores": ["score"]},
+        }
+    )
+    for value in (screening, intake, campaign, behavior):
         model = type(value)
         sample = value.model_dump(mode="json")
         outputs.update(

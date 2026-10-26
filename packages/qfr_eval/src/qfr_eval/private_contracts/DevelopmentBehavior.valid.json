@@ -1,0 +1,25 @@
+{
+  "complete_original_eligible_outputs": true,
+  "schema_version": "1",
+  "score_columns": {
+    "scores": [
+      "score"
+    ]
+  },
+  "semantic_scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "tables": {
+    "scores": {
+      "columns": [
+        "score"
+      ],
+      "dtypes": [
+        "Float64"
+      ],
+      "rows": [
+        [
+          1.0
+        ]
+      ]
+    }
+  }
+}

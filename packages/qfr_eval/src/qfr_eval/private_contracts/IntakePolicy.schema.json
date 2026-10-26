@@ -1,0 +1,65 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "deferral_expiry_seconds": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Deferral Expiry Seconds"
+    },
+    "fairness": {
+      "const": "round_robin_family_fifo",
+      "title": "Fairness",
+      "type": "string"
+    },
+    "idle_behavior": {
+      "const": "no_poll_or_jobs",
+      "title": "Idle Behavior",
+      "type": "string"
+    },
+    "max_ready_jobs_per_campaign": {
+      "exclusiveMinimum": 0,
+      "title": "Max Ready Jobs Per Campaign",
+      "type": "integer"
+    },
+    "page_size": {
+      "exclusiveMinimum": 0,
+      "maximum": 100,
+      "title": "Page Size",
+      "type": "integer"
+    },
+    "poll_interval_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Poll Interval Seconds",
+      "type": "integer"
+    },
+    "revision": {
+      "exclusiveMinimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "revision",
+    "page_size",
+    "max_ready_jobs_per_campaign",
+    "poll_interval_seconds",
+    "deferral_expiry_seconds",
+    "fairness",
+    "idle_behavior"
+  ],
+  "title": "IntakePolicy",
+  "type": "object"
+}

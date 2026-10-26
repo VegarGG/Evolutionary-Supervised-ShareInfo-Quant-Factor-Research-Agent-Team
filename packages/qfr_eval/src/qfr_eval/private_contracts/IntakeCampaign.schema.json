@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "ArtifactKind": {
+      "enum": [
+        "factor",
+        "model",
+        "strategy",
+        "research_note",
+        "data_product"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "active": {
+      "title": "Active",
+      "type": "boolean"
+    },
+    "allowed_kinds": {
+      "items": {
+        "$ref": "#/$defs/ArtifactKind"
+      },
+      "minItems": 1,
+      "title": "Allowed Kinds",
+      "type": "array"
+    },
+    "campaign_id": {
+      "format": "uuid",
+      "title": "Campaign Id",
+      "type": "string"
+    },
+    "owner_authorization_ref": {
+      "minLength": 1,
+      "title": "Owner Authorization Ref",
+      "type": "string"
+    },
+    "program_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Program Ids",
+      "type": "array"
+    },
+    "protocol_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Protocol Hash",
+      "type": "string"
+    },
+    "protocol_ref": {
+      "minLength": 1,
+      "title": "Protocol Ref",
+      "type": "string"
+    },
+    "root_lineages": {
+      "additionalProperties": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "propertyNames": {
+        "format": "uuid"
+      },
+      "title": "Root Lineages",
+      "type": "object"
+    },
+    "runtime_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Runtime Hash",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "screening_policy_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Screening Policy Hash",
+      "type": "string"
+    },
+    "server_generation_id": {
+      "minLength": 1,
+      "title": "Server Generation Id",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Snapshot Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "campaign_id",
+    "active",
+    "owner_authorization_ref",
+    "program_ids",
+    "protocol_ref",
+    "protocol_hash",
+    "snapshot_id",
+    "runtime_hash",
+    "screening_policy_hash",
+    "server_generation_id",
+    "allowed_kinds",
+    "root_lineages"
+  ],
+  "title": "IntakeCampaign",
+  "type": "object"
+}

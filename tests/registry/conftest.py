@@ -1,11 +1,23 @@
 import json
+import secrets
+import socket
+import threading
+import time
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
-from qfr_core.contracts.publication import PublicationRequest
+import uvicorn
+from qfr_core.contracts.publication import (
+    PublicationRequest,
+    RegistryAuthenticationConfiguration,
+    RegistryClientConfiguration,
+)
 from qfr_core.dsl.language import DSLConfig, analyze, parse
-from qfr_registry.policy import RegistryPolicy
+from qfr_core.registry_client import RegistryClient
+from qfr_registry.api.app import create_app
+from qfr_registry.auth import StaticTokenAuthorizer
+from qfr_registry.policy import RegistryPolicy, RegistryReadPolicy
 from qfr_registry.publication import Principal, Registry
 from qfr_registry.storage.objects import PayloadStore
 
@@ -77,3 +89,57 @@ def draft(program):
         )
 
     return make
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.fixture
+def registry_http(registry_service, program):
+    token = secrets.token_urlsafe(32)
+    config = RegistryAuthenticationConfiguration(
+        revision=1,
+        enabled=True,
+        minimum_token_bytes=32,
+        maximum_token_bytes=512,
+        bindings=[
+            {
+                "principal": "seed-fixture",
+                "token_ref": "env:TEST_REGISTRY_TOKEN",
+                "roles": ["publisher", "evaluator"],
+                "programs": [program],
+            }
+        ],
+    )
+    app = create_app(
+        registry_service,
+        authorize=StaticTokenAuthorizer(config, {"TEST_REGISTRY_TOKEN": token}),
+        read_policy=RegistryReadPolicy.model_validate_json(
+            (ROOT / "configs/registry/read_v1.json").read_bytes()
+        ),
+    )
+    with socket.socket() as listener:
+        listener.bind(("127.0.0.1", 0))
+        server = uvicorn.Server(
+            uvicorn.Config(app, log_config=None, access_log=False, lifespan="off")
+        )
+        worker = threading.Thread(target=server.run, kwargs={"sockets": [listener]}, daemon=True)
+        worker.start()
+        try:
+            deadline = time.monotonic() + 5
+            while not server.started and worker.is_alive() and time.monotonic() < deadline:
+                time.sleep(0.01)
+            assert server.started
+            client_config = RegistryClientConfiguration(
+                revision=1,
+                base_url=f"http://127.0.0.1:{listener.getsockname()[1]}",
+                token_ref="env:TEST_REGISTRY_TOKEN",
+                timeout_seconds=5,
+                max_request_bytes=8 * 1024**2,
+                max_response_bytes=16 * 1024**2,
+            )
+            yield RegistryClient.from_environment(client_config, {"TEST_REGISTRY_TOKEN": token})
+        finally:
+            server.should_exit = True
+            worker.join(5)
+            assert not worker.is_alive()

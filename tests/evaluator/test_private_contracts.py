@@ -16,6 +16,12 @@ from qfr_eval.records import (
     StoredFile,
     TrialLedgerEntry,
 )
+from qfr_eval.scheduler.models import (
+    DevelopmentBehavior,
+    IntakeCampaign,
+    IntakePolicy,
+    PilotScreeningPolicy,
+)
 from qfr_eval.statistics.bootstrap import Interval
 from qfr_eval.statistics.clustering import BehavioralFingerprint, ClusterSnapshot
 from qfr_eval.statistics.family import FamilyInterval, FamilyStatistics, TrialObservation
@@ -23,6 +29,10 @@ from qfr_eval.statistics.hurdles import TurnoverResult
 from qfr_eval.statistics.incremental import IncrementalResult
 
 MODELS = (
+    DevelopmentBehavior,
+    IntakeCampaign,
+    IntakePolicy,
+    PilotScreeningPolicy,
     BehavioralFingerprint,
     ClusterSnapshot,
     EvaluationRequest,

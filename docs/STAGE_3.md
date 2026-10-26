@@ -2,7 +2,7 @@
 
 Work starts from the verified Stage 2 commit
 `57fae27c956a0954f2347e203435a30883a42d09` on `stage-3-registry-sandbox`.
-The predecessor remains unmerged. Stage 3 does not implement feedback release,
+The branch was created without merging the predecessor. Stage 3 does not implement feedback release,
 blackboard services, agents, provider calls or confirmation-query execution.
 
 ## Target-host preflight
@@ -106,5 +106,56 @@ principal into the existing atomic append-only audit mechanism. Client claims ca
 replace publisher attribution. Denials, retries and server failures remain explicit.
 The default structured stderr sink emits without relying on an embedding
 application to lower Python's default logging level.
+
+## Private pull intake
+
+`IntakeScheduler` has no HTTP listener or inbound trigger. An evaluator owner supplies
+an immutable campaign pinning explicit programs, protocol, snapshot, runtime,
+screening policy, allowed kinds and a server generation. An inactive campaign does
+not poll, register itself or claim work. The manifest's research generation is never
+the authority for an evaluation budget. Creating a campaign is an explicit private
+operation; starting idle application containers creates none.
+
+Registry pages are fetched through the authenticated core HTTP client. Each page,
+its cursor and fair dispatch commit together under a transaction lock. Transport
+failure propagates and leaves the cursor unchanged. Repeated or concurrent polls
+do not duplicate intake or jobs. The versioned intake resource policy permits one
+ready/running screening job per campaign, round-robin across families and FIFO
+within a family. Capacity waits remain deferred. Expiry is unset in the pilot;
+an explicitly configured expiry rejects instead of reporting successful completion.
+
+The evaluator independently verifies publication and parsed DSL hashes. Exact
+dedup requires matching semantic, program, protocol, snapshot, runtime and policy
+scope. Behavioral comparison checks every declared cycle's eligible keys, null
+masks, ranks, membership and actions exactly; only declared score columns use the
+approved tolerances. Empty or unavailable comparison evidence cannot establish a
+duplicate. Behavior files are private content-addressed evidence. Actual runner
+execution and recording of new behavior evidence belong to the screening worker.
+
+First economic roots require evaluator-owner bindings. Descendants inherit all
+parent roots, including crossover roots; canonical renamed clones inherit earlier
+bindings. Missing root input remains deferred, and an existing root cannot be
+rebound to obtain a fresh allowance. The owner-frozen server generation identifies
+the budget boundary; a restart, new campaign ID or research manifest cannot reset
+an existing `(program, economic lineage, server generation, version)` reservation.
+The approved allowance is three feedback-bearing versions. Later unique attempts
+still run and must be recorded, with feedback marked `withheld:budget`. Reservation
+requires the caller's active transaction so the screening worker can commit it
+with official evidence and the trial ledger. This package does not release feedback
+or authorize a confirmation query.
+
+The approved pilot screening policy is separate from the measurement protocol and
+the unactivated stock defaults. It preserves the P0/P1-only scope, original
+eligibility and warm-up, complete eligible output, the all-cross-sections constant
+scorer rule, fixed-position strategy exemption and unchanged `1e-12` score tolerances.
+No stock correlation, coverage or degeneracy threshold is imported. The existing
+0.7 statistical clustering threshold and frozen measurement hash are unchanged.
+
+Migration `0002_registry_intake` adds immutable campaign, lineage, behavioral-evidence,
+transition and reservation tables. Application grants are SELECT/INSERT only;
+owner-level UPDATE/DELETE/TRUNCATE also fail through insert-only triggers. Cursor and
+intake state updates retain transactional audit events. Feedback cannot read these
+private tables. P3.2 tests use real loopback HTTP and PostgreSQL, with synthetic
+behavior fixtures explicitly distinguished from sandbox or financial acceptance.
 
 Full Stage 3 gate verification is pending implementation of the remaining packages.
