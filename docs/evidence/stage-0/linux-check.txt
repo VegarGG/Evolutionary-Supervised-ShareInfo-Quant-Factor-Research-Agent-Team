@@ -1,0 +1,34 @@
+uv run --locked --all-packages ruff check .
+All checks passed!
+uv run --locked --all-packages ruff format --check .
+58 files already formatted
+uv run --locked --all-packages mypy
+Success: no issues found in 41 source files
+uv run --locked --all-packages lint-imports
+
+╔══╗─────────▶╔╗ ╔╗      ╔╗◀───┐
+╚╣╠╝◀─────┐  ╔╝╚╗║║────▶╔╝╚╗   │
+ ║║   ╔══╦══╦╩╗╔╝║║  ╔╦═╩╗╔╝╔═╦══╗
+ ║║╔══╣╔╗║╔╗║╔╣║ ║║ ╔╬╣╔╗║║ ║│║╔═╝
+╔╣╠╣║║║╚╝║╚╝║║║╚╗║╚═╝║║║║║╚╗║═╣║
+╚══╩╩╩╣╔═╩══╩╝╚═╝╚═══╩╩╝╚╩═╩╩═╩╝
+  └──▶║║                    ▲ 
+      ╚╝────────────────────┘
+
+
+---------
+Contracts
+---------
+
+Analyzed 41 files, 26 dependencies.
+-----------------------------------
+
+Research never imports evaluation KEPT
+Evaluation never imports research KEPT
+Registry is independent of research and evaluation KEPT
+Core has no other qfr dependencies KEPT
+MCP uses only core and HTTP APIs KEPT
+
+Contracts: 5 kept, 0 broken.
+uv run --locked --all-packages python -m scripts.generate_contracts --check
+86 contracts; 5 kinds; files verified.

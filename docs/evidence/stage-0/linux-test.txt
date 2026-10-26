@@ -1,0 +1,23 @@
+uv run --locked --all-packages python -m pytest
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.7.0
+rootdir: <repository>
+configfile: pyproject.toml
+testpaths: tests
+plugins: hypothesis-6.170.11
+collected 157 items
+
+tests/boundary/test_compose.py .                                         [  0%]
+tests/boundary/test_database.py ..............                           [  9%]
+tests/boundary/test_imports.py ..                                        [ 10%]
+tests/test_ci_contract.py .                                              [ 11%]
+tests/test_configuration.py ..............                               [ 20%]
+tests/test_contracts.py ................................................ [ 50%]
+............................................................             [ 89%]
+tests/test_pilot_fixtures.py sssssssssssssss.                            [ 99%]
+tests/test_workspace.py .                                                [100%]
+
+=========================== short test summary info ============================
+SKIPPED [14] tests/test_pilot_fixtures.py:28: Licensed pilot data absent: set QFR_PILOT_ROOT to the parent of original P0/P1 folders
+SKIPPED [1] tests/test_pilot_fixtures.py:47: Licensed pilot data absent: set QFR_PILOT_ROOT to the parent of original P0/P1 folders
+======================= 142 passed, 15 skipped in 1.14s ========================
