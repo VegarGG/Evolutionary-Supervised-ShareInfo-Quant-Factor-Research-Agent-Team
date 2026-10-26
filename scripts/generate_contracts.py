@@ -22,6 +22,7 @@ MODULES = [
     "intake",
     "jobs",
     "providers",
+    "publication",
     "reports",
 ]
 

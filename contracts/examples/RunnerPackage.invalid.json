@@ -1,0 +1,14 @@
+{
+  "dependency_lock_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "entrypoint": "runner.py:run",
+  "fields_used": [
+    "close"
+  ],
+  "input_schema_ref": "inputs/1",
+  "kind": "model",
+  "max_lookback_days": 1,
+  "output_schema_ref": "outputs/1",
+  "weight_files": [
+    "weights.json"
+  ]
+}

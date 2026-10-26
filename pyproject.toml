@@ -18,7 +18,7 @@ qfr-eval = { workspace = true }
 qfr-mcp = { workspace = true }
 
 [dependency-groups]
-dev = ["ruff", "mypy", "pytest", "hypothesis", "import-linter", "types-PyYAML", "psycopg[binary]", "jsonschema", "rust-just"]
+dev = ["ruff", "mypy", "pytest", "hypothesis", "import-linter", "types-PyYAML", "psycopg[binary]", "jsonschema", "rust-just", "httpx"]
 
 [tool.ruff]
 target-version = "py312"

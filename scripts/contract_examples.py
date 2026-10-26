@@ -11,6 +11,7 @@ from qfr_core.contracts import delivery as x
 from qfr_core.contracts import intake as i
 from qfr_core.contracts import jobs as j
 from qfr_core.contracts import providers as p
+from qfr_core.contracts import publication as pub
 from qfr_core.contracts import reports as r
 
 H = "0" * 64
@@ -659,4 +660,38 @@ def examples(root: Path):
             )
         )
     )
+    definition = a.ArtifactDefinition.model_validate(
+        {k: v for k, v in artifact.items() if k in a.ArtifactDefinition.model_fields}
+    )
+    roots += [
+        pub.PublicationRequest(
+            publish_key="synthetic-publication",
+            profile="pilot_industry_v1",
+            manifest=definition,
+            files=[pub.EncodedPayload(asset_id="asset-example", data_base64="")],
+            content_hash=None,
+        ),
+        pub.PublicationResponse(
+            artifact=pub.PublishedArtifact(
+                manifest=a.ArtifactManifest.model_validate(artifact),
+                profile="pilot_industry_v1",
+                version_no=1,
+                published_seq=1,
+                dsl_policy_hash=H,
+                payload_digest=H,
+            ),
+            created=True,
+        ),
+        pub.RunnerPackage(
+            format="qfr-json-runner/1",
+            kind="model",
+            entrypoint="runner.py:run",
+            input_schema_ref="inputs/1",
+            output_schema_ref="outputs/1",
+            dependency_lock_sha256=H,
+            fields_used=["close"],
+            max_lookback_days=1,
+            weight_files=["weights.json"],
+        ),
+    ]
     return roots

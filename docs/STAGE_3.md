@@ -37,4 +37,30 @@ request ID and timestamp. Sequence assignment holds a transaction-scoped advisor
 lock before allocating a value, so polling cannot advance past a publication that
 has not committed. Lineage references must point backward within one program.
 
+## Publication contract
+
+`ArtifactDefinition` is the client-owned part of the existing manifest. A publication
+request supplies a profile, a retry key, the definition and explicitly declared
+base64 payloads. The server assigns UUIDv7 identities, family revision, sequence,
+publisher and timestamp. An optional client content hash is ignored. The published
+manifest remains the complete artifact identity; submission requires no fake IDs.
+
+The `qfr-publication/1` content hash covers canonical sorted JSON containing the
+definition without its assigned family ID, the explicit profile and the pinned DSL
+configuration hash. The definition includes payload digests and lineage. Retry keys,
+claims about the hash and server metadata are outside content identity. Implementation
+and canonical DSL fingerprints remain separate. A metadata revision still creates a
+version; downstream exact/behavioral dedup decides whether it warrants evaluation.
+
+`configs/registry/publication_v1.json` bounds request, file and archive sizes. These
+are ingestion resource controls, not pilot financial or screening thresholds.
+Declared package metadata is checked without executing source, extracting archives
+or unpickling weights. Paths, symlinks, special members, expansion and undeclared
+payloads are rejected. Source inspection/execution requires the sandbox. Publication
+alone never establishes executable readiness or schedules evaluation.
+
+The HTTP app denies publication unless an explicit authorizer is configured.
+Its only artifact mutation is `POST /v1/artifacts`; token configuration and read
+endpoints are implemented in the following packages. No persistent token was created.
+
 Full Stage 3 gate verification is pending implementation of the remaining packages.

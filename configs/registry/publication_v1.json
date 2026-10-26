@@ -1,0 +1,11 @@
+{
+  "revision": 1,
+  "max_request_bytes": 8388608,
+  "max_file_bytes": 2097152,
+  "max_total_payload_bytes": 4194304,
+  "max_payload_files": 64,
+  "max_archive_members": 128,
+  "max_archive_expanded_bytes": 8388608,
+  "max_compression_ratio": 100,
+  "allowed_runners": ["qfr-json-runner/1"]
+}

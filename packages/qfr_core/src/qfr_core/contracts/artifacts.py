@@ -169,14 +169,11 @@ class ResearchChecks(Contract):
     review_rounds: NonNegativeInt
 
 
-class ArtifactManifest(Contract):
+class ArtifactDefinition(Contract):
+    """Publication input without invented server identities or audit timestamps."""
+
     schema_version: Literal["1"]
-    artifact_version_id: Text
-    artifact_id: Text
     family_id: Text | None
-    content_hash: Sha256
-    implementation_fingerprint: Sha256
-    canonical_fingerprint: Sha256 | None
     parent_version_ids: list[Text]
     name: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9_-]{0,63}$")]
     title: Annotated[str, Field(min_length=1, max_length=120)]
@@ -193,8 +190,6 @@ class ArtifactManifest(Contract):
     complexity: NonNegativeInt
     provenance: Provenance
     research_side_checks: ResearchChecks
-    created_at: AwareDatetime
-    created_by: Text
 
     @model_validator(mode="after")
     def semantic_kind_and_lineage(self) -> Self:
@@ -202,8 +197,6 @@ class ArtifactManifest(Contract):
             raise ValueError("manifest kind differs from semantic payload")
         if self.parent_version_ids and self.rationale.change_summary is None:
             raise ValueError("a revised artifact requires a change summary")
-        if self.artifact_version_id in self.parent_version_ids:
-            raise ValueError("artifact cannot be its own parent")
         if self.kind == ArtifactKind.RESEARCH_NOTE:
             if not isinstance(self.implementation, DocumentImplementation):
                 raise ValueError("research notes use document representation")
@@ -219,4 +212,20 @@ class ArtifactManifest(Contract):
             and not self.provenance.source_hashes
         ):
             raise ValueError("human/import artifacts require source provenance")
+        return self
+
+
+class ArtifactManifest(ArtifactDefinition):
+    artifact_version_id: Text
+    artifact_id: Text
+    content_hash: Sha256
+    implementation_fingerprint: Sha256
+    canonical_fingerprint: Sha256 | None
+    created_at: AwareDatetime
+    created_by: Text
+
+    @model_validator(mode="after")
+    def no_self_parent(self) -> Self:
+        if self.artifact_version_id in self.parent_version_ids:
+            raise ValueError("artifact cannot be its own parent")
         return self
