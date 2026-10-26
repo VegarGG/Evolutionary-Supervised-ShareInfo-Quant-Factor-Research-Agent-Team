@@ -37,6 +37,13 @@ def test_compose_trust_zones():
         assert all(config["networks"][network].get("internal") for network in service["networks"])
         assert not any("API_KEY" in key for key in service.get("environment", {}))
     assert not services["mcp-api"].get("secrets")
+    postgres = services["postgres"]
+    assert postgres["entrypoint"] == ["bash", "/opt/qfr/postgres/entrypoint.sh"]
+    assert postgres["command"] == ["postgres"]
+    assert postgres["tmpfs"] == [
+        "/run/qfr-postgres-secrets:rw,noexec,nosuid,nodev,size=64k,mode=0700"
+    ]
+    assert "./postgres:/opt/qfr/postgres:ro" in postgres["volumes"]
     for name, service in services.items():
         if name != "postgres":
             assert service["read_only"]

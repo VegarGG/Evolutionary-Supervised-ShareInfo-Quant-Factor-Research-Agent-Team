@@ -13,6 +13,7 @@ def test_ci_has_postgres_checks_and_both_architectures():
     assert checks["services"]["postgres"]["image"].startswith("postgres:16@sha256:")
     commands = "\n".join(step.get("run", "") for step in checks["steps"])
     assert "just check" in commands and "just test" in commands and "just up" in commands
+    assert "python scripts/verify_postgres_startup.py" in commands
     image_job = workflow["jobs"]["images"]
     assert {item["architecture"] for item in image_job["strategy"]["matrix"]["include"]} == {
         "amd64",

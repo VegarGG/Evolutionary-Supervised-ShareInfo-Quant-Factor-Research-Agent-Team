@@ -9,6 +9,8 @@
 !infra/docker/Dockerfile.ci
 !infra/docker/ci-entrypoint.sh
 !infra/docker-compose.yml
+!infra/postgres/
+!infra/postgres/**
 !justfile
 !.importlinter
 !.github/
