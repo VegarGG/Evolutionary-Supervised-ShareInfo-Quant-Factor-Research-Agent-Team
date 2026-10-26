@@ -1,5 +1,6 @@
 """One evaluator-owned pull job, with fenced atomic completion and no trigger API."""
 
+import base64
 import hashlib
 import threading
 from collections.abc import Callable
@@ -25,6 +26,7 @@ from qfr_core.runner_tables import pack_table, unpack_table
 
 from qfr_eval.artifact_store import EvidenceStore
 from qfr_eval.backtest.prefix import slice_inputs
+from qfr_eval.execution_bundle import ArtifactExecutionBundle
 from qfr_eval.protocols.models import FrozenProtocol
 from qfr_eval.records import RuntimeIdentity
 from qfr_eval.runtime import verify_runtime
@@ -244,6 +246,7 @@ class ScreeningWorker:
         # A trusted provider still must honor the requested slice. Never mount
         # confirmation or future availability rows due to a provider mistake.
         self._verify_cutoff(development, self.protocol.windows["development"].end)
+        backend = None
         prepared: PreparedExecution | None = None
         first = None
         document = None
@@ -271,7 +274,8 @@ class ScreeningWorker:
                     )
                     if prepared.mode == "sandbox":
                         assert self.sandbox is not None
-                        if self.sandbox.readiness().status != "ready":
+                        backend = self.sandbox.readiness()
+                        if backend.status != "ready":
                             raise SandboxUnavailable("required runtime unavailable")
                     first = prepared.execute(development)
                     lease.ensure()
@@ -399,6 +403,20 @@ class ScreeningWorker:
                 runner_image_digest=image,
                 generation_id=self.scheduler.campaign.server_generation_id,
             )
+            bundle = None
+            if outcome.status == "passed" and prepared is not None:
+                bundle = ArtifactExecutionBundle(
+                    schema_version="1",
+                    artifact=artifact,
+                    payloads_base64={
+                        k: base64.b64encode(v).decode("ascii") for k, v in assets.items()
+                    },
+                    execution_policy=self.policy,
+                    adapter_profile=profile,
+                    dsl_config=self.scheduler.dsl_configs.get(artifact.profile),
+                    sandbox_profile=self.sandbox.profile if backend and self.sandbox else None,
+                    screening_backend=backend,
+                )
             lease.ensure()
             _, receipt = persist_screening(
                 conn,
@@ -412,6 +430,7 @@ class ScreeningWorker:
                 probe_input=probes,
                 output=output,
                 behavior=behavior if outcome.status == "passed" else None,
+                execution_bundle=bundle,
                 job_id=job["id"],
                 worker=self.worker,
                 fence=job["fence"],

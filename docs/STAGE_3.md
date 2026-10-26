@@ -219,7 +219,61 @@ The ordinary P3.3 working-tree regression passed 587 tests with zero skips in
 656.53 seconds (one unchanged dependency warning). Peak process RSS was 662 MiB;
 the external resource guard recorded no stop or executor OOM. A subsequent review
 made the inert status projection omit all outcome reasons for budget-withheld
-records; its focused 54-test run and `just check` pass. Exact-commit regression is
-still required for that checkpoint. Full registry-to-measurement P0/P1 replay, the core-only sandbox image,
-final Mac CI and the complete Stage 3 exit gate remain pending. No heavy cloud
-image validation or unfinished public branch publication has occurred.
+records; its focused 54-test run and `just check` pass. The resulting checkpoint
+`f4e0f4c589855916e0d0b10c01be955f7836e8e7` then passed `just check` and all
+588 tests without skips in 666.67 seconds. Peak process RSS was 678,084 KiB;
+peak environment memory was 3,241,672,704 bytes, with no guard stop or executor OOM.
+The test log SHA256 is
+`ea0e09bac7e74419901e269c1083fc3a2185a12f4b8dad498432d1afefd66bf8`.
+
+## Registry measurement bridge (replay acceptance pending)
+
+A passing executable screen now freezes its immutable publication, verified
+payload bytes, execution/adapter policies and actual backend-readiness evidence
+in the private content-addressed store. These files are not public exports.
+Financial requests carry the screening record/receipt and bundle hashes. Existing
+built-in request serialization and hashes remain unchanged. The private
+`request_from_screen` helper derives artifact identity, runtime, generation,
+economic lineage and feedback disposition from evaluator-owned evidence; the
+owner still supplies the epoch, cohort, window and cycle. It does not reserve
+another feedback version. Composite lineage labels retain every original
+reservation rather than creating a fresh allowance.
+
+Registry pilot models execute their frozen package again for development
+fingerprints and the requested unlocked window. The exact input slices must match
+screening, and validation output must match its screened hash. Independent
+measurement consumes the actual validated scores with original business rules;
+the original built-in baseline remains separate. Missing isolation raises an
+explicit readiness error. Reproduction executes the package again without
+Registry transport and compares runner input/output evidence as well as numerical
+results, fingerprints and clusters. No model/strategy input is replaced with a
+built-in scorer. This financial bridge supports the declared pilot model adapter;
+generic kind checks remain screening-quality records, not invented financial
+metrics.
+
+The registered six v4 DSL definitions passed independent Polars feature parity
+on the original inputs in 40.79 seconds (413 MiB peak process RSS). Four actual
+P0/P1 package cases are explicitly unrun without
+`QFR_TEST_PILOT_SANDBOX_IMAGE`. When supplied, missing runtime readiness fails the
+test rather than skipping it. The cases cover original-oracle preservation and
+screening through official measurement/reproduction; original historical replay
+does not activate the new protocol's locked confirmation window.
+
+## Outstanding gate checkpoint
+
+| Check | Current evidence | Remaining work |
+|---|---|---|
+| REG-01–04, identical-definition identity, registry AUD-01 | PASS at the 588-test checkpoint; real PostgreSQL/HTTP and concurrent publication tests | Carry forward on the final source |
+| EVL-01/03/05 | PASS at that checkpoint; pull-only intake, actual bounded lookahead probes and duplicate-before-validation tests | Final-source regression |
+| SBX-01–04 | PASS for bounded fixtures on cloud Linux x86_64 with actual runsc | Independently prove the Mac Linux backend for the full pilot |
+| SBX-05 | Runtime controls passed; stronger Compose no-privilege/no-host-write assertions added | Final-source checks and actual Compose topology |
+| Registered v4 DSL feature parity | PASS against independent Polars on original inputs | Final-source regression |
+| Registry P0/P1 original oracle and official reproduction | UNRUN: four full-package cases require the core-only image and approved local host | Run `tests/registry/test_pilot_execution.py` on the Mac with original inputs |
+| Full local workflow CI | UNRUN on final Stage 3 source | Compose init/restart/boundaries, host/container suites, eight application plus two sandbox images |
+| Hosted CI / draft PR | UNRUN | Publish only after the stage is verified clean, or separately approved WIP transport; neither is implied here |
+
+Image scripts build the core-only sandbox separately from the eight application
+images and retain platform digests. A build does not prove isolation or native
+runtime acceptance. Heavy runs remain on the Mac; no image build, runtime
+installation, host security change, live provider call or confirmation query has
+been performed for this handoff. Stage 3 is not complete and Stage 4 remains paused.

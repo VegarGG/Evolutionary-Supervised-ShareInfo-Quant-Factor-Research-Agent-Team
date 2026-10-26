@@ -16,7 +16,13 @@ from qfr_core.metrics.statistics import StatisticsConfig, sharpe_moments
 from qfr_eval.artifact_store import EvidenceStore
 from qfr_eval.measurement import MeasuredRun
 from qfr_eval.protocols.models import FrozenProtocol
-from qfr_eval.records import EvaluationRequest, MeasurementReceipt, OfficialRecord, TrialLedgerEntry
+from qfr_eval.records import (
+    EvaluationRequest,
+    MeasurementReceipt,
+    OfficialRecord,
+    StoredFile,
+    TrialLedgerEntry,
+)
 from qfr_eval.statistics.clustering import BehavioralFingerprint, ClusterSnapshot
 from qfr_eval.statistics.family import TrialObservation
 
@@ -73,6 +79,7 @@ def persist_run(
     fingerprint: BehavioralFingerprint | None = None,
     clusters: ClusterSnapshot | None = None,
     frozen_fingerprints: dict[str, BehavioralFingerprint | None] | None = None,
+    execution_files: dict[str, StoredFile] | None = None,
 ) -> tuple[OfficialRecord, MeasurementReceipt]:
     record_id, trial_id, run_id = ids_for_request(request_id)
     summary = measured.summary
@@ -198,6 +205,18 @@ def persist_run(
                 for key, value in (frozen_fingerprints or {}).items()
             },
         )
+        if execution_files:
+            if any(not name.startswith("registry_") for name in execution_files):
+                raise ValueError("registry execution evidence requires a separate namespace")
+            for item in execution_files.values():
+                store.read(item)
+            files.update(execution_files)
+        if request.variant == "registry" and (
+            request.registry_execution is None
+            or files.get("registry_execution_bundle") != request.registry_execution.execution_bundle
+            or "registry_screening_receipt" not in files
+        ):
+            raise ValueError("registry measurement requires pinned execution evidence")
         files["context"] = store.json(context)
         files["measurement"] = store.json(summary.model_dump(mode="json"))
         files["record"] = store.json(record.model_dump(mode="json"))

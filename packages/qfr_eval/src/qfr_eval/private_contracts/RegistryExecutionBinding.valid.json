@@ -1,0 +1,11 @@
+{
+  "execution_bundle": {
+    "bytes": 12,
+    "logical_sha256": null,
+    "media_type": "application/json",
+    "relative_path": "objects/fixture.json",
+    "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+  },
+  "screening_receipt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "screening_record_id": "00000000-0000-0000-0000-000000000001"
+}

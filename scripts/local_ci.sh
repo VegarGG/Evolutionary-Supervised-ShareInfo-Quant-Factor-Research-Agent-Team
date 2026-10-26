@@ -19,5 +19,6 @@ docker run --rm --name "$(read_setting container_name)" \
   --env QFR_TEST_SECRET_DIR=/run/qfr-test-secrets \
   "$(read_setting image)"
 bash scripts/build_images.sh 2>&1 | tee build/local-ci/image-builds.txt
+bash scripts/build_sandbox_images.sh 2>&1 | tee build/local-ci/sandbox-image-builds.txt
 printf '%s\n' 'Local Linux checks and both-platform builds passed. See build/local-ci and build/digests.'
 printf '%s\n' 'Build success is not native runtime or sandbox acceptance. Licensed input checks run separately on the host.'

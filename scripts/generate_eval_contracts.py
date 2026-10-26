@@ -5,19 +5,25 @@ import json
 from pathlib import Path
 
 from qfr_core.configuration import load_yaml
+from qfr_core.contracts.artifacts import ArtifactDefinition
+from qfr_core.contracts.publication import PublishedArtifact
+from qfr_core.dsl.language import analyze, canonical_hash, parse
 from qfr_eval.backtest.prefix import PrefixCheck
+from qfr_eval.execution_bundle import ArtifactExecutionBundle
 from qfr_eval.protocols.models import FrozenProtocol
 from qfr_eval.records import (
     EvaluationRequest,
     Measurement,
     MeasurementReceipt,
     OfficialRecord,
+    RegistryExecutionBinding,
     ReproductionResult,
     RuntimeIdentity,
     StoredFile,
     TrialLedgerEntry,
 )
 from qfr_eval.sandbox.models import SandboxProfile, SandboxReadiness
+from qfr_eval.scheduler.dedup import digest
 from qfr_eval.scheduler.models import (
     DevelopmentBehavior,
     IntakeCampaign,
@@ -547,7 +553,51 @@ def generate(check=False):
         files={"record": file},
         receipt_hash="0" * 64,
     )
+    # Self-consistent synthetic DSL publication, never a sandbox-readiness claim.
+    publication = json.loads(
+        (ROOT / "contracts/examples/PublishedArtifact.valid.json").read_bytes()
+    )
+    dsl = DSLConfig.load(ROOT / "configs/dsl/pilot_industry_v1.json")
+    manifest = publication["manifest"]
+    expression = "Ref($close,1)"
+    analysis = analyze(parse(expression, dsl), dsl)
+    manifest["implementation"]["expression"] = expression
+    manifest["payload_files"] = []
+    manifest["payload"]["fields_used"] = sorted(analysis.fields)
+    manifest["payload"]["max_lookback_days"] = analysis.lookback
+    manifest["complexity"] = analysis.complexity
+    manifest["canonical_fingerprint"] = canonical_hash(expression, dsl)
+    manifest["implementation_fingerprint"] = digest(
+        {"implementation": manifest["implementation"], "payloads": []}
+    )
+    publication["dsl_policy_hash"] = digest(dsl.model_dump(mode="json"))
+    definition = ArtifactDefinition.model_validate(
+        {key: manifest[key] for key in ArtifactDefinition.model_fields}
+    )
+    manifest["content_hash"] = publication["payload_digest"] = digest(
+        {
+            "hash_spec": "qfr-publication/1",
+            "profile": publication["profile"],
+            "dsl_policy_hash": publication["dsl_policy_hash"],
+            "manifest": definition.model_dump(mode="json", exclude={"family_id"}),
+        }
+    )
+    bundle = ArtifactExecutionBundle(
+        schema_version="1",
+        artifact=PublishedArtifact.model_validate(publication),
+        payloads_base64={},
+        execution_policy=execution,
+        adapter_profile=adapter,
+        dsl_config=dsl,
+        sandbox_profile=None,
+        screening_backend=None,
+    )
+    binding = RegistryExecutionBinding(
+        screening_record_id=UUID(int=1), screening_receipt_hash="0" * 64, execution_bundle=file
+    )
     for value in (
+        bundle,
+        binding,
         screening,
         intake,
         campaign,

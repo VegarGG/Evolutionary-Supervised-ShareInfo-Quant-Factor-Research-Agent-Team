@@ -1,4 +1,4 @@
-"""Evaluator-owner execution boundary for trusted built-ins, not a research API."""
+"""Private execution boundary for frozen built-ins and screened Registry artifacts."""
 
 import hashlib
 from uuid import UUID
@@ -15,6 +15,7 @@ from qfr_eval.measurement import failed_measurement, measure_pilot
 from qfr_eval.persistence import ids_for_request, persist_run, verify_receipt
 from qfr_eval.protocols.store import get_active
 from qfr_eval.records import EvaluationRequest, MeasurementReceipt, OfficialRecord, TrialLedgerEntry
+from qfr_eval.registry_execution import RegistryExecutionFailure, load_registry_execution
 from qfr_eval.runtime import builtin_definition, verify_runtime
 from qfr_eval.statistics.clustering import cluster_trials
 
@@ -28,13 +29,15 @@ def evaluate(
     principal: str,
     request_id: UUID,
 ) -> tuple[OfficialRecord, MeasurementReceipt]:
+    request = EvaluationRequest.model_validate(request.model_dump(mode="json"))
     verify_runtime(request.runtime)
     protocol = get_active(conn, request.protocol_id, request.protocol_version)
     if request.protocol_hash != protocol.sha256:
         raise ValueError("active protocol hash differs from request")
-    artifact, content, _ = builtin_definition(request.variant)
-    if request.artifact_version_id != artifact or request.content_hash != content:
-        raise ValueError("trusted built-in identity differs from request")
+    if request.variant != "registry":
+        artifact, content, _ = builtin_definition(request.variant)
+        if request.artifact_version_id != artifact or request.content_hash != content:
+            raise ValueError("trusted built-in identity differs from request")
     if (
         snapshot.manifest.snapshot_id != request.snapshot_id
         or snapshot.manifest.zone != "full"
@@ -57,6 +60,12 @@ def evaluate(
             receipt = MeasurementReceipt.model_validate(existing[0]["receipt"])
             verify_receipt(receipt, store)
             return record, receipt
+        registry = (
+            load_registry_execution(conn, request, protocol, store)
+            if request.variant == "registry"
+            else None
+        )
+        candidate_history = registry.history if registry else None
         rows = read_cohort(conn, request)
         prior = [TrialLedgerEntry.model_validate(t).observation for t, _ in rows]
         prior_deltas = {
@@ -73,7 +82,11 @@ def evaluate(
         try:
             tables = {table.name: snapshot.read(table.name) for table in snapshot.manifest.tables}
             try:
-                fingerprint = pilot_fingerprint(request, protocol, tables)
+                fingerprint = pilot_fingerprint(
+                    request, protocol, tables, candidate_history=candidate_history
+                )
+            except RegistryExecutionFailure:
+                raise
             except (ValueError, KeyError, pl.exceptions.PolarsError):
                 fingerprint = None
             clusters = cluster_trials(
@@ -89,7 +102,10 @@ def evaluate(
                 prior=prior,
                 prior_deltas=prior_deltas,
                 effective_trials=clusters.effective_trials,
+                candidate_history=candidate_history,
             )
+        except RegistryExecutionFailure as exc:
+            measured = failed_measurement(request, str(trial_id), exc.reason)
         except (ValueError, KeyError, pl.exceptions.PolarsError):
             # A measured data/shape failure is counted. No fallback scores or
             # success state; arbitrary exception text never enters the record.
@@ -108,4 +124,5 @@ def evaluate(
             fingerprint=fingerprint,
             clusters=clusters,
             frozen_fingerprints=frozen_fingerprints,
+            execution_files=registry.evidence_files() if registry else None,
         )

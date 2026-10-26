@@ -22,6 +22,9 @@ def test_ci_has_postgres_checks_and_both_architectures():
     assert any(
         step.get("with", {}).get("if-no-files-found") == "error" for step in image_job["steps"]
     )
+    image_commands = "\n".join(step.get("run", "") for step in image_job["steps"])
+    assert "scripts/build_images.sh" in image_commands
+    assert "scripts/build_sandbox_images.sh" in image_commands
     assert all(
         not step.get("continue-on-error", False) for step in checks["steps"] + image_job["steps"]
     )

@@ -27,6 +27,25 @@ def test_compose_trust_zones():
         assert all(port.startswith("127.0.0.1:") for port in service.get("ports", []))
     for name in ["research-api", "research-worker", "mcp-api"]:
         service = services[name]
+        assert not service.get("privileged", False)
+        assert not service.get("devices") and not service.get("cap_add")
+        assert service.get("pid") != "host" and service.get("network_mode") != "host"
+        assert str(service["user"]).split(":")[0] not in ("0", "root", "")
+        assert "no-new-privileges:true" in service["security_opt"]
+        # SBX-05: application roles cannot gain host writes through a bind,
+        # a volume, a device, or a Docker/container-runtime control socket.
+        for volume in service.get("volumes", []):
+            if isinstance(volume, str):
+                assert volume.rsplit(":", 1)[-1] == "ro"
+                assert not any(
+                    token in volume for token in ("docker.sock", "containerd.sock", "/run/docker")
+                )
+            else:
+                assert volume.get("read_only") is True
+                assert not any(
+                    token in str(volume)
+                    for token in ("docker.sock", "containerd.sock", "/run/docker")
+                )
         assert all(
             "eval" not in item and "full" not in item and "epochs" not in item
             for item in service.get("volumes", []) + service.get("secrets", [])

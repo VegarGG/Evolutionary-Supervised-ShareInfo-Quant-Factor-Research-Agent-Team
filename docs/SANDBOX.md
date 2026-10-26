@@ -73,3 +73,11 @@ tmpfs fixtures, including output limits, symlinks, bounded process creation,
 timeouts, CPU and memory exhaustion, determinism and planted lookahead. This is
 separate from full pilot acceptance, native ARM validation and the final local CI
 matrix. Heavy suites and image matrices remain assigned to the owner's Mac.
+
+`bash scripts/build_sandbox_images.sh amd64` (or `arm64`) produces a separate
+core-only OCI archive and source/platform digest evidence. It does not register
+runsc, load/publish images, or claim runtime acceptance. The final full pilot
+tests require an explicitly loaded immutable local image ID through
+`QFR_TEST_PILOT_SANDBOX_IMAGE`; use the matching host architecture and record
+emulation separately. Missing configuration is reported as UNRUN; supplying an
+image while runsc is unavailable fails the readiness assertion.

@@ -298,6 +298,39 @@ def screening_worker_case(screening_transaction_case):
 
 
 @pytest.mark.database
+def test_screened_execution_source_is_frozen_before_registry_becomes_unavailable(
+    screening_worker_case, eval_connect, monkeypatch
+):
+    from qfr_eval.registry_execution import binding_for_screen, screening_source
+
+    worker, original, _ = screening_worker_case
+    worker.scheduler.poll_once()
+    result = worker.run_once()
+    assert result.status == "recorded" and result.receipt is not None
+
+    def unavailable(*args, **kwargs):
+        raise AssertionError("frozen execution must not contact the Registry")
+
+    monkeypatch.setattr(RegistryClient, "get", unavailable)
+    monkeypatch.setattr(RegistryClient, "payload", unavailable)
+    with eval_connect() as conn:
+        binding = binding_for_screen(conn, result.receipt.record_id, worker.store)
+        record, receipt, bundle = screening_source(conn, binding.screening_record_id, worker.store)
+        assert bundle.artifact == original and bundle.assets() == {}
+        assert bundle.sandbox_profile is None  # Actual DSL; no sandbox evidence fabricated.
+        assert record.outcome.status == "passed"
+        assert binding.screening_receipt_hash == receipt.receipt_hash
+        assert binding.execution_bundle == receipt.files["execution_bundle"]
+        assert conn.execute(
+            "SELECT count(*) FROM eval.feedback_reservations WHERE artifact_version_id=%s",
+            [record.request.artifact_version_id],
+        ).fetchone() == (1,)
+        (worker.store.root / binding.execution_bundle.relative_path).write_bytes(b"corrupt")
+        with pytest.raises(ValueError, match="hash"):
+            screening_source(conn, binding.screening_record_id, worker.store)
+
+
+@pytest.mark.database
 def test_screening_worker_behavior_duplicate_never_reads_validation_or_counts_trial(
     screening_worker_case,
     registry_http,

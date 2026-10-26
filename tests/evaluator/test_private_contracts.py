@@ -5,12 +5,14 @@ import pytest
 from jsonschema import Draft202012Validator, FormatChecker
 from pydantic import ValidationError
 from qfr_eval.backtest.prefix import PrefixCheck
+from qfr_eval.execution_bundle import ArtifactExecutionBundle
 from qfr_eval.protocols.models import FrozenProtocol
 from qfr_eval.records import (
     EvaluationRequest,
     Measurement,
     MeasurementReceipt,
     OfficialRecord,
+    RegistryExecutionBinding,
     ReproductionResult,
     RuntimeIdentity,
     StoredFile,
@@ -44,6 +46,8 @@ from qfr_eval.statistics.hurdles import TurnoverResult
 from qfr_eval.statistics.incremental import IncrementalResult
 
 MODELS = (
+    ArtifactExecutionBundle,
+    RegistryExecutionBinding,
     ScreeningSessionConfiguration,
     KindAdapterProfile,
     ScreeningOutcome,

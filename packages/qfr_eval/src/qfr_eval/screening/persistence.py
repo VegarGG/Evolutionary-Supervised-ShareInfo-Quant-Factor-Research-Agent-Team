@@ -18,6 +18,7 @@ from qfr_core.contracts.reports import EvidenceIdentity
 
 from qfr_eval.artifact_store import EvidenceStore
 from qfr_eval.db.queue import finish
+from qfr_eval.execution_bundle import ArtifactExecutionBundle
 from qfr_eval.protocols.store import get_active
 from qfr_eval.runtime import verify_runtime
 from qfr_eval.scheduler.dedup import digest
@@ -110,6 +111,7 @@ def persist_screening(
     worker: str,
     fence: int,
     request_id: UUID,
+    execution_bundle: ArtifactExecutionBundle | None = None,
 ) -> tuple[ScreeningRecord, ScreeningReceipt]:
     """Caller holds the semantic lock across dedup and subsequent computation.
 
@@ -254,6 +256,15 @@ def persist_screening(
         "execution_policy": store.json(execution_policy.model_dump(mode="json")),
         "development_input": store.json(development_input.model_dump(mode="json")),
     }
+    if execution_bundle is not None:
+        if (
+            execution_bundle.artifact != artifact
+            or outcome.status != "passed"
+            or execution_bundle.execution_policy != execution_policy
+            or execution_bundle.adapter_profile != adapter_profile
+        ):
+            raise ValueError("execution bundle differs from successful screening")
+        files["execution_bundle"] = store.json(execution_bundle.model_dump(mode="json"))
     if probe_input is not None:
         files["probe_input"] = store.json(probe_input.model_dump(mode="json"))
     if output is not None:

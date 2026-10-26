@@ -23,6 +23,7 @@ from qfr_eval.records import (
     OfficialRecord,
     ReproductionResult,
 )
+from qfr_eval.registry_execution import RegistryExecutionFailure, load_registry_execution
 from qfr_eval.runtime import verify_runtime
 from qfr_eval.statistics.clustering import BehavioralFingerprint, ClusterSnapshot, cluster_trials
 from qfr_eval.statistics.family import TrialObservation
@@ -72,6 +73,12 @@ def reproduce(
     ):
         raise ValueError("record, receipt or frozen input identity mismatch")
     verify_runtime(request.runtime)
+    registry = (
+        load_registry_execution(conn, request, protocol, store)
+        if request.variant == "registry"
+        else None
+    )
+    candidate_history = registry.history if registry else None
     prior = [TrialObservation.model_validate(t) for t in context["frozen_prior"]]
     tables = {table.name: snapshot.read(table.name) for table in snapshot.manifest.tables}
     frozen_fingerprints = {
@@ -80,7 +87,11 @@ def reproduce(
     }
     pinned_clusters = ClusterSnapshot.model_validate(context["clusters"])
     try:
-        fingerprint = pilot_fingerprint(request, protocol, tables)
+        fingerprint = pilot_fingerprint(
+            request, protocol, tables, candidate_history=candidate_history
+        )
+    except RegistryExecutionFailure:
+        raise
     except (ValueError, KeyError):
         fingerprint = None
     fingerprint_match = (fingerprint is None and "fingerprint" not in receipt.files) or (
@@ -108,6 +119,7 @@ def reproduce(
         prior=prior,
         prior_deltas=context["prior_deltas"],
         effective_trials=context["effective_trials"],
+        candidate_history=candidate_history,
     )
     expected_tables = {
         name
@@ -118,6 +130,12 @@ def reproduce(
         logical_hash(frame, grain) == receipt.files[name].logical_sha256
         for name, (frame, grain) in actual.tables.items()
     )
+    if registry:
+        # Re-executed input/output bytes must match, not only downstream metrics.
+        expected_execution = {
+            key: value for key, value in receipt.files.items() if key.startswith("registry_")
+        }
+        series_match = series_match and registry.evidence_files() == expected_execution
     result = ReproductionResult(
         record_id=record.record_id,
         status="match"
@@ -181,5 +199,5 @@ def main(arguments: list[str] | None = None) -> None:
         print(result.model_dump_json())
         if result.status != "match":
             parser.exit(1)
-    except (psycopg.Error, OSError, KeyError, ValueError) as error:
+    except (psycopg.Error, OSError, KeyError, ValueError, RuntimeError) as error:
         parser.exit(1, f"reproduction refused: {type(error).__name__}\n")

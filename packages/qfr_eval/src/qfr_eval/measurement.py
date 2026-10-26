@@ -2,6 +2,7 @@
 
 import hashlib
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
@@ -11,6 +12,7 @@ import polars as pl
 from qfr_core.contracts.enums import ReasonCode
 from qfr_core.data_layer.snapshots import canonical_json
 from qfr_core.metrics.core import measurement
+from qfr_core.pilot.baseline import P0History
 
 from qfr_eval.backtest.pairing import pair_periods, window_periods
 from qfr_eval.backtest.pilot import PilotRun, evaluate_pilot
@@ -123,29 +125,44 @@ def measure_pilot(
     prior: list[TrialObservation],
     prior_deltas: dict[str, list[float | None]],
     effective_trials: int | None,
+    candidate_history: Callable[[dict[str, pl.DataFrame]], tuple[pl.DataFrame, P0History]]
+    | None = None,
 ) -> MeasuredRun:
     if protocol.sha256 != request.protocol_hash or protocol.scope != "P0_P1_verification_only":
         raise ValueError("measurement requires the exact approved protocol")
     window = protocol.windows[request.window]
     if window.access == "locked":
         raise ValueError("locked confirmation is not authorized")
-    artifact_id, digest, _ = builtin_definition(request.variant)
-    if artifact_id != request.artifact_version_id or digest != request.content_hash:
-        raise ValueError("built-in artifact identity differs")
+    if request.variant == "registry":
+        if request.registry_execution is None or candidate_history is None:
+            raise ValueError("registry measurement requires verified actual runner outputs")
+    else:
+        artifact_id, digest, _ = builtin_definition(request.variant)
+        if (
+            artifact_id != request.artifact_version_id
+            or digest != request.content_hash
+            or candidate_history is not None
+            or request.registry_execution is not None
+        ):
+            raise ValueError("built-in artifact identity differs")
     # Preserve warmup and carry-in state, but never measure later/confirmation outcomes.
     tables = slice_inputs(tables, window.end)
     runs: dict[str, PilotRun] = {}
 
     def run(variant: str) -> PilotRun:
         if variant not in runs:
-            _, _, spec = builtin_definition(variant)
-            panel, history = built_in_history(
-                tables["features"],
-                tables["prices_daily"],
-                tables["universe"]["code"].to_list(),
-                protocol,
-                spec=spec,
-            )
+            if variant == "registry":
+                assert candidate_history is not None
+                panel, history = candidate_history(tables)
+            else:
+                _, _, spec = builtin_definition(variant)
+                panel, history = built_in_history(
+                    tables["features"],
+                    tables["prices_daily"],
+                    tables["universe"]["code"].to_list(),
+                    protocol,
+                    spec=spec,
+                )
             runs[variant] = evaluate_pilot(
                 panel,
                 history,
