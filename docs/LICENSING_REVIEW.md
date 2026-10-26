@@ -50,6 +50,12 @@ Stage 2 branch now includes Alembic/SQLAlchemy/Mako (MIT), MarkupSafe
 (BSD-3-Clause), and runtime Psycopg. The same third-party boundary applies;
 THIRD-PARTY-NOTICES.md and all package copies identify the runtime Psycopg use.
 
+Stage 3 also uses Psycopg in the registry. Its HTTP dependencies were checked
+against installed locked metadata: FastAPI 0.162.0, AnyIO 4.15.1 and annotated-doc
+0.0.5 declare MIT; Starlette 1.10.0 and Uvicorn 0.54.0 declare BSD-3-Clause.
+The HTTPX 0.28.1 test client declares BSD-3-Clause. No dependency source is
+vendored or relicensed; this metadata check retains the inventory limits below.
+
 No specific conflict was identified that blocks licensing the project's owned
 source under the approved terms. This is a bounded technical inventory, not a
 legal clearance or a claim that every binary image is ready for redistribution.

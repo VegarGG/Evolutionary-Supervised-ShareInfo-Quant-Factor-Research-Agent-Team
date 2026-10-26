@@ -709,6 +709,20 @@ def examples(root: Path):
         has_more=False,
     )
     roots += [
+        pub.RegistryAuthenticationConfiguration(
+            revision=1,
+            enabled=True,
+            minimum_token_bytes=32,
+            maximum_token_bytes=512,
+            bindings=[
+                pub.RegistryTokenBinding(
+                    principal="fixture-publisher",
+                    token_ref="env:REGISTRY_PUBLISHER_TOKEN",
+                    roles=["publisher"],
+                    programs=["program-example"],
+                )
+            ],
+        ),
         pub.FamilyPage(
             family_id="family-example",
             program_id="program-example",

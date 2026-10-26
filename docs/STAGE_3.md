@@ -60,8 +60,7 @@ payloads are rejected. Source inspection/execution requires the sandbox. Publica
 alone never establishes executable readiness or schedules evaluation.
 
 The HTTP app denies access unless an explicit authorizer is configured.
-Its only artifact mutation is `POST /v1/artifacts`; token configuration follows
-in P2.4. No persistent token was created.
+Its only artifact mutation is `POST /v1/artifacts`. No persistent token was created.
 
 ## Registry reads
 
@@ -83,5 +82,29 @@ additional GET-only payload route resolves only an asset declared in an authoriz
 manifest, verifies its digest, and serves it as an attachment with a digest ETag
 and `nosniff`. Client input never becomes a filesystem path. Missing read policy
 is an explicit readiness failure. Reads do not notify or control the evaluator.
+
+## Authentication and attribution
+
+`RegistryAuthenticationConfiguration` declares versioned bindings from named
+principals to explicit program IDs, registry roles and `env:` secret references.
+`StaticTokenAuthorizer` resolves only those references from a supplied environment
+mapping. Missing, malformed or reused token values prevent initialization. Bearer
+authentication requires exactly one Authorization header; query-string tokens do
+not authenticate. Comparisons use constant-time digest comparison over every binding.
+The authorizer retains digests instead of credential values.
+
+The committed `configs/registry/authentication_v1.json` is disabled with no bindings.
+It creates no credential or grant. Production credentials and their deployment need
+the separately required operator approval. Tests generate ephemeral synthetic values
+in memory, including a real loopback HTTP publication/read/retry against PostgreSQL.
+
+Every HTTP request records a UTC timestamp, request ID, authenticated principal
+(or `anonymous`), route template, method and status. Logs omit Authorization headers,
+query strings, raw paths, payloads and exception text. Invalid or duplicate request
+IDs are rejected. Publication passes the same validated request ID and server-resolved
+principal into the existing atomic append-only audit mechanism. Client claims cannot
+replace publisher attribution. Denials, retries and server failures remain explicit.
+The default structured stderr sink emits without relying on an embedding
+application to lower Python's default logging level.
 
 Full Stage 3 gate verification is pending implementation of the remaining packages.

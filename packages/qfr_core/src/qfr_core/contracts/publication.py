@@ -5,7 +5,7 @@ from typing import Annotated, Literal, Self
 from pydantic import AwareDatetime, Field, NonNegativeInt, PositiveInt, model_validator
 
 from qfr_core.contracts.artifacts import ArtifactDefinition, ArtifactManifest
-from qfr_core.contracts.base import Contract, Sha256, Text
+from qfr_core.contracts.base import Contract, SecretRef, Sha256, Text
 from qfr_core.contracts.enums import ArtifactKind
 
 
@@ -116,3 +116,39 @@ class RunnerPackage(Contract):
     fields_used: list[Text]
     max_lookback_days: NonNegativeInt
     weight_files: list[Text]
+
+
+class RegistryTokenBinding(Contract):
+    principal: Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")]
+    token_ref: SecretRef
+    roles: list[Literal["publisher", "reader", "evaluator"]] = Field(min_length=1)
+    programs: list[Text] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def explicit_scopes(self) -> Self:
+        if len(set(self.roles)) != len(self.roles) or len(set(self.programs)) != len(self.programs):
+            raise ValueError("registry roles and programs must be unique")
+        if any(not program.strip() or program == "*" for program in self.programs):
+            raise ValueError("registry programs must be explicitly named")
+        return self
+
+
+class RegistryAuthenticationConfiguration(Contract):
+    revision: PositiveInt
+    enabled: bool
+    minimum_token_bytes: Annotated[int, Field(ge=32, le=8192)]
+    maximum_token_bytes: Annotated[int, Field(ge=32, le=8192)]
+    bindings: list[RegistryTokenBinding]
+
+    @model_validator(mode="after")
+    def valid_bindings(self) -> Self:
+        if self.minimum_token_bytes > self.maximum_token_bytes:
+            raise ValueError("token length bounds are reversed")
+        if bool(self.bindings) != self.enabled:
+            raise ValueError("enabled authentication requires bindings; disabled forbids them")
+        if any(
+            len({getattr(binding, field) for binding in self.bindings}) != len(self.bindings)
+            for field in ("principal", "token_ref")
+        ):
+            raise ValueError("each principal and token reference must be unique")
+        return self

@@ -17,8 +17,9 @@ from qfr_core.contracts.publication import (
 )
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from qfr_registry.api.request_log import RequestContext, RequestLog, log_request
 from qfr_registry.policy import RegistryReadPolicy
-from qfr_registry.publication import Principal, Registry, uuid7
+from qfr_registry.publication import Principal, Registry
 from qfr_registry.reads import RegistryNotFound, RegistryReader
 from qfr_registry.validation import InvalidPublication, PublicationConflict
 
@@ -62,9 +63,17 @@ def create_app(
     *,
     authorize: Callable[[Request], Principal] = unavailable_authorizer,
     read_policy: RegistryReadPolicy | None = None,
+    request_log: Callable[[RequestLog], None] = log_request,
 ) -> FastAPI:
     app = FastAPI(title="QFR immutable registry", version="1")
     app.add_middleware(BodyLimit, limit=registry.policy.max_request_bytes)
+    app.add_middleware(RequestContext, sink=request_log)
+
+    def authorized(
+        request: Request, principal: Annotated[Principal, Depends(authorize)]
+    ) -> Principal:
+        request.state.principal = principal.name
+        return principal
 
     def reader() -> RegistryReader:
         if read_policy is None:
@@ -99,7 +108,7 @@ def create_app(
 
     @app.get("/v1/artifacts", response_model=ArtifactPage)
     def list_artifacts(
-        principal: Annotated[Principal, Depends(authorize)],
+        principal: Annotated[Principal, Depends(authorized)],
         since_seq: Annotated[int, Query(ge=0)],
         limit: Annotated[int, Query(ge=1)],
     ) -> ArtifactPage:
@@ -107,14 +116,14 @@ def create_app(
 
     @app.get("/v1/artifacts/{version_id}", response_model=PublishedArtifact)
     def get_artifact(
-        version_id: UUID, principal: Annotated[Principal, Depends(authorize)]
+        version_id: UUID, principal: Annotated[Principal, Depends(authorized)]
     ) -> PublishedArtifact:
         return reader().get(version_id, principal)
 
     @app.get("/v1/families/{family_id}", response_model=FamilyPage)
     def get_family(
         family_id: UUID,
-        principal: Annotated[Principal, Depends(authorize)],
+        principal: Annotated[Principal, Depends(authorized)],
         since_seq: Annotated[int, Query(ge=0)] = 0,
         limit: Annotated[int | None, Query(ge=1)] = None,
     ) -> FamilyPage:
@@ -129,14 +138,14 @@ def create_app(
     @app.get("/v1/artifacts/{version_id}/lineage", response_model=ArtifactLineage)
     def get_lineage(
         version_id: UUID,
-        principal: Annotated[Principal, Depends(authorize)],
+        principal: Annotated[Principal, Depends(authorized)],
         depth: Annotated[int, Query(ge=0)],
     ) -> ArtifactLineage:
         return reader().lineage(version_id, principal, depth=depth)
 
     @app.get("/v1/artifacts/{version_id}/payload")
     def get_payload(
-        version_id: UUID, asset_id: str, principal: Annotated[Principal, Depends(authorize)]
+        version_id: UUID, asset_id: str, principal: Annotated[Principal, Depends(authorized)]
     ) -> Response:
         data, media_type, digest = reader().payload(version_id, asset_id, principal)
         return Response(
@@ -154,17 +163,9 @@ def create_app(
         body: PublicationRequest,
         request: Request,
         response: Response,
-        principal: Annotated[Principal, Depends(authorize)],
+        principal: Annotated[Principal, Depends(authorized)],
     ) -> PublicationResponse:
-        try:
-            request_id = (
-                UUID(request.headers["x-request-id"])
-                if "x-request-id" in request.headers
-                else uuid7()
-            )
-        except ValueError:
-            raise HTTPException(status_code=400, detail="invalid request id") from None
-        response.headers["x-request-id"] = str(request_id)
+        request_id = request.state.request_id
         try:
             result = registry.publish(body, principal, request_id)
         except PermissionError:

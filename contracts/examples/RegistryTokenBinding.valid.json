@@ -1,0 +1,10 @@
+{
+  "principal": "fixture-publisher",
+  "programs": [
+    "program-example"
+  ],
+  "roles": [
+    "publisher"
+  ],
+  "token_ref": "env:REGISTRY_PUBLISHER_TOKEN"
+}
