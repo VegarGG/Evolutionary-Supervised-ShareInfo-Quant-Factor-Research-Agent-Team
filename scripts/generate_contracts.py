@@ -19,6 +19,7 @@ MODULES = [
     "data",
     "delivery",
     "enums",
+    "execution",
     "intake",
     "jobs",
     "providers",

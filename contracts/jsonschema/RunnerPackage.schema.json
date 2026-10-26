@@ -47,9 +47,16 @@
       "$ref": "#/$defs/ArtifactKind"
     },
     "max_lookback_days": {
-      "minimum": 0,
-      "title": "Max Lookback Days",
-      "type": "integer"
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Max Lookback Days"
     },
     "output_schema_ref": {
       "minLength": 1,

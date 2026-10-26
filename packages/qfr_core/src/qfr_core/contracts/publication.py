@@ -2,7 +2,15 @@
 
 from typing import Annotated, Literal, Self
 
-from pydantic import AwareDatetime, Field, NonNegativeInt, PositiveInt, model_validator
+from pydantic import (
+    AwareDatetime,
+    Field,
+    HttpUrl,
+    NonNegativeInt,
+    PositiveFloat,
+    PositiveInt,
+    model_validator,
+)
 
 from qfr_core.contracts.artifacts import ArtifactDefinition, ArtifactManifest
 from qfr_core.contracts.base import Contract, SecretRef, Sha256, Text
@@ -114,7 +122,8 @@ class RunnerPackage(Contract):
     output_schema_ref: Text
     dependency_lock_sha256: Sha256
     fields_used: list[Text]
-    max_lookback_days: NonNegativeInt
+    # None declares a full prefix/stateful runner, never a zero-lookback shortcut.
+    max_lookback_days: NonNegativeInt | None
     weight_files: list[Text]
 
 
@@ -151,4 +160,24 @@ class RegistryAuthenticationConfiguration(Contract):
             for field in ("principal", "token_ref")
         ):
             raise ValueError("each principal and token reference must be unique")
+        return self
+
+
+class RegistryClientConfiguration(Contract):
+    revision: PositiveInt
+    base_url: HttpUrl
+    token_ref: SecretRef
+    timeout_seconds: PositiveFloat
+    max_request_bytes: PositiveInt
+    max_response_bytes: PositiveInt
+
+    @model_validator(mode="after")
+    def unambiguous_origin(self) -> Self:
+        if (
+            self.base_url.username
+            or self.base_url.password
+            or self.base_url.query
+            or self.base_url.fragment
+        ):
+            raise ValueError("registry URL cannot contain credentials, query or fragment")
         return self

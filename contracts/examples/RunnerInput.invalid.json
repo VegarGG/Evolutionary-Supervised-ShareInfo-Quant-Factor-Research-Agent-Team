@@ -1,0 +1,21 @@
+{
+  "seed": 0,
+  "tables": {
+    "close": {
+      "columns": [
+        "value"
+      ],
+      "dtypes": [
+        "Float64"
+      ],
+      "rows": [
+        [
+          1.0
+        ],
+        [
+          null
+        ]
+      ]
+    }
+  }
+}

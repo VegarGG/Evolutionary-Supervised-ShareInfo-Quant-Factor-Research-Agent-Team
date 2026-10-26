@@ -11,7 +11,7 @@ from uuid import UUID
 from psycopg import Connection
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
-from qfr_core.contracts.artifacts import ArtifactManifest, CompositeImplementation
+from qfr_core.contracts.artifacts import ArtifactManifest, CompositeImplementation, StrategyPayload
 from qfr_core.contracts.publication import (
     PublicationRequest,
     PublicationResponse,
@@ -130,10 +130,15 @@ class Registry:
                     if parent is None or parent["program_id"] != program:
                         raise InvalidPublication("lineage parent unavailable in this program")
                     parents.append(parent)
+                references = []
                 if isinstance(manifest.implementation, CompositeImplementation):
-                    for component in manifest.implementation.components:
+                    references += [c.artifact for c in manifest.implementation.components]
+                if isinstance(manifest.payload, StrategyPayload):
+                    references += manifest.payload.signal_artifacts
+                if references:
+                    for reference in references:
                         try:
-                            component_id = UUID(component.artifact.artifact_version_id)
+                            component_id = UUID(reference.artifact_version_id)
                         except ValueError:
                             raise InvalidPublication("invalid composite reference") from None
                         source = cur.execute(
@@ -144,7 +149,7 @@ class Registry:
                         if (
                             source is None
                             or source["program_id"] != program
-                            or source["content_hash"] != component.artifact.content_hash
+                            or source["content_hash"] != reference.content_hash
                         ):
                             raise InvalidPublication(
                                 "composite reference unavailable or mismatched"

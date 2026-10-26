@@ -709,6 +709,14 @@ def examples(root: Path):
         has_more=False,
     )
     roots += [
+        pub.RegistryClientConfiguration(
+            revision=1,
+            base_url="http://registry-api:8000/",
+            token_ref="env:REGISTRY_READER_TOKEN",
+            timeout_seconds=10,
+            max_request_bytes=8388608,
+            max_response_bytes=16777216,
+        ),
         pub.RegistryAuthenticationConfiguration(
             revision=1,
             enabled=True,
@@ -760,5 +768,12 @@ def examples(root: Path):
             ],
             truncated_at_depth=False,
         ),
+    ]
+    from qfr_core.contracts.execution import RunnerInput, RunnerOutput, RunnerTable
+
+    table = RunnerTable(columns=["value"], dtypes=["Float64"], rows=[[1.0], [None]])
+    roots += [
+        RunnerInput(schema_version="1", tables={"close": table}, seed=0),
+        RunnerOutput(schema_version="1", kind="factor", tables={"scores": table}),
     ]
     return roots

@@ -1,0 +1,42 @@
+{
+  "revision": 1,
+  "pilot_protocol": "pilot_p0_p1_verification_v1",
+  "original_manifest_sha256": {
+    "P0": "6ef7f71418aee33f802a93955745e8bb9d99cd12a9bbc1bb51abfb14bf086535",
+    "P1": "2eee8d569f887d2b0cbd52c1c16c8d803b7bf5d4b69d980156cf0b8cb2ae37aa"
+  },
+  "pilot_exposure": {
+    "history": "previously_seen",
+    "inspected_periods": [{"start": "2020-01-01", "end": "2026-10-16"}],
+    "training_tuning_history": "Frozen original P0/P1; previously inspected and selected history",
+    "provider_knowledge_exposure": "unknown",
+    "quality": {
+      "timing_grade": "B",
+      "timing_basis": "Original availability conventions; feature cache retained",
+      "vintage_status": "unknown",
+      "vintage_notes": "Historical revisions unverified; pre-December-2021 index history may be reconstructed",
+      "membership_grade": "D",
+      "membership_status": "backfilled",
+      "membership_notes": "Current industry membership mapped backward; not point-in-time"
+    },
+    "licence_constraints": ["Original data remains local and requires separate authorization"],
+    "unknowns": ["Index vintage"]
+  },
+  "synthetic_exposure": {
+    "history": "previously_seen",
+    "inspected_periods": [],
+    "training_tuning_history": "Authored deterministic acceptance fixtures; no fitted model",
+    "provider_knowledge_exposure": "unknown",
+    "quality": {
+      "timing_grade": "B",
+      "timing_basis": "Declared synthetic observation order",
+      "vintage_status": "verified",
+      "vintage_notes": "Authored synthetic fixtures",
+      "membership_grade": null,
+      "membership_status": "not_applicable",
+      "membership_notes": "Declared synthetic universe"
+    },
+    "licence_constraints": ["Project fixture license; no rights to third-party input data granted"],
+    "unknowns": []
+  }
+}
