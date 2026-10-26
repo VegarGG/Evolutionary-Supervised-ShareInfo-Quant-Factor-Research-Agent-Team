@@ -1,0 +1,35 @@
+{
+  "available_date_column": null,
+  "columns": {
+    "close": "Float64",
+    "date": "Date",
+    "instrument": "String"
+  },
+  "date_column": "date",
+  "files": [
+    {
+      "bytes": 1,
+      "path": "panel/year=2020/part.parquet",
+      "physical_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "grain": [
+    "instrument",
+    "date"
+  ],
+  "licence_note": "Synthetic",
+  "logical_hash_spec": "qfr-table/1:sorted-grain,sorted-columns,float-hex,null",
+  "logical_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "quality": {
+    "membership_grade": "D",
+    "membership_notes": "Current membership mapped backward",
+    "membership_status": "backfilled",
+    "timing_basis": "Documented availability convention",
+    "timing_grade": "B",
+    "vintage_notes": "Historical revisions unverified",
+    "vintage_status": "unknown"
+  },
+  "research_visible": true,
+  "rows": 1,
+  "source_hashes": {}
+}

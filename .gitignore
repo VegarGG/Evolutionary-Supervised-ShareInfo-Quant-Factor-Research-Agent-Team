@@ -13,6 +13,8 @@ __pycache__/
 !.env.example
 .secrets/
 data/
+!configs/data/
+!configs/data/*.json
 fixtures/pilot/raw/
 P0_English_Delivery_*/
 P1_English_Delivery_*/

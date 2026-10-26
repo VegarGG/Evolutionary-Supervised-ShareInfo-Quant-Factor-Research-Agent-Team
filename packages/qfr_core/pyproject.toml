@@ -2,7 +2,7 @@
 name = "qfr-core"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
-dependencies = ["pydantic>=2,<3", "pydantic-settings>=2,<3", "PyYAML>=6,<7"]
+dependencies = ["pydantic>=2,<3", "pydantic-settings>=2,<3", "PyYAML>=6,<7", "polars>=1.36,<2", "numpy>=2,<3", "scipy>=1.16,<2", "lark>=1.2,<2"]
 
 [build-system]
 requires = ["hatchling==1.27.0"]

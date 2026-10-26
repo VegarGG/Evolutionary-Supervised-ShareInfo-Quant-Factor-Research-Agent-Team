@@ -623,4 +623,40 @@ def examples(root: Path):
             at=AT,
         ),
     ]
+    roots.append(
+        d.SnapshotManifest.model_validate(
+            dict(
+                schema_version="1",
+                snapshot_id=H,
+                profile="stock_daily_v1",
+                zone="research",
+                research_cutoff="2020-01-01",
+                as_of="2020-01-01",
+                source="synthetic example",
+                release_tag=None,
+                archive_sha256=None,
+                build_code_version="schema-example",
+                conventions={"prices": "adjusted"},
+                exposure=exposure,
+                tables=[
+                    dict(
+                        name="panel",
+                        files=[
+                            dict(path="panel/year=2020/part.parquet", physical_sha256=H, bytes=1)
+                        ],
+                        columns={"date": "Date", "instrument": "String", "close": "Float64"},
+                        grain=["instrument", "date"],
+                        date_column="date",
+                        available_date_column=None,
+                        rows=1,
+                        logical_sha256=H,
+                        logical_hash_spec="qfr-table/1:sorted-grain,sorted-columns,float-hex,null",
+                        quality=quality,
+                        licence_note="Synthetic",
+                        source_hashes={},
+                    )
+                ],
+            )
+        )
+    )
     return roots
