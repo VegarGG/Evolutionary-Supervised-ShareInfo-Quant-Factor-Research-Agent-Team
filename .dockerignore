@@ -30,3 +30,8 @@
 !fixtures/pilot/manifests/
 !fixtures/pilot/manifests/*.json
 **/__pycache__/
+
+!LICENSE
+!NOTICE
+!ADDITIONAL-PERMISSION.md
+!THIRD-PARTY-NOTICES.md
