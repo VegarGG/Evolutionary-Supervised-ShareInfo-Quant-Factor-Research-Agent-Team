@@ -1,0 +1,7 @@
+{
+  "revision": 1,
+  "min_observations": 3,
+  "min_pbo_candidates": 4,
+  "pbo_blocks": 16,
+  "zero_epsilon": 1e-12
+}

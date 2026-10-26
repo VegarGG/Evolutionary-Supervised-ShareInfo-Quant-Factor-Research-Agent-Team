@@ -1,0 +1,22 @@
+{
+  "revision": 1,
+  "profile": "stock_daily_v1",
+  "language": "qfr-dsl/1",
+  "max_expression_length": 1000,
+  "max_nodes": 30,
+  "max_depth": 7,
+  "max_fields": 4,
+  "max_constants": 3,
+  "max_lookback": 250,
+  "max_corr_nesting": 2,
+  "windows": [1, 2, 3, 5, 10, 20, 40, 60, 120, 250],
+  "fields": ["open", "high", "low", "close", "vwap", "volume", "amount", "ret", "adv20", "close_raw"],
+  "constant_min": -10,
+  "constant_max": 10,
+  "constant_decimals": 2,
+  "zero_epsilon": 1e-12,
+  "rolling_valid_fraction": 0.8,
+  "full_window_below": 5,
+  "rank_convention": "average_rank_divided_by_valid_count",
+  "extremum_ties": "most_recent"
+}

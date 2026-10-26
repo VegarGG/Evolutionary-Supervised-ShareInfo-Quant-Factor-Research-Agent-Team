@@ -143,3 +143,68 @@ class DatasetManifest(Contract):
         if len({t.name for t in self.tables}) != len(self.tables):
             raise ValueError("dataset table names must be unique")
         return self
+
+
+class SnapshotFile(Contract):
+    path: str = Field(pattern=r"^[A-Za-z0-9_=/.-]+$")
+    physical_sha256: Sha256
+    bytes: NonNegativeInt
+
+    @model_validator(mode="after")
+    def safe_path(self) -> Self:
+        if PurePosixPath(self.path).is_absolute() or ".." in self.path.split("/"):
+            raise ValueError("snapshot file must be relative and contained")
+        return self
+
+
+class SnapshotTable(Contract):
+    name: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    files: list[SnapshotFile] = Field(min_length=1)
+    columns: dict[str, str] = Field(min_length=1)
+    grain: list[Text] = Field(min_length=1)
+    date_column: Text | None
+    available_date_column: Text | None
+    rows: NonNegativeInt
+    logical_sha256: Sha256
+    logical_hash_spec: Literal["qfr-table/1:sorted-grain,sorted-columns,float-hex,null"]
+    quality: QualityLabels
+    licence_note: Text
+    source_hashes: dict[str, Sha256]
+    research_visible: bool = True
+
+    @model_validator(mode="after")
+    def valid_columns(self) -> Self:
+        keys = self.grain + [x for x in [self.date_column, self.available_date_column] if x]
+        if not set(keys) <= self.columns.keys() or len(set(self.grain)) != len(self.grain):
+            raise ValueError("invalid snapshot keys or date columns")
+        return self
+
+
+class SnapshotManifest(Contract):
+    schema_version: Literal["1"]
+    snapshot_id: Sha256
+    profile: Text
+    zone: Literal["research", "full"]
+    research_cutoff: date | None
+    as_of: date
+    source: Text
+    release_tag: Text | None
+    archive_sha256: Sha256 | None
+    build_code_version: Text
+    conventions: dict[str, str]
+    tables: list[SnapshotTable] = Field(min_length=1)
+    exposure: ExposureAndQuality
+
+    @model_validator(mode="after")
+    def valid_zone(self) -> Self:
+        if (self.zone == "research") != (self.research_cutoff is not None):
+            raise ValueError("only research snapshots require a research cutoff")
+        if self.research_cutoff is not None and self.as_of > self.research_cutoff:
+            raise ValueError("research as_of exceeds cutoff")
+        if self.zone == "research" and any(not table.research_visible for table in self.tables):
+            raise ValueError("private table in research snapshot")
+        names = [table.name for table in self.tables]
+        paths = [file.path for table in self.tables for file in table.files]
+        if len(set(names)) != len(names) or len(set(paths)) != len(paths):
+            raise ValueError("duplicate snapshot tables or files")
+        return self
