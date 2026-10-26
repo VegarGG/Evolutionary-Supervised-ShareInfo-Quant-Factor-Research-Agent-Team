@@ -131,6 +131,20 @@ def test_pil_02_quarterly_review_actions_exact(sources, history):
 
 
 @pytest.mark.pilot
+def test_p0_scores_survive_canonical_json_and_jsonb_key_reordering(enriched, history):
+    from polars.testing import assert_frame_equal
+
+    value = json.loads(Path("configs/pilot/p0_scoring.json").read_bytes())
+    for field in ("monthly_fundamental_internal", "monthly_market_internal"):
+        # JSONB uses length/byte ordering; canonical JSON sorts lexically.
+        value[field] = dict(sorted(value[field].items(), key=lambda item: (len(item[0]), item[0])))
+    for reordered in (value, json.loads(json.dumps(value, sort_keys=True))):
+        actual = p0_history(enriched, P0Config.model_validate(reordered))
+        for cycle in history.signals:
+            assert_frame_equal(actual.signals[cycle], history.signals[cycle], check_exact=True)
+
+
+@pytest.mark.pilot
 def test_six_v4_dsl_expressions_equal_polars(sources):
     tables, _, features, tolerance, _ = sources
     panel = tables["features"].select("code", "date")

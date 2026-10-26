@@ -1,0 +1,131 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "algorithm": {
+      "const": "mean_absolute_spearman_single_linkage",
+      "title": "Algorithm",
+      "type": "string"
+    },
+    "basis": {
+      "enum": [
+        "behavioral_clusters",
+        "economic_family_count_above_limit"
+      ],
+      "title": "Basis",
+      "type": "string"
+    },
+    "effective_trials": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Effective Trials"
+    },
+    "fingerprint_hashes": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Fingerprint Hashes",
+      "type": "object"
+    },
+    "groups": {
+      "items": {
+        "items": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Groups",
+      "type": "array"
+    },
+    "maximum_trials": {
+      "exclusiveMinimum": 0,
+      "title": "Maximum Trials",
+      "type": "integer"
+    },
+    "missing_trials": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Missing Trials",
+      "type": "array"
+    },
+    "raw_trials": {
+      "minimum": 0,
+      "title": "Raw Trials",
+      "type": "integer"
+    },
+    "reason": {
+      "enum": [
+        "complete",
+        "missing_fingerprint",
+        "incomparable_grid",
+        "no_trials"
+      ],
+      "title": "Reason",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "estimated",
+        "insufficient_data"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "threshold": {
+      "exclusiveMinimum": 0,
+      "maximum": 1,
+      "title": "Threshold",
+      "type": "number"
+    },
+    "trial_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Trial Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "algorithm",
+    "status",
+    "basis",
+    "threshold",
+    "maximum_trials",
+    "trial_ids",
+    "raw_trials",
+    "effective_trials",
+    "groups",
+    "fingerprint_hashes",
+    "missing_trials",
+    "reason"
+  ],
+  "title": "ClusterSnapshot",
+  "type": "object"
+}

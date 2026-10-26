@@ -1,0 +1,23 @@
+{
+  "diagnostic_trials": 0,
+  "dsr": {
+    "missing_reason": "insufficient_data",
+    "value": null
+  },
+  "effective_trials": null,
+  "failed_trials": 1,
+  "hlz_status": "insufficient_data",
+  "hlz_t": {
+    "missing_reason": "insufficient_data",
+    "value": null
+  },
+  "pbo": {
+    "missing_reason": "insufficient_data",
+    "value": null
+  },
+  "pbo_cohort": "insufficient_data",
+  "rank_in_family": null,
+  "raw_trials": 1,
+  "unapproved": true,
+  "withheld_trials": 0
+}

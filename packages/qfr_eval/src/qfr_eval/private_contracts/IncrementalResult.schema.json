@@ -1,0 +1,115 @@
+{
+  "$defs": {
+    "MetricValue": {
+      "additionalProperties": false,
+      "properties": {
+        "missing_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "not_applicable",
+                "insufficient_data",
+                "withheld",
+                "failed",
+                "not_measured"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Missing Reason"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "missing_reason"
+      ],
+      "title": "MetricValue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "convention": {
+      "const": "partial_spearman_ols_intercept",
+      "title": "Convention",
+      "type": "string"
+    },
+    "max_pool_correlation": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "mean_rank_ic": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "period_rank_ic": {
+      "additionalProperties": {
+        "$ref": "#/$defs/MetricValue"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Period Rank Ic",
+      "type": "object"
+    },
+    "pool_argmax": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Pool Argmax"
+    },
+    "pool_correlations": {
+      "additionalProperties": {
+        "$ref": "#/$defs/MetricValue"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Pool Correlations",
+      "type": "object"
+    },
+    "status": {
+      "enum": [
+        "estimated",
+        "insufficient_data"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "valid_periods": {
+      "minimum": 0,
+      "title": "Valid Periods",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "convention",
+    "status",
+    "period_rank_ic",
+    "mean_rank_ic",
+    "pool_correlations",
+    "max_pool_correlation",
+    "pool_argmax",
+    "valid_periods"
+  ],
+  "title": "IncrementalResult",
+  "type": "object"
+}

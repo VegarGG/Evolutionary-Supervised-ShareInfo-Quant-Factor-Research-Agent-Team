@@ -1,0 +1,199 @@
+{
+  "approved_manifest_sha256": "68d4cd285f22badd7313becdcb12919090c76ee4c9b921f19e0d791a2db1508a",
+  "approved_proposal_sha256": "dcd5e30d6c21491ab293b823185265459c93caddf2602dd29f3119abcf1bfc6a",
+  "atol": 1e-12,
+  "baseline": "P1_reversal_momentum",
+  "bootstrap": {
+    "automatic": true,
+    "block_floors": {
+      "fixed_quarter": 1,
+      "monthly": 2,
+      "quarterly": 3,
+      "weekly": 4
+    },
+    "confidence": 0.95,
+    "draws": 10000,
+    "family_comparisons": null,
+    "family_method": "romano_wolf_studentized",
+    "method": "paired_circular_blocks",
+    "minimum_blocks": 5,
+    "minimum_periods": 10,
+    "seed": 18431355591641601255,
+    "sensitivity": true
+  },
+  "calibration_reference": "baseline",
+  "diagnostics": {
+    "cluster_max_trials": 20000,
+    "cluster_similarity": 0.7,
+    "fingerprint_window": "development",
+    "hlz_t_hurdle": 3.0,
+    "max_pool_correlation": 0.7,
+    "minimum_pbo_candidates": 4,
+    "pbo_blocks": 16,
+    "permutation_draws": 10000,
+    "placebo_min_shift": {
+      "fixed_quarter": 1,
+      "monthly": 2,
+      "quarterly": 3,
+      "weekly": 4
+    },
+    "placebo_percentile_hurdle": 90.0,
+    "prefix_cutoffs": [
+      "2021-12-31",
+      "2022-05-06",
+      "2023-05-05",
+      "2024-01-05",
+      "2024-07-05",
+      "2024-12-27"
+    ],
+    "purpose_seeds": {
+      "child_parent": 7915844170854772265,
+      "fingerprint": 17282083117156704009,
+      "ladder": 6433711981530233830,
+      "official_uncertainty": 18431355591641601255,
+      "permutation": 523829720571758141,
+      "placebo": 2098758613548071672
+    },
+    "root_seed": 20261026
+  },
+  "embargo_trading_days": 0,
+  "extra_training": false,
+  "features": {
+    "benchmarks": [
+      "000300.SH",
+      "000905.SH",
+      "000852.SH"
+    ],
+    "drawdown_window": 120,
+    "industry_count": 31,
+    "lowvol_window": 60,
+    "momentum_skip": 20,
+    "momentum_windows": [
+      120,
+      250
+    ],
+    "quarter_review_benchmarks": [
+      "000905.SH",
+      "000852.SH"
+    ],
+    "quarter_review_window": 4,
+    "reverse_windows": [
+      5,
+      20
+    ],
+    "revision": 1,
+    "style_market": "000300.SH",
+    "style_min_observations": 26,
+    "style_momentum": 12,
+    "style_regression": 52,
+    "style_round_decimals": 12,
+    "style_small": "000852.SH"
+  },
+  "group": "p60",
+  "live_model_calls": false,
+  "metrics": {
+    "costs_bps": [
+      0.0,
+      10.0,
+      30.0
+    ],
+    "industry_count": 31,
+    "profile": "pilot_industry_v1",
+    "revision": 1,
+    "selection_fraction": 0.2,
+    "weight_tolerance": 1e-09,
+    "zero_epsilon": 1e-12
+  },
+  "new_supplier_requests": false,
+  "p0": {
+    "crowding_weight": 0.4,
+    "minimum_names": 10,
+    "missing_percentile": 0.5,
+    "monthly_bandwidth": 0.6,
+    "monthly_fundamental_internal": {
+      "cash": 0.2,
+      "inventory": 0.15,
+      "profit_acceleration": 0.15,
+      "revenue_acceleration": 0.15,
+      "roe_floor": 0.05
+    },
+    "monthly_fundamental_weight": 0.4,
+    "monthly_market_internal": {
+      "breadth_change": 0.05,
+      "moderate_trend": 0.1
+    },
+    "monthly_market_weight": 0.2,
+    "monthly_preference": 0.6,
+    "quarterly_noncrowding_scale": 0.7058823529411765,
+    "replacement_fraction": 0.5,
+    "revision": 1,
+    "selection_fraction": 0.2,
+    "selection_score_bonus": 2.0,
+    "weekly_breadth_adjustment": 0.05,
+    "weekly_legacy_breadth_weight": 0.3,
+    "weekly_legacy_trend_weight": 0.3,
+    "weekly_momentum_share": 0.5,
+    "weekly_persistence_share": 0.5,
+    "weekly_style_weight": 0.1,
+    "weekly_trend_adjustment": 0.05
+  },
+  "primary_cost_bps": 10,
+  "primary_cycle": "weekly",
+  "primary_metric": "extreme_macro_recall",
+  "profile": "pilot_industry_v1",
+  "protocol_id": "pilot_p0_p1_verification_v1",
+  "purge": "entry_and_exit_inside_window_carry_state",
+  "release_intent": {
+    "confirmation_queries_per_protocol": 1,
+    "confirmation_requires_separate_authorization": true,
+    "feedback_versions_per_lineage_generation": 3,
+    "ladder_reference": "P0_development_bootstrap_mean_sd_ddof1",
+    "ladder_step": 0.011239912200318261,
+    "policy": "scalar_plus_flags",
+    "quota_identity": "program,economic_lineage,server_generation",
+    "renaming_resets_budget": false,
+    "retain_origin_version": true,
+    "rounding": "floor_to_step"
+  },
+  "rtol": 1e-12,
+  "schema_version": "1",
+  "scope": "P0_P1_verification_only",
+  "source_hashes": {
+    "calibration": "67a0cc92184cfe8477c589156329a1690f798379028f71a4ae65e90b8e10a858",
+    "p0_periods": "6c72e2e892d96e68a781b6478b9d4608eacdfd6674191eec71260d07c52fc113"
+  },
+  "turnover": {
+    "bottom_threshold": 0.7175145769838456,
+    "calibration_ref": "67a0cc92184cfe8477c589156329a1690f798379028f71a4ae65e90b8e10a858",
+    "combine": "both_pass",
+    "comparison": "strict_gt",
+    "cycle": "weekly",
+    "exclude": "one_initial_construction_only",
+    "formula": "(buy+sell+abs(previous_sum-target_sum))/2",
+    "maximum_exceedance_denominator": 20,
+    "maximum_exceedance_numerator": 1,
+    "missing": "insufficient_data",
+    "top_threshold": 0.717385843365484
+  },
+  "version": "0.1.0",
+  "windows": {
+    "confirmation": {
+      "access": "locked",
+      "end": "2026-10-16",
+      "exposure": "previously_seen",
+      "start": "2025-01-01"
+    },
+    "development": {
+      "access": "research",
+      "end": "2022-12-31",
+      "exposure": "previously_seen",
+      "start": "2020-01-01"
+    },
+    "validation": {
+      "access": "private",
+      "end": "2024-12-31",
+      "exposure": "previously_seen",
+      "start": "2023-01-01"
+    }
+  }
+}

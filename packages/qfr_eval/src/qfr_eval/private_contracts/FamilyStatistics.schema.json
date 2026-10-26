@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "MetricValue": {
+      "additionalProperties": false,
+      "properties": {
+        "missing_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "not_applicable",
+                "insufficient_data",
+                "withheld",
+                "failed",
+                "not_measured"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Missing Reason"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "missing_reason"
+      ],
+      "title": "MetricValue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "diagnostic_trials": {
+      "minimum": 0,
+      "title": "Diagnostic Trials",
+      "type": "integer"
+    },
+    "dsr": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "effective_trials": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Effective Trials"
+    },
+    "failed_trials": {
+      "minimum": 0,
+      "title": "Failed Trials",
+      "type": "integer"
+    },
+    "hlz_status": {
+      "enum": [
+        "pass",
+        "fail",
+        "insufficient_data"
+      ],
+      "title": "Hlz Status",
+      "type": "string"
+    },
+    "hlz_t": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "pbo": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "pbo_cohort": {
+      "enum": [
+        "family",
+        "generation",
+        "insufficient_data"
+      ],
+      "title": "Pbo Cohort",
+      "type": "string"
+    },
+    "rank_in_family": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Rank In Family"
+    },
+    "raw_trials": {
+      "minimum": 0,
+      "title": "Raw Trials",
+      "type": "integer"
+    },
+    "withheld_trials": {
+      "minimum": 0,
+      "title": "Withheld Trials",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "raw_trials",
+    "effective_trials",
+    "failed_trials",
+    "withheld_trials",
+    "diagnostic_trials",
+    "dsr",
+    "pbo",
+    "pbo_cohort",
+    "hlz_t",
+    "hlz_status",
+    "rank_in_family"
+  ],
+  "title": "FamilyStatistics",
+  "type": "object"
+}

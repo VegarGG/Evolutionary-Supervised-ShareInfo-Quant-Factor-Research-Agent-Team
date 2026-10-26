@@ -45,10 +45,10 @@ the base image's `/usr/share/doc` notices.
 | colorama and tzdata | Conditional locked dependencies not installed on this Linux environment; exact distributed files were not audited |
 | Python 3.12 slim-bookworm, PostgreSQL 16 and uv 0.11.19 images | Upstream image digests are pinned; their OS/runtime components retain independent licenses. No complete per-image SBOM/source-offer audit was performed |
 
-The ongoing Stage 2 working tree additionally references Alembic/SQLAlchemy/Mako
-(MIT), MarkupSafe (BSD-3-Clause), and runtime Psycopg. Those changes are excluded
-from this licensing branch and PR. The same third-party boundary applies when
-they are integrated.
+The original licensing PR excluded the then-ongoing Stage 2 changes. The combined
+Stage 2 branch now includes Alembic/SQLAlchemy/Mako (MIT), MarkupSafe
+(BSD-3-Clause), and runtime Psycopg. The same third-party boundary applies;
+THIRD-PARTY-NOTICES.md and all package copies identify the runtime Psycopg use.
 
 No specific conflict was identified that blocks licensing the project's owned
 source under the approved terms. This is a bounded technical inventory, not a

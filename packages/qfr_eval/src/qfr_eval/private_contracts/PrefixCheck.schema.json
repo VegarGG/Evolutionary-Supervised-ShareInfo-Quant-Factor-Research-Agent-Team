@@ -1,0 +1,45 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "compared_cells": {
+      "minimum": 0,
+      "title": "Compared Cells",
+      "type": "integer"
+    },
+    "cutoff": {
+      "format": "date",
+      "title": "Cutoff",
+      "type": "string"
+    },
+    "full_prefix_hashes": {
+      "additionalProperties": {
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Full Prefix Hashes",
+      "type": "object"
+    },
+    "rebuilt_hashes": {
+      "additionalProperties": {
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Rebuilt Hashes",
+      "type": "object"
+    }
+  },
+  "required": [
+    "cutoff",
+    "compared_cells",
+    "full_prefix_hashes",
+    "rebuilt_hashes"
+  ],
+  "title": "PrefixCheck",
+  "type": "object"
+}

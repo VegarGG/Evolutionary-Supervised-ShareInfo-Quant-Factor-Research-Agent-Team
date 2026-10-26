@@ -121,7 +121,17 @@ def test_reg_01_insert_only_grants_and_owner_triggers(connect, database, role, s
     if table in ["official_records", "released_reports"]:
         columns += ["protocol_version", "dataset_version_id", "evaluator_version"]
         values += ["fixture-protocol/1", "fixture-data", "stage0"]
-    with connect(role, database) as conn:
+    if table == "official_records":
+        columns += ["trial_id"]
+        values += [row_id]
+    with connect(role, database) as conn, conn.transaction():
+        if table == "official_records":
+            conn.execute(
+                "INSERT INTO eval.trial_ledger"
+                "(id,payload,created_by,request_id,official_record_id) "
+                "VALUES(%s,'{}','stage0-test',%s,%s)",
+                [row_id, uuid4(), row_id],
+            )
         conn.execute(
             sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
                 table_id,
@@ -137,7 +147,7 @@ def test_reg_01_insert_only_grants_and_owner_triggers(connect, database, role, s
             assert conn.execute(
                 "SELECT has_table_privilege(current_user,%s,%s)", [f"{schema}.{table}", verb]
             ).fetchone() == (False,)
-        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+        with pytest.raises(psycopg.errors.InsufficientPrivilege), conn.transaction():
             conn.execute(sql.SQL("ALTER TABLE {} DISABLE TRIGGER ALL").format(table_id))
     # Grants alone are insufficient: even the bootstrap owner hits the triggers.
     with connect("postgres", database) as conn:
@@ -162,7 +172,9 @@ def test_all_insert_only_tables_have_mutation_and_truncate_triggers(connect):
                 "SELECT c.relname, count(t.oid) FROM pg_class c "
                 "JOIN pg_namespace n ON n.oid=c.relnamespace "
                 "JOIN pg_trigger t ON t.tgrelid=c.oid AND NOT t.tgisinternal "
-                "WHERE n.nspname=%s GROUP BY c.relname",
+                "JOIN pg_proc f ON f.oid=t.tgfoid "
+                "WHERE n.nspname=%s AND f.proname IN ('reject_mutation','protect_protocol') "
+                "GROUP BY c.relname",
                 [schema],
             ).fetchall()
             assert rows

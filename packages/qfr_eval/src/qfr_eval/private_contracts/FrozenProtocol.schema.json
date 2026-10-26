@@ -1,0 +1,901 @@
+{
+  "$defs": {
+    "BootstrapConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "automatic": {
+          "title": "Automatic",
+          "type": "boolean"
+        },
+        "block_floors": {
+          "additionalProperties": {
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "propertyNames": {
+            "enum": [
+              "weekly",
+              "monthly",
+              "quarterly",
+              "fixed_quarter"
+            ]
+          },
+          "title": "Block Floors",
+          "type": "object"
+        },
+        "confidence": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "draws": {
+          "exclusiveMinimum": 0,
+          "title": "Draws",
+          "type": "integer"
+        },
+        "family_comparisons": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Family Comparisons"
+        },
+        "family_method": {
+          "enum": [
+            "romano_wolf_studentized",
+            "original_bonferroni_12"
+          ],
+          "title": "Family Method",
+          "type": "string"
+        },
+        "method": {
+          "const": "paired_circular_blocks",
+          "title": "Method",
+          "type": "string"
+        },
+        "minimum_blocks": {
+          "exclusiveMinimum": 0,
+          "title": "Minimum Blocks",
+          "type": "integer"
+        },
+        "minimum_periods": {
+          "exclusiveMinimum": 0,
+          "title": "Minimum Periods",
+          "type": "integer"
+        },
+        "seed": {
+          "minimum": 0,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "sensitivity": {
+          "title": "Sensitivity",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "draws",
+        "seed",
+        "method",
+        "confidence",
+        "block_floors",
+        "automatic",
+        "minimum_periods",
+        "minimum_blocks",
+        "sensitivity",
+        "family_method",
+        "family_comparisons"
+      ],
+      "title": "BootstrapConfig",
+      "type": "object"
+    },
+    "DiagnosticConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "cluster_max_trials": {
+          "exclusiveMinimum": 0,
+          "title": "Cluster Max Trials",
+          "type": "integer"
+        },
+        "cluster_similarity": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Cluster Similarity",
+          "type": "number"
+        },
+        "fingerprint_window": {
+          "const": "development",
+          "title": "Fingerprint Window",
+          "type": "string"
+        },
+        "hlz_t_hurdle": {
+          "exclusiveMinimum": 0,
+          "title": "Hlz T Hurdle",
+          "type": "number"
+        },
+        "max_pool_correlation": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Max Pool Correlation",
+          "type": "number"
+        },
+        "minimum_pbo_candidates": {
+          "exclusiveMinimum": 0,
+          "title": "Minimum Pbo Candidates",
+          "type": "integer"
+        },
+        "pbo_blocks": {
+          "exclusiveMinimum": 0,
+          "title": "Pbo Blocks",
+          "type": "integer"
+        },
+        "permutation_draws": {
+          "exclusiveMinimum": 0,
+          "title": "Permutation Draws",
+          "type": "integer"
+        },
+        "placebo_min_shift": {
+          "additionalProperties": {
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "propertyNames": {
+            "enum": [
+              "weekly",
+              "monthly",
+              "quarterly",
+              "fixed_quarter"
+            ]
+          },
+          "title": "Placebo Min Shift",
+          "type": "object"
+        },
+        "placebo_percentile_hurdle": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Placebo Percentile Hurdle",
+          "type": "number"
+        },
+        "prefix_cutoffs": {
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "title": "Prefix Cutoffs",
+          "type": "array"
+        },
+        "purpose_seeds": {
+          "additionalProperties": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Purpose Seeds",
+          "type": "object"
+        },
+        "root_seed": {
+          "minimum": 0,
+          "title": "Root Seed",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "prefix_cutoffs",
+        "placebo_min_shift",
+        "placebo_percentile_hurdle",
+        "max_pool_correlation",
+        "fingerprint_window",
+        "cluster_similarity",
+        "cluster_max_trials",
+        "pbo_blocks",
+        "minimum_pbo_candidates",
+        "hlz_t_hurdle",
+        "permutation_draws",
+        "root_seed",
+        "purpose_seeds"
+      ],
+      "title": "DiagnosticConfig",
+      "type": "object"
+    },
+    "EvaluationWindow": {
+      "additionalProperties": false,
+      "properties": {
+        "access": {
+          "enum": [
+            "research",
+            "private",
+            "locked"
+          ],
+          "title": "Access",
+          "type": "string"
+        },
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "exposure": {
+          "const": "previously_seen",
+          "title": "Exposure",
+          "type": "string"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "exposure",
+        "access"
+      ],
+      "title": "EvaluationWindow",
+      "type": "object"
+    },
+    "P0Config": {
+      "additionalProperties": false,
+      "properties": {
+        "crowding_weight": {
+          "title": "Crowding Weight",
+          "type": "number"
+        },
+        "minimum_names": {
+          "exclusiveMinimum": 0,
+          "title": "Minimum Names",
+          "type": "integer"
+        },
+        "missing_percentile": {
+          "title": "Missing Percentile",
+          "type": "number"
+        },
+        "monthly_bandwidth": {
+          "exclusiveMinimum": 0,
+          "title": "Monthly Bandwidth",
+          "type": "number"
+        },
+        "monthly_fundamental_internal": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Monthly Fundamental Internal",
+          "type": "object"
+        },
+        "monthly_fundamental_weight": {
+          "title": "Monthly Fundamental Weight",
+          "type": "number"
+        },
+        "monthly_market_internal": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Monthly Market Internal",
+          "type": "object"
+        },
+        "monthly_market_weight": {
+          "title": "Monthly Market Weight",
+          "type": "number"
+        },
+        "monthly_preference": {
+          "title": "Monthly Preference",
+          "type": "number"
+        },
+        "quarterly_noncrowding_scale": {
+          "title": "Quarterly Noncrowding Scale",
+          "type": "number"
+        },
+        "replacement_fraction": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Replacement Fraction",
+          "type": "number"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "selection_fraction": {
+          "exclusiveMaximum": 0.5,
+          "exclusiveMinimum": 0,
+          "title": "Selection Fraction",
+          "type": "number"
+        },
+        "selection_score_bonus": {
+          "title": "Selection Score Bonus",
+          "type": "number"
+        },
+        "weekly_breadth_adjustment": {
+          "title": "Weekly Breadth Adjustment",
+          "type": "number"
+        },
+        "weekly_legacy_breadth_weight": {
+          "title": "Weekly Legacy Breadth Weight",
+          "type": "number"
+        },
+        "weekly_legacy_trend_weight": {
+          "title": "Weekly Legacy Trend Weight",
+          "type": "number"
+        },
+        "weekly_momentum_share": {
+          "title": "Weekly Momentum Share",
+          "type": "number"
+        },
+        "weekly_persistence_share": {
+          "title": "Weekly Persistence Share",
+          "type": "number"
+        },
+        "weekly_style_weight": {
+          "title": "Weekly Style Weight",
+          "type": "number"
+        },
+        "weekly_trend_adjustment": {
+          "title": "Weekly Trend Adjustment",
+          "type": "number"
+        }
+      },
+      "required": [
+        "revision",
+        "minimum_names",
+        "selection_fraction",
+        "replacement_fraction",
+        "selection_score_bonus",
+        "missing_percentile",
+        "crowding_weight",
+        "monthly_preference",
+        "monthly_bandwidth",
+        "weekly_legacy_breadth_weight",
+        "weekly_legacy_trend_weight",
+        "weekly_momentum_share",
+        "weekly_persistence_share",
+        "weekly_breadth_adjustment",
+        "weekly_trend_adjustment",
+        "weekly_style_weight",
+        "monthly_fundamental_weight",
+        "monthly_market_weight",
+        "monthly_fundamental_internal",
+        "monthly_market_internal",
+        "quarterly_noncrowding_scale"
+      ],
+      "title": "P0Config",
+      "type": "object"
+    },
+    "PilotFeatureConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmarks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Benchmarks",
+          "type": "array"
+        },
+        "drawdown_window": {
+          "exclusiveMinimum": 0,
+          "title": "Drawdown Window",
+          "type": "integer"
+        },
+        "industry_count": {
+          "exclusiveMinimum": 0,
+          "title": "Industry Count",
+          "type": "integer"
+        },
+        "lowvol_window": {
+          "exclusiveMinimum": 0,
+          "title": "Lowvol Window",
+          "type": "integer"
+        },
+        "momentum_skip": {
+          "exclusiveMinimum": 0,
+          "title": "Momentum Skip",
+          "type": "integer"
+        },
+        "momentum_windows": {
+          "items": {
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "title": "Momentum Windows",
+          "type": "array"
+        },
+        "quarter_review_benchmarks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Quarter Review Benchmarks",
+          "type": "array"
+        },
+        "quarter_review_window": {
+          "exclusiveMinimum": 0,
+          "title": "Quarter Review Window",
+          "type": "integer"
+        },
+        "reverse_windows": {
+          "items": {
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "title": "Reverse Windows",
+          "type": "array"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "style_market": {
+          "title": "Style Market",
+          "type": "string"
+        },
+        "style_min_observations": {
+          "exclusiveMinimum": 0,
+          "title": "Style Min Observations",
+          "type": "integer"
+        },
+        "style_momentum": {
+          "exclusiveMinimum": 0,
+          "title": "Style Momentum",
+          "type": "integer"
+        },
+        "style_regression": {
+          "exclusiveMinimum": 0,
+          "title": "Style Regression",
+          "type": "integer"
+        },
+        "style_round_decimals": {
+          "exclusiveMinimum": 0,
+          "title": "Style Round Decimals",
+          "type": "integer"
+        },
+        "style_small": {
+          "title": "Style Small",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "industry_count",
+        "benchmarks",
+        "reverse_windows",
+        "momentum_windows",
+        "momentum_skip",
+        "lowvol_window",
+        "drawdown_window",
+        "style_market",
+        "style_small",
+        "style_momentum",
+        "style_regression",
+        "style_min_observations",
+        "style_round_decimals",
+        "quarter_review_window",
+        "quarter_review_benchmarks"
+      ],
+      "title": "PilotFeatureConfig",
+      "type": "object"
+    },
+    "PilotMetricConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "costs_bps": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Costs Bps",
+          "type": "array"
+        },
+        "industry_count": {
+          "minimum": 3,
+          "title": "Industry Count",
+          "type": "integer"
+        },
+        "profile": {
+          "const": "pilot_industry_v1",
+          "title": "Profile",
+          "type": "string"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "selection_fraction": {
+          "exclusiveMaximum": 0.5,
+          "exclusiveMinimum": 0,
+          "title": "Selection Fraction",
+          "type": "number"
+        },
+        "weight_tolerance": {
+          "exclusiveMinimum": 0,
+          "title": "Weight Tolerance",
+          "type": "number"
+        },
+        "zero_epsilon": {
+          "exclusiveMinimum": 0,
+          "title": "Zero Epsilon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "revision",
+        "profile",
+        "industry_count",
+        "selection_fraction",
+        "costs_bps",
+        "weight_tolerance",
+        "zero_epsilon"
+      ],
+      "title": "PilotMetricConfig",
+      "type": "object"
+    },
+    "ReleaseIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmation_queries_per_protocol": {
+          "exclusiveMinimum": 0,
+          "title": "Confirmation Queries Per Protocol",
+          "type": "integer"
+        },
+        "confirmation_requires_separate_authorization": {
+          "const": true,
+          "title": "Confirmation Requires Separate Authorization",
+          "type": "boolean"
+        },
+        "feedback_versions_per_lineage_generation": {
+          "exclusiveMinimum": 0,
+          "title": "Feedback Versions Per Lineage Generation",
+          "type": "integer"
+        },
+        "ladder_reference": {
+          "const": "P0_development_bootstrap_mean_sd_ddof1",
+          "title": "Ladder Reference",
+          "type": "string"
+        },
+        "ladder_step": {
+          "exclusiveMinimum": 0,
+          "title": "Ladder Step",
+          "type": "number"
+        },
+        "policy": {
+          "const": "scalar_plus_flags",
+          "title": "Policy",
+          "type": "string"
+        },
+        "quota_identity": {
+          "const": "program,economic_lineage,server_generation",
+          "title": "Quota Identity",
+          "type": "string"
+        },
+        "renaming_resets_budget": {
+          "const": false,
+          "title": "Renaming Resets Budget",
+          "type": "boolean"
+        },
+        "retain_origin_version": {
+          "const": true,
+          "title": "Retain Origin Version",
+          "type": "boolean"
+        },
+        "rounding": {
+          "const": "floor_to_step",
+          "title": "Rounding",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy",
+        "feedback_versions_per_lineage_generation",
+        "quota_identity",
+        "renaming_resets_budget",
+        "confirmation_queries_per_protocol",
+        "confirmation_requires_separate_authorization",
+        "ladder_step",
+        "ladder_reference",
+        "rounding",
+        "retain_origin_version"
+      ],
+      "title": "ReleaseIntent",
+      "type": "object"
+    },
+    "TurnoverPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "bottom_threshold": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Bottom Threshold",
+          "type": "number"
+        },
+        "calibration_ref": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Calibration Ref",
+          "type": "string"
+        },
+        "combine": {
+          "const": "both_pass",
+          "title": "Combine",
+          "type": "string"
+        },
+        "comparison": {
+          "const": "strict_gt",
+          "title": "Comparison",
+          "type": "string"
+        },
+        "cycle": {
+          "const": "weekly",
+          "title": "Cycle",
+          "type": "string"
+        },
+        "exclude": {
+          "const": "one_initial_construction_only",
+          "title": "Exclude",
+          "type": "string"
+        },
+        "formula": {
+          "const": "(buy+sell+abs(previous_sum-target_sum))/2",
+          "title": "Formula",
+          "type": "string"
+        },
+        "maximum_exceedance_denominator": {
+          "exclusiveMinimum": 0,
+          "title": "Maximum Exceedance Denominator",
+          "type": "integer"
+        },
+        "maximum_exceedance_numerator": {
+          "exclusiveMinimum": 0,
+          "title": "Maximum Exceedance Numerator",
+          "type": "integer"
+        },
+        "missing": {
+          "const": "insufficient_data",
+          "title": "Missing",
+          "type": "string"
+        },
+        "top_threshold": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Top Threshold",
+          "type": "number"
+        }
+      },
+      "required": [
+        "cycle",
+        "top_threshold",
+        "bottom_threshold",
+        "maximum_exceedance_numerator",
+        "maximum_exceedance_denominator",
+        "comparison",
+        "combine",
+        "exclude",
+        "formula",
+        "missing",
+        "calibration_ref"
+      ],
+      "title": "TurnoverPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "approval_ref": {
+      "minLength": 1,
+      "title": "Approval Ref",
+      "type": "string"
+    },
+    "approved_manifest_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Approved Manifest Sha256"
+    },
+    "approved_proposal_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Approved Proposal Sha256"
+    },
+    "atol": {
+      "exclusiveMinimum": 0,
+      "title": "Atol",
+      "type": "number"
+    },
+    "baseline": {
+      "const": "P1_reversal_momentum",
+      "title": "Baseline",
+      "type": "string"
+    },
+    "bootstrap": {
+      "$ref": "#/$defs/BootstrapConfig"
+    },
+    "calibration_reference": {
+      "const": "baseline",
+      "title": "Calibration Reference",
+      "type": "string"
+    },
+    "diagnostics": {
+      "$ref": "#/$defs/DiagnosticConfig"
+    },
+    "embargo_trading_days": {
+      "minimum": 0,
+      "title": "Embargo Trading Days",
+      "type": "integer"
+    },
+    "extra_training": {
+      "const": false,
+      "title": "Extra Training",
+      "type": "boolean"
+    },
+    "features": {
+      "$ref": "#/$defs/PilotFeatureConfig"
+    },
+    "group": {
+      "const": "p60",
+      "title": "Group",
+      "type": "string"
+    },
+    "live_model_calls": {
+      "const": false,
+      "title": "Live Model Calls",
+      "type": "boolean"
+    },
+    "metrics": {
+      "$ref": "#/$defs/PilotMetricConfig"
+    },
+    "new_supplier_requests": {
+      "const": false,
+      "title": "New Supplier Requests",
+      "type": "boolean"
+    },
+    "p0": {
+      "$ref": "#/$defs/P0Config"
+    },
+    "primary_cost_bps": {
+      "const": 10,
+      "title": "Primary Cost Bps",
+      "type": "integer"
+    },
+    "primary_cycle": {
+      "const": "weekly",
+      "title": "Primary Cycle",
+      "type": "string"
+    },
+    "primary_metric": {
+      "const": "extreme_macro_recall",
+      "title": "Primary Metric",
+      "type": "string"
+    },
+    "profile": {
+      "const": "pilot_industry_v1",
+      "title": "Profile",
+      "type": "string"
+    },
+    "protocol_id": {
+      "minLength": 1,
+      "title": "Protocol Id",
+      "type": "string"
+    },
+    "purge": {
+      "const": "entry_and_exit_inside_window_carry_state",
+      "title": "Purge",
+      "type": "string"
+    },
+    "release_intent": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReleaseIntent"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rtol": {
+      "exclusiveMinimum": 0,
+      "title": "Rtol",
+      "type": "number"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "enum": [
+        "P0_P1_verification_only",
+        "original_pilot_oracle"
+      ],
+      "title": "Scope",
+      "type": "string"
+    },
+    "source_hashes": {
+      "additionalProperties": {
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Source Hashes",
+      "type": "object"
+    },
+    "turnover": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TurnoverPolicy"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "version": {
+      "minLength": 1,
+      "title": "Version",
+      "type": "string"
+    },
+    "windows": {
+      "additionalProperties": {
+        "$ref": "#/$defs/EvaluationWindow"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Windows",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "protocol_id",
+    "version",
+    "profile",
+    "scope",
+    "approval_ref",
+    "approved_proposal_sha256",
+    "approved_manifest_sha256",
+    "source_hashes",
+    "windows",
+    "embargo_trading_days",
+    "purge",
+    "primary_metric",
+    "primary_cycle",
+    "primary_cost_bps",
+    "group",
+    "baseline",
+    "calibration_reference",
+    "p0",
+    "features",
+    "metrics",
+    "bootstrap",
+    "diagnostics",
+    "turnover",
+    "release_intent",
+    "atol",
+    "rtol",
+    "extra_training",
+    "new_supplier_requests",
+    "live_model_calls"
+  ],
+  "title": "FrozenProtocol",
+  "type": "object"
+}

@@ -1,0 +1,22 @@
+{
+  "convention": "partial_spearman_ols_intercept",
+  "max_pool_correlation": {
+    "missing_reason": "insufficient_data",
+    "value": null
+  },
+  "mean_rank_ic": {
+    "missing_reason": "insufficient_data",
+    "value": null
+  },
+  "period_rank_ic": {},
+  "pool_argmax": null,
+  "pool_correlations": {
+    "baseline": {
+      "missing_reason": "insufficient_data",
+      "value": null
+    }
+  },
+  "status": "insufficient_data",
+  "unapproved": true,
+  "valid_periods": 0
+}
