@@ -1,0 +1,828 @@
+{
+  "$defs": {
+    "AdvancementRelease": {
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "enum": [
+            "ADVANCED",
+            "NOT_ADVANCED"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "type": {
+          "const": "advancement",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "decision"
+      ],
+      "title": "AdvancementRelease",
+      "type": "object"
+    },
+    "DecisionRelease": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "gates_passed",
+            "gate_failed",
+            "approver_rejected",
+            "incubation_failed"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "ACCEPTED",
+            "REJECTED"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "gate": {
+          "anyOf": [
+            {
+              "enum": [
+                "quality",
+                "validation",
+                "holdout",
+                "incubation",
+                "approval"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Gate"
+        },
+        "type": {
+          "const": "decision",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "decision",
+        "category",
+        "gate"
+      ],
+      "title": "DecisionRelease",
+      "type": "object"
+    },
+    "DiagnosticFlag": {
+      "enum": [
+        "HIGH_TURNOVER",
+        "LOW_MONOTONICITY",
+        "SIGN_MISMATCH",
+        "CROWDED_WITH_LIBRARY",
+        "UNSTABLE_YEARLY",
+        "DECAYS_FAST",
+        "LOW_COVERAGE",
+        "WEAK_SIGNAL",
+        "COST_DOMINATED"
+      ],
+      "title": "DiagnosticFlag",
+      "type": "string"
+    },
+    "EvidenceIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_id": {
+          "minLength": 1,
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "dataset_version_id": {
+          "minLength": 1,
+          "title": "Dataset Version Id",
+          "type": "string"
+        },
+        "evaluator_version": {
+          "minLength": 1,
+          "title": "Evaluator Version",
+          "type": "string"
+        },
+        "protocol_version": {
+          "minLength": 1,
+          "title": "Protocol Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_version_id",
+        "content_hash",
+        "protocol_version",
+        "dataset_version_id",
+        "evaluator_version"
+      ],
+      "title": "EvidenceIdentity",
+      "type": "object"
+    },
+    "LibraryRelease": {
+      "additionalProperties": false,
+      "properties": {
+        "membership": {
+          "enum": [
+            "baseline",
+            "active",
+            "retired"
+          ],
+          "title": "Membership",
+          "type": "string"
+        },
+        "type": {
+          "const": "library",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "membership"
+      ],
+      "title": "LibraryRelease",
+      "type": "object"
+    },
+    "MetricValue": {
+      "additionalProperties": false,
+      "properties": {
+        "missing_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "not_applicable",
+                "insufficient_data",
+                "withheld",
+                "failed",
+                "not_measured"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Missing Reason"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "missing_reason"
+      ],
+      "title": "MetricValue",
+      "type": "object"
+    },
+    "PilotHurdleFlags": {
+      "additionalProperties": false,
+      "properties": {
+        "fold_majority": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Fold Majority",
+          "type": "string"
+        },
+        "incremental_contribution": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Incremental Contribution",
+          "type": "string"
+        },
+        "net_result": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Net Result",
+          "type": "string"
+        },
+        "novelty": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Novelty",
+          "type": "string"
+        },
+        "placebo": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Placebo",
+          "type": "string"
+        },
+        "turnover": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Turnover",
+          "type": "string"
+        }
+      },
+      "required": [
+        "incremental_contribution",
+        "fold_majority",
+        "placebo",
+        "net_result",
+        "turnover",
+        "novelty"
+      ],
+      "title": "PilotHurdleFlags",
+      "type": "object"
+    },
+    "PilotRelease": {
+      "additionalProperties": false,
+      "properties": {
+        "hurdle_flags": {
+          "$ref": "#/$defs/PilotHurdleFlags"
+        },
+        "minimum_detectable_effect": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "not_for_selection": {
+          "title": "Not For Selection",
+          "type": "boolean"
+        },
+        "quality_flags": {
+          "items": {
+            "enum": [
+              "small_sample_warning",
+              "pit_grade_downgrade",
+              "duplicate"
+            ],
+            "type": "string"
+          },
+          "title": "Quality Flags",
+          "type": "array"
+        },
+        "rank_bucket": {
+          "enum": [
+            "top",
+            "middle",
+            "bottom",
+            "withheld"
+          ],
+          "title": "Rank Bucket",
+          "type": "string"
+        },
+        "scalar": {
+          "$ref": "#/$defs/ReleasedScalar"
+        },
+        "type": {
+          "const": "pilot",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "scalar",
+        "hurdle_flags",
+        "rank_bucket",
+        "quality_flags",
+        "minimum_detectable_effect",
+        "not_for_selection"
+      ],
+      "title": "PilotRelease",
+      "type": "object"
+    },
+    "ReasonCode": {
+      "enum": [
+        "SCHEMA_INVALID",
+        "KIND_UNSUPPORTED",
+        "PARSE_ERROR",
+        "TYPE_ERROR",
+        "COMPLEXITY_LIMIT",
+        "FORBIDDEN_CONSTRUCT",
+        "DECLARATION_MISMATCH",
+        "DUPLICATE_OF",
+        "NEAR_DUPLICATE_OF",
+        "QUOTA_DEFERRED",
+        "QUOTA_EXPIRED",
+        "LOW_COVERAGE",
+        "LOOKAHEAD_DETECTED",
+        "RUNTIME_LIMIT",
+        "DEGENERATE",
+        "INTERNAL_ERROR"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "ReleasedScalar": {
+      "additionalProperties": false,
+      "properties": {
+        "attribution": {
+          "enum": [
+            "current_version",
+            "lineage_best"
+          ],
+          "title": "Attribution",
+          "type": "string"
+        },
+        "baseline_version_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Baseline Version Id"
+        },
+        "cost_basis_ref": {
+          "minLength": 1,
+          "title": "Cost Basis Ref",
+          "type": "string"
+        },
+        "measurement": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "metric": {
+          "enum": [
+            "extreme_macro_recall",
+            "RankIC_mean"
+          ],
+          "title": "Metric",
+          "type": "string"
+        },
+        "origin_artifact_version_id": {
+          "minLength": 1,
+          "title": "Origin Artifact Version Id",
+          "type": "string"
+        },
+        "period_count": {
+          "minimum": 0,
+          "title": "Period Count",
+          "type": "integer"
+        },
+        "sampling_unit": {
+          "enum": [
+            "mature_matched_decision",
+            "trading_date"
+          ],
+          "title": "Sampling Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric",
+        "sampling_unit",
+        "period_count",
+        "cost_basis_ref",
+        "baseline_version_id",
+        "measurement",
+        "origin_artifact_version_id",
+        "attribution"
+      ],
+      "title": "ReleasedScalar",
+      "type": "object"
+    },
+    "Signature": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519",
+          "title": "Algorithm",
+          "type": "string"
+        },
+        "key_id": {
+          "minLength": 1,
+          "title": "Key Id",
+          "type": "string"
+        },
+        "signature_hex": {
+          "pattern": "^[0-9a-f]{128}$",
+          "title": "Signature Hex",
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "key_id",
+        "signature_hex"
+      ],
+      "title": "Signature",
+      "type": "object"
+    },
+    "SimulationRelease": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_mode": {
+          "enum": [
+            "forward",
+            "replay"
+          ],
+          "title": "Evidence Mode",
+          "type": "string"
+        },
+        "rank_ic_bucket": {
+          "enum": [
+            "negative",
+            "0_to_0.01",
+            "0.01_to_0.03",
+            "above_0.03",
+            "unavailable"
+          ],
+          "title": "Rank Ic Bucket",
+          "type": "string"
+        },
+        "sharpe_bucket": {
+          "enum": [
+            "negative",
+            "nonnegative",
+            "unavailable"
+          ],
+          "title": "Sharpe Bucket",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "sim",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "rank_ic_bucket",
+        "sharpe_bucket",
+        "evidence_mode"
+      ],
+      "title": "SimulationRelease",
+      "type": "object"
+    },
+    "StatusRelease": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "failed",
+            "complete",
+            "withheld",
+            "pass"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "intake",
+            "screening"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status"
+      ],
+      "title": "StatusRelease",
+      "type": "object"
+    },
+    "StockW1Release": {
+      "additionalProperties": false,
+      "properties": {
+        "complexity": {
+          "minimum": 0,
+          "title": "Complexity",
+          "type": "integer"
+        },
+        "coverage_bucket": {
+          "enum": [
+            "low",
+            "adequate",
+            "high",
+            "unavailable"
+          ],
+          "title": "Coverage Bucket",
+          "type": "string"
+        },
+        "decay_profile": {
+          "additionalProperties": {
+            "$ref": "#/$defs/MetricValue"
+          },
+          "propertyNames": {
+            "enum": [
+              "1",
+              "5",
+              "10",
+              "20"
+            ]
+          },
+          "title": "Decay Profile",
+          "type": "object"
+        },
+        "library_artifact_version_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Library Artifact Version Id"
+        },
+        "ls_net_sharpe": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "max_library_correlation": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "monotonicity": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "nw_t_bucket": {
+          "enum": [
+            "below_1",
+            "1_to_2",
+            "2_to_3",
+            "above_3",
+            "unavailable"
+          ],
+          "title": "Nw T Bucket",
+          "type": "string"
+        },
+        "positive_rank_ic_date_share": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "rank_autocorrelation": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "rank_ic_ir": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "rank_ic_mean": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "size_neutral_rank_ic": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "top_turnover": {
+          "$ref": "#/$defs/MetricValue"
+        },
+        "type": {
+          "const": "w1",
+          "title": "Type",
+          "type": "string"
+        },
+        "yearly_rank_ic": {
+          "patternProperties": {
+            "^[0-9]{4}$": {
+              "$ref": "#/$defs/MetricValue"
+            }
+          },
+          "title": "Yearly Rank Ic",
+          "type": "object"
+        }
+      },
+      "required": [
+        "type",
+        "rank_ic_mean",
+        "rank_ic_ir",
+        "nw_t_bucket",
+        "positive_rank_ic_date_share",
+        "decay_profile",
+        "ls_net_sharpe",
+        "monotonicity",
+        "top_turnover",
+        "rank_autocorrelation",
+        "max_library_correlation",
+        "library_artifact_version_id",
+        "yearly_rank_ic",
+        "coverage_bucket",
+        "size_neutral_rank_ic",
+        "complexity"
+      ],
+      "title": "StockW1Release",
+      "type": "object"
+    },
+    "StockW2Release": {
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "ladder_status": {
+          "enum": [
+            "improved",
+            "unchanged",
+            "withheld"
+          ],
+          "title": "Ladder Status",
+          "type": "string"
+        },
+        "scalar": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReleasedScalar"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": {
+          "const": "w2",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "decision",
+        "ladder_status",
+        "scalar"
+      ],
+      "title": "StockW2Release",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "content": {
+      "discriminator": {
+        "mapping": {
+          "advancement": "#/$defs/AdvancementRelease",
+          "decision": "#/$defs/DecisionRelease",
+          "intake": "#/$defs/StatusRelease",
+          "library": "#/$defs/LibraryRelease",
+          "pilot": "#/$defs/PilotRelease",
+          "screening": "#/$defs/StatusRelease",
+          "sim": "#/$defs/SimulationRelease",
+          "w1": "#/$defs/StockW1Release",
+          "w2": "#/$defs/StockW2Release"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/PilotRelease"
+        },
+        {
+          "$ref": "#/$defs/StockW1Release"
+        },
+        {
+          "$ref": "#/$defs/StockW2Release"
+        },
+        {
+          "$ref": "#/$defs/StatusRelease"
+        },
+        {
+          "$ref": "#/$defs/AdvancementRelease"
+        },
+        {
+          "$ref": "#/$defs/SimulationRelease"
+        },
+        {
+          "$ref": "#/$defs/DecisionRelease"
+        },
+        {
+          "$ref": "#/$defs/LibraryRelease"
+        }
+      ],
+      "title": "Content"
+    },
+    "family_id": {
+      "minLength": 1,
+      "title": "Family Id",
+      "type": "string"
+    },
+    "flags": {
+      "items": {
+        "$ref": "#/$defs/DiagnosticFlag"
+      },
+      "title": "Flags",
+      "type": "array"
+    },
+    "identity": {
+      "$ref": "#/$defs/EvidenceIdentity"
+    },
+    "profile": {
+      "enum": [
+        "pilot_industry_v1",
+        "stock_daily_v1"
+      ],
+      "title": "Profile",
+      "type": "string"
+    },
+    "program_id": {
+      "minLength": 1,
+      "title": "Program Id",
+      "type": "string"
+    },
+    "protocol_card_ref": {
+      "minLength": 1,
+      "title": "Protocol Card Ref",
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "release_policy_ref": {
+      "minLength": 1,
+      "title": "Release Policy Ref",
+      "type": "string"
+    },
+    "released_at": {
+      "format": "date-time",
+      "title": "Released At",
+      "type": "string"
+    },
+    "report_id": {
+      "minLength": 1,
+      "title": "Report Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "signature": {
+      "$ref": "#/$defs/Signature"
+    }
+  },
+  "required": [
+    "schema_version",
+    "report_id",
+    "identity",
+    "family_id",
+    "program_id",
+    "release_policy_ref",
+    "protocol_card_ref",
+    "profile",
+    "content",
+    "reason_codes",
+    "flags",
+    "released_at",
+    "signature"
+  ],
+  "title": "ReleasedReport",
+  "type": "object"
+}

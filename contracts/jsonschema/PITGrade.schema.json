@@ -1,0 +1,10 @@
+{
+  "enum": [
+    "A",
+    "B",
+    "C",
+    "D"
+  ],
+  "title": "PITGrade",
+  "type": "string"
+}

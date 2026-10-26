@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "DateRange": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "DateRange",
+      "type": "object"
+    },
+    "PITGrade": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "title": "PITGrade",
+      "type": "string"
+    },
+    "QualityLabels": {
+      "additionalProperties": false,
+      "properties": {
+        "membership_grade": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PITGrade"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "membership_notes": {
+          "minLength": 1,
+          "title": "Membership Notes",
+          "type": "string"
+        },
+        "membership_status": {
+          "enum": [
+            "point_in_time",
+            "backfilled",
+            "unknown",
+            "not_applicable"
+          ],
+          "title": "Membership Status",
+          "type": "string"
+        },
+        "timing_basis": {
+          "minLength": 1,
+          "title": "Timing Basis",
+          "type": "string"
+        },
+        "timing_grade": {
+          "$ref": "#/$defs/PITGrade"
+        },
+        "vintage_notes": {
+          "minLength": 1,
+          "title": "Vintage Notes",
+          "type": "string"
+        },
+        "vintage_status": {
+          "enum": [
+            "verified",
+            "unknown",
+            "restated"
+          ],
+          "title": "Vintage Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "timing_grade",
+        "timing_basis",
+        "vintage_status",
+        "vintage_notes",
+        "membership_grade",
+        "membership_status",
+        "membership_notes"
+      ],
+      "title": "QualityLabels",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "history": {
+      "enum": [
+        "previously_seen",
+        "unknown",
+        "prospective"
+      ],
+      "title": "History",
+      "type": "string"
+    },
+    "inspected_periods": {
+      "items": {
+        "$ref": "#/$defs/DateRange"
+      },
+      "title": "Inspected Periods",
+      "type": "array"
+    },
+    "licence_constraints": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Licence Constraints",
+      "type": "array"
+    },
+    "provider_knowledge_exposure": {
+      "enum": [
+        "known",
+        "unknown"
+      ],
+      "title": "Provider Knowledge Exposure",
+      "type": "string"
+    },
+    "quality": {
+      "$ref": "#/$defs/QualityLabels"
+    },
+    "training_tuning_history": {
+      "minLength": 1,
+      "title": "Training Tuning History",
+      "type": "string"
+    },
+    "unknowns": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Unknowns",
+      "type": "array"
+    }
+  },
+  "required": [
+    "history",
+    "inspected_periods",
+    "training_tuning_history",
+    "provider_knowledge_exposure",
+    "quality",
+    "licence_constraints",
+    "unknowns"
+  ],
+  "title": "ExposureAndQuality",
+  "type": "object"
+}

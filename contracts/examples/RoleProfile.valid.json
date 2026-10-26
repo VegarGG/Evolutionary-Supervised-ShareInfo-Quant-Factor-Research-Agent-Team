@@ -1,0 +1,29 @@
+{
+  "budget_reservation_usd": null,
+  "context_policy_ref": "policies/context/supervisor.json",
+  "fallback_allowlist": [],
+  "max_tool_turns": 12,
+  "model_profile": "kimi_selected",
+  "per_call_timeouts": {
+    "connect_seconds": 30.0,
+    "idle_seconds": null,
+    "read_seconds": 300.0
+  },
+  "pricing_snapshot": null,
+  "prompt_template_ref": "prompts/supervisor.md",
+  "requested_settings": {
+    "max_output_tokens": 8192,
+    "reasoning_effort": null,
+    "temperature": null,
+    "thinking_budget_tokens": null,
+    "top_p": null
+  },
+  "retry_policy": {
+    "ambiguous_outcome": "persist_before_retry",
+    "backoff": "exponential_with_jitter",
+    "backoff_seconds": null,
+    "max_attempts": 3
+  },
+  "tool_allowlist": [],
+  "tool_policy_ref": "policies/tools/supervisor.json"
+}

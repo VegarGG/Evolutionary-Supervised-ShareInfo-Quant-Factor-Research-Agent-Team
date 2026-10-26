@@ -1,0 +1,6 @@
+{
+  "category": "gate_failed",
+  "decision": "REJECTED",
+  "gate": "quality",
+  "type": "decision"
+}

@@ -1,0 +1,86 @@
+name: Stage 0 foundation
+on:
+  push:
+    branches: [stage-0-foundation]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: stage-0-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+        env:
+          # Bootstrap only; replaced with generated passwords and SCRAM before tests.
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U postgres"
+          --health-interval 2s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: 0.11.19
+          python-version: '3.12'
+          enable-cache: true
+      - name: Install locked workspace
+        run: |
+          uv sync --locked --all-packages
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - name: Bootstrap three databases and four roles
+        run: |
+          uv run --locked --all-packages python scripts/local_secrets.py
+          uv run --locked --all-packages python scripts/bootstrap_ci_postgres.py '${{ job.services.postgres.id }}'
+      - name: Check
+        run: just check
+      - name: Test against PostgreSQL service
+        env:
+          QFR_TEST_POSTGRES_DSN: postgresql://127.0.0.1:5432/postgres
+        run: just test
+      - name: Compose startup exit gate
+        env:
+          QFR_TEST_POSTGRES_DSN: postgresql://127.0.0.1:55432/postgres
+        run: |
+          just up
+          uv run --locked --all-packages python -m pytest tests/boundary/test_database.py
+          just down
+      - name: Summary
+        if: always()
+        run: |
+          echo 'Stage 0 tests use generated credentials and no licensed pilot data.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Missing local pilot data must produce an explicit skip. Native runtime and sandbox acceptance remain separate.' >> "$GITHUB_STEP_SUMMARY"
+  images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: amd64
+            runner: ubuntu-24.04
+          - architecture: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build and record platform digests
+        run: bash scripts/build_images.sh '${{ matrix.architecture }}'
+      - name: Upload platform digest evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: image-digests-linux-${{ matrix.architecture }}
+          path: build/digests/
+          if-no-files-found: error
+      - name: Build acceptance boundary
+        if: always()
+        run: |
+          echo 'Built for linux/${{ matrix.architecture }}; per-image manifest digests are recorded as artifacts.' >> "$GITHUB_STEP_SUMMARY"
+          echo '**Build success is not native runtime acceptance or sandbox acceptance.**' >> "$GITHUB_STEP_SUMMARY"

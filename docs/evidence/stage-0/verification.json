@@ -1,0 +1,104 @@
+{
+  "acceptance_boundary": "Build and clean-exit stub success is not production native runtime, numerical parity, or executable sandbox acceptance.",
+  "deployment_images": {
+    "amd64_execution": "emulated build on Linux/ARM64",
+    "arm64_smoke": "arm-image-smoke.json",
+    "count": 8,
+    "digests": "image-digests.json",
+    "platforms": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "status": "PASS"
+  },
+  "github_actions": {
+    "reason": "Owner reports monthly allowance unavailable and explicitly requests local CI substitution. Publication uses [skip ci].",
+    "status": "NOT_RUN"
+  },
+  "host": {
+    "check": "PASS",
+    "os": "darwin",
+    "python": "3.12.7",
+    "tests_passed": 157,
+    "tests_skipped": 0
+  },
+  "import_contracts": {
+    "broken": 0,
+    "kept": 5
+  },
+  "linux_ci": {
+    "architecture": "arm64",
+    "check": "PASS",
+    "docker": "29.5.2",
+    "os": "linux",
+    "python": "3.12.15",
+    "skip_reason": "Licensed original P0/P1 data are intentionally not mounted into the test container.",
+    "tests_passed": 142,
+    "tests_skipped": 15
+  },
+  "log_normalization": "Repository root paths only are replaced by <repository> in committed logs; original local log hashes are also retained.",
+  "logs": {
+    "ci-service-bootstrap": {
+      "original_local_log": "build/local-ci/ci-service-bootstrap.txt",
+      "original_sha256": "d62b169c3625bc90877508a3e3314912e9635d36e96a6b7d84fa171cac305bdb",
+      "path": "docs/evidence/stage-0/ci-service-bootstrap.txt",
+      "sha256": "d62b169c3625bc90877508a3e3314912e9635d36e96a6b7d84fa171cac305bdb"
+    },
+    "ci-service-database-test": {
+      "original_local_log": "build/local-ci/ci-service-database-test.txt",
+      "original_sha256": "41362594d79d0aaf15cd30eecf99d2b83eb90e60f589a7d67815809cbcd199c5",
+      "path": "docs/evidence/stage-0/ci-service-database-test.txt",
+      "sha256": "92553bf863834e7b196b0e3ae86a7668a45574f0edad98affc8e5906d7bdf43f"
+    },
+    "compose-up": {
+      "original_local_log": "build/local-ci/compose-up.txt",
+      "original_sha256": "d18fd0cd247b07304fd64321672b5c8ded07fe7911d9eecf3db2993f45fe3b4c",
+      "path": "docs/evidence/stage-0/compose-up.txt",
+      "sha256": "d18fd0cd247b07304fd64321672b5c8ded07fe7911d9eecf3db2993f45fe3b4c"
+    },
+    "host-check": {
+      "original_local_log": "build/local-final-check.txt",
+      "original_sha256": "c6459086eeb16cd780d755f4c2545c7b922b9fd4c7e21054748a58d16ef76791",
+      "path": "docs/evidence/stage-0/host-check.txt",
+      "sha256": "c6459086eeb16cd780d755f4c2545c7b922b9fd4c7e21054748a58d16ef76791"
+    },
+    "host-test": {
+      "original_local_log": "build/local-final-test.txt",
+      "original_sha256": "afaf0c3247555a71789b23cff6c04dd2c02d2b1d483ab6835162058ef6b96a70",
+      "path": "docs/evidence/stage-0/host-test.txt",
+      "sha256": "b76d3bd1fbaf1f7a633959064ac23058d56f0eacafcd083b8f6b613c13355c94"
+    },
+    "linux-check": {
+      "original_local_log": "build/local-ci/linux-check.txt",
+      "original_sha256": "01731cb8d6cb34fd0c080efbda1f72412aebd5c9578d601383d283b46c8e0593",
+      "path": "docs/evidence/stage-0/linux-check.txt",
+      "sha256": "01731cb8d6cb34fd0c080efbda1f72412aebd5c9578d601383d283b46c8e0593"
+    },
+    "linux-test": {
+      "original_local_log": "build/local-ci/linux-test.txt",
+      "original_sha256": "2413b8463f4f9ab10a7e867e5977146b26e63ab4e7bde5883bd44ad3722fdbfe",
+      "path": "docs/evidence/stage-0/linux-test.txt",
+      "sha256": "cd234000c8e0b5866a8ac65a2b4ba18f209d6b0472d7c7aa4dab732de72145ac"
+    },
+    "pilot-absent": {
+      "original_local_log": "build/local-pilot-absent-test.txt",
+      "original_sha256": "781128d7d9d808b9e5a295de8075059e416a2e87804b10ed920ff1a850a69ea5",
+      "path": "docs/evidence/stage-0/pilot-absent.txt",
+      "sha256": "11fde883e1c4f43cbddca294a00aa664f664695fe22211fd4cb2e32b46af7c02"
+    }
+  },
+  "missing_pilot_path_branch": {
+    "tests_passed": 1,
+    "tests_skipped": 15
+  },
+  "pilot_manifest_sources_checked": 14,
+  "public_contracts": 86,
+  "scope": "Stage 0, P0.1-P0.7 only",
+  "source_revision": "0ee49391c64aed9537e5394b0138483cc22ba598",
+  "verified_at_utc": "2026-10-26T03:36:48.285756+00:00",
+  "workflow_service_bootstrap": {
+    "authentication": "SCRAM after fresh bootstrap",
+    "status": "PASS",
+    "tests_passed": 14
+  }
+}

@@ -1,0 +1,26 @@
+schema_version: '1'
+kind: charter
+profile: pilot_industry_v1
+revision: 1
+owner: research_lead
+status: draft
+source:
+- PLAN_ALIGNMENT.md
+- appendix-a-pilot-case-industry-rotation.md A.4
+- HYBRID_V1_DEVELOPMENT_PLAN.md 7.7, 7.9, 7.10
+parameters:
+  cadence: on_demand
+  preserve_baselines:
+  - P0
+  - P1
+  allowed_feature_families:
+  - price
+  - volume
+  - breadth
+  fundamentals: blocked_on_data
+  new_data_fetch: false
+  provider_profile_ref: research/models.yaml
+  paid_run_authorized: false
+  concurrency: null
+unresolved:
+- Research-lead throughput and spend authorization remain unset.

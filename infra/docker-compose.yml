@@ -1,0 +1,307 @@
+services:
+  postgres:
+    image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+    - postgres_password
+    - registry_app_password
+    - research_rw_password
+    - eval_rw_password
+    - feedback_ro_password
+    volumes:
+    - postgres-data:/var/lib/postgresql/data
+    - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    - ./postgres/init.sql:/opt/qfr/init.sql:ro
+    ports:
+    - 127.0.0.1:${QFR_POSTGRES_PORT}:5432
+    networks:
+    - research-db
+    - registry-db
+    - eval-db
+    - feedback-db
+    - ingest-db
+    - db-loopback
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -h 127.0.0.1 -U postgres -d postgres
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  mcp-api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_mcp
+    read_only: true
+    user: 65532:65532
+    cap_drop: &id001
+    - ALL
+    security_opt: &id002
+    - no-new-privileges:true
+    restart: 'no'
+    image: qfr/qfr_mcp:stage0
+    networks:
+    - research-edge
+    - registry-public
+    - feedback-public
+  research-api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_research
+    read_only: true
+    user: 65532:65532
+    cap_drop: *id001
+    security_opt: *id002
+    restart: 'no'
+    image: qfr/qfr_research:stage0
+    networks:
+    - research-edge
+    - research-db
+    - registry-public
+    - feedback-public
+    secrets:
+    - research_rw_password
+    environment:
+      QFR_DB_PASSWORD_FILE: /run/secrets/research_rw_password
+      QFR_DB_ROLE: research_rw
+      QFR_DB_NAME: research_db
+      QFR_DB_HOST: postgres
+    volumes:
+    - research-snapshot:/data/research:ro
+  research-worker:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_research
+    read_only: true
+    user: 65532:65532
+    cap_drop: *id001
+    security_opt: *id002
+    restart: 'no'
+    image: qfr/qfr_research:stage0
+    networks:
+    - research-db
+    - registry-public
+    - feedback-public
+    - research-egress
+    secrets:
+    - research_rw_password
+    environment:
+      QFR_DB_PASSWORD_FILE: /run/secrets/research_rw_password
+      QFR_DB_ROLE: research_rw
+      QFR_DB_NAME: research_db
+      QFR_DB_HOST: postgres
+    volumes:
+    - research-snapshot:/data/research:ro
+  registry-api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_registry
+    read_only: true
+    user: 65532:65532
+    cap_drop: *id001
+    security_opt: *id002
+    restart: 'no'
+    image: qfr/qfr_registry:stage0
+    networks:
+    - registry-db
+    - registry-public
+    - registry-eval
+    secrets:
+    - registry_app_password
+    environment:
+      QFR_DB_PASSWORD_FILE: /run/secrets/registry_app_password
+      QFR_DB_ROLE: registry_app
+      QFR_DB_NAME: registry_db
+      QFR_DB_HOST: postgres
+    volumes:
+    - registry-artifacts:/artifacts
+  eval-scheduler:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_eval
+    read_only: true
+    user: 65532:65532
+    cap_drop: *id001
+    security_opt: *id002
+    restart: 'no'
+    image: qfr/qfr_eval:stage0
+    networks:
+    - eval-db
+    - registry-eval
+    secrets:
+    - eval_rw_password
+    environment:
+      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
+      QFR_DB_ROLE: eval_rw
+      QFR_DB_NAME: eval_db
+      QFR_DB_HOST: postgres
+    volumes:
+    - ../configs/epochs:/etc/qfr/epochs:ro
+    - full-snapshot:/data/full:ro
+  eval-worker:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_eval
+    read_only: true
+    user: 65532:65532
+    cap_drop: *id001
+    security_opt: *id002
+    restart: 'no'
+    image: qfr/qfr_eval:stage0
+    networks:
+    - eval-db
+    secrets:
+    - eval_rw_password
+    environment:
+      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
+      QFR_DB_ROLE: eval_rw
+      QFR_DB_NAME: eval_db
+      QFR_DB_HOST: postgres
+    volumes:
+    - ../configs/epochs:/etc/qfr/epochs:ro
+    - full-snapshot:/data/full:ro
+  release-worker:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_eval
+    read_only: true
+    user: 65532:65532
+    cap_drop: *id001
+    security_opt: *id002
+    restart: 'no'
+    image: qfr/qfr_eval:stage0
+    networks:
+    - eval-db
+    secrets:
+    - eval_rw_password
+    environment:
+      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
+      QFR_DB_ROLE: eval_rw
+      QFR_DB_NAME: eval_db
+      QFR_DB_HOST: postgres
+  feedback-api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_eval
+    read_only: true
+    user: 65532:65532
+    cap_drop: *id001
+    security_opt: *id002
+    restart: 'no'
+    image: qfr/qfr_eval:stage0
+    networks:
+    - feedback-db
+    - feedback-public
+    secrets:
+    - feedback_ro_password
+    environment:
+      QFR_DB_PASSWORD_FILE: /run/secrets/feedback_ro_password
+      QFR_DB_ROLE: feedback_ro
+      QFR_DB_NAME: eval_db
+      QFR_DB_HOST: postgres
+  eval-admin-api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_eval
+    read_only: true
+    user: 65532:65532
+    cap_drop: *id001
+    security_opt: *id002
+    restart: 'no'
+    image: qfr/qfr_eval:stage0
+    networks:
+    - eval-db
+    - admin
+    secrets:
+    - eval_rw_password
+    environment:
+      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
+      QFR_DB_ROLE: eval_rw
+      QFR_DB_NAME: eval_db
+      QFR_DB_HOST: postgres
+    volumes:
+    - ../configs/epochs:/etc/qfr/epochs:ro
+  data-ingest:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_eval
+    read_only: true
+    user: 65532:65532
+    cap_drop: *id001
+    security_opt: *id002
+    restart: 'no'
+    image: qfr/qfr_eval:stage0
+    networks:
+    - ingest-db
+    - data-egress
+    secrets:
+    - eval_rw_password
+    environment:
+      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
+      QFR_DB_ROLE: eval_rw
+      QFR_DB_NAME: eval_db
+      QFR_DB_HOST: postgres
+    volumes:
+    - full-snapshot:/data/full
+    - research-snapshot:/data/research
+networks:
+  research-edge:
+    internal: true
+  registry-public:
+    internal: true
+  registry-eval:
+    internal: true
+  feedback-public:
+    internal: true
+  research-db:
+    internal: true
+  registry-db:
+    internal: true
+  eval-db:
+    internal: true
+  feedback-db:
+    internal: true
+  ingest-db:
+    internal: true
+  admin:
+    internal: true
+  research-egress: {}
+  data-egress: {}
+  db-loopback: {}
+volumes:
+  postgres-data: {}
+  registry-artifacts: {}
+  research-snapshot: {}
+  full-snapshot: {}
+secrets:
+  postgres_password:
+    file: ../.secrets/postgres_password
+  registry_app_password:
+    file: ../.secrets/registry_app_password
+  research_rw_password:
+    file: ../.secrets/research_rw_password
+  eval_rw_password:
+    file: ../.secrets/eval_rw_password
+  feedback_ro_password:
+    file: ../.secrets/feedback_ro_password

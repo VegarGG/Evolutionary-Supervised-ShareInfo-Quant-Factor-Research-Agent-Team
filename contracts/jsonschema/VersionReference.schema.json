@@ -1,0 +1,21 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "reference_id": {
+      "minLength": 1,
+      "title": "Reference Id",
+      "type": "string"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "reference_id",
+    "sha256"
+  ],
+  "title": "VersionReference",
+  "type": "object"
+}

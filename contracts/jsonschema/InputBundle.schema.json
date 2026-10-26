@@ -1,0 +1,1033 @@
+{
+  "$defs": {
+    "AssetReference": {
+      "additionalProperties": false,
+      "properties": {
+        "reference_id": {
+          "minLength": 1,
+          "title": "Reference Id",
+          "type": "string"
+        },
+        "relative_path": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Relative Path"
+        },
+        "transport": {
+          "enum": [
+            "finalized_upload",
+            "mounted_import"
+          ],
+          "title": "Transport",
+          "type": "string"
+        }
+      },
+      "required": [
+        "transport",
+        "reference_id"
+      ],
+      "title": "AssetReference",
+      "type": "object"
+    },
+    "BundleDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "component_asset_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Component Asset Ids",
+          "type": "array"
+        },
+        "inventory_ref": {
+          "minLength": 1,
+          "title": "Inventory Ref",
+          "type": "string"
+        },
+        "kind": {
+          "const": "bundle",
+          "title": "Kind",
+          "type": "string"
+        },
+        "preservation_rules": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Preservation Rules",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "component_asset_ids",
+        "inventory_ref",
+        "preservation_rules"
+      ],
+      "title": "BundleDefinition",
+      "type": "object"
+    },
+    "DataRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_rule": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Availability Rule"
+        },
+        "fields": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Fields",
+          "type": "array"
+        },
+        "frequency": {
+          "minLength": 1,
+          "title": "Frequency",
+          "type": "string"
+        },
+        "lookback": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Lookback"
+        },
+        "minimum_timing_grade": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PITGrade"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "table": {
+          "minLength": 1,
+          "title": "Table",
+          "type": "string"
+        },
+        "universe": {
+          "minLength": 1,
+          "title": "Universe",
+          "type": "string"
+        },
+        "unresolved": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Unresolved",
+          "type": "array"
+        }
+      },
+      "required": [
+        "table",
+        "fields",
+        "universe",
+        "frequency",
+        "availability_rule",
+        "minimum_timing_grade",
+        "lookback",
+        "unresolved"
+      ],
+      "title": "DataRequirement",
+      "type": "object"
+    },
+    "DateRange": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "DateRange",
+      "type": "object"
+    },
+    "ExecutionContract": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_sandbox_profile_ref": {
+          "minLength": 1,
+          "title": "Approved Sandbox Profile Ref",
+          "type": "string"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Command"
+        },
+        "dependency_lock_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Dependency Lock Sha256",
+          "type": "string"
+        },
+        "function": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Function"
+        },
+        "image_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Image Digest",
+          "type": "string"
+        },
+        "input_schema_ref": {
+          "minLength": 1,
+          "title": "Input Schema Ref",
+          "type": "string"
+        },
+        "interface": {
+          "enum": [
+            "command",
+            "function"
+          ],
+          "title": "Interface",
+          "type": "string"
+        },
+        "limits": {
+          "$ref": "#/$defs/ResourceLimits"
+        },
+        "output_schema_ref": {
+          "minLength": 1,
+          "title": "Output Schema Ref",
+          "type": "string"
+        },
+        "runner": {
+          "minLength": 1,
+          "title": "Runner",
+          "type": "string"
+        },
+        "seeds": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "title": "Seeds",
+          "type": "array"
+        }
+      },
+      "required": [
+        "runner",
+        "image_digest",
+        "dependency_lock_sha256",
+        "interface",
+        "command",
+        "function",
+        "input_schema_ref",
+        "output_schema_ref",
+        "seeds",
+        "limits",
+        "approved_sandbox_profile_ref"
+      ],
+      "title": "ExecutionContract",
+      "type": "object"
+    },
+    "ExposureAndQuality": {
+      "additionalProperties": false,
+      "properties": {
+        "history": {
+          "enum": [
+            "previously_seen",
+            "unknown",
+            "prospective"
+          ],
+          "title": "History",
+          "type": "string"
+        },
+        "inspected_periods": {
+          "items": {
+            "$ref": "#/$defs/DateRange"
+          },
+          "title": "Inspected Periods",
+          "type": "array"
+        },
+        "licence_constraints": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Licence Constraints",
+          "type": "array"
+        },
+        "provider_knowledge_exposure": {
+          "enum": [
+            "known",
+            "unknown"
+          ],
+          "title": "Provider Knowledge Exposure",
+          "type": "string"
+        },
+        "quality": {
+          "$ref": "#/$defs/QualityLabels"
+        },
+        "training_tuning_history": {
+          "minLength": 1,
+          "title": "Training Tuning History",
+          "type": "string"
+        },
+        "unknowns": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Unknowns",
+          "type": "array"
+        }
+      },
+      "required": [
+        "history",
+        "inspected_periods",
+        "training_tuning_history",
+        "provider_knowledge_exposure",
+        "quality",
+        "licence_constraints",
+        "unknowns"
+      ],
+      "title": "ExposureAndQuality",
+      "type": "object"
+    },
+    "FactorDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "formula": {
+          "minLength": 1,
+          "title": "Formula",
+          "type": "string"
+        },
+        "kind": {
+          "const": "factor",
+          "title": "Kind",
+          "type": "string"
+        },
+        "output_schema_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Output Schema Ref"
+        },
+        "representation": {
+          "enum": [
+            "dsl",
+            "constrained_python",
+            "natural_language"
+          ],
+          "title": "Representation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "formula",
+        "representation",
+        "output_schema_ref"
+      ],
+      "title": "FactorDefinition",
+      "type": "object"
+    },
+    "IdeaDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "hypothesis": {
+          "minLength": 1,
+          "title": "Hypothesis",
+          "type": "string"
+        },
+        "kind": {
+          "const": "idea",
+          "title": "Kind",
+          "type": "string"
+        },
+        "unresolved_questions": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Unresolved Questions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "hypothesis",
+        "unresolved_questions"
+      ],
+      "title": "IdeaDefinition",
+      "type": "object"
+    },
+    "InputKind": {
+      "enum": [
+        "idea",
+        "factor",
+        "model",
+        "strategy",
+        "bundle"
+      ],
+      "title": "InputKind",
+      "type": "string"
+    },
+    "IntakeJobConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "authorized_cost_usd": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Authorized Cost Usd"
+        },
+        "authorized_spend_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Authorized Spend Ref"
+        },
+        "human_checkpoint_policy_ref": {
+          "minLength": 1,
+          "title": "Human Checkpoint Policy Ref",
+          "type": "string"
+        },
+        "max_generations": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Generations"
+        },
+        "max_wall_clock_seconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Wall Clock Seconds"
+        },
+        "permitted_dataset_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Permitted Dataset Ids",
+          "type": "array"
+        },
+        "permitted_provider_endpoints": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Permitted Provider Endpoints",
+          "type": "array"
+        },
+        "proposed_exit_gate_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Proposed Exit Gate Ref"
+        },
+        "role_profile_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Role Profile Refs",
+          "type": "array"
+        },
+        "stop_pause_policy_ref": {
+          "minLength": 1,
+          "title": "Stop Pause Policy Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role_profile_refs",
+        "permitted_dataset_ids",
+        "permitted_provider_endpoints",
+        "authorized_spend_ref",
+        "authorized_cost_usd",
+        "max_wall_clock_seconds",
+        "max_generations",
+        "stop_pause_policy_ref",
+        "proposed_exit_gate_ref",
+        "human_checkpoint_policy_ref"
+      ],
+      "title": "IntakeJobConfig",
+      "type": "object"
+    },
+    "ModelDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "fallback_logic": {
+          "minLength": 1,
+          "title": "Fallback Logic",
+          "type": "string"
+        },
+        "fit_interface": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Fit Interface"
+        },
+        "inference_interface": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Inference Interface"
+        },
+        "kind": {
+          "const": "model",
+          "title": "Kind",
+          "type": "string"
+        },
+        "preprocessing": {
+          "minLength": 1,
+          "title": "Preprocessing",
+          "type": "string"
+        },
+        "serialization": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Serialization"
+        },
+        "specification": {
+          "minLength": 1,
+          "title": "Specification",
+          "type": "string"
+        },
+        "weight_asset_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Weight Asset Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "specification",
+        "weight_asset_ids",
+        "preprocessing",
+        "fallback_logic",
+        "fit_interface",
+        "inference_interface",
+        "serialization"
+      ],
+      "title": "ModelDefinition",
+      "type": "object"
+    },
+    "PITGrade": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "title": "PITGrade",
+      "type": "string"
+    },
+    "QualityLabels": {
+      "additionalProperties": false,
+      "properties": {
+        "membership_grade": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PITGrade"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "membership_notes": {
+          "minLength": 1,
+          "title": "Membership Notes",
+          "type": "string"
+        },
+        "membership_status": {
+          "enum": [
+            "point_in_time",
+            "backfilled",
+            "unknown",
+            "not_applicable"
+          ],
+          "title": "Membership Status",
+          "type": "string"
+        },
+        "timing_basis": {
+          "minLength": 1,
+          "title": "Timing Basis",
+          "type": "string"
+        },
+        "timing_grade": {
+          "$ref": "#/$defs/PITGrade"
+        },
+        "vintage_notes": {
+          "minLength": 1,
+          "title": "Vintage Notes",
+          "type": "string"
+        },
+        "vintage_status": {
+          "enum": [
+            "verified",
+            "unknown",
+            "restated"
+          ],
+          "title": "Vintage Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "timing_grade",
+        "timing_basis",
+        "vintage_status",
+        "vintage_notes",
+        "membership_grade",
+        "membership_status",
+        "membership_notes"
+      ],
+      "title": "QualityLabels",
+      "type": "object"
+    },
+    "ResourceLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Cpu Seconds",
+          "type": "integer"
+        },
+        "dropped_capabilities": {
+          "const": "ALL",
+          "title": "Dropped Capabilities",
+          "type": "string"
+        },
+        "max_output_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Output Bytes",
+          "type": "integer"
+        },
+        "memory_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Memory Bytes",
+          "type": "integer"
+        },
+        "network": {
+          "const": "none",
+          "title": "Network",
+          "type": "string"
+        },
+        "non_root": {
+          "const": true,
+          "title": "Non Root",
+          "type": "boolean"
+        },
+        "read_only_root": {
+          "const": true,
+          "title": "Read Only Root",
+          "type": "boolean"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "cpu_seconds",
+        "memory_bytes",
+        "timeout_seconds",
+        "max_output_bytes",
+        "network",
+        "read_only_root",
+        "non_root",
+        "dropped_capabilities"
+      ],
+      "title": "ResourceLimits",
+      "type": "object"
+    },
+    "SourceAsset": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_id": {
+          "minLength": 1,
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "bytes": {
+          "minimum": 0,
+          "title": "Bytes",
+          "type": "integer"
+        },
+        "intended_use": {
+          "enum": [
+            "primary_data",
+            "auxiliary_data",
+            "code",
+            "config",
+            "documentation",
+            "evidence",
+            "operations_precedent"
+          ],
+          "title": "Intended Use",
+          "type": "string"
+        },
+        "licence": {
+          "minLength": 1,
+          "title": "Licence",
+          "type": "string"
+        },
+        "media_type": {
+          "minLength": 1,
+          "title": "Media Type",
+          "type": "string"
+        },
+        "provenance": {
+          "minLength": 1,
+          "title": "Provenance",
+          "type": "string"
+        },
+        "reference": {
+          "$ref": "#/$defs/AssetReference"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "source_is_untrusted_data": {
+          "const": true,
+          "title": "Source Is Untrusted Data",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "asset_id",
+        "reference",
+        "sha256",
+        "bytes",
+        "media_type",
+        "provenance",
+        "intended_use",
+        "licence",
+        "source_is_untrusted_data"
+      ],
+      "title": "SourceAsset",
+      "type": "object"
+    },
+    "StrategyDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "cost_rules": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cost Rules"
+        },
+        "kind": {
+          "const": "strategy",
+          "title": "Kind",
+          "type": "string"
+        },
+        "position_state": {
+          "minLength": 1,
+          "title": "Position State",
+          "type": "string"
+        },
+        "rebalance_timing": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rebalance Timing"
+        },
+        "rules": {
+          "minLength": 1,
+          "title": "Rules",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "rules",
+        "position_state",
+        "cost_rules",
+        "rebalance_timing"
+      ],
+      "title": "StrategyDefinition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "baseline_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Baseline Refs",
+      "type": "array"
+    },
+    "bundle_id": {
+      "minLength": 1,
+      "title": "Bundle Id",
+      "type": "string"
+    },
+    "data_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Data Refs",
+      "type": "array"
+    },
+    "data_requirements": {
+      "items": {
+        "$ref": "#/$defs/DataRequirement"
+      },
+      "title": "Data Requirements",
+      "type": "array"
+    },
+    "definition": {
+      "discriminator": {
+        "mapping": {
+          "bundle": "#/$defs/BundleDefinition",
+          "factor": "#/$defs/FactorDefinition",
+          "idea": "#/$defs/IdeaDefinition",
+          "model": "#/$defs/ModelDefinition",
+          "strategy": "#/$defs/StrategyDefinition"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IdeaDefinition"
+        },
+        {
+          "$ref": "#/$defs/FactorDefinition"
+        },
+        {
+          "$ref": "#/$defs/ModelDefinition"
+        },
+        {
+          "$ref": "#/$defs/StrategyDefinition"
+        },
+        {
+          "$ref": "#/$defs/BundleDefinition"
+        }
+      ],
+      "title": "Definition"
+    },
+    "execution_contract": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionContract"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "exposure_and_quality": {
+      "$ref": "#/$defs/ExposureAndQuality"
+    },
+    "input_kind": {
+      "$ref": "#/$defs/InputKind"
+    },
+    "job_config": {
+      "$ref": "#/$defs/IntakeJobConfig"
+    },
+    "objective": {
+      "minLength": 1,
+      "title": "Objective",
+      "type": "string"
+    },
+    "protocol_proposal_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Protocol Proposal Ref"
+    },
+    "readiness": {
+      "enum": [
+        "needs_input",
+        "waiting_for_data",
+        "ready"
+      ],
+      "title": "Readiness",
+      "type": "string"
+    },
+    "requested_deliverables": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Requested Deliverables",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_assets": {
+      "items": {
+        "$ref": "#/$defs/SourceAsset"
+      },
+      "title": "Source Assets",
+      "type": "array"
+    },
+    "unresolved_requirements": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Unresolved Requirements",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "input_kind",
+    "objective",
+    "requested_deliverables",
+    "source_assets",
+    "definition",
+    "data_refs",
+    "data_requirements",
+    "baseline_refs",
+    "execution_contract",
+    "exposure_and_quality",
+    "job_config",
+    "protocol_proposal_ref",
+    "readiness",
+    "unresolved_requirements"
+  ],
+  "title": "InputBundle",
+  "type": "object"
+}

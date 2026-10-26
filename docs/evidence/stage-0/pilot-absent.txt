@@ -1,0 +1,13 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-9.1.1, pluggy-1.7.0
+rootdir: <repository>
+configfile: pyproject.toml
+plugins: hypothesis-6.170.11
+collected 16 items
+
+tests/test_pilot_fixtures.py sssssssssssssss.                            [100%]
+
+=========================== short test summary info ============================
+SKIPPED [14] tests/test_pilot_fixtures.py:28: Licensed pilot data absent: set QFR_PILOT_ROOT to the parent of original P0/P1 folders
+SKIPPED [1] tests/test_pilot_fixtures.py:47: Licensed pilot data absent: set QFR_PILOT_ROOT to the parent of original P0/P1 folders
+======================== 1 passed, 15 skipped in 0.09s =========================

@@ -1,0 +1,12 @@
+{
+  "components": [
+    {
+      "artifact": {
+        "artifact_version_id": "parent-example",
+        "content_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "weight": 1.0
+    }
+  ],
+  "fitting": false
+}

@@ -1,0 +1,244 @@
+{
+  "capability_preflight": {
+    "audit_requested_and_effective_settings": true,
+    "local_schema_validation": true,
+    "preserve_provider_continuation": true,
+    "pricing_snapshot_ref": null,
+    "required": true,
+    "unsupported_parameter_policy": "reject_with_field_reason"
+  },
+  "job_policy": {
+    "authorized_spend_ref": null,
+    "completion_requires_independent_receipt": true,
+    "exit_gate_spec_ref": null,
+    "fallback_allowlist": [],
+    "max_generations": null,
+    "max_wall_clock_seconds": null,
+    "on_budget_exhaustion": "budget_paused"
+  },
+  "model_profiles": {
+    "deepseek_selected": {
+      "capabilities": null,
+      "context_limit_tokens": null,
+      "endpoint_ref": "deepseek_primary",
+      "exact_model_id": null,
+      "exact_model_id_ref": "env:DEEPSEEK_MODEL_ID",
+      "output_limit_tokens": null,
+      "verified_capabilities_ref": null
+    },
+    "glm_selected": {
+      "capabilities": null,
+      "context_limit_tokens": null,
+      "endpoint_ref": "glm_primary",
+      "exact_model_id": null,
+      "exact_model_id_ref": "env:GLM_MODEL_ID",
+      "output_limit_tokens": null,
+      "verified_capabilities_ref": null
+    },
+    "kimi_selected": {
+      "capabilities": null,
+      "context_limit_tokens": null,
+      "endpoint_ref": "kimi_primary",
+      "exact_model_id": null,
+      "exact_model_id_ref": "env:KIMI_MODEL_ID",
+      "output_limit_tokens": null,
+      "verified_capabilities_ref": null
+    }
+  },
+  "notes": [
+    "Roles below only demonstrate all three mandatory providers; the owner has not chosen role assignments.",
+    "env: references and null required values must be resolved and capability-tested before admission. Secrets are references only.",
+    "Unknown limits, prices and capabilities are not zero or permission to guess. Null optional settings are omitted, never sent as zero.",
+    "The same model profile appears in two roles with distinct output budgets. Temperature, top-p and reasoning settings remain independently tunable when supported.",
+    "An endpoint may be a provider endpoint or an authorized compatible gateway. Actual vendor, endpoint and effective model/settings must be recorded."
+  ],
+  "provider_endpoints": {
+    "deepseek_primary": {
+      "account_label": null,
+      "api_dialect": "openai_chat_completions",
+      "api_key_ref": "env:DEEPSEEK_API_KEY",
+      "base_url_ref": "env:DEEPSEEK_BASE_URL",
+      "concurrency": null,
+      "enabled": true,
+      "region": null,
+      "requests_per_minute": null,
+      "retry_policy": null,
+      "timeouts": null,
+      "tokens_per_minute": null,
+      "vendor": "deepseek"
+    },
+    "glm_primary": {
+      "account_label": null,
+      "api_dialect": "openai_chat_completions",
+      "api_key_ref": "env:GLM_API_KEY",
+      "base_url_ref": "env:GLM_BASE_URL",
+      "concurrency": null,
+      "enabled": true,
+      "region": null,
+      "requests_per_minute": null,
+      "retry_policy": null,
+      "timeouts": null,
+      "tokens_per_minute": null,
+      "vendor": "zai_glm"
+    },
+    "kimi_primary": {
+      "account_label": null,
+      "api_dialect": "openai_chat_completions",
+      "api_key_ref": "env:KIMI_API_KEY",
+      "base_url_ref": "env:KIMI_BASE_URL",
+      "concurrency": null,
+      "enabled": true,
+      "region": null,
+      "requests_per_minute": null,
+      "retry_policy": null,
+      "timeouts": null,
+      "tokens_per_minute": null,
+      "vendor": "moonshot_kimi"
+    },
+    "openai_optional": {
+      "account_label": null,
+      "api_dialect": "openai_responses",
+      "api_key_ref": "env:OPENAI_API_KEY",
+      "base_url_ref": "env:OPENAI_BASE_URL",
+      "concurrency": null,
+      "enabled": false,
+      "region": null,
+      "requests_per_minute": null,
+      "retry_policy": null,
+      "timeouts": null,
+      "tokens_per_minute": null,
+      "vendor": "openai"
+    }
+  },
+  "role_profiles": {
+    "critic": {
+      "budget_reservation_usd": null,
+      "context_policy_ref": "policies/context/critic.json",
+      "fallback_allowlist": [],
+      "max_tool_turns": 12,
+      "model_profile": "glm_selected",
+      "per_call_timeouts": {
+        "connect_seconds": 30.0,
+        "idle_seconds": null,
+        "read_seconds": 300.0
+      },
+      "pricing_snapshot": null,
+      "prompt_template_ref": "prompts/critic.md",
+      "requested_settings": {
+        "max_output_tokens": 4096,
+        "reasoning_effort": null,
+        "temperature": null,
+        "thinking_budget_tokens": null,
+        "top_p": null
+      },
+      "retry_policy": {
+        "ambiguous_outcome": "persist_before_retry",
+        "backoff": "exponential_with_jitter",
+        "backoff_seconds": null,
+        "max_attempts": 3
+      },
+      "tool_allowlist": [],
+      "tool_policy_ref": "policies/tools/critic.json"
+    },
+    "quant_researcher": {
+      "budget_reservation_usd": null,
+      "context_policy_ref": "policies/context/quant_researcher.json",
+      "fallback_allowlist": [],
+      "max_tool_turns": 12,
+      "model_profile": "kimi_selected",
+      "per_call_timeouts": {
+        "connect_seconds": 30.0,
+        "idle_seconds": null,
+        "read_seconds": 300.0
+      },
+      "pricing_snapshot": null,
+      "prompt_template_ref": "prompts/quant_researcher.md",
+      "requested_settings": {
+        "max_output_tokens": 4096,
+        "reasoning_effort": null,
+        "temperature": null,
+        "thinking_budget_tokens": null,
+        "top_p": null
+      },
+      "retry_policy": {
+        "ambiguous_outcome": "persist_before_retry",
+        "backoff": "exponential_with_jitter",
+        "backoff_seconds": null,
+        "max_attempts": 3
+      },
+      "tool_allowlist": [],
+      "tool_policy_ref": "policies/tools/quant_researcher.json"
+    },
+    "routine_helper": {
+      "budget_reservation_usd": null,
+      "context_policy_ref": "policies/context/routine_helper.json",
+      "fallback_allowlist": [],
+      "max_tool_turns": 12,
+      "model_profile": "deepseek_selected",
+      "per_call_timeouts": {
+        "connect_seconds": 30.0,
+        "idle_seconds": null,
+        "read_seconds": 300.0
+      },
+      "pricing_snapshot": null,
+      "prompt_template_ref": "prompts/routine_helper.md",
+      "requested_settings": {
+        "max_output_tokens": 2048,
+        "reasoning_effort": null,
+        "temperature": null,
+        "thinking_budget_tokens": null,
+        "top_p": null
+      },
+      "retry_policy": {
+        "ambiguous_outcome": "persist_before_retry",
+        "backoff": "exponential_with_jitter",
+        "backoff_seconds": null,
+        "max_attempts": 3
+      },
+      "tool_allowlist": [],
+      "tool_policy_ref": "policies/tools/routine_helper.json"
+    },
+    "supervisor": {
+      "budget_reservation_usd": null,
+      "context_policy_ref": "policies/context/supervisor.json",
+      "fallback_allowlist": [],
+      "max_tool_turns": 12,
+      "model_profile": "kimi_selected",
+      "per_call_timeouts": {
+        "connect_seconds": 30.0,
+        "idle_seconds": null,
+        "read_seconds": 300.0
+      },
+      "pricing_snapshot": null,
+      "prompt_template_ref": "prompts/supervisor.md",
+      "requested_settings": {
+        "max_output_tokens": 8192,
+        "reasoning_effort": null,
+        "temperature": null,
+        "thinking_budget_tokens": null,
+        "top_p": null
+      },
+      "retry_policy": {
+        "ambiguous_outcome": "persist_before_retry",
+        "backoff": "exponential_with_jitter",
+        "backoff_seconds": null,
+        "max_attempts": 3
+      },
+      "tool_allowlist": [],
+      "tool_policy_ref": "policies/tools/supervisor.json"
+    }
+  },
+  "schema_version": "1",
+  "status": "draft: illustrative roles only; no paid run authorized",
+  "task_override_fields": [
+    "model_profile",
+    "prompt_template_ref",
+    "requested_settings",
+    "max_tool_turns",
+    "context_policy_ref",
+    "per_call_timeouts",
+    "retry_policy",
+    "fallback_allowlist"
+  ],
+  "task_overrides": []
+}

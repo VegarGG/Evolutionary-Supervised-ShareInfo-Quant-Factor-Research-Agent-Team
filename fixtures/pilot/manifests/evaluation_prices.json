@@ -1,0 +1,33 @@
+{
+  "asset_id": "evaluation_prices",
+  "bytes": 238426,
+  "columns": [
+    "date",
+    "code",
+    "close"
+  ],
+  "date_column": "date",
+  "date_format": "%Y-%m-%d",
+  "date_range": {
+    "end": "2026-10-16",
+    "start": "2025-10-20"
+  },
+  "exposure": "previously_seen",
+  "grain": "daily x code",
+  "licence": "Licensed iFinD data remain at owner-provided local path",
+  "logical_hash_status": "canonicalization deferred to Stage 1",
+  "logical_sha256": null,
+  "membership_status": "unknown",
+  "packages": {
+    "P0": "P0_English_Delivery_20261022",
+    "P1": "P1_English_Delivery_20261022"
+  },
+  "path": "run_snapshot/data/ifind/evaluation_prices.csv",
+  "rows": 8194,
+  "schema_version": "1",
+  "sha256": "dbaaf212a32512baa61feb2cf6c266c15638da489563e3e2aa6929c723d4dd0d",
+  "source": "Appendix A.3 counts/ranges; full headers and hashes from original verified files",
+  "timing_basis": "observation_dates_only",
+  "timing_grade": "A",
+  "vintage_status": "unknown"
+}

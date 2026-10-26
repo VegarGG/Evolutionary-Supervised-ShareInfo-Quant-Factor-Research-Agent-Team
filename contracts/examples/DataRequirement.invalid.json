@@ -1,0 +1,15 @@
+{
+  "availability_rule": null,
+  "fields": [
+    "date",
+    "code",
+    "close"
+  ],
+  "frequency": "daily",
+  "lookback": null,
+  "minimum_timing_grade": null,
+  "universe": "declared universe",
+  "unresolved": [
+    "Data authorization"
+  ]
+}

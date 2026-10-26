@@ -1,0 +1,122 @@
+{
+  "baseline_artifact_ids": [],
+  "benchmarks": [
+    "000905.SH"
+  ],
+  "brief_id": "brief-example",
+  "budgets": {
+    "authorized_cost_usd": null,
+    "authorized_spend_ref": null,
+    "concurrency_limit": null,
+    "evaluator_quota_ref": "pilot/quota",
+    "max_generations": null,
+    "max_wall_clock_seconds": null,
+    "token_limit": null
+  },
+  "constraints": [
+    "No new data fetch"
+  ],
+  "cost_levels_bps": [
+    0.0,
+    10.0,
+    30.0
+  ],
+  "decision_cycles": [
+    {
+      "execution_rule": "next trading close",
+      "name": "weekly",
+      "publication_rule": "same snapshot",
+      "review_rule": null,
+      "signal_date_rule": "weekly snapshot"
+    }
+  ],
+  "eligibility_rule_ref": "pilot/eligibility",
+  "exit_gate": {
+    "allowed_conclusions": [
+      "supported_negative",
+      "empty_shortlist"
+    ],
+    "evidence_release_requirements": [
+      "Released evidence only"
+    ],
+    "forward_evidence_required": false,
+    "frozen_at": "2026-10-25T12:00:00Z",
+    "gate_id": "gate-example",
+    "gate_type": "research_delivery",
+    "human_signoff_required": false,
+    "independent_checker_required": true,
+    "protocol_refs": [
+      "pilot/1"
+    ],
+    "reproducibility_criteria": [
+      "Declared evidence hashes"
+    ],
+    "required_checks": [
+      "schema-valid"
+    ],
+    "required_deliverables": [
+      {
+        "evidence_refs_required": true,
+        "name": "research note",
+        "required": true,
+        "schema_ref": "ResearchNotePayload"
+      }
+    ],
+    "schema_version": "1",
+    "spec_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "exposure": {
+    "history": "previously_seen",
+    "inspected_periods": [
+      {
+        "end": "2026-10-16",
+        "start": "2020-01-01"
+      }
+    ],
+    "licence_constraints": [
+      "Local authorized use only"
+    ],
+    "provider_knowledge_exposure": "unknown",
+    "quality": {
+      "membership_grade": "D",
+      "membership_notes": "Current membership mapped backward",
+      "membership_status": "backfilled",
+      "timing_basis": "Documented availability convention",
+      "timing_grade": "B",
+      "vintage_notes": "Historical revisions unverified",
+      "vintage_status": "unknown"
+    },
+    "training_tuning_history": "Previously inspected history",
+    "unknowns": [
+      "Index vintage"
+    ]
+  },
+  "frozen_config_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "human_checkpoints": [],
+  "input_bundle_id": "input-example",
+  "objective": "Review evidence",
+  "preservation_rules": [
+    "Keep accepted P1"
+  ],
+  "primary_benchmark": "000905.SH",
+  "primary_metric": "extreme_macro_recall",
+  "project_id": "project-example",
+  "protocol_proposal_ref": null,
+  "role_profiles": [],
+  "schema_version": "1",
+  "secondary_metrics": [
+    "rank_ic"
+  ],
+  "selection_rule": {
+    "fraction": 0.2,
+    "rounding": "ceil",
+    "tie_break": "industry name",
+    "top_n": null,
+    "weighting": "equal"
+  },
+  "success_criteria": [
+    "Evidence-backed conclusion"
+  ],
+  "universe_codes": [],
+  "universe_label_map_ref": null
+}

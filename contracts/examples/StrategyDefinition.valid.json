@@ -1,0 +1,7 @@
+{
+  "cost_rules": null,
+  "kind": "strategy",
+  "position_state": "Unresolved",
+  "rebalance_timing": null,
+  "rules": "Owner-supplied rules"
+}

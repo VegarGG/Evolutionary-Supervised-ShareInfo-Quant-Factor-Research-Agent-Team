@@ -1,0 +1,44 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "ambiguous_outcome": {
+      "const": "persist_before_retry",
+      "title": "Ambiguous Outcome",
+      "type": "string"
+    },
+    "backoff": {
+      "enum": [
+        "exponential_with_jitter",
+        "fixed",
+        "none"
+      ],
+      "title": "Backoff",
+      "type": "string"
+    },
+    "backoff_seconds": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Backoff Seconds"
+    },
+    "max_attempts": {
+      "exclusiveMinimum": 0,
+      "title": "Max Attempts",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "max_attempts",
+    "backoff",
+    "ambiguous_outcome"
+  ],
+  "title": "RetryPolicy",
+  "type": "object"
+}

@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_id": {
+          "minLength": 1,
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_version_id",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cost_policy_ref": {
+      "minLength": 1,
+      "title": "Cost Policy Ref",
+      "type": "string"
+    },
+    "execution_prices_ref": {
+      "minLength": 1,
+      "title": "Execution Prices Ref",
+      "type": "string"
+    },
+    "kind": {
+      "const": "strategy",
+      "title": "Kind",
+      "type": "string"
+    },
+    "position_state_rules": {
+      "minLength": 1,
+      "title": "Position State Rules",
+      "type": "string"
+    },
+    "rebalance_timing": {
+      "minLength": 1,
+      "title": "Rebalance Timing",
+      "type": "string"
+    },
+    "signal_artifacts": {
+      "items": {
+        "$ref": "#/$defs/ArtifactReference"
+      },
+      "title": "Signal Artifacts",
+      "type": "array"
+    }
+  },
+  "required": [
+    "kind",
+    "signal_artifacts",
+    "position_state_rules",
+    "rebalance_timing",
+    "cost_policy_ref",
+    "execution_prices_ref"
+  ],
+  "title": "StrategyPayload",
+  "type": "object"
+}

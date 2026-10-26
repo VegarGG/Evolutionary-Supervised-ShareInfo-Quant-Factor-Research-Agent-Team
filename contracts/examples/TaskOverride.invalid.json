@@ -1,0 +1,12 @@
+{
+  "context_policy_ref": null,
+  "fallback_allowlist": [],
+  "max_tool_turns": null,
+  "model_profile": null,
+  "override_source": "operator",
+  "per_call_timeouts": null,
+  "prompt_template_ref": null,
+  "requested_settings": null,
+  "retry_policy": null,
+  "role_profile": "supervisor"
+}

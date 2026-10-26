@@ -1,0 +1,55 @@
+{
+  "complexity": 1,
+  "coverage_bucket": "unavailable",
+  "decay_profile": {
+    "1": {
+      "missing_reason": "not_measured",
+      "value": null
+    }
+  },
+  "library_artifact_version_id": null,
+  "ls_net_sharpe": {
+    "missing_reason": "not_measured",
+    "value": null
+  },
+  "max_library_correlation": {
+    "missing_reason": "not_measured",
+    "value": null
+  },
+  "monotonicity": {
+    "missing_reason": "not_measured",
+    "value": null
+  },
+  "nw_t_bucket": "unavailable",
+  "positive_rank_ic_date_share": {
+    "missing_reason": "not_measured",
+    "value": null
+  },
+  "rank_autocorrelation": {
+    "missing_reason": "not_measured",
+    "value": null
+  },
+  "rank_ic_ir": {
+    "missing_reason": "not_measured",
+    "value": null
+  },
+  "rank_ic_mean": {
+    "missing_reason": "not_measured",
+    "value": null
+  },
+  "size_neutral_rank_ic": {
+    "missing_reason": "not_measured",
+    "value": null
+  },
+  "top_turnover": {
+    "missing_reason": "not_measured",
+    "value": null
+  },
+  "type": "w1",
+  "yearly_rank_ic": {
+    "2026": {
+      "missing_reason": "not_measured",
+      "value": null
+    }
+  }
+}

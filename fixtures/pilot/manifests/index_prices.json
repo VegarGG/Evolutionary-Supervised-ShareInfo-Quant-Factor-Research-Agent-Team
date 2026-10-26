@@ -1,0 +1,33 @@
+{
+  "asset_id": "index_prices",
+  "bytes": 1625788,
+  "columns": [
+    "date",
+    "code",
+    "close"
+  ],
+  "date_column": "date",
+  "date_format": "%Y-%m-%d",
+  "date_range": {
+    "end": "2026-10-16",
+    "start": "2020-01-02"
+  },
+  "exposure": "previously_seen",
+  "grain": "daily x code",
+  "licence": "Licensed iFinD data remain at owner-provided local path",
+  "logical_hash_status": "canonicalization deferred to Stage 1",
+  "logical_sha256": null,
+  "membership_status": "unknown",
+  "packages": {
+    "P0": "P0_English_Delivery_20261022",
+    "P1": "P1_English_Delivery_20261022"
+  },
+  "path": "run_snapshot/outputs/sw1_ifind/index_prices.csv",
+  "rows": 55862,
+  "schema_version": "1",
+  "sha256": "9d5196b9b92c65165135e506aeda55e3e640ec4058c3457546dbdc7ce127528e",
+  "source": "Appendix A.3 counts/ranges; full headers and hashes from original verified files",
+  "timing_basis": "observation_dates_only",
+  "timing_grade": "A",
+  "vintage_status": "unknown"
+}

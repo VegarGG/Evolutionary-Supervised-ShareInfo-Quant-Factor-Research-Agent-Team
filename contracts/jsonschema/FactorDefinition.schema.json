@@ -1,0 +1,44 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "formula": {
+      "minLength": 1,
+      "title": "Formula",
+      "type": "string"
+    },
+    "kind": {
+      "const": "factor",
+      "title": "Kind",
+      "type": "string"
+    },
+    "output_schema_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Output Schema Ref"
+    },
+    "representation": {
+      "enum": [
+        "dsl",
+        "constrained_python",
+        "natural_language"
+      ],
+      "title": "Representation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "formula",
+    "representation",
+    "output_schema_ref"
+  ],
+  "title": "FactorDefinition",
+  "type": "object"
+}

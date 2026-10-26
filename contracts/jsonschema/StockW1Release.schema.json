@@ -1,0 +1,161 @@
+{
+  "$defs": {
+    "MetricValue": {
+      "additionalProperties": false,
+      "properties": {
+        "missing_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "not_applicable",
+                "insufficient_data",
+                "withheld",
+                "failed",
+                "not_measured"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Missing Reason"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "missing_reason"
+      ],
+      "title": "MetricValue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "complexity": {
+      "minimum": 0,
+      "title": "Complexity",
+      "type": "integer"
+    },
+    "coverage_bucket": {
+      "enum": [
+        "low",
+        "adequate",
+        "high",
+        "unavailable"
+      ],
+      "title": "Coverage Bucket",
+      "type": "string"
+    },
+    "decay_profile": {
+      "additionalProperties": {
+        "$ref": "#/$defs/MetricValue"
+      },
+      "propertyNames": {
+        "enum": [
+          "1",
+          "5",
+          "10",
+          "20"
+        ]
+      },
+      "title": "Decay Profile",
+      "type": "object"
+    },
+    "library_artifact_version_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Library Artifact Version Id"
+    },
+    "ls_net_sharpe": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "max_library_correlation": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "monotonicity": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "nw_t_bucket": {
+      "enum": [
+        "below_1",
+        "1_to_2",
+        "2_to_3",
+        "above_3",
+        "unavailable"
+      ],
+      "title": "Nw T Bucket",
+      "type": "string"
+    },
+    "positive_rank_ic_date_share": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "rank_autocorrelation": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "rank_ic_ir": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "rank_ic_mean": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "size_neutral_rank_ic": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "top_turnover": {
+      "$ref": "#/$defs/MetricValue"
+    },
+    "type": {
+      "const": "w1",
+      "title": "Type",
+      "type": "string"
+    },
+    "yearly_rank_ic": {
+      "patternProperties": {
+        "^[0-9]{4}$": {
+          "$ref": "#/$defs/MetricValue"
+        }
+      },
+      "title": "Yearly Rank Ic",
+      "type": "object"
+    }
+  },
+  "required": [
+    "type",
+    "rank_ic_mean",
+    "rank_ic_ir",
+    "nw_t_bucket",
+    "positive_rank_ic_date_share",
+    "decay_profile",
+    "ls_net_sharpe",
+    "monotonicity",
+    "top_turnover",
+    "rank_autocorrelation",
+    "max_library_correlation",
+    "library_artifact_version_id",
+    "yearly_rank_ic",
+    "coverage_bucket",
+    "size_neutral_rank_ic",
+    "complexity"
+  ],
+  "title": "StockW1Release",
+  "type": "object"
+}

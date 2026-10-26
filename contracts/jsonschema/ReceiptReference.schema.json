@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "gate_spec_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Gate Spec Hash",
+      "type": "string"
+    },
+    "independent_checker": {
+      "minLength": 1,
+      "title": "Independent Checker",
+      "type": "string"
+    },
+    "job_id": {
+      "minLength": 1,
+      "title": "Job Id",
+      "type": "string"
+    },
+    "receipt_id": {
+      "minLength": 1,
+      "title": "Receipt Id",
+      "type": "string"
+    },
+    "receipt_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Receipt Sha256",
+      "type": "string"
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "title": "Result",
+      "type": "string"
+    },
+    "signature_verified": {
+      "title": "Signature Verified",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "receipt_id",
+    "job_id",
+    "gate_spec_hash",
+    "result",
+    "independent_checker",
+    "receipt_sha256",
+    "signature_verified"
+  ],
+  "title": "ReceiptReference",
+  "type": "object"
+}

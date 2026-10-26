@@ -1,0 +1,8 @@
+{
+  "audit_requested_and_effective_settings": true,
+  "local_schema_validation": true,
+  "preserve_provider_continuation": true,
+  "pricing_snapshot_ref": null,
+  "required": true,
+  "unsupported_parameter_policy": "reject_with_field_reason"
+}

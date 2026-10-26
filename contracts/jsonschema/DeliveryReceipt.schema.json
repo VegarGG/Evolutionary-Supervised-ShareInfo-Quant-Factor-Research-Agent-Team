@@ -1,0 +1,254 @@
+{
+  "$defs": {
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_id": {
+          "minLength": 1,
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_version_id",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "Conclusion": {
+      "enum": [
+        "supported_positive",
+        "supported_negative",
+        "empty_shortlist",
+        "data_blocked"
+      ],
+      "title": "Conclusion",
+      "type": "string"
+    },
+    "DeliveryCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "check_id": {
+          "minLength": 1,
+          "title": "Check Id",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "$ref": "#/$defs/VersionReference"
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "result": {
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "schema_ref": {
+          "minLength": 1,
+          "title": "Schema Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "check_id",
+        "schema_ref",
+        "result",
+        "evidence_refs"
+      ],
+      "title": "DeliveryCheck",
+      "type": "object"
+    },
+    "Signature": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519",
+          "title": "Algorithm",
+          "type": "string"
+        },
+        "key_id": {
+          "minLength": 1,
+          "title": "Key Id",
+          "type": "string"
+        },
+        "signature_hex": {
+          "pattern": "^[0-9a-f]{128}$",
+          "title": "Signature Hex",
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "key_id",
+        "signature_hex"
+      ],
+      "title": "Signature",
+      "type": "object"
+    },
+    "VersionReference": {
+      "additionalProperties": false,
+      "properties": {
+        "reference_id": {
+          "minLength": 1,
+          "title": "Reference Id",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference_id",
+        "sha256"
+      ],
+      "title": "VersionReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "allowed_conclusions": {
+      "items": {
+        "$ref": "#/$defs/Conclusion"
+      },
+      "minItems": 1,
+      "title": "Allowed Conclusions",
+      "type": "array"
+    },
+    "artifact_refs": {
+      "items": {
+        "$ref": "#/$defs/ArtifactReference"
+      },
+      "title": "Artifact Refs",
+      "type": "array"
+    },
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/DeliveryCheck"
+      },
+      "minItems": 1,
+      "title": "Checks",
+      "type": "array"
+    },
+    "conclusion": {
+      "$ref": "#/$defs/Conclusion"
+    },
+    "config_refs": {
+      "items": {
+        "$ref": "#/$defs/VersionReference"
+      },
+      "minItems": 1,
+      "title": "Config Refs",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "dataset_refs": {
+      "items": {
+        "$ref": "#/$defs/VersionReference"
+      },
+      "title": "Dataset Refs",
+      "type": "array"
+    },
+    "gate_spec_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Gate Spec Hash",
+      "type": "string"
+    },
+    "human_signoff_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Human Signoff Ref"
+    },
+    "independent_checker": {
+      "minLength": 1,
+      "title": "Independent Checker",
+      "type": "string"
+    },
+    "job_id": {
+      "minLength": 1,
+      "title": "Job Id",
+      "type": "string"
+    },
+    "protocol_refs": {
+      "items": {
+        "$ref": "#/$defs/VersionReference"
+      },
+      "title": "Protocol Refs",
+      "type": "array"
+    },
+    "receipt_id": {
+      "minLength": 1,
+      "title": "Receipt Id",
+      "type": "string"
+    },
+    "released_report_refs": {
+      "items": {
+        "$ref": "#/$defs/VersionReference"
+      },
+      "title": "Released Report Refs",
+      "type": "array"
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "title": "Result",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "signature": {
+      "$ref": "#/$defs/Signature"
+    }
+  },
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "job_id",
+    "gate_spec_hash",
+    "artifact_refs",
+    "dataset_refs",
+    "protocol_refs",
+    "config_refs",
+    "released_report_refs",
+    "checks",
+    "allowed_conclusions",
+    "conclusion",
+    "result",
+    "independent_checker",
+    "human_signoff_ref",
+    "created_at",
+    "signature"
+  ],
+  "title": "DeliveryReceipt",
+  "type": "object"
+}

@@ -1,0 +1,9 @@
+{
+  "gate_spec_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "independent_checker": "checker",
+  "job_id": "job-example",
+  "receipt_id": "receipt-example",
+  "receipt_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "result": "fail",
+  "signature_verified": false
+}

@@ -1,0 +1,10 @@
+{
+  "evidence_refs": [
+    {
+      "reference_id": "evidence-example",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "result": "pass",
+  "schema_ref": "report/1"
+}

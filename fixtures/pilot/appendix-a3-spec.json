@@ -1,0 +1,9 @@
+{
+  "index_prices": {"path": "run_snapshot/outputs/sw1_ifind/index_prices.csv", "rows": 55862, "column_count": 3, "date_column": "date", "date_format": "%Y-%m-%d", "start": "2020-01-02", "end": "2026-10-16", "grain": "daily x code"},
+  "evaluation_prices": {"path": "run_snapshot/data/ifind/evaluation_prices.csv", "rows": 8194, "column_count": 3, "date_column": "date", "date_format": "%Y-%m-%d", "start": "2025-10-20", "end": "2026-10-16", "grain": "daily x code"},
+  "trading_calendar": {"path": "run_snapshot/data/ifind/trading_calendar.csv", "rows": 2483, "column_count": 2, "date_column": "date", "date_format": "%Y-%m-%d", "start": "2020-01-01", "end": "2026-10-18", "grain": "daily"},
+  "industry_signal_panel": {"path": "run_snapshot/outputs/sw1_ifind/industry_signal_panel.csv.gz", "rows": 10788, "column_count": 16, "date_column": "date", "date_format": "%Y-%m-%d", "start": "2020-01-03", "end": "2026-10-16", "grain": "weekly x industry"},
+  "features": {"path": "run_snapshot/outputs/factor_upgrade_v1/features.csv.gz", "rows": 10788, "column_count": 71, "date_column": "date", "date_format": "%Y-%m-%d", "start": "2020-01-03", "end": "2026-10-16", "grain": "weekly x industry"},
+  "stock_finance": {"path": "run_snapshot/outputs/sw1_ifind/stock_finance.csv.gz", "rows": 72124, "column_count": 12, "date_column": "report_date", "date_format": "%Y%m%d", "start": "2020-06-30", "end": "2026-06-30", "grain": "stock x report period"},
+  "industry_labels": {"path": "docs/industry_labels.csv", "rows": 31, "column_count": 3, "date_column": null, "date_format": null, "start": null, "end": null, "grain": "industry code"}
+}

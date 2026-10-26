@@ -1,0 +1,26 @@
+schema_version: '1'
+kind: quota
+profile: stock_daily_v1
+revision: 1
+owner: evaluation
+status: draft
+source:
+- PLAN_ALIGNMENT.md
+- LOCAL_IMPLEMENTATION_REFERENCE.md section 17
+parameters:
+  family:
+    w1_per_24_hours: 3
+    w2_per_7_days: 1
+  program:
+    w1_per_day: 60
+    w2_per_week: 10
+  global:
+    w1_per_day: 200
+    w2_per_epoch: 400
+    w3_per_epoch: 100
+    simulation_slots: 40
+  w3_once_per_version: true
+  deferral_expiry_days: 7
+  burn_w1_amber: 3000
+  burn_w1_red: 6000
+unresolved: []

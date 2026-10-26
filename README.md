@@ -2,7 +2,7 @@
 
 Hybrid v1 multi-agent quantitative research and factor evolution: supervisor–worker coordination, a shared research blackboard, evolutionary candidate development and a strictly independent, deterministic evaluator. Delivered as a Docker Compose bundle for `linux/amd64` and `linux/arm64`, driven through a standard MCP front door by a host agent such as Codex, with online Kimi, GLM and DeepSeek as the mandatory research-side LLM providers.
 
-**Status:** aligned development plan, revision 2.0 (October 26, 2026). The system is not implemented; nothing in this repository claims a runtime, live-provider or production acceptance.
+**Status:** aligned development plan, revision 2.0 (October 26, 2026). The system is not implemented.
 
 ## Start here
 

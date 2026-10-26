@@ -1,0 +1,4 @@
+{
+  "packages": ["qfr_mcp", "qfr_research", "qfr_registry", "qfr_eval"],
+  "platforms": ["linux/amd64", "linux/arm64"]
+}

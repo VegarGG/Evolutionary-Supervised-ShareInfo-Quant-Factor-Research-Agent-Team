@@ -1,0 +1,20 @@
+schema_version: '1'
+kind: job
+profile: stock_daily_v1
+revision: 1
+owner: operator
+status: draft
+source:
+- PLAN_ALIGNMENT.md
+- LOCAL_IMPLEMENTATION_REFERENCE.md section 17
+parameters:
+  max_wall_clock_seconds: null
+  max_generations: null
+  authorized_spend_ref: null
+  exit_gate_type: research_delivery
+  exit_gate_spec_ref: null
+  on_budget_exhaustion: budget_paused
+  completion_requires_independent_receipt: true
+  forward_campaign_enabled: false
+unresolved:
+- Resolve brief, permitted conclusions, deliverables and spend before admission.

@@ -1,0 +1,8 @@
+{
+  "critic_verdict_id": null,
+  "development_prefix_check": "not_run",
+  "dsl_validation": "not_run",
+  "evidence_refs": [],
+  "review_rounds": 0,
+  "static_analysis": "not_run"
+}

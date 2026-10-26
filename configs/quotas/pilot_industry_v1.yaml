@@ -1,0 +1,16 @@
+schema_version: '1'
+kind: quota
+profile: pilot_industry_v1
+revision: 1
+owner: evaluation
+status: draft
+source:
+- PLAN_ALIGNMENT.md
+- appendix-a-pilot-case-industry-rotation.md A.4
+- HYBRID_V1_DEVELOPMENT_PLAN.md 7.7, 7.9, 7.10
+parameters:
+  lineage_queries_per_generation: null
+  confirmation_queries_per_protocol: 1
+  excess: withheld_or_deferred
+unresolved:
+- Evaluator owner must set lineage quota before protocol freeze.

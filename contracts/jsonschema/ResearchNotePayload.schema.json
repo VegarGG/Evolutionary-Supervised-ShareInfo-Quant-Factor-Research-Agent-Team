@@ -1,0 +1,39 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "citation_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Citation Refs",
+      "type": "array"
+    },
+    "document_asset_id": {
+      "minLength": 1,
+      "title": "Document Asset Id",
+      "type": "string"
+    },
+    "kind": {
+      "const": "research_note",
+      "title": "Kind",
+      "type": "string"
+    },
+    "released_report_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Released Report Refs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "kind",
+    "document_asset_id",
+    "citation_refs",
+    "released_report_refs"
+  ],
+  "title": "ResearchNotePayload",
+  "type": "object"
+}

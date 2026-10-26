@@ -1,0 +1,177 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "batch": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Batch"
+    },
+    "cache": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cache"
+    },
+    "hosted_tools": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Hosted Tools"
+    },
+    "input_modalities": {
+      "anyOf": [
+        {
+          "items": {
+            "enum": [
+              "text",
+              "image",
+              "audio",
+              "video"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Input Modalities"
+    },
+    "knowledge_cutoff": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Knowledge Cutoff"
+    },
+    "reasoning_efforts": {
+      "anyOf": [
+        {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reasoning Efforts"
+    },
+    "sampling_parameters": {
+      "anyOf": [
+        {
+          "items": {
+            "enum": [
+              "temperature",
+              "top_p"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sampling Parameters"
+    },
+    "server_conversation_state": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Server Conversation State"
+    },
+    "streaming": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Streaming"
+    },
+    "structured_output": {
+      "anyOf": [
+        {
+          "enum": [
+            "json_schema",
+            "json_object",
+            "local_only"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Structured Output"
+    },
+    "thinking_budget_tokens": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Thinking Budget Tokens"
+    },
+    "tool_calling": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tool Calling"
+    }
+  },
+  "title": "ModelCapabilities",
+  "type": "object"
+}

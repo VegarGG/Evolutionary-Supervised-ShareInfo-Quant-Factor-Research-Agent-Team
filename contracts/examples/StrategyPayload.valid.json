@@ -1,0 +1,13 @@
+{
+  "cost_policy_ref": "pilot/costs",
+  "execution_prices_ref": "dataset-example",
+  "kind": "strategy",
+  "position_state_rules": "Declared",
+  "rebalance_timing": "Declared",
+  "signal_artifacts": [
+    {
+      "artifact_version_id": "parent-example",
+      "content_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}

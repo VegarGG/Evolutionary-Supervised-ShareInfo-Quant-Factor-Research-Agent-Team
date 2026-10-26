@@ -1,0 +1,97 @@
+{
+  "$defs": {
+    "MechanismCard": {
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "minLength": 1,
+          "title": "Context",
+          "type": "string"
+        },
+        "direction": {
+          "minLength": 1,
+          "title": "Direction",
+          "type": "string"
+        },
+        "event": {
+          "minLength": 1,
+          "title": "Event",
+          "type": "string"
+        },
+        "output": {
+          "minLength": 1,
+          "title": "Output",
+          "type": "string"
+        },
+        "qualities": {
+          "minLength": 1,
+          "title": "Qualities",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event",
+        "context",
+        "qualities",
+        "direction",
+        "output"
+      ],
+      "title": "MechanismCard",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "expected_sign": {
+      "enum": [
+        -1,
+        1
+      ],
+      "title": "Expected Sign",
+      "type": "integer"
+    },
+    "fields_used": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Fields Used",
+      "type": "array"
+    },
+    "formulation": {
+      "minLength": 1,
+      "title": "Formulation",
+      "type": "string"
+    },
+    "horizon_days": {
+      "exclusiveMinimum": 0,
+      "title": "Horizon Days",
+      "type": "integer"
+    },
+    "kind": {
+      "const": "factor",
+      "title": "Kind",
+      "type": "string"
+    },
+    "max_lookback_days": {
+      "minimum": 0,
+      "title": "Max Lookback Days",
+      "type": "integer"
+    },
+    "mechanism_card": {
+      "$ref": "#/$defs/MechanismCard"
+    }
+  },
+  "required": [
+    "kind",
+    "expected_sign",
+    "horizon_days",
+    "fields_used",
+    "max_lookback_days",
+    "formulation",
+    "mechanism_card"
+  ],
+  "title": "FactorPayload",
+  "type": "object"
+}

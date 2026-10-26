@@ -1,0 +1,44 @@
+{
+  "agent_runs": [],
+  "blackboard_refs": [],
+  "dependency_lock_sha256": null,
+  "exposure": {
+    "history": "previously_seen",
+    "inspected_periods": [
+      {
+        "end": "2026-10-16",
+        "start": "2020-01-01"
+      }
+    ],
+    "licence_constraints": [
+      "Local authorized use only"
+    ],
+    "provider_knowledge_exposure": "unknown",
+    "quality": {
+      "membership_grade": "D",
+      "membership_notes": "Current membership mapped backward",
+      "membership_status": "backfilled",
+      "timing_basis": "Documented availability convention",
+      "timing_grade": "B",
+      "vintage_notes": "Historical revisions unverified",
+      "vintage_status": "unknown"
+    },
+    "training_tuning_history": "Previously inspected history",
+    "unknowns": [
+      "Index vintage"
+    ]
+  },
+  "generation_id": null,
+  "island_id": null,
+  "operator": "human_seed",
+  "program_id": "program-example",
+  "qfr_core_version": "0.1.0",
+  "research_snapshot_id": null,
+  "source_asset_ids": [
+    "asset-example"
+  ],
+  "source_hashes": [
+    "0000000000000000000000000000000000000000000000000000000000000000"
+  ],
+  "task_id": null
+}
