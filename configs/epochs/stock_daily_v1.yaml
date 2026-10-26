@@ -1,0 +1,30 @@
+schema_version: '1'
+profile: stock_daily_v1
+epoch_id: stock_daily_v1_epoch_001
+status: draft
+owner: evaluation
+windows:
+  W0:
+    start: '2010-01-04'
+    end: '2019-12-31'
+    end_rule: null
+    exposure: unknown
+  W1:
+    start: '2020-02-04'
+    end: '2022-12-30'
+    end_rule: null
+    exposure: unknown
+  W2:
+    start: '2023-02-01'
+    end: '2024-06-28'
+    end_rule: null
+    exposure: unknown
+  W3:
+    start: '2024-08-01'
+    end: null
+    end_rule: last full month before epoch freeze
+    exposure: unknown
+embargo_trading_days: 20
+original_replay_windows: {}
+unresolved:
+- Evaluator owner must freeze epoch; access isolation does not erase prior exposure.

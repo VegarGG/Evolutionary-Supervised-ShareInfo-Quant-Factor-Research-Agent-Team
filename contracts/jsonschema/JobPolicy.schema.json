@@ -1,0 +1,82 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "authorized_spend_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Authorized Spend Ref"
+    },
+    "completion_requires_independent_receipt": {
+      "const": true,
+      "title": "Completion Requires Independent Receipt",
+      "type": "boolean"
+    },
+    "exit_gate_spec_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Exit Gate Spec Ref"
+    },
+    "fallback_allowlist": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Fallback Allowlist",
+      "type": "array"
+    },
+    "max_generations": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Max Generations"
+    },
+    "max_wall_clock_seconds": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Max Wall Clock Seconds"
+    },
+    "on_budget_exhaustion": {
+      "const": "budget_paused",
+      "title": "On Budget Exhaustion",
+      "type": "string"
+    }
+  },
+  "required": [
+    "max_wall_clock_seconds",
+    "max_generations",
+    "authorized_spend_ref",
+    "exit_gate_spec_ref",
+    "fallback_allowlist",
+    "on_budget_exhaustion",
+    "completion_requires_independent_receipt"
+  ],
+  "title": "JobPolicy",
+  "type": "object"
+}

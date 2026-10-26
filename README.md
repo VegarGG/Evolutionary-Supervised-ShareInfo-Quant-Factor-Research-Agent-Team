@@ -2,7 +2,9 @@
 
 Hybrid v1 multi-agent quantitative research and factor evolution, with a shared research blackboard and strictly independent evaluation.
 
-**Status:** aligned development plans, revision 1.1 (October 23, 2026). The research runtime is not implemented or production-accepted by this documentation change.
+**Status:** Stage 0 foundation implemented (October 25, 2026). The workspace, contracts, configuration, database boundaries, local fixture checks and CI/image build definitions are present. Factor computation, evaluation, MCP handlers and LLM execution are not implemented. This is not production acceptance.
+
+See [Stage 0 setup and validation](docs/STAGE_0.md), [recorded decisions](docs/decisions.md), [public contracts](contracts/README.md) and [licensed fixture instructions](fixtures/pilot/README.md).
 
 - Start with [requirements and plan reconciliation](docs/PLAN_ALIGNMENT.md): preserved architecture, Docker/MCP, on-demand jobs, generic inputs, configurable online providers and acceptance gates.
 - Follow the [primary development plan](docs/HYBRID_V1_DEVELOPMENT_PLAN.md) for delivery order and phase acceptance.

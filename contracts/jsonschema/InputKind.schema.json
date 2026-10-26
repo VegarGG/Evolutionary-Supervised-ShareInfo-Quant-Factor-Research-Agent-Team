@@ -1,0 +1,11 @@
+{
+  "enum": [
+    "idea",
+    "factor",
+    "model",
+    "strategy",
+    "bundle"
+  ],
+  "title": "InputKind",
+  "type": "string"
+}

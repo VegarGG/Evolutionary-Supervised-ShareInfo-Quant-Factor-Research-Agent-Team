@@ -1,0 +1,57 @@
+{
+  "allowed_conclusions": [
+    "supported_negative"
+  ],
+  "artifact_refs": [],
+  "checks": [
+    {
+      "check_id": "schema-valid",
+      "evidence_refs": [
+        {
+          "reference_id": "evidence-example",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ],
+      "result": "pass",
+      "schema_ref": "report/1"
+    }
+  ],
+  "conclusion": "supported_negative",
+  "config_refs": [
+    {
+      "reference_id": "evidence-example",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "created_at": "2026-10-25T12:00:00Z",
+  "dataset_refs": [
+    {
+      "reference_id": "evidence-example",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "gate_spec_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "human_signoff_ref": null,
+  "independent_checker": "delivery-checker",
+  "job_id": "job-example",
+  "protocol_refs": [
+    {
+      "reference_id": "evidence-example",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "receipt_id": "receipt-example",
+  "released_report_refs": [
+    {
+      "reference_id": "evidence-example",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "result": "pass",
+  "schema_version": "1",
+  "signature": {
+    "algorithm": "Ed25519",
+    "key_id": "synthetic-not-a-real-key",
+    "signature_hex": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  }
+}

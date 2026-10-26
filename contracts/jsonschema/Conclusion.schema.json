@@ -1,0 +1,10 @@
+{
+  "enum": [
+    "supported_positive",
+    "supported_negative",
+    "empty_shortlist",
+    "data_blocked"
+  ],
+  "title": "Conclusion",
+  "type": "string"
+}

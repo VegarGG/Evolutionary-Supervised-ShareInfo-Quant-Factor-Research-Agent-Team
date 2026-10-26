@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "PITGrade": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "title": "PITGrade",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "membership_grade": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PITGrade"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "membership_notes": {
+      "minLength": 1,
+      "title": "Membership Notes",
+      "type": "string"
+    },
+    "membership_status": {
+      "enum": [
+        "point_in_time",
+        "backfilled",
+        "unknown",
+        "not_applicable"
+      ],
+      "title": "Membership Status",
+      "type": "string"
+    },
+    "timing_basis": {
+      "minLength": 1,
+      "title": "Timing Basis",
+      "type": "string"
+    },
+    "timing_grade": {
+      "$ref": "#/$defs/PITGrade"
+    },
+    "vintage_notes": {
+      "minLength": 1,
+      "title": "Vintage Notes",
+      "type": "string"
+    },
+    "vintage_status": {
+      "enum": [
+        "verified",
+        "unknown",
+        "restated"
+      ],
+      "title": "Vintage Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "timing_grade",
+    "timing_basis",
+    "vintage_status",
+    "vintage_notes",
+    "membership_grade",
+    "membership_status",
+    "membership_notes"
+  ],
+  "title": "QualityLabels",
+  "type": "object"
+}

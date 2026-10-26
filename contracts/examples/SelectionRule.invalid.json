@@ -1,0 +1,6 @@
+{
+  "fraction": 0.2,
+  "tie_break": "industry name",
+  "top_n": null,
+  "weighting": "equal"
+}

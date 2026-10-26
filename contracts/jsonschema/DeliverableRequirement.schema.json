@@ -1,0 +1,31 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "evidence_refs_required": {
+      "title": "Evidence Refs Required",
+      "type": "boolean"
+    },
+    "name": {
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "required": {
+      "title": "Required",
+      "type": "boolean"
+    },
+    "schema_ref": {
+      "minLength": 1,
+      "title": "Schema Ref",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "schema_ref",
+    "required",
+    "evidence_refs_required"
+  ],
+  "title": "DeliverableRequirement",
+  "type": "object"
+}

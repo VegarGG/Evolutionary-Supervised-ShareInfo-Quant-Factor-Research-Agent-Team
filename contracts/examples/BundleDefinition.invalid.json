@@ -1,0 +1,9 @@
+{
+  "component_asset_ids": [
+    "asset-example"
+  ],
+  "inventory_ref": "inventory-example",
+  "preservation_rules": [
+    "Preserve originals"
+  ]
+}

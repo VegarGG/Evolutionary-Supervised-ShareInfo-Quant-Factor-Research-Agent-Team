@@ -1,0 +1,7 @@
+{
+  "dataset_manifest_ref": "dataset-example",
+  "deterministic_check_refs": [
+    "schema"
+  ],
+  "output_schema_ref": "dataset/1"
+}

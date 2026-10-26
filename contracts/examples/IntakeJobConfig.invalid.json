@@ -1,0 +1,11 @@
+{
+  "authorized_cost_usd": null,
+  "authorized_spend_ref": null,
+  "human_checkpoint_policy_ref": "owner-clarification",
+  "max_generations": null,
+  "max_wall_clock_seconds": null,
+  "permitted_dataset_ids": [],
+  "permitted_provider_endpoints": [],
+  "proposed_exit_gate_ref": null,
+  "stop_pause_policy_ref": "jobs/pilot_industry_v1.yaml"
+}

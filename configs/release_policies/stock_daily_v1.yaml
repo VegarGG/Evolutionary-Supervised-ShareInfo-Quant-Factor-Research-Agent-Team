@@ -1,0 +1,35 @@
+schema_version: '1'
+kind: release_policy
+profile: stock_daily_v1
+revision: 1
+owner: evaluation
+status: draft
+source:
+- PLAN_ALIGNMENT.md
+- LOCAL_IMPLEMENTATION_REFERENCE.md section 17
+parameters:
+  fitness_profile: stock_multi_metric_v1
+  w1_batch_hours: 6
+  w2_batch: Monday 00:00 UTC
+  advancement_delay_days: 7
+  rounding:
+    rank_ic: 0.005
+    ir: 0.02
+    sharpe: 0.25
+    shares: 0.05
+    correlations: 0.05
+    w2_best_rank_ic: 0.01
+  t_bucket_edges:
+  - 1
+  - 2
+  - 3
+  ladder_eta: 0.005
+  w3_metrics_released: false
+  simulation_rank_ic_edges:
+  - 0
+  - 0.01
+  - 0.03
+  raw_series_released: false
+  diagnostics: enum_codes_only
+  automatic_campaign: false
+unresolved: []

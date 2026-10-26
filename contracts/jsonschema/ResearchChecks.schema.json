@@ -1,0 +1,76 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "critic_verdict_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Critic Verdict Id"
+    },
+    "development_prefix_check": {
+      "enum": [
+        "pass",
+        "fail",
+        "not_run",
+        "not_applicable"
+      ],
+      "title": "Development Prefix Check",
+      "type": "string"
+    },
+    "dsl_validation": {
+      "enum": [
+        "pass",
+        "fail",
+        "not_run",
+        "not_applicable"
+      ],
+      "title": "Dsl Validation",
+      "type": "string"
+    },
+    "evidence_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "official": {
+      "const": false,
+      "title": "Official",
+      "type": "boolean"
+    },
+    "review_rounds": {
+      "minimum": 0,
+      "title": "Review Rounds",
+      "type": "integer"
+    },
+    "static_analysis": {
+      "enum": [
+        "pass",
+        "fail",
+        "not_run",
+        "not_applicable"
+      ],
+      "title": "Static Analysis",
+      "type": "string"
+    }
+  },
+  "required": [
+    "official",
+    "dsl_validation",
+    "static_analysis",
+    "development_prefix_check",
+    "evidence_refs",
+    "critic_verdict_id",
+    "review_rounds"
+  ],
+  "title": "ResearchChecks",
+  "type": "object"
+}

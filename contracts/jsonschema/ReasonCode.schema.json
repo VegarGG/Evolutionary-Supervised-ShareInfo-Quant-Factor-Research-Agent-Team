@@ -1,0 +1,22 @@
+{
+  "enum": [
+    "SCHEMA_INVALID",
+    "KIND_UNSUPPORTED",
+    "PARSE_ERROR",
+    "TYPE_ERROR",
+    "COMPLEXITY_LIMIT",
+    "FORBIDDEN_CONSTRUCT",
+    "DECLARATION_MISMATCH",
+    "DUPLICATE_OF",
+    "NEAR_DUPLICATE_OF",
+    "QUOTA_DEFERRED",
+    "QUOTA_EXPIRED",
+    "LOW_COVERAGE",
+    "LOOKAHEAD_DETECTED",
+    "RUNTIME_LIMIT",
+    "DEGENERATE",
+    "INTERNAL_ERROR"
+  ],
+  "title": "ReasonCode",
+  "type": "string"
+}

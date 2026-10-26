@@ -1,0 +1,9 @@
+{
+  "capabilities": null,
+  "context_limit_tokens": null,
+  "endpoint_ref": "kimi_primary",
+  "exact_model_id": null,
+  "exact_model_id_ref": "env:KIMI_MODEL_ID",
+  "output_limit_tokens": null,
+  "verified_capabilities_ref": null
+}

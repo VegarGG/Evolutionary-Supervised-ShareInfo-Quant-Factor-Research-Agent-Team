@@ -1,0 +1,15 @@
+{
+  "asset_id": "asset-example",
+  "bytes": 0,
+  "intended_use": "documentation",
+  "licence": "Synthetic",
+  "media_type": "application/json",
+  "provenance": "Synthetic schema example",
+  "reference": {
+    "reference_id": "declared-import",
+    "relative_path": "example.json",
+    "transport": "mounted_import"
+  },
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "source_is_untrusted_data": true
+}

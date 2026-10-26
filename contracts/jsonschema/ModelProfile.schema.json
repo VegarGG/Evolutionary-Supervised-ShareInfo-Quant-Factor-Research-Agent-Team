@@ -1,0 +1,270 @@
+{
+  "$defs": {
+    "ModelCapabilities": {
+      "additionalProperties": false,
+      "properties": {
+        "batch": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Batch"
+        },
+        "cache": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cache"
+        },
+        "hosted_tools": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hosted Tools"
+        },
+        "input_modalities": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "text",
+                  "image",
+                  "audio",
+                  "video"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Modalities"
+        },
+        "knowledge_cutoff": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Knowledge Cutoff"
+        },
+        "reasoning_efforts": {
+          "anyOf": [
+            {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Efforts"
+        },
+        "sampling_parameters": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "temperature",
+                  "top_p"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sampling Parameters"
+        },
+        "server_conversation_state": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Server Conversation State"
+        },
+        "streaming": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Streaming"
+        },
+        "structured_output": {
+          "anyOf": [
+            {
+              "enum": [
+                "json_schema",
+                "json_object",
+                "local_only"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Structured Output"
+        },
+        "thinking_budget_tokens": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thinking Budget Tokens"
+        },
+        "tool_calling": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Calling"
+        }
+      },
+      "title": "ModelCapabilities",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "capabilities": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelCapabilities"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "context_limit_tokens": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Context Limit Tokens"
+    },
+    "endpoint_ref": {
+      "minLength": 1,
+      "title": "Endpoint Ref",
+      "type": "string"
+    },
+    "exact_model_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exact Model Id"
+    },
+    "exact_model_id_ref": {
+      "anyOf": [
+        {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exact Model Id Ref"
+    },
+    "output_limit_tokens": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Output Limit Tokens"
+    },
+    "verified_capabilities_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Verified Capabilities Ref"
+    }
+  },
+  "required": [
+    "endpoint_ref",
+    "verified_capabilities_ref",
+    "context_limit_tokens",
+    "output_limit_tokens"
+  ],
+  "title": "ModelProfile",
+  "type": "object"
+}

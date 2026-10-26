@@ -1,0 +1,7 @@
+{
+  "artifact_version_id": "artifact-example",
+  "content_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "dataset_version_id": "dataset-example",
+  "evaluator_version": "fixture",
+  "protocol_version": "pilot/1"
+}

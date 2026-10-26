@@ -1,0 +1,216 @@
+{
+  "$defs": {
+    "DateRange": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "DateRange",
+      "type": "object"
+    },
+    "PITGrade": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "title": "PITGrade",
+      "type": "string"
+    },
+    "QualityLabels": {
+      "additionalProperties": false,
+      "properties": {
+        "membership_grade": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PITGrade"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "membership_notes": {
+          "minLength": 1,
+          "title": "Membership Notes",
+          "type": "string"
+        },
+        "membership_status": {
+          "enum": [
+            "point_in_time",
+            "backfilled",
+            "unknown",
+            "not_applicable"
+          ],
+          "title": "Membership Status",
+          "type": "string"
+        },
+        "timing_basis": {
+          "minLength": 1,
+          "title": "Timing Basis",
+          "type": "string"
+        },
+        "timing_grade": {
+          "$ref": "#/$defs/PITGrade"
+        },
+        "vintage_notes": {
+          "minLength": 1,
+          "title": "Vintage Notes",
+          "type": "string"
+        },
+        "vintage_status": {
+          "enum": [
+            "verified",
+            "unknown",
+            "restated"
+          ],
+          "title": "Vintage Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "timing_grade",
+        "timing_basis",
+        "vintage_status",
+        "vintage_notes",
+        "membership_grade",
+        "membership_status",
+        "membership_notes"
+      ],
+      "title": "QualityLabels",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "columns": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Columns",
+      "type": "array"
+    },
+    "date_column": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Date Column"
+    },
+    "date_range": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DateRange"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "grain": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Grain",
+      "type": "array"
+    },
+    "licence_note": {
+      "minLength": 1,
+      "title": "Licence Note",
+      "type": "string"
+    },
+    "logical_hash_spec": {
+      "minLength": 1,
+      "title": "Logical Hash Spec",
+      "type": "string"
+    },
+    "logical_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Logical Sha256",
+      "type": "string"
+    },
+    "name": {
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "path": {
+      "minLength": 1,
+      "title": "Path",
+      "type": "string"
+    },
+    "physical_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Physical Sha256",
+      "type": "string"
+    },
+    "quality": {
+      "$ref": "#/$defs/QualityLabels"
+    },
+    "rows": {
+      "minimum": 0,
+      "title": "Rows",
+      "type": "integer"
+    },
+    "schema_ref": {
+      "minLength": 1,
+      "title": "Schema Ref",
+      "type": "string"
+    },
+    "source_asset_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Source Asset Ids",
+      "type": "array"
+    },
+    "source_description": {
+      "minLength": 1,
+      "title": "Source Description",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "path",
+    "physical_sha256",
+    "logical_sha256",
+    "logical_hash_spec",
+    "rows",
+    "columns",
+    "date_range",
+    "date_column",
+    "grain",
+    "schema_ref",
+    "quality",
+    "licence_note",
+    "source_description",
+    "source_asset_ids"
+  ],
+  "title": "DatasetTable",
+  "type": "object"
+}

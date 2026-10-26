@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "cost_rules": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Cost Rules"
+    },
+    "kind": {
+      "const": "strategy",
+      "title": "Kind",
+      "type": "string"
+    },
+    "position_state": {
+      "minLength": 1,
+      "title": "Position State",
+      "type": "string"
+    },
+    "rebalance_timing": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Rebalance Timing"
+    },
+    "rules": {
+      "minLength": 1,
+      "title": "Rules",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "rules",
+    "position_state",
+    "cost_rules",
+    "rebalance_timing"
+  ],
+  "title": "StrategyDefinition",
+  "type": "object"
+}

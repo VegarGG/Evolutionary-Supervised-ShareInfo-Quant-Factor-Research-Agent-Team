@@ -1,0 +1,37 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "reference_id": {
+      "minLength": 1,
+      "title": "Reference Id",
+      "type": "string"
+    },
+    "relative_path": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Relative Path"
+    },
+    "transport": {
+      "enum": [
+        "finalized_upload",
+        "mounted_import"
+      ],
+      "title": "Transport",
+      "type": "string"
+    }
+  },
+  "required": [
+    "transport",
+    "reference_id"
+  ],
+  "title": "AssetReference",
+  "type": "object"
+}

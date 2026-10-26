@@ -1,0 +1,17 @@
+{
+  "expected_sign": 1,
+  "fields_used": [
+    "close"
+  ],
+  "formulation": "Previous observed close",
+  "horizon_days": 1,
+  "kind": "factor",
+  "max_lookback_days": 1,
+  "mechanism_card": {
+    "context": "Declared market",
+    "direction": "Pre-registered sign",
+    "event": "Price observation",
+    "output": "Score",
+    "qualities": "Declared universe"
+  }
+}

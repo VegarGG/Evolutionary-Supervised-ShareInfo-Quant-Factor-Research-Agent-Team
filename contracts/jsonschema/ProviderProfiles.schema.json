@@ -1,0 +1,1064 @@
+{
+  "$defs": {
+    "CapabilityPreflight": {
+      "additionalProperties": false,
+      "properties": {
+        "audit_requested_and_effective_settings": {
+          "const": true,
+          "title": "Audit Requested And Effective Settings",
+          "type": "boolean"
+        },
+        "local_schema_validation": {
+          "const": true,
+          "title": "Local Schema Validation",
+          "type": "boolean"
+        },
+        "preserve_provider_continuation": {
+          "const": true,
+          "title": "Preserve Provider Continuation",
+          "type": "boolean"
+        },
+        "pricing_snapshot_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Pricing Snapshot Ref"
+        },
+        "required": {
+          "const": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "unsupported_parameter_policy": {
+          "const": "reject_with_field_reason",
+          "title": "Unsupported Parameter Policy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "required",
+        "unsupported_parameter_policy",
+        "local_schema_validation",
+        "preserve_provider_continuation",
+        "pricing_snapshot_ref",
+        "audit_requested_and_effective_settings"
+      ],
+      "title": "CapabilityPreflight",
+      "type": "object"
+    },
+    "JobPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "authorized_spend_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Authorized Spend Ref"
+        },
+        "completion_requires_independent_receipt": {
+          "const": true,
+          "title": "Completion Requires Independent Receipt",
+          "type": "boolean"
+        },
+        "exit_gate_spec_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Exit Gate Spec Ref"
+        },
+        "fallback_allowlist": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Fallback Allowlist",
+          "type": "array"
+        },
+        "max_generations": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Generations"
+        },
+        "max_wall_clock_seconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Wall Clock Seconds"
+        },
+        "on_budget_exhaustion": {
+          "const": "budget_paused",
+          "title": "On Budget Exhaustion",
+          "type": "string"
+        }
+      },
+      "required": [
+        "max_wall_clock_seconds",
+        "max_generations",
+        "authorized_spend_ref",
+        "exit_gate_spec_ref",
+        "fallback_allowlist",
+        "on_budget_exhaustion",
+        "completion_requires_independent_receipt"
+      ],
+      "title": "JobPolicy",
+      "type": "object"
+    },
+    "ModelCapabilities": {
+      "additionalProperties": false,
+      "properties": {
+        "batch": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Batch"
+        },
+        "cache": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cache"
+        },
+        "hosted_tools": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hosted Tools"
+        },
+        "input_modalities": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "text",
+                  "image",
+                  "audio",
+                  "video"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Modalities"
+        },
+        "knowledge_cutoff": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Knowledge Cutoff"
+        },
+        "reasoning_efforts": {
+          "anyOf": [
+            {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Efforts"
+        },
+        "sampling_parameters": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "temperature",
+                  "top_p"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sampling Parameters"
+        },
+        "server_conversation_state": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Server Conversation State"
+        },
+        "streaming": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Streaming"
+        },
+        "structured_output": {
+          "anyOf": [
+            {
+              "enum": [
+                "json_schema",
+                "json_object",
+                "local_only"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Structured Output"
+        },
+        "thinking_budget_tokens": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thinking Budget Tokens"
+        },
+        "tool_calling": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Calling"
+        }
+      },
+      "title": "ModelCapabilities",
+      "type": "object"
+    },
+    "ModelProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "capabilities": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelCapabilities"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "context_limit_tokens": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Context Limit Tokens"
+        },
+        "endpoint_ref": {
+          "minLength": 1,
+          "title": "Endpoint Ref",
+          "type": "string"
+        },
+        "exact_model_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exact Model Id"
+        },
+        "exact_model_id_ref": {
+          "anyOf": [
+            {
+              "pattern": "^env:[A-Z][A-Z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exact Model Id Ref"
+        },
+        "output_limit_tokens": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Output Limit Tokens"
+        },
+        "verified_capabilities_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Verified Capabilities Ref"
+        }
+      },
+      "required": [
+        "endpoint_ref",
+        "verified_capabilities_ref",
+        "context_limit_tokens",
+        "output_limit_tokens"
+      ],
+      "title": "ModelProfile",
+      "type": "object"
+    },
+    "PricingSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "cached_input_per_million": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cached Input Per Million"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Currency"
+        },
+        "input_per_million": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Input Per Million"
+        },
+        "output_per_million": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Output Per Million"
+        },
+        "snapshot_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Snapshot Ref"
+        }
+      },
+      "required": [
+        "snapshot_ref",
+        "currency",
+        "input_per_million",
+        "output_per_million",
+        "cached_input_per_million"
+      ],
+      "title": "PricingSnapshot",
+      "type": "object"
+    },
+    "ProviderEndpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "account_label": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Account Label"
+        },
+        "api_dialect": {
+          "enum": [
+            "openai_chat_completions",
+            "openai_responses"
+          ],
+          "title": "Api Dialect",
+          "type": "string"
+        },
+        "api_key_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Api Key Ref",
+          "type": "string"
+        },
+        "base_url_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Base Url Ref",
+          "type": "string"
+        },
+        "concurrency": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Concurrency"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Region"
+        },
+        "requests_per_minute": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requests Per Minute"
+        },
+        "retry_policy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RetryPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "timeouts": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timeouts"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tokens_per_minute": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tokens Per Minute"
+        },
+        "vendor": {
+          "minLength": 1,
+          "title": "Vendor",
+          "type": "string"
+        }
+      },
+      "required": [
+        "vendor",
+        "base_url_ref",
+        "api_dialect",
+        "api_key_ref"
+      ],
+      "title": "ProviderEndpoint",
+      "type": "object"
+    },
+    "RequestedSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "max_output_tokens": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Output Tokens"
+        },
+        "reasoning_effort": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reasoning Effort"
+        },
+        "temperature": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temperature"
+        },
+        "thinking_budget_tokens": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thinking Budget Tokens"
+        },
+        "top_p": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Top P"
+        }
+      },
+      "title": "RequestedSettings",
+      "type": "object"
+    },
+    "RetryPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "ambiguous_outcome": {
+          "const": "persist_before_retry",
+          "title": "Ambiguous Outcome",
+          "type": "string"
+        },
+        "backoff": {
+          "enum": [
+            "exponential_with_jitter",
+            "fixed",
+            "none"
+          ],
+          "title": "Backoff",
+          "type": "string"
+        },
+        "backoff_seconds": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Backoff Seconds"
+        },
+        "max_attempts": {
+          "exclusiveMinimum": 0,
+          "title": "Max Attempts",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_attempts",
+        "backoff",
+        "ambiguous_outcome"
+      ],
+      "title": "RetryPolicy",
+      "type": "object"
+    },
+    "RoleProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "budget_reservation_usd": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Budget Reservation Usd"
+        },
+        "context_policy_ref": {
+          "minLength": 1,
+          "title": "Context Policy Ref",
+          "type": "string"
+        },
+        "fallback_allowlist": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Fallback Allowlist",
+          "type": "array"
+        },
+        "max_tool_turns": {
+          "exclusiveMinimum": 0,
+          "title": "Max Tool Turns",
+          "type": "integer"
+        },
+        "model_profile": {
+          "minLength": 1,
+          "title": "Model Profile",
+          "type": "string"
+        },
+        "per_call_timeouts": {
+          "$ref": "#/$defs/Timeouts"
+        },
+        "pricing_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PricingSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "prompt_template_ref": {
+          "minLength": 1,
+          "title": "Prompt Template Ref",
+          "type": "string"
+        },
+        "requested_settings": {
+          "$ref": "#/$defs/RequestedSettings"
+        },
+        "retry_policy": {
+          "$ref": "#/$defs/RetryPolicy"
+        },
+        "tool_allowlist": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Tool Allowlist",
+          "type": "array"
+        },
+        "tool_policy_ref": {
+          "minLength": 1,
+          "title": "Tool Policy Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_profile",
+        "prompt_template_ref",
+        "tool_policy_ref",
+        "requested_settings",
+        "max_tool_turns",
+        "context_policy_ref",
+        "per_call_timeouts",
+        "retry_policy"
+      ],
+      "title": "RoleProfile",
+      "type": "object"
+    },
+    "TaskOverride": {
+      "additionalProperties": false,
+      "properties": {
+        "context_policy_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Context Policy Ref"
+        },
+        "fallback_allowlist": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Fallback Allowlist",
+          "type": "array"
+        },
+        "max_tool_turns": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Tool Turns"
+        },
+        "model_profile": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Profile"
+        },
+        "override_source": {
+          "minLength": 1,
+          "title": "Override Source",
+          "type": "string"
+        },
+        "per_call_timeouts": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timeouts"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "prompt_template_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt Template Ref"
+        },
+        "requested_settings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequestedSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "retry_policy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RetryPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "role_profile": {
+          "minLength": 1,
+          "title": "Role Profile",
+          "type": "string"
+        },
+        "task_id": {
+          "minLength": 1,
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "role_profile",
+        "override_source"
+      ],
+      "title": "TaskOverride",
+      "type": "object"
+    },
+    "Timeouts": {
+      "additionalProperties": false,
+      "properties": {
+        "connect_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Connect Seconds",
+          "type": "number"
+        },
+        "idle_seconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Idle Seconds"
+        },
+        "read_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Read Seconds",
+          "type": "number"
+        }
+      },
+      "required": [
+        "connect_seconds",
+        "read_seconds"
+      ],
+      "title": "Timeouts",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "capability_preflight": {
+      "$ref": "#/$defs/CapabilityPreflight"
+    },
+    "job_policy": {
+      "$ref": "#/$defs/JobPolicy"
+    },
+    "model_profiles": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ModelProfile"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Model Profiles",
+      "type": "object"
+    },
+    "notes": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "provider_endpoints": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ProviderEndpoint"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Provider Endpoints",
+      "type": "object"
+    },
+    "role_profiles": {
+      "additionalProperties": {
+        "$ref": "#/$defs/RoleProfile"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Role Profiles",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "minLength": 1,
+      "title": "Status",
+      "type": "string"
+    },
+    "task_override_fields": {
+      "items": {
+        "enum": [
+          "model_profile",
+          "prompt_template_ref",
+          "requested_settings",
+          "max_tool_turns",
+          "context_policy_ref",
+          "per_call_timeouts",
+          "retry_policy",
+          "fallback_allowlist"
+        ],
+        "type": "string"
+      },
+      "title": "Task Override Fields",
+      "type": "array"
+    },
+    "task_overrides": {
+      "items": {
+        "$ref": "#/$defs/TaskOverride"
+      },
+      "title": "Task Overrides",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "notes",
+    "provider_endpoints",
+    "model_profiles",
+    "role_profiles",
+    "task_override_fields",
+    "capability_preflight",
+    "job_policy"
+  ],
+  "title": "ProviderProfiles",
+  "type": "object"
+}

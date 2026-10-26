@@ -1,0 +1,76 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "fallback_logic": {
+      "minLength": 1,
+      "title": "Fallback Logic",
+      "type": "string"
+    },
+    "fit_interface": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Fit Interface"
+    },
+    "inference_interface": {
+      "minLength": 1,
+      "title": "Inference Interface",
+      "type": "string"
+    },
+    "kind": {
+      "const": "model",
+      "title": "Kind",
+      "type": "string"
+    },
+    "preprocessing": {
+      "minLength": 1,
+      "title": "Preprocessing",
+      "type": "string"
+    },
+    "serialization": {
+      "minLength": 1,
+      "title": "Serialization",
+      "type": "string"
+    },
+    "specification": {
+      "minLength": 1,
+      "title": "Specification",
+      "type": "string"
+    },
+    "training_dataset_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Training Dataset Refs",
+      "type": "array"
+    },
+    "weight_asset_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Weight Asset Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "kind",
+    "specification",
+    "weight_asset_ids",
+    "preprocessing",
+    "fallback_logic",
+    "fit_interface",
+    "inference_interface",
+    "serialization",
+    "training_dataset_refs"
+  ],
+  "title": "ModelPayload",
+  "type": "object"
+}

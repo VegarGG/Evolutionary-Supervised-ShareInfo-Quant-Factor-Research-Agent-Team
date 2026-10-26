@@ -1,0 +1,25 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "membership": {
+      "enum": [
+        "baseline",
+        "active",
+        "retired"
+      ],
+      "title": "Membership",
+      "type": "string"
+    },
+    "type": {
+      "const": "library",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "membership"
+  ],
+  "title": "LibraryRelease",
+  "type": "object"
+}

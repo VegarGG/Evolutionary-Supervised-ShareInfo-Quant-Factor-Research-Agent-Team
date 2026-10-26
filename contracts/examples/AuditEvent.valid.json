@@ -1,0 +1,10 @@
+{
+  "action": "schema-example",
+  "at": "2026-10-25T12:00:00Z",
+  "entity_ref": "input-example",
+  "event_id": "event-example",
+  "evidence_refs": [],
+  "principal": "fixture-author",
+  "request_id": "request-example",
+  "schema_version": "1"
+}

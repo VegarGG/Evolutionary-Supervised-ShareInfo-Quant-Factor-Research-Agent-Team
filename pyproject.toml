@@ -1,0 +1,42 @@
+[project]
+name = "qfr-foundation"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+qfr-core = { workspace = true }
+qfr-registry = { workspace = true }
+qfr-research = { workspace = true }
+qfr-eval = { workspace = true }
+qfr-mcp = { workspace = true }
+
+[dependency-groups]
+dev = ["ruff", "mypy", "pytest", "hypothesis", "import-linter", "types-PyYAML", "psycopg[binary]", "jsonschema", "rust-just"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["packages"]
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["qfr_core", "qfr_core.*"]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --tb=short"
+markers = ["database: requires QFR_TEST_POSTGRES_DSN", "pilot: requires QFR_PILOT_ROOT"]

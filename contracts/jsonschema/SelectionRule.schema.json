@@ -1,0 +1,58 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "fraction": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fraction"
+    },
+    "rounding": {
+      "enum": [
+        "ceil",
+        "floor",
+        "exact_count"
+      ],
+      "title": "Rounding",
+      "type": "string"
+    },
+    "tie_break": {
+      "minLength": 1,
+      "title": "Tie Break",
+      "type": "string"
+    },
+    "top_n": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Top N"
+    },
+    "weighting": {
+      "minLength": 1,
+      "title": "Weighting",
+      "type": "string"
+    }
+  },
+  "required": [
+    "rounding",
+    "tie_break",
+    "weighting"
+  ],
+  "title": "SelectionRule",
+  "type": "object"
+}

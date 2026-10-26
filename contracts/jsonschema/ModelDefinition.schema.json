@@ -1,0 +1,81 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "fallback_logic": {
+      "minLength": 1,
+      "title": "Fallback Logic",
+      "type": "string"
+    },
+    "fit_interface": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Fit Interface"
+    },
+    "inference_interface": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Inference Interface"
+    },
+    "kind": {
+      "const": "model",
+      "title": "Kind",
+      "type": "string"
+    },
+    "preprocessing": {
+      "minLength": 1,
+      "title": "Preprocessing",
+      "type": "string"
+    },
+    "serialization": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Serialization"
+    },
+    "specification": {
+      "minLength": 1,
+      "title": "Specification",
+      "type": "string"
+    },
+    "weight_asset_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Weight Asset Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "kind",
+    "specification",
+    "weight_asset_ids",
+    "preprocessing",
+    "fallback_logic",
+    "fit_interface",
+    "inference_interface",
+    "serialization"
+  ],
+  "title": "ModelDefinition",
+  "type": "object"
+}
