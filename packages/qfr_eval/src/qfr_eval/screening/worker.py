@@ -206,6 +206,7 @@ class ScreeningWorker:
         return WorkerResult("deferred", reason, identity)
 
     def run_once(self) -> WorkerResult:
+        verify_runtime(self.runtime)
         job = self.scheduler.claim(
             worker=self.worker, lease_seconds=self.policy.worker_lease_seconds, request_id=uuid4()
         )

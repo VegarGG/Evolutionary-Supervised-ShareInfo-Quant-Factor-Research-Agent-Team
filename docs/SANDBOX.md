@@ -38,7 +38,7 @@ produce a successful result. An internal supervisor lifetime also bounds orphane
 execution if the evaluator itself disappears. Queue recovery remains the private
 scheduler's responsibility.
 
-`configs/evaluation/sandbox_pilot_v1.json` records implementation resource limits,
+`configs/evaluation/sandbox_pilot_v2.json` records implementation resource limits,
 separately from the approved measurement and financial screening policies. The
 pilot profile currently allows one CPU, 1 GiB memory, 64 container tasks, 16 guest
 processes, 120 CPU seconds and a 180-second execution deadline. These settings
@@ -46,6 +46,12 @@ require validation with the actual pilot runner image; small stdlib probes do no
 establish that acceptance. `Dockerfile.sandbox` installs only public core and its
 locked dependencies into the final image and rejects private QFR packages during
 the build. Its image build and full pilot replay are pending.
+
+Revision 2 binds the dependency lock containing evaluator thread-pool introspection.
+Its runsc backend, user, security controls and all resource limits are identical to
+the preserved `sandbox_pilot_v1.json`. Existing v1 artifacts/evidence keep their
+original lock and profile identity; this revision is not a new sandbox backend or
+Apple readiness claim. Final images and native Mac execution need fresh evidence.
 
 The static source checks are defense in depth. They are never permission to run
 Python outside this boundary. Constrained Python factors also reject direct date

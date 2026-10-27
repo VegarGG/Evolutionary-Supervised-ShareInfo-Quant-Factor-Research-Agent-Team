@@ -15,6 +15,7 @@ from qfr_core.registry_client import RegistryClient, RegistryTransportError
 from qfr_eval.artifact_store import EvidenceStore
 from qfr_eval.db.queue import finish
 from qfr_eval.protocols.models import FrozenProtocol
+from qfr_eval.runtime import capture_runtime
 from qfr_eval.scheduler.dedup import equivalent, semantic_scope, verify_publication
 from qfr_eval.scheduler.intake import IntakeScheduler, transition
 from qfr_eval.scheduler.models import (
@@ -93,19 +94,15 @@ def identity(scheduler, artifact):
 def screening_transaction_case(intake_publication, scheduler_factory, eval_connect, tmp_path):
     """Synthetic quality failure; this fixture proves atomic DB behavior, not inference."""
     from qfr_eval.protocols.store import activate_protocol, create_protocol
-    from qfr_eval.records import RuntimeIdentity
-    from qfr_eval.runtime import implementation_hash, software_identity
     from qfr_eval.scheduler.dedup import digest
     from qfr_eval.screening.models import ScreeningExecutionPolicy
     from qfr_eval.screening.records import ScreeningOutcome, ScreeningRequest
 
     artifact = intake_publication()
     scheduler = scheduler_factory({artifact.manifest.family_id: "atomic-screening-lineage"})
-    runtime = RuntimeIdentity(
+    runtime = capture_runtime(
         evaluator_git_sha="1" * 40,
-        implementation_sha256=implementation_hash(),
         image_digest="2" * 64,
-        software=software_identity(),
     )
     scheduler.campaign = scheduler.campaign.model_copy(
         update={
@@ -236,8 +233,6 @@ def screening_worker_case(screening_transaction_case):
     import polars as pl
     from qfr_core.contracts.execution import RunnerInput
     from qfr_core.runner_tables import pack_table
-    from qfr_eval.records import RuntimeIdentity
-    from qfr_eval.runtime import implementation_hash, software_identity
     from qfr_eval.screening.documents import ReleasedEvidence
     from qfr_eval.screening.models import KindAdapterProfile
     from qfr_eval.screening.worker import InputSlices, ScreeningWorker
@@ -273,11 +268,9 @@ def screening_worker_case(screening_transaction_case):
         )
 
     inputs = InputSlices(scheduler.campaign.snapshot_id, read)
-    runtime = RuntimeIdentity(
+    runtime = capture_runtime(
         evaluator_git_sha="1" * 40,
-        implementation_sha256=implementation_hash(),
         image_digest="2" * 64,
-        software=software_identity(),
     )
     profile = KindAdapterProfile.model_validate_json(
         (ROOT / "configs/evaluation/kind_adapter_pilot_v1.json").read_bytes()

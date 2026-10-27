@@ -39,7 +39,7 @@ module = ["qfr_core", "qfr_core.*"]
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["scipy", "scipy.*"]
+module = ["scipy", "scipy.*", "threadpoolctl"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

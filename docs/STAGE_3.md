@@ -323,3 +323,24 @@ under an unprivileged UID. No successful database connection is claimed by those
 negative fixtures. Peak child-process RSS was 286,060 KiB, peak environment memory
 2,435,682,304 bytes, and the 240-second/5-GiB/512-MiB-growth guard did not trigger.
 This offline result does not replace the outstanding live and platform gates.
+
+## Numerical runtime and reproduction follow-up
+
+Mac validation isolated the yearly-mean hash difference to unequal effective
+Polars pools (parent 4, CLI child 18). The difference was
+1.734723475976807e-18 in the 2023 yearly delta; series, fingerprints and clusters
+matched. No statistical computation or hash comparison is rounded or weakened.
+
+Runtime identity v2 records effective numerical execution. The CLI restores only
+its frozen allowlisted startup settings before numerical imports, then verifies
+actual pools, software and implementation. Programmatic calls reject an
+incompatible initialized runtime. Screening also checks before claiming work.
+Legacy identities remain byte-equivalent on serialization and are explicitly
+refused as unpinned by new execution; old records and campaigns are not rewritten.
+See Stage 2 operations and decision S3-19 for the compatibility boundary.
+
+The added threadpoolctl dependency changes the workspace lock. Sandbox profile v2
+binds that lock while preserving every v1 backend/security/resource value; the v1
+file remains unchanged. This is not permission to install or change a host backend.
+Only bounded offline checks run in cloud for this fix. Exact-commit Mac tests,
+licensed reproduction and final images must be revalidated before acceptance.

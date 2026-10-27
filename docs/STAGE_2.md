@@ -79,9 +79,29 @@ qfr eval-admin cluster-trials --request /private/request.json \
 inputs, not defaults. `EvaluationRequest.schema.json` is a private contract under
 `qfr_eval/private_contracts`. Its example is a schema fixture, not a runnable
 production request. Pin the actual evaluator Git SHA, built image digest,
-`runtime.implementation_hash()` and `runtime.software_identity()` from the runtime
-being used. The trusted operator must verify Git/image identity; the evaluator
-compares installed code and numerical package versions before measurement.
+the version-2 identity returned by `runtime.capture_runtime(evaluator_git_sha=...,
+image_digest=...)` from the runtime being used. The trusted operator must verify
+Git/image identity. The evaluator compares installed code, numerical package
+versions, host OS/CPU, effective Polars and observable BLAS/OpenMP pools, loaded
+library hashes and the closed startup-control set before measurement. This freezes
+the observed settings; it does not impose a new numerical tolerance or thread-count
+default. Unobservable or incompatible pools fail explicitly.
+
+The CLI reads the frozen request (or hash-verified receipt context for reproduce)
+before importing numerical libraries and restores only its allowlisted startup
+controls. It then verifies the actual initialized runtime before computation.
+Direct Python API callers must already match the frozen runtime; changing an
+environment label after import cannot repair an initialized pool. The reproduction
+test intentionally starts its child with a different Polars setting to verify
+restoration and retains exact result/series/fingerprint/cluster hashes.
+
+Legacy runtime identities remain readable and serialize exactly as before, but
+have no effective execution pin. They are refused with
+`legacy_runtime_missing_execution_identity` by the new execution path. Do not add
+fields to old records, receipts or campaigns. Reproduce historical evidence in its
+original pinned implementation; new evaluations/campaigns use an explicit v2
+identity and remain distinct counted records. Runtime/thread mismatches return
+fixed safe reason codes rather than environment dumps or rounded results.
 
 Built-in version UUIDs/content hashes come from `runtime.builtin_definition()`;
 they are not Registry publication claims. Registry assignment belongs to Stage 3.

@@ -25,6 +25,7 @@ from qfr_eval.records import (
 )
 from qfr_eval.registry_execution import RegistryExecutionFailure, load_registry_execution
 from qfr_eval.runtime import verify_runtime
+from qfr_eval.runtime_contracts import RuntimeCompatibilityError
 from qfr_eval.statistics.clustering import BehavioralFingerprint, ClusterSnapshot, cluster_trials
 from qfr_eval.statistics.family import TrialObservation
 
@@ -175,7 +176,7 @@ def reproduce(
 
 
 def main(arguments: list[str] | None = None) -> None:
-    from qfr_eval.admin.cli import connection_dsn
+    from qfr_eval.credentials import connection_dsn
 
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="action", required=True)
@@ -199,5 +200,7 @@ def main(arguments: list[str] | None = None) -> None:
         print(result.model_dump_json())
         if result.status != "match":
             parser.exit(1)
+    except RuntimeCompatibilityError as error:
+        parser.exit(1, "reproduction refused: " + error.reason + "\n")
     except (psycopg.Error, OSError, KeyError, ValueError, RuntimeError) as error:
         parser.exit(1, f"reproduction refused: {type(error).__name__}\n")

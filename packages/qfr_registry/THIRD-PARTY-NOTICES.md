@@ -17,7 +17,8 @@ those under /usr/share/doc. Preserve those files when redistributing images.
 The bounded review recorded in docs/LICENSING_REVIEW.md identified:
 
 - Runtime dependencies under MIT, BSD, PSF, and related permissive terms,
-  including Pydantic, Polars, NumPy, SciPy, PyYAML, and Lark. Binary wheels can
+  including Pydantic, Polars, NumPy, SciPy, PyYAML, Lark, and threadpoolctl
+  (BSD-3-Clause, used by the evaluator to inspect effective numerical thread pools). Binary wheels can
   bundle additional components. NumPy and SciPy include component-specific
   notices; SciPy's wheel also records OpenBLAS and GCC runtime-library terms
   with the GCC Runtime Library Exception.

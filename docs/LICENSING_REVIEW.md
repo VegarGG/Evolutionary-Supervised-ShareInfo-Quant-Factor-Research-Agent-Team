@@ -1,5 +1,10 @@
 # Licensing scope and bounded inventory — October 26, 2026
 
+October 27 addendum: evaluator runtime introspection adds the locked
+`threadpoolctl==3.6.0` dependency under BSD-3-Clause. Its installed distribution
+includes `threadpoolctl-3.6.0.dist-info/licenses/LICENSE`; preserve it in images.
+The package is referenced, not vendored, and remains under its own terms.
+
 The owner approved unchanged PolyForm Noncommercial 1.0.0, copyright
 2026 Ziwei Huang, the separate personal own-account trading permission, and
 the research-purpose disclaimer. Separately licensed commercial uses remain

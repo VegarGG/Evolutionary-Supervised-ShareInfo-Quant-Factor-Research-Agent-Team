@@ -22,6 +22,7 @@ from qfr_eval.records import (
     StoredFile,
     TrialLedgerEntry,
 )
+from qfr_eval.runtime_contracts import THREAD_VARIABLES, NumericalExecution, NumericalLibrary
 from qfr_eval.sandbox.models import SandboxProfile, SandboxReadiness
 from qfr_eval.scheduler.dedup import digest
 from qfr_eval.scheduler.models import (
@@ -205,6 +206,41 @@ def generate(check=False):
         image_digest="2" * 64,
         software={"python": "3.12.14"},
     )
+    library = NumericalLibrary(
+        user_api="blas",
+        internal_api="openblas",
+        prefix="fixture",
+        version="fixture",
+        num_threads=1,
+        architecture=None,
+        threading_layer="pthreads",
+        binary_sha256="0" * 64,
+    )
+    execution = NumericalExecution(
+        schema_version="1",
+        system="fixture",
+        machine="fixture",
+        polars_threads=1,
+        thread_environment={
+            key: "1" if key in {"POLARS_MAX_THREADS", "OPENBLAS_NUM_THREADS"} else None
+            for key in THREAD_VARIABLES
+        },
+        libraries=[library],
+    )
+    pinned_runtime = runtime.model_copy(
+        update={"schema_version": "2", "numerical_execution": execution}
+    )
+    for value in (library, execution, pinned_runtime):
+        model = type(value)
+        name = "RuntimeIdentityV2" if model is RuntimeIdentity else model.__name__
+        sample = value.model_dump(mode="json")
+        outputs.update(
+            {
+                name + ".schema.json": model.model_json_schema(),
+                name + ".valid.json": sample,
+                name + ".invalid.json": {**sample, "unapproved": True},
+            }
+        )
     request = EvaluationRequest(
         schema_version="1",
         variant="baseline",
@@ -409,7 +445,7 @@ def generate(check=False):
         }
     )
     sandbox = SandboxProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_pilot_v1.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_pilot_v2.json").read_bytes()
     )
     readiness = SandboxReadiness(
         schema_version="1",

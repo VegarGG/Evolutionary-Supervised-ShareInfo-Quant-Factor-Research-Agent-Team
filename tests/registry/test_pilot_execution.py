@@ -26,10 +26,9 @@ from qfr_eval.backtest.pilot import evaluate_pilot
 from qfr_eval.measurement import measure_pilot
 from qfr_eval.protocols.models import FrozenProtocol
 from qfr_eval.protocols.store import activate_protocol, create_protocol
-from qfr_eval.records import RuntimeIdentity
 from qfr_eval.registry_execution import request_from_screen
 from qfr_eval.reproduce import reproduce
-from qfr_eval.runtime import builtin_definition, implementation_hash, software_identity
+from qfr_eval.runtime import builtin_definition, capture_runtime
 from qfr_eval.sandbox.models import SandboxProfile
 from qfr_eval.sandbox.runner import SandboxRunner
 from qfr_eval.scheduler.dedup import digest
@@ -100,7 +99,7 @@ def pilot_sandbox():
     if image is None:
         pytest.skip("UNRUN: full pilot requires the explicitly built core-only sandbox image")
     profile = SandboxProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_pilot_v1.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_pilot_v2.json").read_bytes()
     )
     runner = SandboxRunner(profile, image)
     readiness = runner.readiness()
@@ -224,11 +223,9 @@ def test_registry_p0_p1_screen_measure_and_reproduce_without_registry_network(
     published_pilot, pilot_sandbox, pilot_full_snapshot, registry_http, eval_connect, monkeypatch
 ):
     variant, artifact, _, protocol, execution, store = published_pilot
-    runtime = RuntimeIdentity(
+    runtime = capture_runtime(
         evaluator_git_sha=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
-        implementation_sha256=implementation_hash(),
         image_digest=pilot_sandbox.image.removeprefix("sha256:"),
-        software=software_identity(),
     )
     screening = PilotScreeningPolicy.model_validate_json(
         (ROOT / "configs/evaluation/pilot_screening_v1.json").read_bytes()

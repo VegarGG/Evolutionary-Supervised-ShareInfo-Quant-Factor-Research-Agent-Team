@@ -2,36 +2,34 @@
 
 import argparse
 import json
-import os
+import sys
 from pathlib import Path
 from uuid import UUID
 
 import psycopg
-from psycopg.conninfo import make_conninfo
-from qfr_core.configuration import load_yaml
-from qfr_core.data_layer.snapshots import Snapshot
 
-from qfr_eval.artifact_store import EvidenceStore
-from qfr_eval.cluster_job import cluster_job
-from qfr_eval.db import migrate
-from qfr_eval.protocols.models import FrozenProtocol
-from qfr_eval.protocols.store import activate_protocol, create_protocol
-from qfr_eval.records import EvaluationRequest
-from qfr_eval.screening.command import run_command
-from qfr_eval.service import evaluate
-
-
-def connection_dsn(*, migration: bool = False) -> str:
-    role = "postgres" if migration else "eval_rw"
-    # Deliberately explicit files; never a model/provider credential or environment dump.
-    path = Path(os.environ["QFR_EVAL_PASSWORD_FILE"])
-    password = path.read_text().strip()
-    if not password:
-        raise ValueError("empty evaluator credential")
-    return make_conninfo(os.environ["QFR_EVAL_DSN"], user=role, dbname="eval_db", password=password)
+from qfr_eval.credentials import connection_dsn as connection_dsn
+from qfr_eval.runtime_bootstrap import bootstrap_cli
+from qfr_eval.runtime_contracts import RuntimeCompatibilityError
 
 
 def main(arguments: list[str] | None = None) -> None:
+    try:
+        bootstrap_cli(arguments if arguments is not None else sys.argv[1:])
+    except RuntimeCompatibilityError as error:
+        raise SystemExit("evaluator command refused: " + error.reason) from None
+    from qfr_core.configuration import load_yaml
+    from qfr_core.data_layer.snapshots import Snapshot
+
+    from qfr_eval.artifact_store import EvidenceStore
+    from qfr_eval.cluster_job import cluster_job
+    from qfr_eval.db import migrate
+    from qfr_eval.protocols.models import FrozenProtocol
+    from qfr_eval.protocols.store import activate_protocol, create_protocol
+    from qfr_eval.records import EvaluationRequest
+    from qfr_eval.screening.command import run_command
+    from qfr_eval.service import evaluate
+
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="action", required=True)
     sub.add_parser("migrate")
@@ -127,6 +125,8 @@ def main(arguments: list[str] | None = None) -> None:
                     request_id=args.request_id,
                 )
         print(json.dumps({"protocol_sha256": result, "action": args.action}))
+    except RuntimeCompatibilityError as error:
+        parser.exit(1, "evaluator command refused: " + error.reason + "\n")
     except (psycopg.Error, OSError, KeyError, ValueError, RuntimeError) as error:
         # CLI errors must not render driver frames, conninfo or secret values.
         parser.exit(1, f"evaluator command failed: {type(error).__name__}\n")

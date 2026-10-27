@@ -11,11 +11,10 @@ from qfr_eval.artifact_store import EvidenceStore
 from qfr_eval.measurement import MeasuredRun, failed_measurement, measure_pilot
 from qfr_eval.persistence import ids_for_request, persist_run, verify_receipt
 from qfr_eval.protocols.models import FrozenProtocol
-from qfr_eval.records import EvaluationRequest, RuntimeIdentity, TrialLedgerEntry
+from qfr_eval.records import EvaluationRequest, TrialLedgerEntry
 from qfr_eval.runtime import (
     builtin_definition,
-    implementation_hash,
-    software_identity,
+    capture_runtime,
     verify_runtime,
 )
 
@@ -25,11 +24,9 @@ def request_fixture(intent="evaluated"):
         Path("configs/evaluation/pilot_p0_p1_verification_v1.yaml"), FrozenProtocol
     )
     artifact, digest, _ = builtin_definition("baseline")
-    runtime = RuntimeIdentity(
+    runtime = capture_runtime(
         evaluator_git_sha="1" * 40,
-        implementation_sha256=implementation_hash(),
         image_digest="2" * 64,
-        software=software_identity(),
     )
     request = EvaluationRequest(
         schema_version="1",
@@ -410,6 +407,9 @@ def test_evl_04_cli_reproduces_frozen_record_despite_later_trials(
             "QFR_EVAL_PASSWORD_FILE": str(secret_dir / "eval_rw_password"),
             "PYTHONDONTWRITEBYTECODE": "1",
             "PYTHONHASHSEED": "37",
+            # A conflicting caller default must be restored from the counted
+            # request before the child initializes Polars. Strict hashes remain.
+            "POLARS_MAX_THREADS": str(request.runtime.numerical_execution.polars_threads + 1),
         }
         completed = subprocess.run(
             [

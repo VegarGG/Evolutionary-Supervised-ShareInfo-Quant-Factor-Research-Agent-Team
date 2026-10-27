@@ -18,17 +18,11 @@ from qfr_core.contracts.reports import EvidenceIdentity, MetricValue
 from qfr_core.data_layer.snapshots import canonical_json
 
 from qfr_eval.protocols.models import Cycle
+from qfr_eval.runtime_contracts import RuntimeIdentity as RuntimeIdentity
 from qfr_eval.statistics.bootstrap import Interval
 from qfr_eval.statistics.family import FamilyInterval, FamilyStatistics, TrialObservation
 from qfr_eval.statistics.hurdles import GateStatus, TurnoverResult
 from qfr_eval.statistics.incremental import IncrementalResult
-
-
-class RuntimeIdentity(Contract):
-    evaluator_git_sha: Text
-    implementation_sha256: Sha256
-    image_digest: Sha256
-    software: dict[Text, Text]
 
 
 class StoredFile(Contract):
