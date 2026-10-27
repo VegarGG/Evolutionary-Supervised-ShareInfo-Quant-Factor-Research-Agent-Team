@@ -1,6 +1,6 @@
 # Hybrid v1 plan alignment — requirements and acceptance contract
 
-Revision 1.1 · October 23, 2026 · Planning specification, not an implemented system
+Revision 1.2 · October 27, 2026 · Planning specification, not a production acceptance
 
 This amendment aligns the repository development plan and the nine-chapter local QFR plan with the owner's requirements. It preserves supervisor–worker coordination, the shared research blackboard, evolutionary candidate development, immutable publication, and an independent deterministic evaluator. It does not introduce Hybrid v2 research lanes, autonomous portfolio construction, broker trading, or local LLM hosting.
 
@@ -13,7 +13,7 @@ Sources reviewed: repository commit `89f39f66b0314549cfe4d12c4054106aaab97b6e`; 
 | Requirement | Aligned commitment | Acceptance evidence |
 |---|---|---|
 | R1: Hybrid v1 multi-agent research and evolution | Preserve the research/evaluation boundary, roles, blackboard, population, lineage and released-feedback loop | Boundary tests; one trace from hypothesis through publication, independent report and a justified revision |
-| R2: Docker, unknown ARM or AMD64 host, same-computer agent access | One Docker Compose deployment bundle, Linux images for `linux/arm64` and `linux/amd64`, standard MCP front door | Native smoke and isolation tests on each architecture; Codex MCP import-to-export demonstration |
+| R2: Apple ARM64 and Linux AMD64 deployment, Apple first, same-computer agent access | First target: macOS on Apple Silicon, using the Mac Studio's existing Docker Desktop; second target: Linux AMD64. One Compose bundle with `linux/arm64` and `linux/amd64` container images, standard MCP front door | Native host acceptance per target, with host OS/CPU distinct from container OS/CPU; Apple release first, Linux AMD64 readiness claimed only after its separate native validation; Codex MCP import-to-export demonstration |
 | R3: Work on call until deliverables pass an exit gate | Explicit durable jobs, no compulsory continuous service schedule, no default total elapsed-time or generation ceiling | Disconnect/restart/resume and exit-gate tests; failed/budget-paused jobs cannot appear completed |
 | R4: Packages and standalone ideas, factors, models or strategies | One typed input envelope with type-specific adapters; missing information remains explicit | Separate idea, factor-only, model-only, strategy-only and P0/P1 package fixtures |
 | R5: Online, heterogeneous, tunable LLMs | OpenAI-compatible provider boundary; Kimi, GLM and DeepSeek required in first production-ready release | Individual provider conformance records and a mixed-provider job, including role-specific settings |
@@ -36,7 +36,7 @@ Sources reviewed: repository commit `89f39f66b0314549cfe4d12c4054106aaab97b6e`; 
 | Model/SDK versions | Exact Claude assumptions and third-party version notes | Generic model IDs | Model identifiers, capabilities, price snapshots and SDK versions are deployment configuration verified by conformance tests |
 | Pilot confirmation | Sealed historical period, with inconsistent unseen claims | Private W3 and future W4 | Access isolation does not erase prior exposure. Pilot history is previously seen; it cannot establish unseen confirmation |
 
-The first production milestone therefore includes multi-architecture packaging, MCP, generic intake, model/strategy execution, online provider conformance, durable recovery and delivery validation. These are promoted from missing/later items only where the owner's requirements require them. Existing statistical gates and optional extensions are preserved under named profiles; they are not silently relaxed or all made prerequisites for every input kind.
+The first production milestone therefore includes both Linux image variants, native acceptance on the Apple host, MCP, generic intake, model/strategy execution, online provider conformance, durable recovery and delivery validation. Native Linux AMD64 validation follows as a separate target acceptance and does not gate the first Apple release. These are promoted from missing/later items only where the owner's requirements require them. Existing statistical gates and optional extensions are preserved under named profiles; they are not silently relaxed or all made prerequisites for every input kind.
 
 ## C. Two independent compatibility boundaries
 
@@ -130,15 +130,19 @@ Crash recovery checkpoints completed tool results, LLM responses, artifacts and 
 
 ## H. Docker and architecture acceptance
 
+The owner clarified the deployment goal on October 27, 2026: **macOS on Apple Silicon (ARM64), first on the Mac Studio with its existing Docker Desktop; Linux AMD64 remains the second supported deployment target.** These are host OS/CPU targets. Docker Desktop's Linux ARM64 engine and containers are implementation details, not a replacement deployment target or proof of Apple host acceptance. No separate VM, alternate backend or host/runtime/security reconfiguration is authorized by this correction.
+
 Ship a Compose bundle with separately scoped MCP/research, registry, evaluation/feedback and database services; service packaging may combine modules only when credentials, mounts and permissions remain isolated. Docker deployment does not require placing mutually untrusted roles in one privileged container.
 
-Build native `linux/amd64` and `linux/arm64` image variants from the same source and dependency locks, and record platform-specific digests. No local LLM weights, Ollama server, GPU or CUDA dependency is required. Online inference egress belongs only to research workers. Persist databases, immutable artifacts, checkpoints and authorized datasets outside container writable layers. No credentials or licensed pilot data are baked into images or committed as fixtures.
+Build `linux/arm64` images for Docker Desktop on Apple and `linux/amd64` images for Linux AMD64 from the same source and dependency locks, and record platform-specific digests plus native/emulated build mode. Building both variants remains required; an emulated AMD64 build on the Mac is not native Linux AMD64 acceptance. No local LLM weights, Ollama server, GPU or CUDA dependency is required. Online inference egress belongs only to research workers. Persist databases, immutable artifacts, checkpoints and authorized datasets outside container writable layers. No credentials or licensed pilot data are baked into images or committed as fixtures.
 
 Use the local plan's three databases and distinct least-privilege roles; research accesses official feedback through the read-only feedback service. Do not expose a shared superuser credential or assume import-linter alone enforces a runtime boundary. Evaluator signing keys and full datasets are never mounted into research, MCP or artifact sandboxes. MCP verifies signed released reports before labelling them official.
 
-Untrusted Python/package execution requires the planned no-network, non-root, read-only, dropped-capability, resource-limited sandbox with external timeout and capped output. gVisor is a candidate backend, not a promise that every Docker Desktop/ARM host supports the required configuration. Prove the backend on each target Linux host/VM. An unavailable isolation backend fails readiness for that artifact kind; do not silently fall back to unsafe execution or call a DSL-only deployment fully production-ready for the requested model/strategy scope. Any alternate backend needs an explicit decision and equivalent boundary tests.
+Untrusted Python/package execution requires the planned no-network, non-root, read-only, dropped-capability, resource-limited sandbox with external timeout and capped output. gVisor is a candidate backend, not a promise that Docker Desktop on Apple supports the required configuration. Prove the backend through the actual deployment on each host target: the existing Docker Desktop on the Mac first, native Linux AMD64 separately. An unavailable isolation backend fails readiness for that artifact kind; do not silently fall back to unsafe execution or call a DSL-only deployment fully production-ready for the requested model/strategy scope. Any alternate backend needs an explicit decision and equivalent boundary tests. Current runsc-only implementation and unverified Mac backend compatibility are an unresolved readiness conflict, not permission to change the backend or waive SBX tests.
 
-Reproduction is byte/hash exact within a pinned runtime where promised by the source package. Across CPU architectures, define numerical comparison rules in advance: exact identifiers, ranks, membership, counts and schemas; declared tolerances for floating values; independent hashes of each runtime's outputs. Do not claim all BLAS/Parquet bytes are inherently architecture-independent, round away differences, or weaken a failing P0/P1 oracle. Record native-host evidence separately from emulated builds.
+Reproduction is byte/hash exact within a pinned runtime where promised by the source package. Across CPU architectures, define numerical comparison rules in advance: exact identifiers, ranks, membership, counts and schemas; declared tolerances for floating values; independent hashes of each runtime's outputs. Do not claim all BLAS/Parquet bytes are inherently architecture-independent, round away differences, or weaken a failing P0/P1 oracle. Record host OS/CPU, Docker engine/container OS/CPU, runtime and image identity, and native/emulated execution separately. A Linux CI runner or ARM64 container suite alone cannot establish macOS acceptance.
+
+**Acceptance order.** Stage 7/M5 first accepts AC-01–AC-14 in the Apple deployment scope. AC-11 requires ARCH-01, sandbox readiness and all numerical/oracle checks on the actual Mac deployment, including host import/file permissions, loopback MCP access, restart/resume and export. Native Linux AMD64 availability is not a prerequisite to that first Apple release. Cross-target ARCH-02 remains explicitly UNRUN until the two native target records can be compared; it cannot be reported as passed by an emulated build. Before claiming Linux AMD64 production readiness, repeat the applicable deployment, boundary, recovery and end-to-end gates there and pass ARCH-01, ARCH-02 and SBX-03 for that target. This preserves Linux AMD64 support and all security and measurement criteria. See the derived [deployment acceptance matrix](DEPLOYMENT_TARGETS.md); historical evidence retains its original environment and scope.
 
 ## I. Protocol and evidence rules that reconcile both plans
 
@@ -166,14 +170,14 @@ Use repository Phase IDs as the primary delivery order; local IDs remain stable 
 | 4: MCP and blackboard | Local P3 feedback, P4 API/state | Codex plus independent MCP test client; mount/upload import; submit/poll/reconnect; signed released reports; delivery export |
 | 5: role loops | Local P4 agents, budgeting and generation machine | Kimi, GLM, DeepSeek adapters; per-role/task settings; durable context; checkpointed calls; provider conformance |
 | 6: evolution | Local P5 islands/archive/bandit/lineage | Policy-compatible fitness; no preset run-time cutoff; stop/pause versus completed distinction |
-| 7: pilot and acceptance | Local P6 applicable checks, offline benchmarks | Generic-input fixtures; mixed-provider job; both-architecture native checks; delivery exit receipt; failure/recovery demonstrations |
+| 7: pilot and acceptance | Local P6 applicable checks, offline benchmarks | Generic-input fixtures; mixed-provider job; Apple-first native host acceptance, then separate native Linux AMD64 validation under H; delivery exit receipt; failure/recovery demonstrations |
 | 8: extensions | Local optional dashboard P7 and remaining P8 | Advanced Python breadth, extra data adapters, v2 lanes/composition, optional monitoring/forward campaigns; core production boundaries cannot wait until this phase |
 
 Old time estimates and demonstration generation counts are planning examples. They are not runtime caps or guaranteed delivery dates. A phase number shared by the two source plans does not imply identical work.
 
 ## K. First production acceptance checklist
 
-These are requirements for the future implementation, not tests claimed to have passed in this documentation task.
+These are requirements for the future implementation, not tests claimed to have passed in this documentation task. Apply them first to the Apple deployment and later to Linux AMD64 as specified in H; do not label a partial or blocked target accepted.
 
 | ID | Required demonstration |
 |---|---|
@@ -187,7 +191,7 @@ These are requirements for the future implementation, not tests claimed to have 
 | AC-08 | Client loss, worker crash and container restart preserve committed work and resume at checkpoints; duplicate submissions/publications do not create duplicate logical jobs/artifacts; ambiguous paid calls remain audited |
 | AC-09 | No default wall-clock or generation deadline ends a valid active job; budget/input/data waits remain explicit; only a passing independent delivery receipt sets `completed` |
 | AC-10 | A supported negative result can pass the research-delivery gate when permitted by the brief; failed quality checks or missing reports cannot; promotion gate still requires its own evidence and sign-off |
-| AC-11 | Native AMD64 and ARM64 runs prove startup, imports, migrations, numerical parity, sandbox restrictions, MCP path, stop/resume and artifact export; image manifests alone are insufficient |
+| AC-11 | Actual macOS/Apple ARM64 deployment first, then native Linux AMD64: each proves startup, imports, migrations, numerical/oracle parity, sandbox restrictions, MCP path, stop/resume and artifact export. Native cross-target parity remains a separate later ARCH-02 gate under H; image or Linux-container evidence alone is insufficient for host acceptance |
 | AC-12 | Exported bundles retain exact version/config/source references and checksums, reproduce their stated evidence, and contain no secrets, unreleased results or private holdout payloads |
 | AC-13 | Idle deployment generates no autonomous research, data requests or provider spend; active jobs continue independently of client lifetime and remain controllable |
 | AC-14 | Release schema, version attribution, profile-specific metric identity, exposure labels and ledger accounting pass deterministic tests and declared synthetic error-rate checks |
@@ -196,7 +200,7 @@ Paid smoke campaigns require configured credentials and an explicit operator spe
 
 ## L. Decisions intentionally left configurable
 
-The owner has settled the architecture, Docker/on-demand model, generic intake and required provider families. Implementation must still record exact host/VM, SDK pins, sandbox backend, endpoint/model IDs, role allocations, spending caps, data permissions, pilot protocol values and exit-gate instance before the relevant run. These are deployment/job choices, not reasons to revert to Claude or redesign the product. A material scope change must be surfaced to the owner before it is incorporated.
+The owner has settled the architecture, Apple-first then Linux AMD64 deployment targets, the existing Mac Studio Docker Desktop environment, Docker/on-demand model, generic intake and required provider families. Implementation must still record host OS/hardware and Docker engine versions, SDK pins, sandbox backend readiness, endpoint/model IDs, role allocations, spending caps, data permissions, pilot protocol values and exit-gate instance before the relevant run. Those records do not authorize replacing the chosen Mac environment or changing security settings. These are deployment/job choices, not reasons to revert to Claude or redesign the product. A material scope change must be surfaced to the owner before it is incorporated.
 
 ## M. Compatibility sources checked for this revision
 

@@ -1,5 +1,10 @@
 # Stage 2 — Independent evaluator core
 
+Deployment scope clarification: [macOS/Apple Silicon first, then Linux AMD64](DEPLOYMENT_TARGETS.md).
+The historical Stage 2 source, test and image records below retain their original
+scope. Linux ARM64 container or emulated-image results do not validate the Apple
+host deployment or complete native Linux AMD64 production acceptance.
+
 The Stage 2 evaluator runs the preserved P0/P1 and six frozen diagnostic neighbors
 as trusted built-ins. It has no research-facing evaluation endpoint, registry
 intake scheduler, untrusted-code runner, feedback release, confirmation-query

@@ -176,7 +176,7 @@ Artifact fields (`mechanism_card`, `formulation`, `variables`, `complexity`) in 
 
 ## B.4 Infrastructure
 
-Active decisions: three databases and service identities in multi-platform Docker; deterministic checkpointed research with optional DBOS; no LLM keys in evaluation; target-host sandbox validation. Vendor workspace controls and world-readable report directories below must not be carried into the implementation.
+Active decisions: three databases and service identities in multi-platform Docker; deterministic checkpointed research with optional DBOS; no LLM keys in evaluation; target-host sandbox validation. Deployment targets and order are macOS/Apple Silicon first on the Mac Studio's existing Docker Desktop, then Linux AMD64 under [PLAN_ALIGNMENT H](PLAN_ALIGNMENT.md#h-docker-and-architecture-acceptance). Historical Linux/VM examples below establish neither Apple compatibility nor permission to change its runtime. Vendor workspace controls and world-readable report directories below must not be carried into the implementation.
 
 ### Durable orchestration (versions read from PyPI on October 23, 2026)
 

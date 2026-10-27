@@ -1,5 +1,13 @@
 # Artifact execution boundary
 
+Deployment acceptance is macOS/Apple Silicon first on the Mac Studio's existing
+Docker Desktop, then native Linux AMD64; see [the target matrix](DEPLOYMENT_TARGETS.md).
+The Linux ARM64 engine inside Desktop is not Apple host acceptance. The retained
+runsc-only runner has no validated Mac backend yet, so Apple isolation and full
+Registry pilot execution remain blocked/unrun. Cloud probes below are development
+evidence only. No new VM, alternative backend or runtime/security change is
+authorized by this deployment correction.
+
 The private evaluator controls Docker through an explicit local Unix socket.
 Artifacts, research and MCP receive no socket. `SandboxRunner` accepts an immutable
 local image ID and the versioned operational profile. It never pulls an image or
@@ -71,13 +79,14 @@ configuration is reported as an unrun sandbox suite. A configured but unavailabl
 backend fails. Real cloud x86_64 tests have exercised 128 MiB/0.5 CPU/64 PID/2 MiB
 tmpfs fixtures, including output limits, symlinks, bounded process creation,
 timeouts, CPU and memory exhaustion, determinism and planted lookahead. This is
-separate from full pilot acceptance, native ARM validation and the final local CI
+separate from full pilot acceptance, native Apple host validation and the final local CI
 matrix. Heavy suites and image matrices remain assigned to the owner's Mac.
 
 `bash scripts/build_sandbox_images.sh amd64` (or `arm64`) produces a separate
 core-only OCI archive and source/platform digest evidence. It does not register
 runsc, load/publish images, or claim runtime acceptance. The final full pilot
 tests require an explicitly loaded immutable local image ID through
-`QFR_TEST_PILOT_SANDBOX_IMAGE`; use the matching host architecture and record
-emulation separately. Missing configuration is reported as UNRUN; supplying an
+`QFR_TEST_PILOT_SANDBOX_IMAGE`; use the container platform matching the deployment
+(`linux/arm64` on Apple, `linux/amd64` on Linux AMD64), record the actual host OS/CPU
+and label emulation separately. Missing configuration is reported as UNRUN; supplying an
 image while runsc is unavailable fails the readiness assertion.

@@ -5,7 +5,24 @@ Work starts from the verified Stage 2 commit
 The branch was created without merging the predecessor. Stage 3 does not implement feedback release,
 blackboard services, agents, provider calls or confirmation-query execution.
 
-## Target-host preflight
+## Deployment target correction — October 27, 2026
+
+The first deployment target is macOS on Apple Silicon (ARM64), using the Mac
+Studio's existing Docker Desktop. Linux AMD64 remains the separately validated
+follow-on target. Linux ARM64 containers inside Desktop are implementation
+details; they do not establish Apple host acceptance. The authoritative amendment
+is PLAN_ALIGNMENT H and development-plan sections 10–11; the evidence checklist
+is [DEPLOYMENT_TARGETS.md](DEPLOYMENT_TARGETS.md), decision S3-18.
+
+The historical checkpoints below retain their source, counts and environment.
+Cloud runsc probes are not Apple validation or full Linux production acceptance.
+The Mac backend required by the current runsc-only implementation remains
+unvalidated; required Apple SBX and Registry pilot execution are blocked/unrun.
+This documentation change does not modify settings, run tests on the Mac, select
+another backend or complete Stage 3. Native Linux AMD64 release validation remains
+required later, but does not gate the first Apple release.
+
+## Cloud development preflight (historical)
 
 The existing cloud Linux x86_64 host has gVisor `runsc release-20260413.0`
 registered with Docker 28.4.0. Runtime binary SHA256:
@@ -265,7 +282,7 @@ does not activate the new protocol's locked confirmation window.
 |---|---|---|
 | REG-01–04, identical-definition identity, registry AUD-01 | PASS at the 588-test checkpoint; real PostgreSQL/HTTP and concurrent publication tests | Carry forward on the final source |
 | EVL-01/03/05 | PASS at that checkpoint; pull-only intake, actual bounded lookahead probes and duplicate-before-validation tests | Final-source regression |
-| SBX-01–04 | PASS for bounded fixtures on cloud Linux x86_64 with actual runsc | Independently prove the Mac Linux backend for the full pilot |
+| SBX-01–04 | PASS for bounded fixtures on cloud Linux x86_64 with actual runsc; no Apple acceptance | Prove isolation through the actual macOS/Apple Silicon deployment with existing Docker Desktop, including the full pilot; backend readiness remains blocked |
 | SBX-05 | Runtime controls passed; stronger Compose no-privilege/no-host-write assertions added | Final-source checks and actual Compose topology |
 | Registered v4 DSL feature parity | PASS against independent Polars on original inputs | Final-source regression |
 | Registry P0/P1 original oracle and official reproduction | UNRUN: four full-package cases require the core-only image and approved local host | Run `tests/registry/test_pilot_execution.py` on the Mac with original inputs |

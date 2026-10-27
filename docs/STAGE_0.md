@@ -1,5 +1,10 @@
 # Stage 0 foundation
 
+Historical Stage 0 implementation and environment record. Current deployment
+targets are [Apple first, then Linux AMD64](DEPLOYMENT_TARGETS.md); references below
+to then-unsettled hosts and the test VM do not select today's Mac environment or
+establish Apple host acceptance. The original results remain unchanged.
+
 Stage 0 defines contracts, configuration, packaging and storage boundaries. It contains no
 factor computation, evaluation engine, LLM calls, API handlers or background scheduling.
 The ordered source of authority is the owner's request, PLAN_ALIGNMENT.md, the development

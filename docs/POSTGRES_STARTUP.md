@@ -70,8 +70,13 @@ checks do not receive a Docker socket. Full local verification also includes the
 locked Linux CI image, all four application images for both architectures, original
 pilot integrity/parity checks and normal Git checkout permissions. The exact commit,
 commands, outcomes and digest evidence belong in the repair PR's local-CI report.
-ARM builds on an AMD64 host use BuildKit emulation and do not establish native ARM
-runtime acceptance. Local success does not change hosted Actions conclusions.
+ARM builds on an AMD64 host use BuildKit emulation and do not establish native
+Apple host acceptance. Likewise AMD64 emulation on the Mac does not validate a
+native Linux AMD64 deployment. Record macOS/Apple Silicon host evidence separately
+from Linux ARM64 container results, with Apple-first release and later Linux AMD64
+acceptance as defined in [DEPLOYMENT_TARGETS.md](DEPLOYMENT_TARGETS.md). A passing
+PostgreSQL regression proves its stated startup invariant, not the full host or
+sandbox gate. Local success does not change hosted Actions conclusions.
 
 Database-backed tests use the `database` pytest marker. Without
 `QFR_TEST_POSTGRES_DSN`, their prerequisite is resolved on pytest's thread before
