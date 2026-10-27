@@ -1,5 +1,6 @@
 """Live PostgreSQL boundaries; no test silently substitutes a different backend."""
 
+import json
 import os
 from pathlib import Path
 from uuid import uuid4
@@ -10,6 +11,7 @@ from psycopg import sql
 from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[2]
+POSTGRES_TEST_POLICY = json.loads((ROOT / "configs/testing/postgres_v1.json").read_text())
 pytestmark = pytest.mark.database
 
 
@@ -24,7 +26,14 @@ def connect():
         password = (secret_dir / f"{role}_password").read_text().strip()
         try:
             return psycopg.connect(
-                make_conninfo(dsn, user=role, password=password, dbname=database), autocommit=True
+                make_conninfo(
+                    dsn,
+                    user=role,
+                    password=password,
+                    dbname=database,
+                    connect_timeout=POSTGRES_TEST_POLICY["connect_timeout_seconds"],
+                ),
+                autocommit=True,
             )
         except psycopg.OperationalError as exc:
             # Do not allow pytest to render driver frames containing credentials.

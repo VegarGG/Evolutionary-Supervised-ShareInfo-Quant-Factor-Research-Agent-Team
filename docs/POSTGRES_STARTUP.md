@@ -1,8 +1,10 @@
 # PostgreSQL credential startup
 
-Compose file-backed secrets retain the host file's ownership and permissions.
 Generated credentials stay host-private (0600); PostgreSQL runs as a different
-UID. The former initialization hook attempted to read those mounts after dropping
+UID. Native Linux bind mounts enforce host ownership and permissions. Docker
+Desktop file sharing can present the same metadata while permitting a container
+UID to read the mount; `stat` alone does not establish a denied read there.
+The former initialization hook attempted to read those mounts after dropping
 privileges. `export NAME="$(cat file)"` masked read failures, so the baseline SQL
 received empty passwords. PostgreSQL cleared those role passwords and became
 healthy even though application authentication failed. A NULL password under
@@ -38,14 +40,27 @@ and the following Compose path on a fresh disposable volume:
 uv run --locked --all-packages python scripts/verify_postgres_startup.py
 just up
 QFR_TEST_POSTGRES_DSN=postgresql://127.0.0.1:55432/postgres \
-  uv run --locked --all-packages python -m pytest tests/boundary/test_database.py
+  uv run --locked --all-packages python -m pytest --require-postgres tests/boundary/test_database.py
 just down
 ```
 
 The real-container regression script uses generated temporary credentials and
 isolated disposable containers. It exercises missing/empty administrator and role
-credentials, a nonempty failed read, absent tmpfs, the original host/container UID
-mismatch, and the failed-hook restart marker. The Python tests additionally cover
+credentials, a nonempty failed read, absent tmpfs, a Linux-enforced UID mismatch,
+and the failed-hook restart marker. The UID negative fixture copies a synthetic
+secret into Linux tmpfs, verifies root ownership and mode 0600, and proves that
+the PostgreSQL UID cannot read it before invoking the hook. It still requires a
+read error, no SQL execution and a retained pending marker. This tests the denied
+read invariant without assuming Docker Desktop's host-sharing implementation;
+the host source remains untouched at 0600. A failed fixture precondition is a
+failure, never a skip or pass. Run just this case during diagnosis with:
+
+```sh
+uv run --locked --all-packages python scripts/verify_postgres_startup.py --case linux-uid-mismatch
+```
+
+The Python tests additionally cover an actual unreadable file under an
+unprivileged test UID (explicitly unrun under root),
 all four role read failures, cleanup and SQL errors. Authenticated database tests
 retain every previous boundary assertion and require non-null SCRAM credentials.
 No test prints credential values or stored hashes.
@@ -57,3 +72,16 @@ pilot integrity/parity checks and normal Git checkout permissions. The exact com
 commands, outcomes and digest evidence belong in the repair PR's local-CI report.
 ARM builds on an AMD64 host use BuildKit emulation and do not establish native ARM
 runtime acceptance. Local success does not change hosted Actions conclusions.
+
+Database-backed tests use the `database` pytest marker. Without
+`QFR_TEST_POSTGRES_DSN`, their prerequisite is resolved on pytest's thread before
+HTTP clients or server threads start; they are reported as skipped/unrun. CI uses
+`--require-postgres`, which instead fails immediately if the DSN is unconfigured.
+An explicitly configured but invalid database remains a failure, with the driver
+error class reported without its credential-bearing exception chain. For a
+single endpoint, connection attempts are bounded by the five-second timeout in
+`configs/testing/postgres_v1.json`; a refused or unresponsive endpoint fails,
+never skips. This is a test-harness timeout, not a production database setting.
+For a required local database run, use `PYTEST_ADDOPTS=--require-postgres just test`
+alongside the existing DSN and secret-directory configuration. These harness
+changes do not diagnose a Docker startup delay or change PostgreSQL permissions.

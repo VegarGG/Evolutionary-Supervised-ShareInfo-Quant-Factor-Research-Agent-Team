@@ -277,3 +277,32 @@ images and retain platform digests. A build does not prove isolation or native
 runtime acceptance. Heavy runs remain on the Mac; no image build, runtime
 installation, host security change, live provider call or confirmation query has
 been performed for this handoff. Stage 3 is not complete and Stage 4 remains paused.
+
+## PostgreSQL harness follow-up
+
+The published WIP checkpoint is `09246b17504a4fcafe8034d9ac2ec2eac5598cb3`.
+An independently reproduced missing-DSN HTTP test hung in Starlette's TestClient
+until its external timeout. Database-marked tests now resolve that prerequisite
+before HTTP/thread setup. CI requires PostgreSQL explicitly; a configured invalid
+DSN still fails, with its exception chain suppressed to prevent credential output.
+
+The reported Mac run subsequently reached healthy PostgreSQL and passed the 31
+previously failing database-dependent cases. Its startup delay remains unexplained.
+The separate UID negative fixture had assumed that a host-mounted 0600 file was
+unreadable to the PostgreSQL UID. The Mac showed that assumption was false even
+though the displayed ownership differed. The corrected fixture establishes and
+checks actual read denial in Linux tmpfs; production startup, host permissions,
+SCRAM and grants are unchanged. The corrected real-container case and full Mac CI
+remain unrun on this follow-up source. See `POSTGRES_STARTUP.md` for its isolated
+diagnostic command. No alternate sandbox backend was implemented or enabled.
+
+Follow-up verification: `just check` passed (228 formatted files, 127 mypy source
+files, five import contracts, 108 public contracts, private contracts and five
+package license checks). The bounded offline `just test` run passed 447 tests,
+with 162 explicit skips and one unchanged dependency warning in 49.02 seconds.
+It includes real pytest subprocess regressions for missing, invalid, refused and
+unresponsive PostgreSQL configuration, plus a real unreadable-file bootstrap test
+under an unprivileged UID. No successful database connection is claimed by those
+negative fixtures. Peak child-process RSS was 286,060 KiB, peak environment memory
+2,435,682,304 bytes, and the 240-second/5-GiB/512-MiB-growth guard did not trigger.
+This offline result does not replace the outstanding live and platform gates.

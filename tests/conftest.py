@@ -1,5 +1,6 @@
 """Real-database migration setup shared by all stage boundary suites."""
 
+import json
 import os
 from pathlib import Path
 
@@ -15,6 +16,31 @@ from qfr_eval.protocols.models import FrozenProtocol
 from qfr_registry.storage.migrations import migrate as migrate_registry
 
 ROOT = Path(__file__).resolve().parents[1]
+POSTGRES_TEST_POLICY = json.loads((ROOT / "configs/testing/postgres_v1.json").read_text())
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--require-postgres",
+        action="store_true",
+        help="Fail before running tests if QFR_TEST_POSTGRES_DSN is not configured.",
+    )
+
+
+def pytest_configure(config):
+    if config.getoption("--require-postgres") and not os.environ.get("QFR_TEST_POSTGRES_DSN"):
+        raise pytest.UsageError(
+            "PostgreSQL is required for this run: configure QFR_TEST_POSTGRES_DSN and "
+            "QFR_TEST_SECRET_DIR for the initialized test database. No database checks ran."
+        )
+
+
+def pytest_runtest_setup(item):
+    # A skip raised inside ASGI/thread-pool work cannot safely propagate through
+    # an HTTP response. Resolve declared prerequisites on pytest's own thread,
+    # before a TestClient or loopback server starts.
+    if item.get_closest_marker("database") and not os.environ.get("QFR_TEST_POSTGRES_DSN"):
+        pytest.skip("Live PostgreSQL required: QFR_TEST_POSTGRES_DSN (database checks unrun)")
 
 
 def database_dsn(role="postgres", database="eval_db"):
@@ -27,6 +53,7 @@ def database_dsn(role="postgres", database="eval_db"):
         user=role,
         dbname=database,
         password=(directory / f"{role}_password").read_text().strip(),
+        connect_timeout=POSTGRES_TEST_POLICY["connect_timeout_seconds"],
     )
 
 
@@ -38,7 +65,9 @@ def migrated_evaluator():
             migrate_registry(database_dsn(database="registry_db"))
         except Exception as error:
             # Never render a driver/SQLAlchemy frame with the credential-bearing DSN.
-            pytest.fail(f"Database migration failed ({type(error).__name__})", pytrace=False)
+            raise pytest.fail.Exception(
+                f"Database migration failed ({type(error).__name__})", pytrace=False
+            ) from None
 
 
 @pytest.fixture

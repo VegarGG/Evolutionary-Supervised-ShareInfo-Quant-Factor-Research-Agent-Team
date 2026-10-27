@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Trusted test harness only. Application images never receive this secret mount.
 set -euo pipefail
+export PYTEST_ADDOPTS="${PYTEST_ADDOPTS:-} --require-postgres"
 mkdir -p build/local-ci
 read_setting() {
   python3 -c 'import json, sys; print(json.load(open("configs/local-ci.json"))[sys.argv[1]])' "$1"

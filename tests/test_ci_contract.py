@@ -14,6 +14,15 @@ def test_ci_has_postgres_checks_and_both_architectures():
     commands = "\n".join(step.get("run", "") for step in checks["steps"])
     assert "just check" in commands and "just test" in commands and "just up" in commands
     assert "python scripts/verify_postgres_startup.py" in commands
+    database_steps = [
+        step
+        for step in checks["steps"]
+        if step.get("name") in {"Test against PostgreSQL service", "Compose startup exit gate"}
+    ]
+    assert len(database_steps) == 2
+    assert all(step["env"]["PYTEST_ADDOPTS"] == "--require-postgres" for step in database_steps)
+    assert "--require-postgres" in (ROOT / "infra/docker/ci-entrypoint.sh").read_text()
+    assert "--require-postgres" in (ROOT / "scripts/local_ci.sh").read_text()
     image_job = workflow["jobs"]["images"]
     assert {item["architecture"] for item in image_job["strategy"]["matrix"]["include"]} == {
         "amd64",

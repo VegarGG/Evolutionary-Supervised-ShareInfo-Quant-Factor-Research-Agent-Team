@@ -44,10 +44,12 @@ jobs:
       - name: Test against PostgreSQL service
         env:
           QFR_TEST_POSTGRES_DSN: postgresql://127.0.0.1:5432/postgres
+          PYTEST_ADDOPTS: --require-postgres
         run: just test
       - name: Compose startup exit gate
         env:
           QFR_TEST_POSTGRES_DSN: postgresql://127.0.0.1:55432/postgres
+          PYTEST_ADDOPTS: --require-postgres
         run: |
           uv run --locked --all-packages python scripts/verify_postgres_startup.py
           just up
