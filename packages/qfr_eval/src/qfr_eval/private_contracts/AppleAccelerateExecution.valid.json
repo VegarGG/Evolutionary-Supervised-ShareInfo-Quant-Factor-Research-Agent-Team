@@ -1,0 +1,36 @@
+{
+  "consumers": {
+    "numpy": "accelerate",
+    "scipy": "accelerate"
+  },
+  "cpu_brand": "fixture",
+  "effective_threads": 1,
+  "extension_hashes": {
+    "fixture": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "hardware_model": "fixture",
+  "images": [
+    {
+      "cpu_subtype": 0,
+      "cpu_type": 16777228,
+      "image_uuid": "00000000-0000-0000-0000-000000000001",
+      "install_name": "/System/Library/Frameworks/Accelerate.framework/libBLAS.dylib",
+      "text_bytes": 4096,
+      "text_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "cpu_subtype": 0,
+      "cpu_type": 16777228,
+      "image_uuid": "00000000-0000-0000-0000-000000000001",
+      "install_name": "/System/Library/Frameworks/Accelerate.framework/libLAPACK.dylib",
+      "text_bytes": 4096,
+      "text_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "os_build": "fixture",
+  "os_version": "fixture",
+  "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "schema_version": "1",
+  "threading_mode": "single_threaded",
+  "threading_scope": "calling_thread"
+}

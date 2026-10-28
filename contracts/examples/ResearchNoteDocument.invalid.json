@@ -1,0 +1,19 @@
+{
+  "body": "The structured claim cites a synthetic released report.",
+  "citation_refs": [
+    "report-example"
+  ],
+  "numeric_claims": [
+    {
+      "field_path": [
+        "content",
+        "scalar",
+        "measurement",
+        "value"
+      ],
+      "report_id": "report-example",
+      "value": 0.5
+    }
+  ],
+  "title": "Synthetic note"
+}

@@ -5,7 +5,7 @@ Positive initialization and authenticated grants are covered by the Compose exit
 Only disposable containers and generated fixture credentials are used here.
 """
 
-import os
+import argparse
 import secrets
 import subprocess
 import tempfile
@@ -38,9 +38,14 @@ def main():
         ("empty-admin", "Empty PostgreSQL secret: postgres_password"),
         ("masked-read-error", "Cannot read PostgreSQL secret: feedback_ro_password"),
         ("missing-tmpfs", "requires its private tmpfs mount"),
-        ("host-uid-mismatch", "Cannot read PostgreSQL secret: registry_app_password"),
+        ("linux-uid-mismatch", "Cannot read PostgreSQL secret: registry_app_password"),
         ("incomplete-restart", "operator recovery required"),
     ]
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--case", choices=[case for case, _ in cases])
+    selected = parser.parse_args().case
+    if selected:
+        cases = [(case, expected) for case, expected in cases if case == selected]
     for case, expected in cases:
         with tempfile.TemporaryDirectory(prefix="qfr-startup-") as directory:
             fixture = Path(directory)
@@ -93,12 +98,23 @@ def main():
                 script = "mkdir -m 0700 /run/qfr-postgres-secrets\n" + script
             elif case == "incomplete-restart":
                 script = 'touch "$PGDATA/.qfr-bootstrap-pending"\n' + script
-            elif case == "host-uid-mismatch":
-                # Match Compose file-secret mounts: host 0600, foreign owner, no chown/chmod.
-                script = (
-                    f'test "$(id -u postgres)" != "{os.getuid()}"\n'
-                    + """
+            elif case == "linux-uid-mismatch":
+                # Desktop host sharing may virtualize DAC even while stat reports
+                # 0600 and a foreign UID. Establish the unreadable-file precondition
+                # inside Linux tmpfs; never chmod/chown the host-mounted source.
+                command += ["--tmpfs", "/test-secrets:rw,noexec,nosuid,nodev,size=64k,mode=0755"]
+                script = """
+test "$(id -u)" = 0
+test "$(id -u postgres)" != 0
 test "$(stat -c %a /run/secrets/registry_app_password)" = 600
+test "$(stat -f -c %T /test-secrets)" = tmpfs
+install -m 0600 -o 0 -g 0 /run/secrets/registry_app_password /test-secrets/registry_app_password
+test "$(stat -c %u:%a /test-secrets/registry_app_password)" = 0:600
+# Assert actual denial, not merely the permission bits displayed by stat.
+if gosu postgres cat /test-secrets/registry_app_password >/dev/null 2>&1; then
+    printf '%s\\n' 'Unreadable-secret fixture precondition failed' >&2
+    exit 1
+fi
 install -d -m 0755 /test/init /test/bin
 install -m 0644 /opt/qfr/postgres/init/* /test/init/
 printf '#!/bin/sh\\necho DDL_REACHED\\n' > /test/bin/psql
@@ -106,13 +122,12 @@ chmod 0755 /test/bin/psql
 chown postgres:postgres "$PGDATA"
 set +e
 gosu postgres env PATH="/test/bin:$PATH" POSTGRES_USER=postgres \\
-    bash /test/init/00-bootstrap.sh /run/secrets /unused.sql
+    bash /test/init/00-bootstrap.sh /test-secrets /unused.sql
 result=$?
 set -e
 test "$result" -ne 0
 test -f "$PGDATA/.qfr-bootstrap-pending"
 """
-                )
             try:
                 result = subprocess.run(
                     command + [image, "-euo", "pipefail", "-c", script],

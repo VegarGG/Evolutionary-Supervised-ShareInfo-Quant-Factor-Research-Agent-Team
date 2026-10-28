@@ -11,6 +11,7 @@ from qfr_core.contracts import delivery as x
 from qfr_core.contracts import intake as i
 from qfr_core.contracts import jobs as j
 from qfr_core.contracts import providers as p
+from qfr_core.contracts import publication as pub
 from qfr_core.contracts import reports as r
 
 H = "0" * 64
@@ -659,4 +660,139 @@ def examples(root: Path):
             )
         )
     )
+    definition = a.ArtifactDefinition.model_validate(
+        {k: v for k, v in artifact.items() if k in a.ArtifactDefinition.model_fields}
+    )
+    roots += [
+        pub.PublicationRequest(
+            publish_key="synthetic-publication",
+            profile="pilot_industry_v1",
+            manifest=definition,
+            files=[pub.EncodedPayload(asset_id="asset-example", data_base64="")],
+            content_hash=None,
+        ),
+        pub.PublicationResponse(
+            artifact=pub.PublishedArtifact(
+                manifest=a.ArtifactManifest.model_validate(artifact),
+                profile="pilot_industry_v1",
+                version_no=1,
+                published_seq=1,
+                dsl_policy_hash=H,
+                payload_digest=H,
+            ),
+            created=True,
+        ),
+        pub.RunnerPackage(
+            format="qfr-json-runner/1",
+            kind="model",
+            entrypoint="runner.py:run",
+            input_schema_ref="inputs/1",
+            output_schema_ref="outputs/1",
+            dependency_lock_sha256=H,
+            fields_used=["close"],
+            max_lookback_days=1,
+            weight_files=["weights.json"],
+        ),
+    ]
+    page = pub.ArtifactPage(
+        items=[
+            pub.PublishedArtifact(
+                manifest=a.ArtifactManifest.model_validate(artifact),
+                profile="pilot_industry_v1",
+                version_no=1,
+                published_seq=1,
+                dsl_policy_hash=H,
+                payload_digest=H,
+            )
+        ],
+        next_cursor=1,
+        has_more=False,
+    )
+    roots += [
+        pub.RegistryClientConfiguration(
+            revision=1,
+            base_url="http://registry-api:8000/",
+            token_ref="env:REGISTRY_READER_TOKEN",
+            timeout_seconds=10,
+            max_request_bytes=8388608,
+            max_response_bytes=16777216,
+        ),
+        pub.RegistryAuthenticationConfiguration(
+            revision=1,
+            enabled=True,
+            minimum_token_bytes=32,
+            maximum_token_bytes=512,
+            bindings=[
+                pub.RegistryTokenBinding(
+                    principal="fixture-publisher",
+                    token_ref="env:REGISTRY_PUBLISHER_TOKEN",
+                    roles=["publisher"],
+                    programs=["program-example"],
+                )
+            ],
+        ),
+        pub.FamilyPage(
+            family_id="family-example",
+            program_id="program-example",
+            kind="factor",
+            name="synthetic-factor",
+            created_by="fixture-author",
+            created_at=AT,
+            versions=page,
+        ),
+        pub.ArtifactLineage(
+            root_version_id="artifact-example",
+            depth=1,
+            nodes=[
+                pub.LineageNode(
+                    artifact_version_id="artifact-example",
+                    content_hash=H,
+                    family_id="family-example",
+                    kind="factor",
+                    version_no=1,
+                ),
+                pub.LineageNode(
+                    artifact_version_id="child-example",
+                    content_hash=H,
+                    family_id="family-example",
+                    kind="factor",
+                    version_no=2,
+                ),
+            ],
+            edges=[
+                pub.LineageEdge(
+                    version_id="child-example",
+                    parent_version_id="artifact-example",
+                    relation="revision",
+                )
+            ],
+            truncated_at_depth=False,
+        ),
+    ]
+    from qfr_core.contracts.execution import (
+        ReleasedNumericClaim,
+        ResearchNoteDocument,
+        RunnerInput,
+        RunnerOutput,
+        RunnerTable,
+    )
+
+    table = RunnerTable(columns=["value"], dtypes=["Float64"], rows=[[1.0], [None]])
+    roots += [
+        RunnerInput(schema_version="1", tables={"close": table}, seed=0),
+        RunnerOutput(schema_version="1", kind="factor", tables={"scores": table}),
+        ResearchNoteDocument(
+            schema_version="1",
+            title="Synthetic note",
+            body="The structured claim cites a synthetic released report.",
+            citation_refs=["report-example"],
+            numeric_claims=[
+                ReleasedNumericClaim(
+                    report_id="report-example",
+                    field_path=["content", "scalar", "measurement", "value"],
+                    value=0.5,
+                )
+            ],
+        ),
+    ]
     return roots

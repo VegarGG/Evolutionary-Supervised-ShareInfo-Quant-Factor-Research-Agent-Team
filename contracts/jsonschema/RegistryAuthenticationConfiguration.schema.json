@@ -1,0 +1,89 @@
+{
+  "$defs": {
+    "RegistryTokenBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "principal": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+          "title": "Principal",
+          "type": "string"
+        },
+        "programs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Programs",
+          "type": "array"
+        },
+        "roles": {
+          "items": {
+            "enum": [
+              "publisher",
+              "reader",
+              "evaluator"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Roles",
+          "type": "array"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "principal",
+        "token_ref",
+        "roles",
+        "programs"
+      ],
+      "title": "RegistryTokenBinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "bindings": {
+      "items": {
+        "$ref": "#/$defs/RegistryTokenBinding"
+      },
+      "title": "Bindings",
+      "type": "array"
+    },
+    "enabled": {
+      "title": "Enabled",
+      "type": "boolean"
+    },
+    "maximum_token_bytes": {
+      "maximum": 8192,
+      "minimum": 32,
+      "title": "Maximum Token Bytes",
+      "type": "integer"
+    },
+    "minimum_token_bytes": {
+      "maximum": 8192,
+      "minimum": 32,
+      "title": "Minimum Token Bytes",
+      "type": "integer"
+    },
+    "revision": {
+      "exclusiveMinimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "revision",
+    "enabled",
+    "minimum_token_bytes",
+    "maximum_token_bytes",
+    "bindings"
+  ],
+  "title": "RegistryAuthenticationConfiguration",
+  "type": "object"
+}

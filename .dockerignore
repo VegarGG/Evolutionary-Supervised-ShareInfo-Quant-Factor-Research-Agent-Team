@@ -7,6 +7,7 @@
 !infra/docker/
 !infra/docker/Dockerfile
 !infra/docker/Dockerfile.ci
+!infra/docker/Dockerfile.sandbox
 !infra/docker/ci-entrypoint.sh
 !infra/docker-compose.yml
 !infra/postgres/
@@ -25,6 +26,8 @@
 !tests/
 !tests/**
 !fixtures/
+!fixtures/artifacts/
+!fixtures/artifacts/**
 !fixtures/pilot/
 !fixtures/pilot/*.json
 !fixtures/pilot/manifests/

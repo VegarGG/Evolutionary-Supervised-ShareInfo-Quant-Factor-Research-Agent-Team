@@ -2,7 +2,7 @@
 
 Two prompts live here. The **initiation prompt** starts development at Stage 0. The **stage continuation template** starts every later stage. Both are written for a coding agent working in this repository (Codex or any comparable agent); nothing in them depends on a particular vendor. Paste the text between the fences, replacing the placeholders in angle brackets.
 
-Before pasting the initiation prompt, the owner provides two things: the local path of the extracted P0 and P1 packages (they are licensed and must never be committed), and the target CPU architectures if different from both `linux/amd64` and `linux/arm64`.
+Before pasting the initiation prompt, the owner provides the local path of the extracted P0 and P1 packages (they are licensed and must never be committed). Deployment targets are settled: macOS/Apple Silicon ARM64 first on the Mac Studio using its existing Docker Desktop, then Linux AMD64 after separate native validation. Build both `linux/arm64` and `linux/amd64` container variants; do not confuse them with host OS targets. Apply PLAN_ALIGNMENT H and [the deployment acceptance matrix](DEPLOYMENT_TARGETS.md) to every stage handoff. No new VM, sandbox backend or host/security change is authorized by this target declaration.
 
 ---
 
@@ -71,7 +71,7 @@ READ FIRST, IN THIS ORDER
 6. docs/decisions.md, to inherit earlier decisions.
 
 ENTRY CONDITION
-Confirm the Stage <N> entry condition in plan section 10 holds. Owner inputs available for this stage: <list, e.g. provider endpoints and spend authorization, native hosts, protocol approval>. If a required input is missing, stop and list exactly what is needed; do not substitute defaults or mocks for an input the exit gate requires to be real.
+Confirm the Stage <N> entry condition in plan section 10 holds. Owner inputs available for this stage: <list, e.g. provider endpoints and spend authorization, target host/readiness, protocol approval>. Record host OS/CPU separately from container OS/CPU and apply Apple-first acceptance under PLAN_ALIGNMENT H; a Linux ARM64 container pass is not Mac host acceptance. If a required input is missing, stop dependent work and list exactly what is needed; do not substitute defaults or mocks for an input the exit gate requires to be real.
 
 WORK PACKAGES
 Implement the Stage <N> scope in plan section 10 in the order given, mapping each item to its local work-package ID where one exists. For each: implement, add tests, run `just check` and `just test`, fix until green, then continue.

@@ -1,1 +1,1 @@
-"""Reserved namespace. Implementation is deferred beyond Stage 0."""
+"""Private orchestration of isolated artifact execution; no research endpoint."""

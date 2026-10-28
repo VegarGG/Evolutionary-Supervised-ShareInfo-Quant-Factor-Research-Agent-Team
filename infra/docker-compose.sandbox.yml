@@ -1,0 +1,53 @@
+# Opt-in evaluator-only Docker API grant approved 2026-10-28.
+# No daemon, host permission, runtime registration or TCP endpoint changes.
+services:
+  sandbox-controller:
+    profiles: [sandbox]
+    image: qfr/qfr_eval:stage0
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_eval
+    command: [python, -m, qfr_eval.sandbox.controller, /etc/qfr/sandbox-controller.json]
+    user: 65532:65532
+    group_add:
+      # Observe this mount inside the controller; Mac host GID need not match.
+      - ${QFR_DOCKER_SOCKET_GID:?supply the socket GID observed inside the controller}
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: 'no'
+    stop_grace_period: 15m
+    mem_limit: 1536m
+    memswap_limit: 1536m
+    cpus: 1
+    pids_limit: 32
+    logging:
+      driver: none
+    environment:
+      POLARS_MAX_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    volumes:
+      - type: bind
+        source: ${QFR_DOCKER_SOCKET:?supply the existing engine Unix socket path}
+        target: /var/run/docker.sock
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${QFR_SANDBOX_CONTROLLER_CONFIG:?supply the reviewed controller configuration path}
+        target: /etc/qfr/sandbox-controller.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - sandbox-control:/run/qfr-sandbox
+  eval-worker:
+    environment:
+      QFR_SANDBOX_CONTROLLER_SOCKET: /run/qfr-sandbox/controller.sock
+    volumes:
+      - sandbox-control:/run/qfr-sandbox:ro
+volumes:
+  sandbox-control: {}

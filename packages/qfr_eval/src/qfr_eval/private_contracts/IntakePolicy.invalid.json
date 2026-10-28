@@ -1,0 +1,11 @@
+{
+  "deferral_expiry_seconds": null,
+  "fairness": "round_robin_family_fifo",
+  "idle_behavior": "no_poll_or_jobs",
+  "max_ready_jobs_per_campaign": 1,
+  "page_size": 100,
+  "poll_interval_seconds": 60,
+  "revision": 1,
+  "schema_version": "1",
+  "unapproved": true
+}

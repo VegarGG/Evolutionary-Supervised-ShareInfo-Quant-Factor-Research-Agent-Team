@@ -1,0 +1,173 @@
+{
+  "$defs": {
+    "PrefixCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "compared_cells": {
+          "minimum": 0,
+          "title": "Compared Cells",
+          "type": "integer"
+        },
+        "cutoff": {
+          "format": "date",
+          "title": "Cutoff",
+          "type": "string"
+        },
+        "full_prefix_hashes": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Full Prefix Hashes",
+          "type": "object"
+        },
+        "rebuilt_hashes": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Rebuilt Hashes",
+          "type": "object"
+        }
+      },
+      "required": [
+        "cutoff",
+        "compared_cells",
+        "full_prefix_hashes",
+        "rebuilt_hashes"
+      ],
+      "title": "PrefixCheck",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "anyOf": [
+        {
+          "enum": [
+            "ok",
+            "failed:backend_unavailable",
+            "failed:network",
+            "failed:filesystem",
+            "failed:process_limit",
+            "failed:memory",
+            "failed:cpu_limit",
+            "failed:timeout",
+            "failed:output_limit",
+            "failed:invalid_output",
+            "failed:runtime"
+          ],
+          "type": "string"
+        },
+        {
+          "enum": [
+            "failed:lookahead",
+            "failed:nondeterministic",
+            "insufficient_data"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Code"
+    },
+    "deterministic": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Deterministic"
+    },
+    "label": {
+      "const": "lookahead tested, not certified",
+      "title": "Label",
+      "type": "string"
+    },
+    "output_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Output Sha256"
+    },
+    "perturbation": {
+      "items": {
+        "$ref": "#/$defs/PrefixCheck"
+      },
+      "title": "Perturbation",
+      "type": "array"
+    },
+    "perturbation_passed": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Perturbation Passed"
+    },
+    "prefix": {
+      "items": {
+        "$ref": "#/$defs/PrefixCheck"
+      },
+      "title": "Prefix",
+      "type": "array"
+    },
+    "prefix_passed": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Prefix Passed"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "passed",
+        "failed",
+        "insufficient_data"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "code",
+    "output_sha256",
+    "deterministic",
+    "prefix_passed",
+    "perturbation_passed",
+    "prefix",
+    "perturbation",
+    "label"
+  ],
+  "title": "CausalityEvidence",
+  "type": "object"
+}

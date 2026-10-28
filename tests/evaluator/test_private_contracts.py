@@ -5,16 +5,52 @@ import pytest
 from jsonschema import Draft202012Validator, FormatChecker
 from pydantic import ValidationError
 from qfr_eval.backtest.prefix import PrefixCheck
+from qfr_eval.execution_bundle import ArtifactExecutionBundle
 from qfr_eval.protocols.models import FrozenProtocol
 from qfr_eval.records import (
     EvaluationRequest,
     Measurement,
     MeasurementReceipt,
     OfficialRecord,
+    RegistryExecutionBinding,
     ReproductionResult,
     RuntimeIdentity,
     StoredFile,
     TrialLedgerEntry,
+)
+from qfr_eval.runtime_contracts import (
+    AccelerateImage,
+    AppleAccelerateExecution,
+    NumericalExecution,
+    NumericalLibrary,
+)
+from qfr_eval.sandbox.models import (
+    DockerControllerConfiguration,
+    DockerControllerRequest,
+    DockerNativeProfile,
+    DockerNativeReadiness,
+    SandboxProfile,
+    SandboxReadiness,
+)
+from qfr_eval.scheduler.models import (
+    DevelopmentBehavior,
+    IntakeCampaign,
+    IntakePolicy,
+    PilotScreeningPolicy,
+)
+from qfr_eval.screening.models import (
+    CausalityEvidence,
+    CoverageEvidence,
+    KindAdapterProfile,
+    ScreeningExecutionPolicy,
+    ScreeningSessionConfiguration,
+)
+from qfr_eval.screening.records import (
+    ScreeningOutcome,
+    ScreeningReceipt,
+    ScreeningRecord,
+    ScreeningRequest,
+    ScreeningTrial,
 )
 from qfr_eval.statistics.bootstrap import Interval
 from qfr_eval.statistics.clustering import BehavioralFingerprint, ClusterSnapshot
@@ -23,6 +59,32 @@ from qfr_eval.statistics.hurdles import TurnoverResult
 from qfr_eval.statistics.incremental import IncrementalResult
 
 MODELS = (
+    DockerControllerConfiguration,
+    DockerControllerRequest,
+    DockerNativeProfile,
+    DockerNativeReadiness,
+    AccelerateImage,
+    AppleAccelerateExecution,
+    NumericalExecution,
+    NumericalLibrary,
+    ArtifactExecutionBundle,
+    RegistryExecutionBinding,
+    ScreeningSessionConfiguration,
+    KindAdapterProfile,
+    ScreeningOutcome,
+    ScreeningReceipt,
+    ScreeningRecord,
+    ScreeningRequest,
+    ScreeningTrial,
+    CoverageEvidence,
+    CausalityEvidence,
+    ScreeningExecutionPolicy,
+    SandboxProfile,
+    SandboxReadiness,
+    DevelopmentBehavior,
+    IntakeCampaign,
+    IntakePolicy,
+    PilotScreeningPolicy,
     BehavioralFingerprint,
     ClusterSnapshot,
     EvaluationRequest,

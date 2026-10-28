@@ -1,0 +1,24 @@
+{
+  "complete_observations": 0,
+  "counted_at": "2026-01-01T00:00:00Z",
+  "family_id": "fixture",
+  "generation_id": "synthetic-generation",
+  "identity": {
+    "artifact_version_id": "00000000-0000-0000-0000-000000000001",
+    "content_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "dataset_version_id": "4444444444444444444444444444444444444444444444444444444444444444",
+    "evaluator_version": "1111111111111111111111111111111111111111",
+    "protocol_version": "pilot_p0_p1_verification_v1@0.1.0"
+  },
+  "official_record_id": "00000000-0000-0000-0000-00000000000c",
+  "program_id": "fixture",
+  "required_observations": 0,
+  "results_hash": "cc8917d5c5b0715c71dc88612537ccb216eaaf28ea1f178a3361b5ea28799e52",
+  "sampling_unit": "eligible_observation",
+  "schema_version": "1",
+  "stage": "screening",
+  "status": "failed",
+  "trial_id": "00000000-0000-0000-0000-00000000000d",
+  "unapproved": true,
+  "window": "development"
+}

@@ -1,0 +1,86 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "architecture": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Architecture"
+    },
+    "binary_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Binary Sha256",
+      "type": "string"
+    },
+    "internal_api": {
+      "enum": [
+        "openblas",
+        "mkl",
+        "blis",
+        "openmp"
+      ],
+      "title": "Internal Api",
+      "type": "string"
+    },
+    "num_threads": {
+      "exclusiveMinimum": 0,
+      "title": "Num Threads",
+      "type": "integer"
+    },
+    "prefix": {
+      "minLength": 1,
+      "title": "Prefix",
+      "type": "string"
+    },
+    "threading_layer": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Threading Layer"
+    },
+    "user_api": {
+      "enum": [
+        "blas",
+        "openmp"
+      ],
+      "title": "User Api",
+      "type": "string"
+    },
+    "version": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Version"
+    }
+  },
+  "required": [
+    "user_api",
+    "internal_api",
+    "prefix",
+    "version",
+    "num_threads",
+    "architecture",
+    "threading_layer",
+    "binary_sha256"
+  ],
+  "title": "NumericalLibrary",
+  "type": "object"
+}

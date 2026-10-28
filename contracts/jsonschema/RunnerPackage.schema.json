@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "ArtifactKind": {
+      "enum": [
+        "factor",
+        "model",
+        "strategy",
+        "research_note",
+        "data_product"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Metadata is inspected without importing or executing package source.",
+  "properties": {
+    "dependency_lock_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Dependency Lock Sha256",
+      "type": "string"
+    },
+    "entrypoint": {
+      "minLength": 1,
+      "title": "Entrypoint",
+      "type": "string"
+    },
+    "fields_used": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Fields Used",
+      "type": "array"
+    },
+    "format": {
+      "const": "qfr-json-runner/1",
+      "title": "Format",
+      "type": "string"
+    },
+    "input_schema_ref": {
+      "minLength": 1,
+      "title": "Input Schema Ref",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/ArtifactKind"
+    },
+    "max_lookback_days": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Max Lookback Days"
+    },
+    "output_schema_ref": {
+      "minLength": 1,
+      "title": "Output Schema Ref",
+      "type": "string"
+    },
+    "weight_files": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Weight Files",
+      "type": "array"
+    }
+  },
+  "required": [
+    "format",
+    "kind",
+    "entrypoint",
+    "input_schema_ref",
+    "output_schema_ref",
+    "dependency_lock_sha256",
+    "fields_used",
+    "max_lookback_days",
+    "weight_files"
+  ],
+  "title": "RunnerPackage",
+  "type": "object"
+}

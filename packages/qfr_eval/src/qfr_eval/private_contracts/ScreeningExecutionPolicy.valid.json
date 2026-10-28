@@ -1,0 +1,42 @@
+{
+  "allowed_import_roots": [
+    "collections",
+    "functools",
+    "json",
+    "math",
+    "numpy",
+    "pathlib",
+    "polars",
+    "qfr_core",
+    "statistics",
+    "typing"
+  ],
+  "document_rows": 10000,
+  "forbidden_attributes": [
+    "read_pickle",
+    "system"
+  ],
+  "forbidden_calls": [
+    "__import__",
+    "compile",
+    "eval",
+    "exec",
+    "getattr",
+    "globals",
+    "locals",
+    "open",
+    "setattr",
+    "vars"
+  ],
+  "future_numeric_scale": 0.875,
+  "lease_renewal_seconds": 20,
+  "lookahead_label": "lookahead tested, not certified",
+  "note_bytes": 65536,
+  "perturbation": "scale_future_finite_float_values",
+  "policy_id": "screening-execution-v1",
+  "revision": 1,
+  "schema_version": "1",
+  "source_ast_nodes": 50000,
+  "source_bytes": 8388608,
+  "worker_lease_seconds": 120
+}

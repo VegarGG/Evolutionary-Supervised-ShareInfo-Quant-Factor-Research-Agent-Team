@@ -1,0 +1,19 @@
+{
+  "active": false,
+  "allowed_kinds": [
+    "factor"
+  ],
+  "campaign_id": "00000000-0000-4000-8000-000000000001",
+  "owner_authorization_ref": "synthetic-owner-scope",
+  "program_ids": [
+    "synthetic-program"
+  ],
+  "protocol_hash": "860d667bedf81b0fed68fff6807f35f11fd2287dc7175d07eec4e8bb71b40021",
+  "protocol_ref": "pilot_p0_p1_verification_v1",
+  "root_lineages": {},
+  "runtime_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "schema_version": "1",
+  "screening_policy_hash": "5db00ba4b8dea34448c544033f0e34937e1fd5f0fe1dcd673abbea2a8e10e5f0",
+  "server_generation_id": "synthetic-generation",
+  "snapshot_id": "0000000000000000000000000000000000000000000000000000000000000000"
+}

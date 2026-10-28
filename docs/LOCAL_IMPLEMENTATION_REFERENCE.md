@@ -1,8 +1,8 @@
-<!-- Generated mirror of aligned local chapters 00–08, in filename order. Edit those chapters and regenerate this mirror; PLAN_ALIGNMENT.md is mirrored separately as local chapter 09. -->
+<!-- Originally generated from aligned local chapters 00–08. Owner-approved repository amendments are maintained here; preserve them when regenerating from historical chapters. PLAN_ALIGNMENT.md governs reconciliation. -->
 
 # QFR Implementation Plan: Multi-Agent Quantitative Factor Research and Evolution System
 
-Version 1.1 · Status: aligned planning specification; implementation and acceptance remain pending · Audience: a coding agent and the project owner
+Version 1.2 · October 27, 2026 · Status: aligned planning specification, not production acceptance · Audience: a coding agent and the project owner
 
 This plan turns the hybrid-architecture brainstorm (supervisor–worker coordination, shared research blackboard, evolutionary factor development, strictly independent evaluation) into a buildable specification. It retains detailed contracts, metrics, permissions and testable work packages. The appended Hybrid v1 alignment contract governs the product requirements and reconciles this technical reference with the repository plan; daily-stock values below belong to stock_daily_v1, not every possible input. It deliberately contains no implementation code: the coding agent writes the code, and this document tells it exactly what to build and how to prove it works.
 
@@ -69,7 +69,7 @@ The optional stock_daily_v1 profile targets China A-shares: daily bars, a point-
 - G5. Promote only factors that survive multiple-testing-aware gates, a private holdout, forward incubation and human sign-off.
 - G6. Give humans clear control surfaces: MCP input/status/export, research charters and budgets, evaluator protocols and independent exit/promotion decisions.
 - G7. Support online Kimi, GLM and DeepSeek together, with endpoint/model/settings configurable by role and task.
-- G8. Deliver Linux ARM64 and AMD64 Docker variants; durable jobs have no default total-time or generation ceiling and finish only when their chosen exit gate passes.
+- G8. Deploy first on macOS/Apple Silicon ARM64 using the Mac Studio's existing Docker Desktop, then validate the supported Linux AMD64 target separately. Deliver `linux/arm64` and `linux/amd64` container variants; these do not substitute for native host acceptance. Durable jobs have no default total-time or generation ceiling and finish only when their chosen exit gate passes.
 
 ### 2.2 Non-goals for v1
 
@@ -82,7 +82,7 @@ The optional stock_daily_v1 profile targets China A-shares: daily bars, a point-
 
 ### 2.3 Success criteria for v1
 
-These are stock-profile benchmark targets from Section 15.3, not the complete product exit gate. Production additionally requires AC-01–AC-14 in the alignment contract, including generic input, MCP, mixed providers, recovery and native architecture checks.
+These are stock-profile benchmark targets from Section 15.3, not the complete product exit gate. Production additionally requires AC-01–AC-14 in the alignment contract, including generic input, MCP, mixed providers, recovery and native host checks in the Apple-first, then Linux AMD64 order specified in PLAN_ALIGNMENT H.
 
 | ID | Criterion | Target |
 |---|---|---|
@@ -230,6 +230,7 @@ There are two distinct decisions, and they belong to different owners. Evolution
 | Evaluation | Research | Research-zone data snapshot | Read-only volume produced by data ingest | One-way |
 | Humans | Research | Charters, budgets, start and pause | Research API with the research-lead token | Write |
 | Humans | Evaluation | Protocols, policies, quotas, epochs, acceptance decisions | Eval admin API with the evaluation-owner or approver token | Write |
+| Evaluation worker | Trusted sandbox controller | Bounded frozen contract, package and authorized input slices | Private Unix socket; no generic Docker proxy | Evaluator only |
 | Research | Evaluation | Nothing else: no job submission, priority hints, cancellations, configuration or simulation control | None | Forbidden |
 
 ### 4.4 End-to-end feedback cycle
@@ -280,7 +281,7 @@ Generations may work with already released reports, but the job can await requir
 | D11 | Feedback | Coarsened, batched and quota-limited. Ladder for W2. Nothing released for W3 | Limits adaptive overfitting to the evaluation windows | Instant full-precision feedback |
 | D12 | Investment promotion (separate from job delivery) | Automated gates (DSR, PBO, t of at least 3, holdout, forward incubation) plus a human approver | Accounts for multiple testing. LLM memorization makes historical windows insufficient on their own | Acceptance on backtests alone |
 | D13 | Optional dashboard | Next.js plus TypeScript, local Phase 7 | Rich UI and role gating, independent of the core | Streamlit (weak authentication and roles) |
-| D14 | Deployment | Docker Compose, linux/arm64 and linux/amd64 variants, with separate networks, mounts and credentials per zone | Simple, and the boundaries are still real | Kubernetes, deferred |
+| D14 | Deployment | Docker Compose on macOS/Apple Silicon with existing Docker Desktop first, then native Linux AMD64; linux/arm64 and linux/amd64 container variants, with separate networks, mounts and credentials per zone | Host acceptance distinct from container evidence; same isolation contract on each target | Kubernetes, deferred; no new VM or backend authorized by the target correction |
 
 ## 5. Technology stack and repository layout
 
@@ -367,13 +368,22 @@ In v1 a single PostgreSQL instance hosts three databases, and the separation com
 | research-worker | qfr_research | research_rw on research_db | postgres, registry-api, feedback-api, LLM provider endpoints | LLM API keys, registry publisher token, feedback reader token | Research snapshot, read-only |
 | registry-api | qfr_registry | registry_app on registry_db | postgres | Registry tokens | None |
 | eval-scheduler | qfr_eval | eval_rw on eval_db | postgres, registry-api | Registry evaluator token | Full snapshot and epochs, read-only |
-| eval-worker (N replicas) | qfr_eval | eval_rw on eval_db | postgres only, no egress | None | Full snapshot and epochs, read-only |
+| eval-worker (N replicas) | qfr_eval | eval_rw on eval_db | postgres and private sandbox controller, no egress | None | Full snapshot and epochs, read-only; private controller socket |
+| sandbox-controller (serialized) | qfr_eval | None | Existing local Docker Unix API only; no network | None | Private control socket and reviewed configuration; no full data or DB secrets |
 | release-worker | qfr_eval | eval_rw on eval_db | postgres | None | None |
 | sim-engine | qfr_eval | eval_rw on eval_db | postgres | None | Full snapshot, read-only |
 | feedback-api | qfr_eval feedback module | feedback_ro on eval_db, SELECT on feedback views only | postgres | Feedback tokens | None |
 | eval-admin-api | qfr_eval | eval_rw on eval_db | postgres | Evaluation-owner and approver tokens | Epochs, read-only |
 | data-ingest | qfr_eval ingest module | eval_rw on eval_db | Internet (data source only), postgres | None | Raw and snapshots, read-write |
 | dashboard | apps/dashboard | None, calls the APIs only | The APIs | Per-role tokens held server-side | None |
+
+Owner-approved Stage 3 amendment S3-26: the Docker-native backend accepts ordinary
+containers' residual shared-kernel risk. Its controller alone receives Docker API
+access; no research, MCP, Registry or artifact receives that socket or controller
+channel. The opt-in overlay adds no host/runtime setting or new VM. New profiles,
+actual engine/guest controls and Mac Registry P0/P1 tests are required; historical
+runsc evidence is preserved without becoming an Apple gate substitute. See
+[SANDBOX.md](SANDBOX.md) and its explicitly UNRUN acceptance matrix.
 
 Database roles and grants:
 
@@ -399,7 +409,7 @@ No evaluation container receives LLM API keys. Only the data-ingest service has 
 | QFR_GENERATION_COST_CAP_USD, QFR_DAILY_COST_CAP_USD | research-worker | Budget caps |
 | QFR_ENV, QFR_LOG_LEVEL | All services | Environment (dev, test, prod) and log verbosity |
 
-Runtime and Docker lifecycle are governed by PLAN_ALIGNMENT sections F–H. The MCP front door never receives evaluator credentials; only research workers receive online LLM keys. Durable named volumes retain state across shutdown. A Docker image build is not native ARM/AMD64 or sandbox acceptance.
+Runtime and Docker lifecycle are governed by PLAN_ALIGNMENT sections F–H. The MCP front door never receives evaluator credentials; only research workers receive online LLM keys. Durable named volumes retain state across shutdown. A Docker image build or Linux ARM64 container pass is not macOS/Apple Silicon host or sandbox acceptance. Validate the actual Mac Studio deployment first and native Linux AMD64 separately; record host and engine/container OS/CPU independently.
 
 ## 6. Market data, data zones and timing conventions
 
@@ -1410,7 +1420,7 @@ The Research API also exposes typed input admission, durable job submit/status/p
 
 ### 14.3 Operations runbook
 
-Default operation is on demand. Start the Docker bundle, validate configuration/readiness, submit a job, preserve checkpoints while it runs, retrieve a passing delivery receipt, then idle or stop without deleting named volumes. Startup performs no autonomous research or licensed-data fetch. Client disconnects do not terminate jobs. Native ARM64/AMD64 recovery and sandbox checks are production gates (PLAN_ALIGNMENT AC-01–AC-14).
+Default operation is on demand. Start the Docker bundle, validate configuration/readiness, submit a job, preserve checkpoints while it runs, retrieve a passing delivery receipt, then idle or stop without deleting named volumes. Startup performs no autonomous research or licensed-data fetch. Client disconnects do not terminate jobs. Native host recovery and sandbox checks are production gates: macOS/Apple Silicon with the Mac Studio's existing Docker Desktop first, Linux AMD64 later (PLAN_ALIGNMENT H and AC-01–AC-14). Native Linux AMD64 validation is required before its readiness claim, not before the first Apple release. Use the host/container evidence matrix in [DEPLOYMENT_TARGETS.md](DEPLOYMENT_TARGETS.md). Unavailable Mac isolation remains a readiness failure; this runbook authorizes no alternative VM or backend.
 
 - While a research job is active, process its authorized registry intake, evaluation, release batches, fingerprints, trial clustering and burn accounting. Release delays remain policy-controlled; on-demand operation does not skip them.
 - Only for an explicitly enabled continuous/forward campaign: recurring data ingest/full-snapshot builds, prospective simulation cycles and nightly maintenance schedules. Otherwise these steps run on authorized job/data events as needed.
@@ -1482,7 +1492,7 @@ These original local IDs are retained as technical work packages. The repository
 
 ### Phase 0 — Foundation and contracts
 
-Goal: the repository, tooling, infrastructure and a boundary skeleton that later phases cannot accidentally break. Include InputBundle, provider/role profiles, job/exit-gate schemas and the ARM64/AMD64 Docker strategy from the alignment contract.
+Goal: the repository, tooling, infrastructure and a boundary skeleton that later phases cannot accidentally break. Include InputBundle, provider/role profiles, job/exit-gate schemas and both Linux container variants for the Apple-first and Linux AMD64 deployment targets in the alignment contract; host acceptance remains separate.
 
 - [ ] **P0.1** Create the uv workspace with packages qfr_core, qfr_registry, qfr_research and qfr_eval. Configure ruff, mypy (strict for qfr_core) and pytest, and add a justfile with check, test, up and down targets.
 - [ ] **P0.2** Add the import-linter contracts from Section 5.3 and wire them into the check target.
@@ -1631,7 +1641,7 @@ Acceptance checks:
 
 ### Phase 8 — Hardening and extensions
 
-Goal: extensions beyond the production baseline. Safe execution for required factor/model/strategy inputs, dual-architecture deployment and core boundary/recovery checks must already pass before the first production release; retain the task IDs below for their broader extensions.
+Goal: extensions beyond the production baseline. Safe execution for required factor/model/strategy inputs, both Linux image builds and all Apple host boundary/recovery checks must already pass before the first production release. Native Linux AMD64 deployment validation remains a separate required target acceptance before its readiness claim, not an optional extension or an Apple release prerequisite. Retain the task IDs below for their broader extensions.
 
 - [ ] **P8.1** Extend Python-factor authoring beyond the required v1 package/model/strategy runners, using the already accepted Docker sandbox: no network, read-only filesystem, CPU, memory and time limits, an AST import allow-list, and bans on date and identifier access. Prefix invariance is mandatory.
 - [ ] **P8.2** Extend strategy/composition and research-note capabilities beyond the required v1 imported strategy/model and deterministic quality-check contracts; do not defer acceptance of standalone strategy input to this extension.
@@ -1655,7 +1665,7 @@ Acceptance checks:
 | M2 Agents in the loop | 4 | One autonomous generation end to end, with a scripted LLM and with a real LLM |
 | M3 Evolving system | 5 | Multi-generation improvement on the synthetic world, plus a smoke run on CN data |
 | M4 Trustworthy promotion | 6 | Full gates, incubation and an approver decision |
-| M5 First production-ready product | Repository Phase 7; alignment crosswalk | MCP, all input kinds, Kimi/GLM/DeepSeek together, native ARM64/AMD64, recovery and passing delivery gates; dashboard optional |
+| M5 First production-ready product | Repository Phase 7; alignment crosswalk | MCP, all input kinds, Kimi/GLM/DeepSeek together, actual macOS/Apple Silicon deployment, recovery and passing delivery gates; native Linux AMD64 validation follows separately; dashboard optional |
 | M6 Hardened platform | 8 | Sandbox, strategy artifacts and epoch rollover |
 
 Sizing guidance: Phases 0 to 3 are the critical path and produce a useful system on their own (M1). Phases 4 and 5 add autonomy. The promotion work preserves its original stricter evidence requirements. The first production research release additionally satisfies the shared alignment acceptance checklist; it does not claim profitable alpha from software acceptance.

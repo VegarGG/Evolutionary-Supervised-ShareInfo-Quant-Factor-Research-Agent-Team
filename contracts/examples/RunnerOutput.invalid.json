@@ -1,0 +1,21 @@
+{
+  "kind": "factor",
+  "tables": {
+    "scores": {
+      "columns": [
+        "value"
+      ],
+      "dtypes": [
+        "Float64"
+      ],
+      "rows": [
+        [
+          1.0
+        ],
+        [
+          null
+        ]
+      ]
+    }
+  }
+}

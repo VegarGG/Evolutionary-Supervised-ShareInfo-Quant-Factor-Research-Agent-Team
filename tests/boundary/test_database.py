@@ -1,5 +1,6 @@
 """Live PostgreSQL boundaries; no test silently substitutes a different backend."""
 
+import json
 import os
 from pathlib import Path
 from uuid import uuid4
@@ -10,6 +11,7 @@ from psycopg import sql
 from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[2]
+POSTGRES_TEST_POLICY = json.loads((ROOT / "configs/testing/postgres_v1.json").read_text())
 pytestmark = pytest.mark.database
 
 
@@ -24,7 +26,14 @@ def connect():
         password = (secret_dir / f"{role}_password").read_text().strip()
         try:
             return psycopg.connect(
-                make_conninfo(dsn, user=role, password=password, dbname=database), autocommit=True
+                make_conninfo(
+                    dsn,
+                    user=role,
+                    password=password,
+                    dbname=database,
+                    connect_timeout=POSTGRES_TEST_POLICY["connect_timeout_seconds"],
+                ),
+                autocommit=True,
             )
         except psycopg.OperationalError as exc:
             # Do not allow pytest to render driver frames containing credentials.
@@ -117,7 +126,20 @@ def test_reg_01_insert_only_grants_and_owner_triggers(connect, database, role, s
     values = [row_id, "{}", "stage0-test", uuid4()]
     if table in ["artifact_versions", "official_records", "released_reports"]:
         columns += ["artifact_version_id", "content_hash"]
-        values += [uuid4(), uuid4().hex + uuid4().hex]
+        values += [row_id if table == "artifact_versions" else uuid4(), uuid4().hex + uuid4().hex]
+    if table == "artifact_versions":
+        family_id = uuid4()
+        columns += [
+            "family_id",
+            "version_no",
+            "program_id",
+            "kind",
+            "implementation_hash",
+            "implementation_kind",
+            "payload_ref",
+            "payload_digest",
+        ]
+        values += [family_id, 1, "boundary", "factor", "1" * 64, "dsl", "fixture", "2" * 64]
     if table in ["official_records", "released_reports"]:
         columns += ["protocol_version", "dataset_version_id", "evaluator_version"]
         values += ["fixture-protocol/1", "fixture-data", "stage0"]
@@ -125,6 +147,13 @@ def test_reg_01_insert_only_grants_and_owner_triggers(connect, database, role, s
         columns += ["trial_id"]
         values += [row_id]
     with connect(role, database) as conn, conn.transaction():
+        if table == "artifact_versions":
+            conn.execute(
+                "INSERT INTO registry.artifact_families"
+                "(id,payload,created_by,request_id,program_id,kind,name) "
+                "VALUES(%s,'{}','stage0-test',%s,'boundary','factor',%s)",
+                [family_id, uuid4(), str(family_id)],
+            )
         if table == "official_records":
             conn.execute(
                 "INSERT INTO eval.trial_ledger"

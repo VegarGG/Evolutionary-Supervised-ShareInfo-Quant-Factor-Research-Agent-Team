@@ -2,10 +2,12 @@
 
 import hashlib
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 import polars as pl
 from qfr_core.data_layer.snapshots import canonical_json
+from qfr_core.pilot.baseline import P0History
 
 from qfr_eval.backtest.pairing import window_periods
 from qfr_eval.backtest.pilot import evaluate_pilot
@@ -18,22 +20,33 @@ from qfr_eval.statistics.clustering import BehavioralFingerprint
 
 
 def pilot_fingerprint(
-    request: EvaluationRequest, protocol: FrozenProtocol, tables: dict[str, pl.DataFrame]
+    request: EvaluationRequest,
+    protocol: FrozenProtocol,
+    tables: dict[str, pl.DataFrame],
+    *,
+    candidate_history: Callable[[dict[str, pl.DataFrame]], tuple[pl.DataFrame, P0History]]
+    | None = None,
 ) -> BehavioralFingerprint:
     if request.protocol_hash != protocol.sha256 or protocol.scope != "P0_P1_verification_only":
         raise ValueError("fingerprint requires the approved pilot protocol")
+    if (request.variant == "registry") != (candidate_history is not None):
+        raise ValueError("fingerprint candidate execution binding differs")
     window = protocol.windows[protocol.diagnostics.fingerprint_window]
     data = slice_inputs(tables, window.end)
     runs = {}
     for variant in dict.fromkeys([protocol.calibration_reference, request.variant]):
-        _, _, spec = builtin_definition(variant)
-        panel, history = built_in_history(
-            data["features"],
-            data["prices_daily"],
-            data["universe"]["code"].to_list(),
-            protocol,
-            spec=spec,
-        )
+        if variant == "registry":
+            assert candidate_history is not None
+            panel, history = candidate_history(data)
+        else:
+            _, _, spec = builtin_definition(variant)
+            panel, history = built_in_history(
+                data["features"],
+                data["prices_daily"],
+                data["universe"]["code"].to_list(),
+                protocol,
+                spec=spec,
+            )
         runs[variant] = evaluate_pilot(
             panel,
             history,

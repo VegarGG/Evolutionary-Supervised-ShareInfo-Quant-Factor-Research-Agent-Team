@@ -1,0 +1,20 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "asset_id": {
+      "minLength": 1,
+      "title": "Asset Id",
+      "type": "string"
+    },
+    "data_base64": {
+      "title": "Data Base64",
+      "type": "string"
+    }
+  },
+  "required": [
+    "asset_id",
+    "data_base64"
+  ],
+  "title": "EncodedPayload",
+  "type": "object"
+}

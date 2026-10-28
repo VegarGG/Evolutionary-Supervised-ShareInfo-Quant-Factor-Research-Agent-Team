@@ -1,0 +1,11 @@
+{
+  "schema_version": "1",
+  "threading_mode": 1,
+  "threading_scope": "calling_thread",
+  "max_sysctl_text_bytes": 4096,
+  "max_loaded_images": 4096,
+  "max_macho_commands": 4096,
+  "max_macho_command_bytes": 1048576,
+  "max_image_text_bytes": 134217728,
+  "max_total_text_bytes": 536870912
+}

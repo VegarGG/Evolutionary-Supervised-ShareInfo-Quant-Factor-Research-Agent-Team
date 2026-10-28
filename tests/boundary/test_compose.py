@@ -27,6 +27,25 @@ def test_compose_trust_zones():
         assert all(port.startswith("127.0.0.1:") for port in service.get("ports", []))
     for name in ["research-api", "research-worker", "mcp-api"]:
         service = services[name]
+        assert not service.get("privileged", False)
+        assert not service.get("devices") and not service.get("cap_add")
+        assert service.get("pid") != "host" and service.get("network_mode") != "host"
+        assert str(service["user"]).split(":")[0] not in ("0", "root", "")
+        assert "no-new-privileges:true" in service["security_opt"]
+        # SBX-05: application roles cannot gain host writes through a bind,
+        # a volume, a device, or a Docker/container-runtime control socket.
+        for volume in service.get("volumes", []):
+            if isinstance(volume, str):
+                assert volume.rsplit(":", 1)[-1] == "ro"
+                assert not any(
+                    token in volume for token in ("docker.sock", "containerd.sock", "/run/docker")
+                )
+            else:
+                assert volume.get("read_only") is True
+                assert not any(
+                    token in str(volume)
+                    for token in ("docker.sock", "containerd.sock", "/run/docker")
+                )
         assert all(
             "eval" not in item and "full" not in item and "epochs" not in item
             for item in service.get("volumes", []) + service.get("secrets", [])
@@ -50,3 +69,33 @@ def test_compose_trust_zones():
             assert service["cap_drop"] == ["ALL"]
             assert "postgres_password" not in service.get("secrets", [])
             assert not any("docker.sock" in item for item in service.get("volumes", []))
+
+
+def test_native_overlay_grants_only_controller_and_private_evaluator_channel():
+    overlay = yaml.safe_load((ROOT / "infra/docker-compose.sandbox.yml").read_text())
+    assert set(overlay["services"]) == {"sandbox-controller", "eval-worker"}
+    controller = overlay["services"]["sandbox-controller"]
+    assert controller["profiles"] == ["sandbox"]
+    assert controller["network_mode"] == "none"
+    assert controller["read_only"] and controller["cap_drop"] == ["ALL"]
+    assert controller["user"] == "65532:65532"
+    assert controller["group_add"] == [
+        "${QFR_DOCKER_SOCKET_GID:?supply the socket GID observed inside the controller}"
+    ]
+    assert controller["security_opt"] == ["no-new-privileges:true"]
+    assert not controller.get("secrets") and not controller.get("ports")
+    assert not controller.get("devices") and not controller.get("privileged")
+    assert not controller.get("use_api_socket")
+    mounts = controller["volumes"]
+    assert len(mounts) == 3
+    assert mounts[0]["target"] == "/var/run/docker.sock"
+    assert mounts[0]["read_only"] and not mounts[0]["bind"]["create_host_path"]
+    assert "${QFR_DOCKER_SOCKET:?" in mounts[0]["source"]
+    assert mounts[1]["target"] == "/etc/qfr/sandbox-controller.json"
+    assert mounts[2] == "sandbox-control:/run/qfr-sandbox"
+    worker = overlay["services"]["eval-worker"]
+    assert not worker.get("group_add")
+    assert worker["volumes"] == ["sandbox-control:/run/qfr-sandbox:ro"]
+    assert worker["environment"] == {
+        "QFR_SANDBOX_CONTROLLER_SOCKET": "/run/qfr-sandbox/controller.sock"
+    }

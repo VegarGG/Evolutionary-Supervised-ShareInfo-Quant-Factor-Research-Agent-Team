@@ -1,0 +1,18 @@
+{
+  "schema_version": "1",
+  "policy_id": "pilot-p0-p1-screening",
+  "revision": 1,
+  "status": "active",
+  "scope": "P0_P1_verification_only",
+  "protocol_sha256": "860d667bedf81b0fed68fff6807f35f11fd2287dc7175d07eec4e8bb71b40021",
+  "approval_ref": "owner-approved-2026-10-26-pilot-screening-v0.1",
+  "approved_proposal_sha256": "fe52068e3d6decea4edb1e46ee6f7ae4fb8ec76339355ae1ec1763372fdac6c5",
+  "duplicates": "equivalent_development_outputs_all_declared_cycles",
+  "required_eligible_coverage": 1,
+  "reject_constant_scorer_fraction": 1,
+  "fixed_position_strategy_exempt": true,
+  "score_atol": 1e-12,
+  "score_rtol": 1e-12,
+  "preserve_original_eligibility_and_warmup": true,
+  "feedback_versions_per_lineage_generation": 3
+}

@@ -1,0 +1,17 @@
+{
+  "bindings": [
+    {
+      "principal": "fixture-publisher",
+      "programs": [
+        "program-example"
+      ],
+      "roles": [
+        "publisher"
+      ],
+      "token_ref": "env:REGISTRY_PUBLISHER_TOKEN"
+    }
+  ],
+  "enabled": true,
+  "maximum_token_bytes": 512,
+  "minimum_token_bytes": 32
+}

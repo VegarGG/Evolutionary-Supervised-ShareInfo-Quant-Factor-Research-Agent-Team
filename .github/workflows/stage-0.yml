@@ -44,10 +44,12 @@ jobs:
       - name: Test against PostgreSQL service
         env:
           QFR_TEST_POSTGRES_DSN: postgresql://127.0.0.1:5432/postgres
+          PYTEST_ADDOPTS: --require-postgres
         run: just test
       - name: Compose startup exit gate
         env:
           QFR_TEST_POSTGRES_DSN: postgresql://127.0.0.1:55432/postgres
+          PYTEST_ADDOPTS: --require-postgres
         run: |
           uv run --locked --all-packages python scripts/verify_postgres_startup.py
           just up
@@ -73,7 +75,9 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       - name: Build and record platform digests
-        run: bash scripts/build_images.sh '${{ matrix.architecture }}'
+        run: |
+          bash scripts/build_images.sh '${{ matrix.architecture }}'
+          bash scripts/build_sandbox_images.sh '${{ matrix.architecture }}'
       - name: Upload platform digest evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

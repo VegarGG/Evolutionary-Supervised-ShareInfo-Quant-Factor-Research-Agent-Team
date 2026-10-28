@@ -9,6 +9,7 @@ from qfr_eval.artifact_store import EvidenceStore
 from qfr_eval.cohorts import cohort_scope, read_cohort, read_fingerprints
 from qfr_eval.protocols.store import get_active
 from qfr_eval.records import EvaluationRequest, TrialLedgerEntry
+from qfr_eval.runtime import verify_runtime
 from qfr_eval.statistics.clustering import ClusterSnapshot, cluster_trials
 
 
@@ -22,6 +23,7 @@ def cluster_job(
 ) -> ClusterSnapshot:
     if not principal:
         raise ValueError("cluster job requires an audit principal")
+    verify_runtime(request.runtime)
     protocol = get_active(conn, request.protocol_id, request.protocol_version)
     if protocol.sha256 != request.protocol_hash:
         raise ValueError("cluster protocol identity differs")

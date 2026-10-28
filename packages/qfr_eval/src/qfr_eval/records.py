@@ -1,32 +1,54 @@
 """Private official measurement and all-attempt accounting. No research imports."""
 
 import hashlib
-from typing import Literal, Self
+from typing import Any, Literal, Self
 from uuid import UUID
 
-from pydantic import AwareDatetime, JsonValue, NonNegativeInt, model_validator
+from pydantic import (
+    AwareDatetime,
+    JsonValue,
+    NonNegativeInt,
+    SerializerFunctionWrapHandler,
+    model_serializer,
+    model_validator,
+)
 from qfr_core.contracts.base import Contract, Sha256, Text
 from qfr_core.contracts.enums import ReasonCode
 from qfr_core.contracts.reports import EvidenceIdentity, MetricValue
 from qfr_core.data_layer.snapshots import canonical_json
 
 from qfr_eval.protocols.models import Cycle
+from qfr_eval.runtime_contracts import RuntimeIdentity as RuntimeIdentity
 from qfr_eval.statistics.bootstrap import Interval
 from qfr_eval.statistics.family import FamilyInterval, FamilyStatistics, TrialObservation
 from qfr_eval.statistics.hurdles import GateStatus, TurnoverResult
 from qfr_eval.statistics.incremental import IncrementalResult
 
 
-class RuntimeIdentity(Contract):
-    evaluator_git_sha: Text
-    implementation_sha256: Sha256
-    image_digest: Sha256
-    software: dict[Text, Text]
+class StoredFile(Contract):
+    sha256: Sha256
+    bytes: NonNegativeInt
+    relative_path: Text
+    media_type: Literal["application/json", "application/vnd.apache.parquet", "text/markdown"]
+    logical_sha256: Sha256 | None
+
+
+class RegistryExecutionBinding(Contract):
+    screening_record_id: UUID
+    screening_receipt_hash: Sha256
+    execution_bundle: StoredFile
+
+    @model_validator(mode="after")
+    def private_json_bundle(self) -> Self:
+        if self.execution_bundle.media_type != "application/json":
+            raise ValueError("registry execution requires a frozen private JSON bundle")
+        return self
 
 
 class EvaluationRequest(Contract):
     schema_version: Literal["1"]
     variant: Literal[
+        "registry",
         "baseline",
         "P1_reversal_momentum",
         "N1_reversal_weight040",
@@ -52,24 +74,28 @@ class EvaluationRequest(Contract):
     cohort_id: Text
     intent: Literal["evaluated", "withheld", "diagnostic"]
     runtime: RuntimeIdentity
+    registry_execution: RegistryExecutionBinding | None = None
 
     @model_validator(mode="after")
     def frozen_neighbor(self) -> Self:
         if self.variant.startswith("N") and self.intent != "diagnostic":
             raise ValueError("frozen neighbors are non-selectable diagnostics only")
+        if (self.variant == "registry") != (self.registry_execution is not None):
+            raise ValueError("registry measurements require an explicit screened execution binding")
         return self
+
+    @model_serializer(mode="wrap")
+    def preserve_builtin_serialization(
+        self, handler: SerializerFunctionWrapHandler
+    ) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        if self.registry_execution is None:
+            value.pop("registry_execution", None)
+        return value
 
     @property
     def sha256(self) -> str:
         return hashlib.sha256(canonical_json(self.model_dump(mode="json"))).hexdigest()
-
-
-class StoredFile(Contract):
-    sha256: Sha256
-    bytes: NonNegativeInt
-    relative_path: Text
-    media_type: Literal["application/json", "application/vnd.apache.parquet", "text/markdown"]
-    logical_sha256: Sha256 | None
 
 
 class Measurement(Contract):

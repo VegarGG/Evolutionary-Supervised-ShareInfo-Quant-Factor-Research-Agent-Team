@@ -1,0 +1,10 @@
+{
+  "architecture": null,
+  "binary_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "internal_api": "openblas",
+  "num_threads": 1,
+  "prefix": "fixture",
+  "threading_layer": "pthreads",
+  "user_api": "blas",
+  "version": "fixture"
+}

@@ -1,0 +1,29 @@
+{
+  "libraries": [
+    {
+      "architecture": null,
+      "binary_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "internal_api": "openblas",
+      "num_threads": 1,
+      "prefix": "fixture",
+      "threading_layer": "pthreads",
+      "user_api": "blas",
+      "version": "fixture"
+    }
+  ],
+  "machine": "fixture",
+  "polars_threads": 1,
+  "schema_version": "1",
+  "system": "fixture",
+  "thread_environment": {
+    "BLIS_NUM_THREADS": null,
+    "MKL_DYNAMIC": null,
+    "MKL_NUM_THREADS": null,
+    "NUMEXPR_NUM_THREADS": null,
+    "OMP_DYNAMIC": null,
+    "OMP_NUM_THREADS": null,
+    "OPENBLAS_NUM_THREADS": "1",
+    "POLARS_MAX_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": null
+  }
+}

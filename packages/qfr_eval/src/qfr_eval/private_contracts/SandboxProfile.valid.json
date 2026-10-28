@@ -1,0 +1,22 @@
+{
+  "control_timeout_seconds": 15,
+  "cpu_seconds": 120,
+  "cpus": 1.0,
+  "dependency_lock_sha256": "4dfe02856d7494878a23b419fdb17b10e8a5aecb5781a01c22923569daa78b9d",
+  "file_descriptors": 128,
+  "max_input_bytes": 100663296,
+  "max_output_bytes": 100663296,
+  "max_package_bytes": 8388608,
+  "max_package_files": 64,
+  "memory_bytes": 1073741824,
+  "pids_limit": 64,
+  "process_limit": 16,
+  "profile_id": "pilot-sandbox-v2",
+  "revision": 2,
+  "runtime": "runsc",
+  "schema_version": "1",
+  "scope": "P0_P1_verification_only",
+  "timeout_seconds": 180,
+  "tmpfs_bytes": 201330688,
+  "user_id": 65532
+}

@@ -89,6 +89,23 @@ def test_bad_secret_prevents_all_ddl(startup, role, failure):
     assert not list(credentials.iterdir()), "Private staged copies must be removed on failure"
 
 
+@pytest.mark.skipif(
+    os.geteuid() == 0, reason="Real DAC read denial requires an unprivileged test UID"
+)
+def test_actual_unreadable_secret_prevents_ddl_without_a_mock_reader(startup):
+    run, credentials, data, _, receipt, _ = startup
+    path = credentials / "registry_app_password"
+    path.chmod(0)
+    with pytest.raises(PermissionError):
+        path.read_bytes()
+    result = run()
+    assert result.returncode != 0
+    assert "Cannot read PostgreSQL secret: registry_app_password" in result.stderr
+    assert not receipt.exists(), "A real denied read must stop before SQL"
+    assert (data / ".qfr-bootstrap-pending").exists()
+    assert not list(credentials.iterdir())
+
+
 def test_success_exports_all_credentials_only_to_sql_child_and_cleans_up(startup):
     run, credentials, data, _, receipt, _ = startup
     assert run().returncode == 0

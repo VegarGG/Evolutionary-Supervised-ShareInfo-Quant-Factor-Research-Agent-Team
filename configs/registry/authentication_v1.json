@@ -1,0 +1,7 @@
+{
+  "revision": 1,
+  "enabled": false,
+  "minimum_token_bytes": 32,
+  "maximum_token_bytes": 512,
+  "bindings": []
+}

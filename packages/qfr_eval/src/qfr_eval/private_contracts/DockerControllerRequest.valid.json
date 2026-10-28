@@ -1,0 +1,9 @@
+{
+  "contract": null,
+  "image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "operation": "readiness",
+  "package_base64": null,
+  "profile_sha256": "d359c8de0dd585558c224e0c3f3a3abc59813b8759b23ef8431b52760cfc2026",
+  "request": null,
+  "schema_version": "1"
+}

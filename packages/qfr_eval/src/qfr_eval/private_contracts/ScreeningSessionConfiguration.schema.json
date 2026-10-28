@@ -1,0 +1,1412 @@
+{
+  "$defs": {
+    "AccelerateImage": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_subtype": {
+          "title": "Cpu Subtype",
+          "type": "integer"
+        },
+        "cpu_type": {
+          "title": "Cpu Type",
+          "type": "integer"
+        },
+        "image_uuid": {
+          "format": "uuid",
+          "title": "Image Uuid",
+          "type": "string"
+        },
+        "install_name": {
+          "minLength": 1,
+          "title": "Install Name",
+          "type": "string"
+        },
+        "text_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Text Bytes",
+          "type": "integer"
+        },
+        "text_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Text Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "install_name",
+        "image_uuid",
+        "cpu_type",
+        "cpu_subtype",
+        "text_bytes",
+        "text_sha256"
+      ],
+      "title": "AccelerateImage",
+      "type": "object"
+    },
+    "AppleAccelerateExecution": {
+      "additionalProperties": false,
+      "properties": {
+        "consumers": {
+          "additionalProperties": {
+            "const": "accelerate",
+            "type": "string"
+          },
+          "propertyNames": {
+            "enum": [
+              "numpy",
+              "scipy"
+            ]
+          },
+          "title": "Consumers",
+          "type": "object"
+        },
+        "cpu_brand": {
+          "minLength": 1,
+          "title": "Cpu Brand",
+          "type": "string"
+        },
+        "effective_threads": {
+          "const": 1,
+          "title": "Effective Threads",
+          "type": "integer"
+        },
+        "extension_hashes": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Extension Hashes",
+          "type": "object"
+        },
+        "hardware_model": {
+          "minLength": 1,
+          "title": "Hardware Model",
+          "type": "string"
+        },
+        "images": {
+          "items": {
+            "$ref": "#/$defs/AccelerateImage"
+          },
+          "title": "Images",
+          "type": "array"
+        },
+        "os_build": {
+          "minLength": 1,
+          "title": "Os Build",
+          "type": "string"
+        },
+        "os_version": {
+          "minLength": 1,
+          "title": "Os Version",
+          "type": "string"
+        },
+        "policy_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Policy Sha256",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "threading_mode": {
+          "const": "single_threaded",
+          "title": "Threading Mode",
+          "type": "string"
+        },
+        "threading_scope": {
+          "const": "calling_thread",
+          "title": "Threading Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "policy_sha256",
+        "threading_mode",
+        "threading_scope",
+        "effective_threads",
+        "os_version",
+        "os_build",
+        "hardware_model",
+        "cpu_brand",
+        "consumers",
+        "extension_hashes",
+        "images"
+      ],
+      "title": "AppleAccelerateExecution",
+      "type": "object"
+    },
+    "ArtifactKind": {
+      "enum": [
+        "factor",
+        "model",
+        "strategy",
+        "research_note",
+        "data_product"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "DSLConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "constant_decimals": {
+          "minimum": 0,
+          "title": "Constant Decimals",
+          "type": "integer"
+        },
+        "constant_max": {
+          "title": "Constant Max",
+          "type": "number"
+        },
+        "constant_min": {
+          "title": "Constant Min",
+          "type": "number"
+        },
+        "extremum_ties": {
+          "const": "most_recent",
+          "title": "Extremum Ties",
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "full_window_below": {
+          "exclusiveMinimum": 0,
+          "title": "Full Window Below",
+          "type": "integer"
+        },
+        "language": {
+          "const": "qfr-dsl/1",
+          "title": "Language",
+          "type": "string"
+        },
+        "max_constants": {
+          "exclusiveMinimum": 0,
+          "title": "Max Constants",
+          "type": "integer"
+        },
+        "max_corr_nesting": {
+          "exclusiveMinimum": 0,
+          "title": "Max Corr Nesting",
+          "type": "integer"
+        },
+        "max_depth": {
+          "exclusiveMinimum": 0,
+          "title": "Max Depth",
+          "type": "integer"
+        },
+        "max_expression_length": {
+          "exclusiveMinimum": 0,
+          "title": "Max Expression Length",
+          "type": "integer"
+        },
+        "max_fields": {
+          "exclusiveMinimum": 0,
+          "title": "Max Fields",
+          "type": "integer"
+        },
+        "max_lookback": {
+          "exclusiveMinimum": 0,
+          "title": "Max Lookback",
+          "type": "integer"
+        },
+        "max_nodes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Nodes",
+          "type": "integer"
+        },
+        "profile": {
+          "enum": [
+            "stock_daily_v1",
+            "pilot_industry_v1"
+          ],
+          "title": "Profile",
+          "type": "string"
+        },
+        "rank_convention": {
+          "const": "average_rank_divided_by_valid_count",
+          "title": "Rank Convention",
+          "type": "string"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "rolling_valid_fraction": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Rolling Valid Fraction",
+          "type": "number"
+        },
+        "windows": {
+          "items": {
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "title": "Windows",
+          "type": "array"
+        },
+        "zero_epsilon": {
+          "exclusiveMinimum": 0,
+          "title": "Zero Epsilon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "revision",
+        "profile",
+        "language",
+        "max_expression_length",
+        "max_nodes",
+        "max_depth",
+        "max_fields",
+        "max_constants",
+        "max_lookback",
+        "max_corr_nesting",
+        "windows",
+        "fields",
+        "constant_min",
+        "constant_max",
+        "constant_decimals",
+        "zero_epsilon",
+        "rolling_valid_fraction",
+        "full_window_below",
+        "rank_convention",
+        "extremum_ties"
+      ],
+      "title": "DSLConfig",
+      "type": "object"
+    },
+    "DockerNativeProfile": {
+      "additionalProperties": false,
+      "description": "New shared-kernel contract. Never reinterpret a historical runsc profile.",
+      "properties": {
+        "approval_ref": {
+          "const": "owner-approved-2026-10-28-docker-native-v1",
+          "title": "Approval Ref",
+          "type": "string"
+        },
+        "boundary": {
+          "const": "docker_shared_kernel",
+          "title": "Boundary",
+          "type": "string"
+        },
+        "control_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Control Timeout Seconds",
+          "type": "integer"
+        },
+        "cpu_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Cpu Seconds",
+          "type": "integer"
+        },
+        "cpus": {
+          "exclusiveMinimum": 0,
+          "maximum": 2,
+          "title": "Cpus",
+          "type": "number"
+        },
+        "dependency_lock_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Dependency Lock Sha256",
+          "type": "string"
+        },
+        "file_descriptors": {
+          "exclusiveMinimum": 0,
+          "title": "File Descriptors",
+          "type": "integer"
+        },
+        "input_tmpfs_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Input Tmpfs Bytes",
+          "type": "integer"
+        },
+        "max_input_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Input Bytes",
+          "type": "integer"
+        },
+        "max_output_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Output Bytes",
+          "type": "integer"
+        },
+        "max_package_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Package Bytes",
+          "type": "integer"
+        },
+        "max_package_files": {
+          "exclusiveMinimum": 0,
+          "title": "Max Package Files",
+          "type": "integer"
+        },
+        "memory_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Memory Bytes",
+          "type": "integer"
+        },
+        "pids_limit": {
+          "exclusiveMinimum": 0,
+          "maximum": 16,
+          "minimum": 4,
+          "title": "Pids Limit",
+          "type": "integer"
+        },
+        "process_accounting": {
+          "const": "cgroup_total_tasks",
+          "title": "Process Accounting",
+          "type": "string"
+        },
+        "profile_id": {
+          "minLength": 1,
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "runtime": {
+          "const": "runc",
+          "title": "Runtime",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "P0_P1_verification_only",
+            "bounded_synthetic_acceptance"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "seccomp_sha256": {
+          "const": "514c38e72edc5363e87287ea87212211172c6c3251a974ca21ebfd05a56c7f5d",
+          "title": "Seccomp Sha256",
+          "type": "string"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "integer"
+        },
+        "tmpfs_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Tmpfs Bytes",
+          "type": "integer"
+        },
+        "user_id": {
+          "exclusiveMinimum": 0,
+          "title": "User Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "profile_id",
+        "revision",
+        "scope",
+        "runtime",
+        "boundary",
+        "approval_ref",
+        "user_id",
+        "cpus",
+        "memory_bytes",
+        "pids_limit",
+        "process_accounting",
+        "cpu_seconds",
+        "timeout_seconds",
+        "tmpfs_bytes",
+        "input_tmpfs_bytes",
+        "max_input_bytes",
+        "max_package_bytes",
+        "max_package_files",
+        "max_output_bytes",
+        "control_timeout_seconds",
+        "file_descriptors",
+        "dependency_lock_sha256",
+        "seccomp_sha256"
+      ],
+      "title": "DockerNativeProfile",
+      "type": "object"
+    },
+    "IntakeCampaign": {
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "title": "Active",
+          "type": "boolean"
+        },
+        "allowed_kinds": {
+          "items": {
+            "$ref": "#/$defs/ArtifactKind"
+          },
+          "minItems": 1,
+          "title": "Allowed Kinds",
+          "type": "array"
+        },
+        "campaign_id": {
+          "format": "uuid",
+          "title": "Campaign Id",
+          "type": "string"
+        },
+        "owner_authorization_ref": {
+          "minLength": 1,
+          "title": "Owner Authorization Ref",
+          "type": "string"
+        },
+        "program_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Program Ids",
+          "type": "array"
+        },
+        "protocol_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Protocol Hash",
+          "type": "string"
+        },
+        "protocol_ref": {
+          "minLength": 1,
+          "title": "Protocol Ref",
+          "type": "string"
+        },
+        "root_lineages": {
+          "additionalProperties": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "propertyNames": {
+            "format": "uuid"
+          },
+          "title": "Root Lineages",
+          "type": "object"
+        },
+        "runtime_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Runtime Hash",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "screening_policy_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Screening Policy Hash",
+          "type": "string"
+        },
+        "server_generation_id": {
+          "minLength": 1,
+          "title": "Server Generation Id",
+          "type": "string"
+        },
+        "snapshot_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Snapshot Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "campaign_id",
+        "active",
+        "owner_authorization_ref",
+        "program_ids",
+        "protocol_ref",
+        "protocol_hash",
+        "snapshot_id",
+        "runtime_hash",
+        "screening_policy_hash",
+        "server_generation_id",
+        "allowed_kinds",
+        "root_lineages"
+      ],
+      "title": "IntakeCampaign",
+      "type": "object"
+    },
+    "IntakePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "deferral_expiry_seconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Deferral Expiry Seconds"
+        },
+        "fairness": {
+          "const": "round_robin_family_fifo",
+          "title": "Fairness",
+          "type": "string"
+        },
+        "idle_behavior": {
+          "const": "no_poll_or_jobs",
+          "title": "Idle Behavior",
+          "type": "string"
+        },
+        "max_ready_jobs_per_campaign": {
+          "exclusiveMinimum": 0,
+          "title": "Max Ready Jobs Per Campaign",
+          "type": "integer"
+        },
+        "page_size": {
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "title": "Page Size",
+          "type": "integer"
+        },
+        "poll_interval_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Poll Interval Seconds",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "revision",
+        "page_size",
+        "max_ready_jobs_per_campaign",
+        "poll_interval_seconds",
+        "deferral_expiry_seconds",
+        "fairness",
+        "idle_behavior"
+      ],
+      "title": "IntakePolicy",
+      "type": "object"
+    },
+    "KindAdapterProfile": {
+      "additionalProperties": false,
+      "description": "Explicit supported output conventions, never stock admission thresholds.",
+      "properties": {
+        "adapter": {
+          "enum": [
+            "pilot_rotation_v1",
+            "price_panel_v1"
+          ],
+          "title": "Adapter",
+          "type": "string"
+        },
+        "data_product_check": {
+          "const": "identity-prices/1",
+          "title": "Data Product Check",
+          "type": "string"
+        },
+        "profile_id": {
+          "minLength": 1,
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "P0_P1_verification_only",
+            "synthetic_contract_fixtures_only"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "strategy_cost_bps": {
+          "minimum": 0,
+          "title": "Strategy Cost Bps",
+          "type": "integer"
+        },
+        "strategy_cost_policy_ref": {
+          "minLength": 1,
+          "title": "Strategy Cost Policy Ref",
+          "type": "string"
+        },
+        "strategy_execution": {
+          "const": "next_close",
+          "title": "Strategy Execution",
+          "type": "string"
+        },
+        "warmup": {
+          "enum": [
+            "original_pilot_eligibility",
+            "declared_source_observations"
+          ],
+          "title": "Warmup",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "profile_id",
+        "revision",
+        "scope",
+        "adapter",
+        "warmup",
+        "strategy_cost_bps",
+        "strategy_execution",
+        "strategy_cost_policy_ref",
+        "data_product_check"
+      ],
+      "title": "KindAdapterProfile",
+      "type": "object"
+    },
+    "NumericalExecution": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AppleAccelerateExecution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "libraries": {
+          "items": {
+            "$ref": "#/$defs/NumericalLibrary"
+          },
+          "title": "Libraries",
+          "type": "array"
+        },
+        "machine": {
+          "minLength": 1,
+          "title": "Machine",
+          "type": "string"
+        },
+        "polars_threads": {
+          "exclusiveMinimum": 0,
+          "title": "Polars Threads",
+          "type": "integer"
+        },
+        "schema_version": {
+          "enum": [
+            "1",
+            "2"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "system": {
+          "minLength": 1,
+          "title": "System",
+          "type": "string"
+        },
+        "thread_environment": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Thread Environment",
+          "type": "object"
+        }
+      },
+      "required": [
+        "schema_version",
+        "system",
+        "machine",
+        "polars_threads",
+        "thread_environment",
+        "libraries"
+      ],
+      "title": "NumericalExecution",
+      "type": "object"
+    },
+    "NumericalLibrary": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Architecture"
+        },
+        "binary_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Binary Sha256",
+          "type": "string"
+        },
+        "internal_api": {
+          "enum": [
+            "openblas",
+            "mkl",
+            "blis",
+            "openmp"
+          ],
+          "title": "Internal Api",
+          "type": "string"
+        },
+        "num_threads": {
+          "exclusiveMinimum": 0,
+          "title": "Num Threads",
+          "type": "integer"
+        },
+        "prefix": {
+          "minLength": 1,
+          "title": "Prefix",
+          "type": "string"
+        },
+        "threading_layer": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Threading Layer"
+        },
+        "user_api": {
+          "enum": [
+            "blas",
+            "openmp"
+          ],
+          "title": "User Api",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Version"
+        }
+      },
+      "required": [
+        "user_api",
+        "internal_api",
+        "prefix",
+        "version",
+        "num_threads",
+        "architecture",
+        "threading_layer",
+        "binary_sha256"
+      ],
+      "title": "NumericalLibrary",
+      "type": "object"
+    },
+    "PilotScreeningPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_ref": {
+          "minLength": 1,
+          "title": "Approval Ref",
+          "type": "string"
+        },
+        "approved_proposal_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Approved Proposal Sha256",
+          "type": "string"
+        },
+        "duplicates": {
+          "const": "equivalent_development_outputs_all_declared_cycles",
+          "title": "Duplicates",
+          "type": "string"
+        },
+        "feedback_versions_per_lineage_generation": {
+          "const": 3,
+          "title": "Feedback Versions Per Lineage Generation",
+          "type": "integer"
+        },
+        "fixed_position_strategy_exempt": {
+          "const": true,
+          "title": "Fixed Position Strategy Exempt",
+          "type": "boolean"
+        },
+        "policy_id": {
+          "minLength": 1,
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "preserve_original_eligibility_and_warmup": {
+          "const": true,
+          "title": "Preserve Original Eligibility And Warmup",
+          "type": "boolean"
+        },
+        "protocol_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Protocol Sha256",
+          "type": "string"
+        },
+        "reject_constant_scorer_fraction": {
+          "const": 1,
+          "title": "Reject Constant Scorer Fraction",
+          "type": "integer"
+        },
+        "required_eligible_coverage": {
+          "const": 1,
+          "title": "Required Eligible Coverage",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope": {
+          "const": "P0_P1_verification_only",
+          "title": "Scope",
+          "type": "string"
+        },
+        "score_atol": {
+          "minimum": 0,
+          "title": "Score Atol",
+          "type": "number"
+        },
+        "score_rtol": {
+          "minimum": 0,
+          "title": "Score Rtol",
+          "type": "number"
+        },
+        "status": {
+          "const": "active",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "policy_id",
+        "revision",
+        "status",
+        "scope",
+        "protocol_sha256",
+        "approval_ref",
+        "approved_proposal_sha256",
+        "duplicates",
+        "required_eligible_coverage",
+        "reject_constant_scorer_fraction",
+        "fixed_position_strategy_exempt",
+        "score_atol",
+        "score_rtol",
+        "preserve_original_eligibility_and_warmup",
+        "feedback_versions_per_lineage_generation"
+      ],
+      "title": "PilotScreeningPolicy",
+      "type": "object"
+    },
+    "RegistryClientConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "base_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Base Url",
+          "type": "string"
+        },
+        "max_request_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Request Bytes",
+          "type": "integer"
+        },
+        "max_response_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Response Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "number"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "base_url",
+        "token_ref",
+        "timeout_seconds",
+        "max_request_bytes",
+        "max_response_bytes"
+      ],
+      "title": "RegistryClientConfiguration",
+      "type": "object"
+    },
+    "RuntimeIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluator_git_sha": {
+          "minLength": 1,
+          "title": "Evaluator Git Sha",
+          "type": "string"
+        },
+        "image_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Image Digest",
+          "type": "string"
+        },
+        "implementation_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Implementation Sha256",
+          "type": "string"
+        },
+        "numerical_execution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NumericalExecution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "default": "1",
+          "enum": [
+            "1",
+            "2"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "software": {
+          "additionalProperties": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Software",
+          "type": "object"
+        }
+      },
+      "required": [
+        "evaluator_git_sha",
+        "implementation_sha256",
+        "image_digest",
+        "software"
+      ],
+      "title": "RuntimeIdentity",
+      "type": "object"
+    },
+    "SandboxProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "control_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Control Timeout Seconds",
+          "type": "integer"
+        },
+        "cpu_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Cpu Seconds",
+          "type": "integer"
+        },
+        "cpus": {
+          "exclusiveMinimum": 0,
+          "maximum": 2,
+          "title": "Cpus",
+          "type": "number"
+        },
+        "dependency_lock_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Dependency Lock Sha256",
+          "type": "string"
+        },
+        "file_descriptors": {
+          "exclusiveMinimum": 0,
+          "title": "File Descriptors",
+          "type": "integer"
+        },
+        "max_input_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Input Bytes",
+          "type": "integer"
+        },
+        "max_output_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Output Bytes",
+          "type": "integer"
+        },
+        "max_package_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Package Bytes",
+          "type": "integer"
+        },
+        "max_package_files": {
+          "exclusiveMinimum": 0,
+          "title": "Max Package Files",
+          "type": "integer"
+        },
+        "memory_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Memory Bytes",
+          "type": "integer"
+        },
+        "pids_limit": {
+          "exclusiveMinimum": 0,
+          "maximum": 128,
+          "minimum": 32,
+          "title": "Pids Limit",
+          "type": "integer"
+        },
+        "process_limit": {
+          "exclusiveMinimum": 0,
+          "maximum": 32,
+          "minimum": 4,
+          "title": "Process Limit",
+          "type": "integer"
+        },
+        "profile_id": {
+          "minLength": 1,
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "runtime": {
+          "const": "runsc",
+          "title": "Runtime",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "P0_P1_verification_only",
+            "bounded_synthetic_acceptance"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "integer"
+        },
+        "tmpfs_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Tmpfs Bytes",
+          "type": "integer"
+        },
+        "user_id": {
+          "exclusiveMinimum": 0,
+          "title": "User Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "profile_id",
+        "revision",
+        "scope",
+        "runtime",
+        "user_id",
+        "cpus",
+        "memory_bytes",
+        "pids_limit",
+        "process_limit",
+        "cpu_seconds",
+        "timeout_seconds",
+        "tmpfs_bytes",
+        "max_input_bytes",
+        "max_package_bytes",
+        "max_package_files",
+        "max_output_bytes",
+        "control_timeout_seconds",
+        "file_descriptors",
+        "dependency_lock_sha256"
+      ],
+      "title": "SandboxProfile",
+      "type": "object"
+    },
+    "ScreeningExecutionPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_import_roots": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Allowed Import Roots",
+          "type": "array"
+        },
+        "document_rows": {
+          "exclusiveMinimum": 0,
+          "title": "Document Rows",
+          "type": "integer"
+        },
+        "forbidden_attributes": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Forbidden Attributes",
+          "type": "array"
+        },
+        "forbidden_calls": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Forbidden Calls",
+          "type": "array"
+        },
+        "future_numeric_scale": {
+          "maximum": 0.875,
+          "minimum": 0.875,
+          "title": "Future Numeric Scale",
+          "type": "number"
+        },
+        "lease_renewal_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Lease Renewal Seconds",
+          "type": "integer"
+        },
+        "lookahead_label": {
+          "const": "lookahead tested, not certified",
+          "title": "Lookahead Label",
+          "type": "string"
+        },
+        "note_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Note Bytes",
+          "type": "integer"
+        },
+        "perturbation": {
+          "const": "scale_future_finite_float_values",
+          "title": "Perturbation",
+          "type": "string"
+        },
+        "policy_id": {
+          "minLength": 1,
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_ast_nodes": {
+          "exclusiveMinimum": 0,
+          "title": "Source Ast Nodes",
+          "type": "integer"
+        },
+        "source_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Source Bytes",
+          "type": "integer"
+        },
+        "worker_lease_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Worker Lease Seconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "policy_id",
+        "revision",
+        "source_bytes",
+        "source_ast_nodes",
+        "allowed_import_roots",
+        "forbidden_calls",
+        "forbidden_attributes",
+        "note_bytes",
+        "document_rows",
+        "worker_lease_seconds",
+        "lease_renewal_seconds",
+        "perturbation",
+        "future_numeric_scale",
+        "lookahead_label"
+      ],
+      "title": "ScreeningExecutionPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Private owner-supplied configuration, without embedded credentials.",
+  "properties": {
+    "adapter_profiles": {
+      "additionalProperties": {
+        "$ref": "#/$defs/KindAdapterProfile"
+      },
+      "propertyNames": {
+        "enum": [
+          "pilot_industry_v1",
+          "generic"
+        ]
+      },
+      "title": "Adapter Profiles",
+      "type": "object"
+    },
+    "campaign": {
+      "$ref": "#/$defs/IntakeCampaign"
+    },
+    "dsl_configs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/DSLConfig"
+      },
+      "propertyNames": {
+        "enum": [
+          "pilot_industry_v1",
+          "stock_daily_v1"
+        ]
+      },
+      "title": "Dsl Configs",
+      "type": "object"
+    },
+    "execution_policy": {
+      "$ref": "#/$defs/ScreeningExecutionPolicy"
+    },
+    "intake_policy": {
+      "$ref": "#/$defs/IntakePolicy"
+    },
+    "protocol_version": {
+      "minLength": 1,
+      "title": "Protocol Version",
+      "type": "string"
+    },
+    "registry_client": {
+      "$ref": "#/$defs/RegistryClientConfiguration"
+    },
+    "runtime": {
+      "$ref": "#/$defs/RuntimeIdentity"
+    },
+    "sandbox_image_digest": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Sandbox Image Digest"
+    },
+    "sandbox_profile": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SandboxProfile"
+        },
+        {
+          "$ref": "#/$defs/DockerNativeProfile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Sandbox Profile"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "screening_policy": {
+      "$ref": "#/$defs/PilotScreeningPolicy"
+    }
+  },
+  "required": [
+    "schema_version",
+    "campaign",
+    "intake_policy",
+    "screening_policy",
+    "execution_policy",
+    "adapter_profiles",
+    "registry_client",
+    "dsl_configs",
+    "protocol_version",
+    "runtime",
+    "sandbox_profile",
+    "sandbox_image_digest"
+  ],
+  "title": "ScreeningSessionConfiguration",
+  "type": "object"
+}

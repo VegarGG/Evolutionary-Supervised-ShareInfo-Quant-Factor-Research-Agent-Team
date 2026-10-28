@@ -1,0 +1,127 @@
+{
+  "$defs": {
+    "ArtifactKind": {
+      "enum": [
+        "factor",
+        "model",
+        "strategy",
+        "research_note",
+        "data_product"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "LineageEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "parent_version_id": {
+          "minLength": 1,
+          "title": "Parent Version Id",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "seed",
+            "mutation",
+            "crossover",
+            "revision",
+            "repair",
+            "human_seed",
+            "import"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "version_id": {
+          "minLength": 1,
+          "title": "Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version_id",
+        "parent_version_id",
+        "relation"
+      ],
+      "title": "LineageEdge",
+      "type": "object"
+    },
+    "LineageNode": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_id": {
+          "minLength": 1,
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "family_id": {
+          "minLength": 1,
+          "title": "Family Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "version_no": {
+          "exclusiveMinimum": 0,
+          "title": "Version No",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_version_id",
+        "content_hash",
+        "family_id",
+        "kind",
+        "version_no"
+      ],
+      "title": "LineageNode",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "depth": {
+      "minimum": 0,
+      "title": "Depth",
+      "type": "integer"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/LineageEdge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/LineageNode"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "root_version_id": {
+      "minLength": 1,
+      "title": "Root Version Id",
+      "type": "string"
+    },
+    "truncated_at_depth": {
+      "title": "Truncated At Depth",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "root_version_id",
+    "depth",
+    "nodes",
+    "edges",
+    "truncated_at_depth"
+  ],
+  "title": "ArtifactLineage",
+  "type": "object"
+}

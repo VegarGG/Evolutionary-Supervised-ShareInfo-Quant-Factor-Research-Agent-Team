@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Trusted test harness only. Application images never receive this secret mount.
 set -euo pipefail
+export PYTEST_ADDOPTS="${PYTEST_ADDOPTS:-} --require-postgres"
 mkdir -p build/local-ci
 read_setting() {
   python3 -c 'import json, sys; print(json.load(open("configs/local-ci.json"))[sys.argv[1]])' "$1"
@@ -19,5 +20,6 @@ docker run --rm --name "$(read_setting container_name)" \
   --env QFR_TEST_SECRET_DIR=/run/qfr-test-secrets \
   "$(read_setting image)"
 bash scripts/build_images.sh 2>&1 | tee build/local-ci/image-builds.txt
+bash scripts/build_sandbox_images.sh 2>&1 | tee build/local-ci/sandbox-image-builds.txt
 printf '%s\n' 'Local Linux checks and both-platform builds passed. See build/local-ci and build/digests.'
 printf '%s\n' 'Build success is not native runtime or sandbox acceptance. Licensed input checks run separately on the host.'

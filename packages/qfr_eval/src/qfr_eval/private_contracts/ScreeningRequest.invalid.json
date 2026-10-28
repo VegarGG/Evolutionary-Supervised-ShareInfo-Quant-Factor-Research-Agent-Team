@@ -1,0 +1,31 @@
+{
+  "adapter_profile_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "artifact_version_id": "00000000-0000-0000-0000-000000000001",
+  "campaign_id": "00000000-0000-4000-8000-000000000001",
+  "content_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+  "development_input_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "execution_policy_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "family_id": "fixture",
+  "generation_id": "synthetic-generation",
+  "intake_id": "00000000-0000-0000-0000-00000000000b",
+  "probe_input_sha256": null,
+  "program_id": "fixture",
+  "protocol_hash": "860d667bedf81b0fed68fff6807f35f11fd2287dc7175d07eec4e8bb71b40021",
+  "protocol_id": "pilot_p0_p1_verification_v1",
+  "protocol_version": "0.1.0",
+  "runner_image_digest": null,
+  "runtime": {
+    "evaluator_git_sha": "1111111111111111111111111111111111111111",
+    "image_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+    "implementation_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "software": {
+      "python": "3.12.14"
+    }
+  },
+  "schema_version": "1",
+  "screening_policy_hash": "5db00ba4b8dea34448c544033f0e34937e1fd5f0fe1dcd673abbea2a8e10e5f0",
+  "snapshot_id": "4444444444444444444444444444444444444444444444444444444444444444",
+  "stage": "screening",
+  "unapproved": true,
+  "window": "development"
+}

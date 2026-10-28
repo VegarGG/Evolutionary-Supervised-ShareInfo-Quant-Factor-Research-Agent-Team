@@ -17,13 +17,14 @@ those under /usr/share/doc. Preserve those files when redistributing images.
 The bounded review recorded in docs/LICENSING_REVIEW.md identified:
 
 - Runtime dependencies under MIT, BSD, PSF, and related permissive terms,
-  including Pydantic, Polars, NumPy, SciPy, PyYAML, and Lark. Binary wheels can
+  including Pydantic, Polars, NumPy, SciPy, PyYAML, Lark, and threadpoolctl
+  (BSD-3-Clause, used by the evaluator to inspect effective numerical thread pools). Binary wheels can
   bundle additional components. NumPy and SciPy include component-specific
   notices; SciPy's wheel also records OpenBLAS and GCC runtime-library terms
   with the GCC Runtime Library Exception.
-- Psycopg and psycopg-binary under LGPL-3.0-only. Stage 2 uses them as evaluator
-  runtime dependencies as well as development/test dependencies. Their unmodified
-  library files and
+- Psycopg and psycopg-binary under LGPL-3.0-only. The evaluator and Stage 3
+  registry use them at runtime as well as in development/test environments.
+  Their unmodified library files and
   notices must remain separable and replaceable. Any image distributor must
   satisfy the applicable LGPL source, notice, installation/relinking, and
   reverse-engineering-for-debugging requirements. The project license does not
@@ -45,3 +46,11 @@ external source material retain their owners' rights. If a specific uncredited
 copy or incompatible obligation is identified, resolve it before distributing
 the affected material; this bounded inventory is not a complete ownership or
 legal-clearance determination.
+
+## Vendored Docker seccomp profile
+
+The evaluator includes the unchanged Moby default seccomp policy, separately
+licensed Apache-2.0 by the Moby contributors. Source, frozen SHA256 and the complete
+license accompany it under `qfr_eval/sandbox/vendor/`. Project noncommercial terms
+do not replace third-party permissions. This policy is shipped in the evaluator
+wheel and image; no runtime upstream download is required.

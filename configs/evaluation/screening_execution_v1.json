@@ -1,0 +1,17 @@
+{
+  "schema_version": "1",
+  "policy_id": "screening-execution-v1",
+  "revision": 1,
+  "source_bytes": 8388608,
+  "source_ast_nodes": 50000,
+  "allowed_import_roots": ["collections", "functools", "json", "math", "numpy", "pathlib", "polars", "qfr_core", "statistics", "typing"],
+  "forbidden_calls": ["__import__", "compile", "eval", "exec", "getattr", "globals", "locals", "open", "setattr", "vars"],
+  "forbidden_attributes": ["read_pickle", "system"],
+  "note_bytes": 65536,
+  "document_rows": 10000,
+  "worker_lease_seconds": 120,
+  "lease_renewal_seconds": 20,
+  "perturbation": "scale_future_finite_float_values",
+  "future_numeric_scale": 0.875,
+  "lookahead_label": "lookahead tested, not certified"
+}

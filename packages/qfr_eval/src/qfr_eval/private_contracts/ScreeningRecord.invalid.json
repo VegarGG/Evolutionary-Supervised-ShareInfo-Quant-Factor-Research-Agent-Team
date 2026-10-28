@@ -1,0 +1,86 @@
+{
+  "created_at": "2026-01-01T00:00:00Z",
+  "created_by": "fixture",
+  "feedback_disposition": "eligible",
+  "identity": {
+    "artifact_version_id": "00000000-0000-0000-0000-000000000001",
+    "content_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "dataset_version_id": "4444444444444444444444444444444444444444444444444444444444444444",
+    "evaluator_version": "1111111111111111111111111111111111111111",
+    "protocol_version": "pilot_p0_p1_verification_v1@0.1.0"
+  },
+  "outcome": {
+    "causality": {
+      "code": "insufficient_data",
+      "deterministic": null,
+      "label": "lookahead tested, not certified",
+      "output_sha256": null,
+      "perturbation": [],
+      "perturbation_passed": null,
+      "prefix": [],
+      "prefix_passed": null,
+      "schema_version": "1",
+      "status": "insufficient_data"
+    },
+    "coverage": {
+      "complete_observations": 0,
+      "constant_cross_sections": 0,
+      "diagnostics": [],
+      "fixed_position_exempt": false,
+      "reason_codes": [
+        "LOW_COVERAGE"
+      ],
+      "required_observations": 0,
+      "schema_version": "1",
+      "scored_cross_sections": 0,
+      "status": "insufficient_data"
+    },
+    "document_checks": {},
+    "execution": "dsl",
+    "kind": "factor",
+    "output_sha256": null,
+    "reason_codes": [
+      "LOW_COVERAGE"
+    ],
+    "schema_version": "1",
+    "status": "insufficient_data"
+  },
+  "record_id": "00000000-0000-0000-0000-00000000000c",
+  "request": {
+    "adapter_profile_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "artifact_version_id": "00000000-0000-0000-0000-000000000001",
+    "campaign_id": "00000000-0000-4000-8000-000000000001",
+    "content_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "development_input_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "execution_policy_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "family_id": "fixture",
+    "generation_id": "synthetic-generation",
+    "intake_id": "00000000-0000-0000-0000-00000000000b",
+    "probe_input_sha256": null,
+    "program_id": "fixture",
+    "protocol_hash": "860d667bedf81b0fed68fff6807f35f11fd2287dc7175d07eec4e8bb71b40021",
+    "protocol_id": "pilot_p0_p1_verification_v1",
+    "protocol_version": "0.1.0",
+    "runner_image_digest": null,
+    "runtime": {
+      "evaluator_git_sha": "1111111111111111111111111111111111111111",
+      "image_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+      "implementation_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "software": {
+        "python": "3.12.14"
+      }
+    },
+    "schema_version": "1",
+    "screening_policy_hash": "5db00ba4b8dea34448c544033f0e34937e1fd5f0fe1dcd673abbea2a8e10e5f0",
+    "snapshot_id": "4444444444444444444444444444444444444444444444444444444444444444",
+    "stage": "screening",
+    "window": "development"
+  },
+  "request_hash": "65b1b1e53bb9207618b2d42bfbbec76bd1c5757da65f22e8c6aba6c0232b8efa",
+  "request_id": "00000000-0000-0000-0000-00000000000e",
+  "results_hash": "cc8917d5c5b0715c71dc88612537ccb216eaaf28ea1f178a3361b5ea28799e52",
+  "schema_version": "1",
+  "stage": "screening",
+  "trial_id": "00000000-0000-0000-0000-00000000000d",
+  "unapproved": true
+}

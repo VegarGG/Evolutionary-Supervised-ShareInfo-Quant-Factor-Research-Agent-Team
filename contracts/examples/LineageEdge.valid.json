@@ -1,0 +1,5 @@
+{
+  "parent_version_id": "artifact-example",
+  "relation": "revision",
+  "version_id": "child-example"
+}

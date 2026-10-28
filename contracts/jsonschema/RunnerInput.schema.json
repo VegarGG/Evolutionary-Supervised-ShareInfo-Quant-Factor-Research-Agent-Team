@@ -1,0 +1,89 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "RunnerTable": {
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Columns",
+          "type": "array"
+        },
+        "dtypes": {
+          "items": {
+            "enum": [
+              "Int8",
+              "Int16",
+              "Int32",
+              "Int64",
+              "UInt8",
+              "UInt16",
+              "UInt32",
+              "UInt64",
+              "Float32",
+              "Float64",
+              "Boolean",
+              "String",
+              "Date",
+              "Null"
+            ],
+            "type": "string"
+          },
+          "title": "Dtypes",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "array"
+          },
+          "title": "Rows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "columns",
+        "dtypes",
+        "rows"
+      ],
+      "title": "RunnerTable",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "minimum": 0,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "tables": {
+      "additionalProperties": {
+        "$ref": "#/$defs/RunnerTable"
+      },
+      "minProperties": 1,
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Tables",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "tables",
+    "seed"
+  ],
+  "title": "RunnerInput",
+  "type": "object"
+}
