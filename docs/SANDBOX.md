@@ -5,8 +5,11 @@ acceptance target; Linux AMD64 remains a separately validated target. Decision
 S3-26 records approval of ordinary Docker's residual shared-kernel risk and the
 trusted evaluator controller's Docker API grant. No extra VM, gVisor registration,
 privileged container, added capability, TCP endpoint or host permission change is
-part of that grant. **The first Mac Docker-native readiness attempt failed;
-acceptance of the corrected source remains pending.**
+part of that grant. The latest Mac report passes the corrected actual sandbox
+and Registry pilot tests. **Stage 3 acceptance remains pending deployment
+evidence reconciliation**, including actual Compose recovery and socket
+boundaries; see [STAGE_3_ACCEPTANCE.md](STAGE_3_ACCEPTANCE.md). Earlier failed
+attempts retain their source-specific evidence below and in the stage log.
 
 ## Docker-native backend
 

@@ -2,13 +2,14 @@
 
 Hybrid v1 multi-agent quantitative research and factor evolution: supervisor–worker coordination, a shared research blackboard, evolutionary candidate development and a strictly independent, deterministic evaluator. Deployment targets are **macOS on Apple Silicon (ARM64), first on the Mac Studio with its existing Docker Desktop**, and **Linux AMD64**. The Compose bundle uses `linux/arm64` containers on Apple and `linux/amd64` containers on Linux AMD64; a Linux container build or test is not Apple host acceptance. A standard MCP front door connects a host agent such as Codex, with online Kimi, GLM and DeepSeek as the mandatory research-side LLM providers.
 
-**Status:** foundation, data snapshots, DSL, metrics and the independent pilot evaluator are implemented. The evaluator supports frozen protocols, audited private records, deterministic replay and trial clustering; see [Stage 2 operations](docs/STAGE_2.md). [Stage 3 registry and sandbox work](docs/STAGE_3.md) is in progress; the owner-approved Docker-native controller is under implementation, and actual Apple isolation and Registry pilot gates remain unrun. Feedback release, MCP orchestration and autonomous research remain later stages. Neither deployment target is production-accepted. Docker application services remain idle stubs until their stages implement scheduling.
+**Status:** foundation, data snapshots, DSL, metrics and the independent pilot evaluator are implemented. The evaluator supports frozen protocols, audited private records, deterministic replay and trial clustering; see [Stage 2 operations](docs/STAGE_2.md). Stage 3 implements the Registry and owner-approved Docker-native sandbox. The latest Mac report passes actual sandbox and registered P0/P1 tests; [acceptance reconciliation](docs/STAGE_3_ACCEPTANCE.md) still requires deployment evidence before Stage 3 is green. Feedback release, MCP orchestration and autonomous research remain later stages. Neither deployment target is production-accepted. Docker application services remain idle stubs until their stages implement scheduling.
 
 DeepSeek v4.1 Flash is the first model to integrate at the provider stage. Exact official endpoint/model identifiers and explicit live-call authorization are required there; no model integration or paid calls are part of Stage 2.
 
-The [Stage 3 draft checkpoint](docs/STAGE_3_CHECKPOINT.md) records native Mac and
-container tests plus historical oracle parity. It is **not merge-ready**: required
-Apple sandbox and Registry sandbox execution gates remain blocked/unrun.
+The [current Stage 3 acceptance review](docs/STAGE_3_ACCEPTANCE.md) records the
+790-pass, zero-skip native Mac report and the remaining Compose recovery, socket
+boundary and image-evidence checks. It is **not yet merge-ready**. The
+[earlier draft checkpoint](docs/STAGE_3_CHECKPOINT.md) retains its historical scope.
 
 ## Start here
 

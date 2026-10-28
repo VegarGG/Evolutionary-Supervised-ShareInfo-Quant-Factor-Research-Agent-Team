@@ -57,8 +57,10 @@ access only to a trusted evaluator controller. No extra VM, gVisor registration,
 privileged container, broad socket mode change or TCP Docker endpoint is part of
 this deployment. Research/MCP/Registry/artifacts receive no controller channel.
 
-Implementation and actual Apple acceptance are separate. The new backend's Mac
-readiness, SBX controls, controller/Compose boundary and four Registry P0/P1 cases
-remain UNRUN until measured on the exact source/image. Historical runsc evidence
-keeps its original Linux scope. Native Linux AMD64 acceptance remains separately
-required before claiming that target ready. See [SANDBOX.md](SANDBOX.md).
+Implementation and actual Apple acceptance are separate. The latest Mac report
+passes actual readiness, SBX tests and the four Registry P0/P1 cases on the source
+identified in [STAGE_3_ACCEPTANCE.md](STAGE_3_ACCEPTANCE.md). Actual Compose restart,
+deployed socket boundaries and final local image evidence remain to be reconciled;
+Stage 3 is not yet green. Historical runsc evidence keeps its original Linux
+scope. Native Linux AMD64 acceptance remains separately required before claiming
+that target ready. See [SANDBOX.md](SANDBOX.md).

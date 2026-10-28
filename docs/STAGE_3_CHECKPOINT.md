@@ -1,8 +1,8 @@
-> Update 2026-10-28: S3-26 approves the ordinary-Docker shared-kernel boundary
-> and evaluator-controller-only Docker API grant. The following checkpoint retains
-> its original tested source and counts; it does not certify the subsequent native
-> implementation. New Mac SBX, controller/Compose and Registry pilot gates remain
-> UNRUN. See [SANDBOX.md](SANDBOX.md). Stage 3 is still not merge-ready.
+> Historical checkpoint. The [current acceptance reconciliation](STAGE_3_ACCEPTANCE.md)
+> records the later Docker-native implementation and reported passing Apple SBX
+> and Registry pilot tests. The following report retains its original source,
+> counts and then-blocked gates. It does not describe the current implementation.
+> Stage 3 is still not merge-ready while deployment evidence is reconciled.
 
 # Stage 3 checkpoint — October 28, 2026
 

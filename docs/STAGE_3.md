@@ -558,3 +558,22 @@ with wrapper startup); peak child RSS is 304,692 KiB. The extra skip is the new
 real-sandbox SIGKILL control case, not a removed assertion. Core/evaluator wheel
 checks confirm the exact new modules are packaged. No heavy image build or
 actual OOM/fork fixture ran in cloud. These checks do not establish Mac acceptance.
+
+## Acceptance reconciliation — October 28, 2026
+
+The Mac validation session reports exact implementation
+`b3506b69f1aa3347fe1347cf1e671bf198c67677`: native **790 passed, zero skips**;
+Docker Desktop CI **765 passed, 25 explicit skips**; static checks green. Genuine
+OOM/fork/SIGKILL, all four registered P0/P1 cases and Compose controller readiness
+passed. The controller's container-local socket GID 0 grant was audited with no
+material unrelated permission gain; cleanup completed and PostgreSQL was healthy.
+These results close the previously reported test failures without rewriting them.
+
+[STAGE_3_ACCEPTANCE.md](STAGE_3_ACCEPTANCE.md) maps each named exit gate to its
+actual test and separates this reported Mac evidence from verified hosted CI and
+bounded cloud checks. Actual Compose restart and deployed socket boundaries,
+final local image identities, Mac PostgreSQL startup-script evidence, and the
+container skip breakdown still need reconciliation. They are **UNVERIFIED**, not
+invented failures or passes. Stage 3 remains not merge-ready; Stage 4 entry is
+reviewed only. No protocol, runtime profile, golden, code or test change is part
+of this documentation reconciliation (S3-30).
