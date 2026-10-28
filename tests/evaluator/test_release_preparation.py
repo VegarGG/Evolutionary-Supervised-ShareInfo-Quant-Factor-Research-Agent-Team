@@ -1,7 +1,7 @@
 """Synthetic immutable sources and real PostgreSQL; not financial acceptance."""
 
 import json
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -58,7 +58,11 @@ def pilot_policy(conn, *, version=1):
     return policy
 
 
-def store_pilot(conn, *, ordinal=1, score=0.5, failed=False):
+def store_pilot(
+    conn, *, ordinal=1, score=0.5, failed=False, completed_at=None, evidence_store=None
+):
+    # Explicit synthetic source clock; not actual elapsed-batch acceptance.
+    completed_at = completed_at or datetime.now(UTC)
     record, request, measured, protocol = evidence(score)
     request = request.model_copy(
         update={
@@ -93,6 +97,37 @@ def store_pilot(conn, *, ordinal=1, score=0.5, failed=False):
         request=request.model_dump(mode="json"),
         measurement=measured.model_dump(mode="json"),
     )
+    if evidence_store is not None:
+        from qfr_eval.persistence import receipt_hash
+        from qfr_eval.records import MeasurementReceipt
+        from qfr_eval.scheduler.dedup import digest
+
+        sample = json.loads(
+            (
+                ROOT / "packages/qfr_eval/src/qfr_eval/private_contracts/"
+                "MeasurementReceipt.valid.json"
+            ).read_bytes()
+        )
+        sample.update(
+            record_id=record.record_id,
+            trial_id=str(trial),
+            identity=record.identity.model_dump(),
+            protocol_hash=protocol.sha256,
+            request_hash=request.sha256,
+            results_hash=record.results_hash,
+            dataset_manifest_hash=digest(snapshot),
+            image_digest=request.runtime.image_digest,
+            implementation_sha256=request.runtime.implementation_sha256,
+            files={
+                "record": evidence_store.json(record.model_dump(mode="json")),
+                "measurement": evidence_store.json(measured.model_dump(mode="json")),
+                "context": evidence_store.json(context),
+            },
+        )
+        receipt = MeasurementReceipt.model_validate(sample)
+        body["receipt"] = receipt.model_copy(
+            update={"receipt_hash": receipt_hash(receipt)}
+        ).model_dump(mode="json")
     identity = record.identity
     with conn.transaction():
         conn.execute(
@@ -103,8 +138,8 @@ def store_pilot(conn, *, ordinal=1, score=0.5, failed=False):
         conn.execute(
             "INSERT INTO eval.official_records(id,payload,created_by,request_id,"
             "artifact_version_id,content_hash,protocol_version,dataset_version_id,"
-            "evaluator_version,trial_id) "
-            "VALUES(%s,%s,'synthetic-fixture',%s,%s,%s,%s,%s,%s,%s)",
+            "evaluator_version,trial_id,created_at) "
+            "VALUES(%s,%s,'synthetic-fixture',%s,%s,%s,%s,%s,%s,%s,%s)",
             [
                 UUID(record.record_id),
                 Jsonb(body),
@@ -115,6 +150,7 @@ def store_pilot(conn, *, ordinal=1, score=0.5, failed=False):
                 identity.dataset_version_id,
                 identity.evaluator_version,
                 trial,
+                completed_at,
             ],
         )
         conn.execute(

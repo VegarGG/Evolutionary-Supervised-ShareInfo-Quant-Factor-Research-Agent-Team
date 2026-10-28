@@ -116,6 +116,8 @@
   "StrategyPayload",
   "TaskOverride",
   "Timeouts",
+  "VerificationKey",
+  "VerificationPolicy",
   "VersionReference",
   "WithheldRelease"
 ]

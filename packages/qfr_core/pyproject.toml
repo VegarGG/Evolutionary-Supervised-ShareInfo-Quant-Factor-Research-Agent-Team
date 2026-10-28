@@ -4,7 +4,17 @@ version = "0.1.0"
 license = "PolyForm-Noncommercial-1.0.0"
 license-files = ["LICENSE", "NOTICE", "ADDITIONAL-PERMISSION.md", "THIRD-PARTY-NOTICES.md"]
 requires-python = ">=3.12,<3.13"
-dependencies = ["pydantic>=2,<3", "pydantic-settings>=2,<3", "PyYAML>=6,<7", "polars>=1.36,<2", "numpy>=2,<3", "scipy>=1.16,<2", "lark>=1.2,<2", "httpx"]
+dependencies = [
+    "pydantic>=2,<3",
+    "pydantic-settings>=2,<3",
+    "PyYAML>=6,<7",
+    "polars>=1.36,<2",
+    "numpy>=2,<3",
+    "scipy>=1.16,<2",
+    "lark>=1.2,<2",
+    "httpx",
+    "cryptography==50.0.2",
+]
 
 [build-system]
 requires = ["hatchling==1.27.0"]

@@ -4,7 +4,8 @@ The Stage 4 service factory is `qfr_eval.feedback.app.create_app`. It receives a
 explicit `FeedbackReader` and optional audience-bound `BearerAuthority`. With no
 authority configured, protected reads refuse authentication. Merely importing or
 starting the component admits no evaluation or research work. Compose/MCP wiring
-and cryptographic verification are separate Stage 4 integrations.
+is a separate Stage 4 integration. The reader requires an explicit public-key
+`EvidenceVerifier` and rejects unsigned, tampered or untrusted reports.
 
 The reader requires an idle connection authenticated as `feedback_ro` to
 `eval_db`. It uses a read-only transaction, a bounded statement timeout and a
@@ -32,8 +33,8 @@ retain these metadata logs and disable raw access logs that copy query strings.
 Cursor IDs are looked up in the caller's scoped released view. Reconnecting and
 resuming with the last ID has no effect on any job. Oversized pages/rows, invalid
 schemas, inconsistent identity headers and malformed cards fail without returning
-private values. Clients must not treat a structurally valid signature as verified;
-actual signature checking is the next Stage 4 integration.
+private values. Clients must independently verify signatures before assigning an official label;
+see [EVIDENCE_SIGNING.md](EVIDENCE_SIGNING.md).
 
 Database views require an immutable publication link, matching published queue
 state, and an arrived batch time. Legacy reservation rows and unsigned preparation
@@ -49,6 +50,6 @@ are not HTTP or MCP capabilities. They do not publish reports, execute a candida
 spend a confirmation query or contact a provider.
 
 Read policy defaults are versioned in `configs/feedback/read_policy_v1.json`.
-Unit tests use ephemeral synthetic tokens, structural report fixtures and declared
-fixture clocks. They do not establish cryptographic authenticity, an actual elapsed
-release wait or the final P0/P1 acceptance gate.
+Unit tests use ephemeral synthetic tokens and signing keys, synthetic report
+fixtures and declared fixture clocks. They establish the tested cryptographic
+boundaries, not an actual elapsed release wait or the final P0/P1 acceptance gate.

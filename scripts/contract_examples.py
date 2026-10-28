@@ -577,6 +577,27 @@ def examples(root: Path):
         size_neutral_rank_ic=missing,
         complexity=1,
     )
+    import hashlib
+
+    from qfr_core.contracts.signing import VerificationKey, VerificationPolicy
+
+    # RFC 8032 public test vector; never a deployment trust grant.
+    test_public = "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
+    roots.append(
+        VerificationPolicy(
+            revision=1,
+            canonicalization="qfr-signed-json-v1",
+            maximum_document_bytes=1048576,
+            keys=[
+                VerificationKey(
+                    algorithm="Ed25519",
+                    key_id="ed25519:" + hashlib.sha256(bytes.fromhex(test_public)).hexdigest(),
+                    public_key_hex=test_public,
+                    purposes=["released_report", "delivery_receipt"],
+                )
+            ],
+        )
+    )
     roots += [
         r.StockW1Release.model_validate(w1),
         r.StockW2Release(type="w2", decision="FAIL", ladder_status="withheld", scalar=None),

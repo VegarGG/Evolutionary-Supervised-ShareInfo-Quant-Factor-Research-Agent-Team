@@ -21,6 +21,7 @@ from qfr_core.contracts.feedback import (
 )
 from qfr_core.contracts.reports import PublicProtocolCard, PublicReleasePolicyCard, ReleasedReport
 from qfr_core.data_layer.snapshots import canonical_json
+from qfr_core.signatures import EvidenceVerifier
 
 
 class FeedbackUnavailable(Exception):
@@ -36,8 +37,15 @@ class InvalidFeedbackRead(Exception):
 
 
 class FeedbackReader:
-    def __init__(self, connect: Callable[[], Connection], policy: FeedbackReadPolicy):
+    def __init__(
+        self,
+        connect: Callable[[], Connection],
+        policy: FeedbackReadPolicy,
+        *,
+        verifier: EvidenceVerifier,
+    ):
         self.connect, self.policy = connect, policy
+        self.verifier = verifier
 
     @contextmanager
     def scoped(self, principal: ServicePrincipal) -> Iterator[Connection]:
@@ -69,7 +77,7 @@ class FeedbackReader:
     def _row(self, row: tuple[Any, ...], principal: ServicePrincipal) -> ReleasedReport:
         if row[6] is None:
             raise FeedbackUnavailable("released evidence exceeds read bounds")
-        report = ReleasedReport.model_validate(row[6])
+        report = self.verifier.report(ReleasedReport.model_validate(row[6]))
         identity = report.identity
         if (
             report.report_id,

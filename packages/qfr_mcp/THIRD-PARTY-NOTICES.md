@@ -26,6 +26,10 @@ The bounded review recorded in docs/LICENSING_REVIEW.md identified:
   (BSD-3-Clause) from the existing dependency lock. HTTPX is a direct core client
   dependency; the evaluator declares FastAPI/Uvicorn for its GET-only feedback
   edge. Dependency versions and upstream notices remain unchanged.
+- Ed25519 signing/verification uses cryptography 50.0.2 (Apache-2.0 OR
+  BSD-3-Clause); its locked CFFI dependency uses MIT-0 and Pycparser uses
+  BSD-3-Clause. Wheels may bundle OpenSSL and other components; retain their
+  complete upstream license files when distributing installed environments.
 - Psycopg and psycopg-binary under LGPL-3.0-only. The evaluator, registry and
   Stage 4 research database service use them at runtime as well as in development/test environments.
   Their unmodified library files and

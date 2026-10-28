@@ -66,7 +66,7 @@ def case():
         ROOT / "configs/evaluation/pilot_p0_p1_verification_v1.yaml", FrozenProtocol
     )
     sandbox_profile = SandboxProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_pilot_v4.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_pilot_v5.json").read_bytes()
     )
     sandbox = SandboxRunner(sandbox_profile, "sha256:" + "0" * 64)
     limits = dict(

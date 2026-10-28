@@ -279,7 +279,12 @@ def enqueue_source(
 
 
 def locked_ready(
-    conn: Connection, *, limit: int, control_time: datetime | None = None
+    conn: Connection,
+    *,
+    limit: int,
+    control_time: datetime | None = None,
+    policy_hash: str | None = None,
+    program_id: str | None = None,
 ) -> list[tuple[UUID, ReleaseSource]]:
     """Within the publication transaction only; never visible through feedback."""
     if conn.info.transaction_status != TransactionStatus.INTRANS or not 1 <= limit <= 100:
@@ -292,9 +297,17 @@ def locked_ready(
         row = conn.execute("SELECT clock_timestamp()").fetchone()
         assert row is not None
         control_time = row[0]
+    filters, values = "", [control_time]
+    if policy_hash is not None:
+        filters += " AND policy_sha256=%s"
+        values.append(policy_hash)
+    if program_id is not None:
+        filters += " AND program_id=%s"
+        values.append(program_id)
     rows = conn.execute(
         "SELECT id,payload FROM eval.release_queue WHERE state='pending' AND eligible_at<=%s "
-        "ORDER BY eligible_at,id FOR UPDATE SKIP LOCKED LIMIT %s",
-        [control_time, limit],
+        + filters
+        + " ORDER BY eligible_at,id FOR UPDATE SKIP LOCKED LIMIT %s",
+        [*values, limit],
     ).fetchall()
     return [(UUID(str(row[0])), ReleaseSource.model_validate(row[1])) for row in rows]

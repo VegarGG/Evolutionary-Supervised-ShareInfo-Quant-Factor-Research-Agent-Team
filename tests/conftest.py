@@ -49,7 +49,7 @@ def backend_runner(monkeypatch):
             pytest.fail("native acceptance requires explicit existing QFR_TEST_DOCKER_SOCKET")
         if not isinstance(profile, DockerNativeProfile):
             native = json.loads(
-                (ROOT / "configs/evaluation/sandbox_docker_native_v3.json").read_bytes()
+                (ROOT / "configs/evaluation/sandbox_docker_native_v4.json").read_bytes()
             )
             # Preserve each existing bounded negative fixture's distinct CPU/
             # memory/deadline budgets. The backend's security fields stay frozen.

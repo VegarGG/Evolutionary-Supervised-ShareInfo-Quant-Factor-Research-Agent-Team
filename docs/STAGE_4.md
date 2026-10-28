@@ -139,6 +139,30 @@ Planning reconciliation verification: seven check commands pass; required-Postgr
 ordinary suite **825 passed / 81 explicit skips** (99.24 seconds). The six new
 planning/card tests pass. The frozen protocol and dependency lock are unchanged.
 
+## Signing and atomic publication checkpoint
+
+[EVIDENCE_SIGNING.md](EVIDENCE_SIGNING.md) specifies the canonical signature
+boundary, private receipt wrappers and scoped evaluator CLI. Reports, Ladder
+updates, publication accounting and audit commit together; concurrent retries
+return one immutable signed report. Future batches, untrusted keys, corrupted
+private evidence and interrupted publication fail closed. Feedback now verifies
+signatures before returning reports. Historical receipts, hashes and labels are
+unchanged; private wrappers never enter the public schema or export catalog.
+
+All seven check commands pass. Required-PostgreSQL ordinary tests passed
+**838 / 81 explicit skips** (101.02 seconds; 313,956 KiB peak RSS), including
+**31 focused signing/API/database tests**. One existing Starlette/httpx warning
+remains. These use synthetic measurements, ephemeral keys and explicit fixture
+source clocks; they do not claim the actual elapsed-batch pilot acceptance.
+
+The lock adds cryptography 50.0.2, CFFI 2.1.1 and Pycparser 3.12, with no changes
+to previously locked dependency versions. Notices are retained. New profiles
+`sandbox_pilot_v5.json` and `sandbox_docker_native_v4.json` change only revision,
+identity and dependency-lock hash; all resource/isolation controls are unchanged.
+Final Mac images and evidence must use the new lock and fresh runtime identities.
+No persistent key or production grant was created. Independent delivery,
+on-demand import, Research API/MCP and final acceptance remain in progress.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

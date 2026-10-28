@@ -14,6 +14,7 @@ from scripts.contract_examples import examples
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = [
+    "signing",
     "access",
     "feedback",
     "artifacts",

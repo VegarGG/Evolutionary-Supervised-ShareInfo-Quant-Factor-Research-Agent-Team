@@ -1,4 +1,4 @@
-"""Read-boundary tests with synthetic structural reports, not signed acceptance.
+"""Read-boundary tests with ephemeral signatures on synthetic reports.
 
 The signing package adds cryptographic publication tests. These fixtures use
 explicit source clocks to test DB visibility; no elapsed wait is claimed.
@@ -21,11 +21,14 @@ from qfr_eval.feedback.app import create_app
 from qfr_eval.feedback.reads import FeedbackReader, FeedbackUnavailable
 from qfr_eval.release.cards import publish_policy_cards
 from qfr_eval.release.store import enqueue_source
+from qfr_eval.signing import EvaluatorSigner
 from test_release_database import stock_policy, store_stock_record, subject
 from test_release_preparation import pilot_policy
 
 pytestmark = pytest.mark.database
 ROOT = Path(__file__).resolve().parents[2]
+SIGNER = EvaluatorSigner(secrets.token_bytes(32), purposes=["released_report"])
+VERIFIER = SIGNER.verifier(maximum_document_bytes=1048576)
 
 
 def authority(program):
@@ -55,7 +58,9 @@ def reader(factory, **changes):
     policy = FeedbackReadPolicy.model_validate_json(
         (ROOT / "configs/feedback/read_policy_v1.json").read_bytes()
     )
-    return FeedbackReader(lambda: factory("feedback_ro"), policy.model_copy(update=changes))
+    return FeedbackReader(
+        lambda: factory("feedback_ro"), policy.model_copy(update=changes), verifier=VERIFIER
+    )
 
 
 def fixture_report(conn, program, *, kind="screening", publication=True, future=False, extra=None):
@@ -91,7 +96,12 @@ def fixture_report(conn, program, *, kind="screening", publication=True, future=
         reason_codes=[],
         flags=[],
     )
-    report = ReleasedReport.model_validate(value)
+    report = SIGNER.seal(
+        ReleasedReport,
+        "released_report",
+        {key: val for key, val in value.items() if key != "signature"},
+    )
+    value = report.model_dump(mode="json")
     if extra:
         value.update(extra)
     with conn.transaction():
@@ -254,7 +264,7 @@ def test_library_is_released_only_and_cards_exclude_private_configuration(eval_c
 def test_wrong_database_role_corrupt_or_oversized_rows_fail_closed(eval_connect):
     program = str(uuid4())
     principal = ServicePrincipal("reader", "feedback", frozenset({"reader"}), frozenset({program}))
-    wrong = FeedbackReader(eval_connect, reader(eval_connect).policy)
+    wrong = FeedbackReader(eval_connect, reader(eval_connect).policy, verifier=VERIFIER)
     with pytest.raises(FeedbackUnavailable, match="read-only database role"):
         wrong.page(principal, limit=1)
     with eval_connect() as conn:

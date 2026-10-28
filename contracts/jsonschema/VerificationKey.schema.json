@@ -1,0 +1,41 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "algorithm": {
+      "const": "Ed25519",
+      "title": "Algorithm",
+      "type": "string"
+    },
+    "key_id": {
+      "minLength": 1,
+      "title": "Key Id",
+      "type": "string"
+    },
+    "public_key_hex": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Public Key Hex",
+      "type": "string"
+    },
+    "purposes": {
+      "items": {
+        "enum": [
+          "released_report",
+          "measurement_receipt",
+          "delivery_receipt"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Purposes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "algorithm",
+    "key_id",
+    "public_key_hex",
+    "purposes"
+  ],
+  "title": "VerificationKey",
+  "type": "object"
+}
