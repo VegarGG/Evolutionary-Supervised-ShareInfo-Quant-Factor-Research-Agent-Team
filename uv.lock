@@ -691,6 +691,7 @@ name = "qfr-core"
 version = "0.1.0"
 source = { editable = "packages/qfr_core" }
 dependencies = [
+    { name = "httpx" },
     { name = "lark" },
     { name = "numpy" },
     { name = "polars" },
@@ -702,6 +703,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "httpx" },
     { name = "lark", specifier = ">=1.2,<2" },
     { name = "numpy", specifier = ">=2,<3" },
     { name = "polars", specifier = ">=1.36,<2" },
@@ -717,17 +719,21 @@ version = "0.1.0"
 source = { editable = "packages/qfr_eval" }
 dependencies = [
     { name = "alembic" },
+    { name = "fastapi" },
     { name = "psycopg", extra = ["binary"] },
     { name = "qfr-core" },
     { name = "threadpoolctl" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "alembic" },
+    { name = "fastapi" },
     { name = "psycopg", extras = ["binary"] },
     { name = "qfr-core", editable = "packages/qfr_core" },
     { name = "threadpoolctl", specifier = "==3.6.0" },
+    { name = "uvicorn" },
 ]
 
 [[package]]

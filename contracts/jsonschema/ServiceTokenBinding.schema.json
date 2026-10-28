@@ -1,0 +1,44 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "principal": {
+      "minLength": 1,
+      "title": "Principal",
+      "type": "string"
+    },
+    "programs": {
+      "items": {
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Programs",
+      "type": "array"
+    },
+    "roles": {
+      "items": {
+        "enum": [
+          "reader",
+          "research_lead"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Roles",
+      "type": "array"
+    },
+    "token_ref": {
+      "pattern": "^env:[A-Z][A-Z0-9_]*$",
+      "title": "Token Ref",
+      "type": "string"
+    }
+  },
+  "required": [
+    "principal",
+    "token_ref",
+    "roles",
+    "programs"
+  ],
+  "title": "ServiceTokenBinding",
+  "type": "object"
+}

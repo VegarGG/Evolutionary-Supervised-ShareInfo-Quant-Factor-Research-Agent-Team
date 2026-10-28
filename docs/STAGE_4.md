@@ -105,6 +105,32 @@ RSS was 304,548 KiB. The first full run exposed missing owner-level delete guard
 on mutable release history; a forward migration and regression test fixed it.
 No skipped Mac, licensed-input or actual sandbox check is counted as acceptance.
 
+## P3.6 released-only feedback
+
+The GET-only service, audience/program bearer scopes, bounded cursor reads,
+released artifact timelines and public cards are implemented. See
+[FEEDBACK_API.md](FEEDBACK_API.md). Its database role is explicitly checked and
+all requests use a read-only transaction. Published views exclude unsigned rows
+and future batches. These checks do not substitute for the subsequent signing
+integration or actual MCP/deployment acceptance.
+
+Package verification: seven `just check` commands pass; required-PostgreSQL
+`just test` **818 passed / 81 explicit skips**, with the existing deprecation
+warning (100.16 seconds; 304,616 KiB peak RSS). The focused API/auth/database
+suite passed **27 tests**. Joined views initially changed PostgreSQL's refusal
+SQLSTATE for writes; explicit read-only view guards preserve the existing boundary
+test and prohibit mutation independently of view shape.
+
+Existing locked HTTP libraries are now declared where used: HTTPX by core clients,
+FastAPI/Uvicorn by the feedback service. No dependency version changed. New
+`sandbox_pilot_v4.json` and `sandbox_docker_native_v3.json` pin the lock, retaining
+all controls and prior profiles. No production token grant was deployed.
+
+Before final release integration, reconcile §7.9's detectability metadata with
+S4-06's current withholding: a deterministic planning diagnostic derived from the
+already released metric identity/sample count must not expose another candidate
+performance result or bypass withheld budgets. This is not an exit-gate waiver.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

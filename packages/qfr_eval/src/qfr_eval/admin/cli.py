@@ -27,6 +27,8 @@ def main(arguments: list[str] | None = None) -> None:
     from qfr_eval.protocols.models import FrozenProtocol
     from qfr_eval.protocols.store import activate_protocol, create_protocol
     from qfr_eval.records import EvaluationRequest
+    from qfr_eval.release.cards import publish_policy_cards
+    from qfr_eval.release.store import POLICY, activate_policy, create_policy
     from qfr_eval.screening.command import run_command
     from qfr_eval.service import evaluate
 
@@ -41,6 +43,14 @@ def main(arguments: list[str] | None = None) -> None:
     activate.add_argument("protocol_id")
     activate.add_argument("version")
     activate.add_argument("--expected-hash", required=True)
+    policy_hash = sub.add_parser("policy-hash")
+    policy_hash.add_argument("file", type=Path)
+    policy_create = sub.add_parser("policy-create")
+    policy_create.add_argument("file", type=Path)
+    policy_activate = sub.add_parser("policy-activate")
+    policy_activate.add_argument("--expected-hash", required=True)
+    cards = sub.add_parser("public-cards")
+    cards.add_argument("--policy-sha256", required=True)
     run = sub.add_parser("evaluate")
     run.add_argument("--request", type=Path, required=True)
     run.add_argument("--snapshot", type=Path, required=True)
@@ -55,14 +65,17 @@ def main(arguments: list[str] | None = None) -> None:
         if action == "screen-one":
             command.add_argument("--snapshot", type=Path, required=True)
             command.add_argument("--evidence-root", type=Path, required=True)
-    for command in (create, activate, run, cluster):
+    for command in (create, activate, run, cluster, policy_create, policy_activate, cards):
         command.add_argument("--principal", required=True)
         command.add_argument("--request-id", type=UUID, required=True)
     args = parser.parse_args(arguments)
-    if args.action == "protocol-hash":
-        print(load_yaml(args.file, FrozenProtocol).sha256)
-        return
     try:
+        if args.action == "protocol-hash":
+            print(load_yaml(args.file, FrozenProtocol).sha256)
+            return
+        if args.action == "policy-hash":
+            print(POLICY.validate_json(args.file.read_bytes()).sha256)
+            return
         if args.action in ("intake-poll", "screen-one"):
             command_result = run_command(
                 args.action,
@@ -79,6 +92,33 @@ def main(arguments: list[str] | None = None) -> None:
             print(json.dumps({"migration": "complete"}))
             return
         with psycopg.connect(connection_dsn(), autocommit=True) as conn:
+            if args.action == "policy-create":
+                value = create_policy(
+                    conn,
+                    POLICY.validate_json(args.file.read_bytes()),
+                    principal=args.principal,
+                    request_id=args.request_id,
+                )
+                print(json.dumps({"policy_sha256": value, "action": args.action}))
+                return
+            if args.action == "policy-activate":
+                value = activate_policy(
+                    conn,
+                    args.expected_hash,
+                    principal=args.principal,
+                    request_id=args.request_id,
+                )
+                print(json.dumps({"policy_sha256": value, "action": args.action}))
+                return
+            if args.action == "public-cards":
+                hashes = publish_policy_cards(
+                    conn,
+                    args.policy_sha256,
+                    principal=args.principal,
+                    request_id=args.request_id,
+                )
+                print(json.dumps({"public_card_hashes": hashes, "action": args.action}))
+                return
             if args.action == "cluster-trials":
                 clusters = cluster_job(
                     conn,

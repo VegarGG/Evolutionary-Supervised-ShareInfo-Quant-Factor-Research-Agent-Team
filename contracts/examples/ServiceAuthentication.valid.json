@@ -1,0 +1,18 @@
+{
+  "audience": "feedback",
+  "bindings": [
+    {
+      "principal": "example-reader",
+      "programs": [
+        "example-program"
+      ],
+      "roles": [
+        "reader"
+      ],
+      "token_ref": "env:QFR_FEEDBACK_READER_TOKEN"
+    }
+  ],
+  "maximum_token_bytes": 4096,
+  "minimum_token_bytes": 32,
+  "revision": 1
+}

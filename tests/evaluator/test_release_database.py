@@ -71,7 +71,9 @@ def allocate(conn, item, policy, at):
     )
 
 
-def store_stock_record(conn, item):
+def store_stock_record(conn, item, *, completed_at=None):
+    # Explicit fixture clocks are never production elapsed-batch evidence.
+    completed_at = completed_at or datetime.now(UTC)
     body = json.loads(
         (
             ROOT / "packages/qfr_eval/src/qfr_eval/private_contracts/StockReleaseRecord.valid.json"
@@ -88,7 +90,7 @@ def store_stock_record(conn, item):
         status="complete",
         period_count=20,
         metrics={"rank_ic_mean": MetricValue(value=0.021, missing_reason=None).model_dump()},
-        created_at=datetime.now(UTC).isoformat(),
+        created_at=completed_at.isoformat(),
     )
     body["identity"]["artifact_version_id"] = str(item.artifact_version_id)
     record = StockReleaseRecord.model_validate(body)
@@ -97,8 +99,9 @@ def store_stock_record(conn, item):
         conn.execute(
             "INSERT INTO eval.official_records(id,payload,created_by,request_id,"
             "artifact_version_id,"
-            "content_hash,protocol_version,dataset_version_id,evaluator_version,trial_id) "
-            "VALUES(%s,%s,'synthetic-release-fixture',%s,%s,%s,%s,%s,%s,%s)",
+            "content_hash,protocol_version,dataset_version_id,evaluator_version,"
+            "trial_id,created_at) "
+            "VALUES(%s,%s,'synthetic-release-fixture',%s,%s,%s,%s,%s,%s,%s,%s)",
             [
                 identity,
                 Jsonb({"record": record.model_dump(mode="json")}),
@@ -109,6 +112,7 @@ def store_stock_record(conn, item):
                 record.identity.dataset_version_id,
                 record.identity.evaluator_version,
                 trial,
+                completed_at,
             ],
         )
         conn.execute(

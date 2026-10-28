@@ -22,6 +22,10 @@ The bounded review recorded in docs/LICENSING_REVIEW.md identified:
   bundle additional components. NumPy and SciPy include component-specific
   notices; SciPy's wheel also records OpenBLAS and GCC runtime-library terms
   with the GCC Runtime Library Exception.
+- The HTTP services use FastAPI (MIT), Uvicorn (BSD-3-Clause) and HTTPX
+  (BSD-3-Clause) from the existing dependency lock. HTTPX is a direct core client
+  dependency; the evaluator declares FastAPI/Uvicorn for its GET-only feedback
+  edge. Dependency versions and upstream notices remain unchanged.
 - Psycopg and psycopg-binary under LGPL-3.0-only. The evaluator, registry and
   Stage 4 research database service use them at runtime as well as in development/test environments.
   Their unmodified library files and

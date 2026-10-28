@@ -4,10 +4,12 @@ from pathlib import Path
 
 import yaml
 from qfr_core.configuration import ConfigDocument
+from qfr_core.contracts import access as access
 from qfr_core.contracts import artifacts as a
 from qfr_core.contracts import blackboard as b
 from qfr_core.contracts import data as d
 from qfr_core.contracts import delivery as x
+from qfr_core.contracts import feedback as feedback
 from qfr_core.contracts import intake as i
 from qfr_core.contracts import jobs as j
 from qfr_core.contracts import providers as p
@@ -842,4 +844,35 @@ def examples(root: Path):
             prior_best_origin_required=True,
         ),
     ]
+    roots.extend(
+        [
+            access.ServiceAuthentication(
+                revision=1,
+                audience="feedback",
+                minimum_token_bytes=32,
+                maximum_token_bytes=4096,
+                bindings=[
+                    access.ServiceTokenBinding(
+                        principal="example-reader",
+                        token_ref="env:QFR_FEEDBACK_READER_TOKEN",
+                        roles=["reader"],
+                        programs=["example-program"],
+                    )
+                ],
+            ),
+            feedback.FeedbackReadPolicy(
+                revision=1, max_page_size=100, max_page_bytes=1048576, statement_timeout_ms=5000
+            ),
+            feedback.ReportPage(schema_version="1", items=[], next_after_id=None, has_more=False),
+            feedback.ArtifactFeedback(
+                schema_version="1",
+                artifact_version_id="00000000-0000-0000-0000-000000000001",
+                latest_released=None,
+                timeline=feedback.ReportPage(
+                    schema_version="1", items=[], next_after_id=None, has_more=False
+                ),
+            ),
+            feedback.PublicCards(schema_version="1", policies=[], protocols=[]),
+        ]
+    )
     return roots
