@@ -12,7 +12,8 @@ services:
     command: [python, -m, qfr_eval.sandbox.controller, /etc/qfr/sandbox-controller.json]
     user: 65532:65532
     group_add:
-      - ${QFR_DOCKER_SOCKET_GID:?supply the existing Docker socket group ID}
+      # Observe this mount inside the controller; Mac host GID need not match.
+      - ${QFR_DOCKER_SOCKET_GID:?supply the socket GID observed inside the controller}
     network_mode: none
     read_only: true
     cap_drop: [ALL]

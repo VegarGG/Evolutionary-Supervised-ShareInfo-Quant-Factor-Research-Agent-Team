@@ -57,7 +57,8 @@ class DockerNativeRunner(SandboxRunner):
             and not host.get("Devices")
             and not host.get("DeviceRequests")
             and not host.get("Binds")
-            and not host.get("VolumesFrom"),
+            and not host.get("VolumesFrom")
+            and not host.get("GroupAdd"),
             "bounded_tmpfs": host["Tmpfs"] == expected["Tmpfs"],
             "only_readonly_input_mount": len(mounts) == 1
             and mounts[0]["Type"] == "volume"
@@ -213,16 +214,10 @@ class DockerNativeRunner(SandboxRunner):
                 job, ["python", "-I", "-B", "-c", SEAL_CHECK], timeout=control, limit=1024
             )
             isolation["input_sealed"] = True
-            self.api.exec(
-                job,
-                ["python", "-s", "-P", "-B", "/input/guest.py"],
-                timeout=p.timeout_seconds,
-                limit=1024,
-            )
             output = self.api.exec(
                 job,
-                ["python", "-I", "-B", "/input/guest.py", "--read"],
-                timeout=control,
+                ["python", "-I", "-B", "-m", "qfr_core.sandbox_native"],
+                timeout=p.timeout_seconds,
                 limit=p.max_output_bytes,
             )
             result = decode_result(output, p.max_output_bytes)
@@ -231,14 +226,21 @@ class DockerNativeRunner(SandboxRunner):
         except DockerBoundExceeded:
             result = ExecutionResult("failed:output_limit", None, None, isolation)
         except DockerExecError as error:
-            code: SandboxCode = "failed:runtime"
+            # Candidate exits are classified by the surviving supervisor. An
+            # unexplained supervisor/control-process exit has no trustworthy
+            # resource observation; never guess that exit 137 means OOM.
+            code: SandboxCode = "failed:backend_unavailable"
             if error.code == 94:
                 code = "failed:invalid_output"
+            elif error.code == 95:
+                code = "failed:backend_unavailable"
             elif error.code == 152:
                 code = "failed:cpu_limit"
             try:
                 state = self.api.json("GET", f"/containers/{job}/json", timeout=control)["State"]
-                if state["OOMKilled"]:
+                if type(state["OOMKilled"]) is not bool:
+                    code = "failed:backend_unavailable"
+                elif state["OOMKilled"]:
                     code = "failed:memory"
             except (OSError, DockerError, ValueError, KeyError):
                 code = "failed:backend_unavailable"

@@ -17,7 +17,7 @@ from pydantic import ValidationError
 from qfr_core.contracts.execution import RunnerInput
 from qfr_eval.sandbox.client import configured_runner
 from qfr_eval.sandbox.controller import Controller, receive
-from qfr_eval.sandbox.docker_api import DockerAPI, DockerBoundExceeded, DockerError
+from qfr_eval.sandbox.docker_api import DockerAPI, DockerBoundExceeded, DockerError, DockerExecError
 from qfr_eval.sandbox.models import (
     NATIVE_REQUIRED_CHECKS,
     DockerControllerConfiguration,
@@ -149,6 +149,7 @@ def test_staging_archive_has_only_declared_files_no_host_mounts_and_fixed_modes(
     spec = container_spec(native_profile, IMAGE, JOB, 0, helper=False)
     host = spec["HostConfig"]
     assert host["Binds"] == [] and host["Devices"] == []
+    assert host["GroupAdd"] == []
     assert host["Mounts"] == [
         {
             "Type": "volume",
@@ -236,7 +237,8 @@ class FakeEngine:
             if not name.endswith("-stager"):
                 assert name + "-stager" not in self.objects
             return b""
-        if command[-1] == "--read":
+        if command[-1] == "qfr_core.sandbox_native":
+            assert command == ["python", "-I", "-B", "-m", "qfr_core.sandbox_native"]
             return json.dumps(
                 {
                     "code": "ok",
@@ -274,6 +276,9 @@ def test_lifecycle_keeps_mount_alive_then_removes_writer_before_execution(
     starts = [i for i, e in enumerate(engine.events) if e[0] == "POST" and e[1].endswith("/start")]
     deletes = [i for i, e in enumerate(engine.events) if e[0] == "DELETE"]
     assert len(starts) == 2 and starts[-1] < deletes[0]
+    commands = [event[2] for event in engine.events if event[0] == "exec"]
+    assert commands[-1] == ["python", "-I", "-B", "-m", "qfr_core.sandbox_native"]
+    assert not any(command[-1] == "--read" for command in commands)
 
 
 @pytest.mark.parametrize(
@@ -289,6 +294,8 @@ def test_lifecycle_keeps_mount_alive_then_removes_writer_before_execution(
         ("PidMode", "host"),
         ("CgroupnsMode", "host"),
         ("CapAdd", ["SYS_ADMIN"]),
+        ("GroupAdd", ["0"]),
+        ("GroupAdd", ["20"]),
     ],
 )
 def test_actual_control_mismatch_prevents_execution(native_profile, request_value, key, value):
@@ -296,6 +303,34 @@ def test_actual_control_mismatch_prevents_execution(native_profile, request_valu
     result = run_fake(native_profile, request_value, engine)
     assert result.code == "failed:backend_unavailable"
     assert not any(e[0] == "exec" for e in engine.events)
+    assert not engine.objects and engine.volume is None
+
+
+@pytest.mark.parametrize(
+    "exit_code,oom,expected",
+    [
+        (137, False, "backend_unavailable"),
+        (137, True, "memory"),
+        (137, "false", "backend_unavailable"),
+        (94, False, "invalid_output"),
+        (95, False, "backend_unavailable"),
+        (152, False, "cpu_limit"),
+    ],
+)
+def test_supervisor_failure_never_invents_oom_or_success(
+    native_profile, request_value, exit_code, oom, expected
+):
+    class FailedSupervisor(FakeEngine):
+        def exec(self, name, command, **kwargs):
+            if command[-1] == "qfr_core.sandbox_native":
+                self.objects[name]["State"]["OOMKilled"] = oom
+                raise DockerExecError(exit_code)
+            return super().exec(name, command, **kwargs)
+
+    engine = FailedSupervisor()
+    result = run_fake(native_profile, request_value, engine)
+    assert result.code == "failed:" + expected
+    assert result.output is None
     assert not engine.objects and engine.volume is None
 
 

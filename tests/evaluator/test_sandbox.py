@@ -230,6 +230,10 @@ def run(value):
         ("import time\ndef run(v):\n time.sleep(20)", "failed:timeout"),
         ("def run(v):\n return 'x'*100000", "failed:output_limit"),
         (
+            "import os,signal\ndef run(v):\n os.kill(os.getpid(), signal.SIGKILL)",
+            "failed:runtime",
+        ),
+        (
             "import os,time\ndef run(v):\n for _ in range(32):\n  if os.fork()==0:\n"
             "   time.sleep(10); os._exit(0)",
             "failed:process_limit",

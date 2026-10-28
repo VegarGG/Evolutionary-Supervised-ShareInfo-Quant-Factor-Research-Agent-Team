@@ -112,6 +112,7 @@ def container_spec(
             "ReadonlyRootfs": True,
             "CapDrop": ["ALL"],
             "CapAdd": [],
+            "GroupAdd": [],
             "Privileged": False,
             "SecurityOpt": ["no-new-privileges:true", "seccomp=" + seccomp(profile)],
             "Memory": profile.memory_bytes,

@@ -79,6 +79,9 @@ def test_native_overlay_grants_only_controller_and_private_evaluator_channel():
     assert controller["network_mode"] == "none"
     assert controller["read_only"] and controller["cap_drop"] == ["ALL"]
     assert controller["user"] == "65532:65532"
+    assert controller["group_add"] == [
+        "${QFR_DOCKER_SOCKET_GID:?supply the socket GID observed inside the controller}"
+    ]
     assert controller["security_opt"] == ["no-new-privileges:true"]
     assert not controller.get("secrets") and not controller.get("ports")
     assert not controller.get("devices") and not controller.get("privileged")
@@ -91,6 +94,7 @@ def test_native_overlay_grants_only_controller_and_private_evaluator_channel():
     assert mounts[1]["target"] == "/etc/qfr/sandbox-controller.json"
     assert mounts[2] == "sandbox-control:/run/qfr-sandbox"
     worker = overlay["services"]["eval-worker"]
+    assert not worker.get("group_add")
     assert worker["volumes"] == ["sandbox-control:/run/qfr-sandbox:ro"]
     assert worker["environment"] == {
         "QFR_SANDBOX_CONTROLLER_SOCKET": "/run/qfr-sandbox/controller.sock"

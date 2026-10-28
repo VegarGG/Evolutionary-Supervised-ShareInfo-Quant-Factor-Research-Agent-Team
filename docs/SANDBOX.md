@@ -37,6 +37,27 @@ are removed with ownership and absence checks. Uncertain cleanup poisons the
 controller; startup refuses leftover labelled resources, requiring explicit
 inspection, rather than silently deleting them or accepting another job.
 
+The native execution command starts a small trusted supervisor inside the same
+job cgroup before launching the guest. Its overhead counts against the unchanged
+16-task and memory limits. It holds non-inherited, read-only descriptors for
+`memory.events` and `pids.events`, requires a fresh zero-event baseline and rejects
+missing, malformed or backwards counters. After the guest exits, positive OOM
+events classify memory failure; otherwise positive PID-limit events classify
+process failure. Combined exhaustion reports memory first. A bare candidate
+SIGKILL/exit 137 does not prove OOM. An unexplained supervisor exit without OOM
+evidence is backend unavailable, not a guessed candidate failure. The supervisor
+uses the existing bounded, no-follow result
+reader in its own process, avoiding an extra exec when the task limit is full.
+Its whole execution/result collection remains externally deadline-bounded;
+uncertain observation fails as backend unavailable. External ownership-verified
+cleanup remains mandatory, including any background descendants.
+
+These are Linux [cgroup v2 event counters](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html),
+not candidate exception messages or guesses from elapsed time. The container's
+`OOMKilled` flag is retained only as fallback evidence when the supervisor itself
+cannot complete. New supervisor code requires a rebuilt core image; historical
+runsc commands and profiles remain unchanged.
+
 The engine must implement API v1.45, cgroup v2, runc and seccomp. Every actual job
 is inspected for its runtime, namespaces, no-network setting, non-root UID,
 capabilities, no-new-privileges, exact memory/swap/CPU/PID/ulimit/tmpfs limits,
@@ -77,7 +98,27 @@ the probe and must fail readiness. Legacy runsc probe/evidence are unchanged.
 `infra/docker-compose.sandbox.yml` is an opt-in overlay (`--profile sandbox`),
 not an automatic startup or research trigger. Supply reviewed
 `QFR_SANDBOX_CONTROLLER_CONFIG`, `QFR_DOCKER_SOCKET`, and `QFR_DOCKER_SOCKET_GID`
-without changing their host permissions. The config is a
+without changing their host permissions. Determine the GID **inside the intended
+controller container**: Desktop may present a root-owned GID-0 socket while the
+Mac host shows GID 20. The controller remains UID/GID 65532; only its existing
+`group_add` receives the observed socket GID. GID 0 here is a container-local
+supplemental group, not UID 0, a capability or a host-group change. Keep its mounts
+restricted to the existing engine socket, configuration and private IPC volume.
+Candidate/staging containers explicitly reject all supplemental groups, and the
+evaluator worker receives only its private IPC socket, never this group/API grant.
+
+For a read-only permission diagnosis, retain the deployment's existing Compose
+project, files, environment and image options and run the controller service with
+`run --rm --no-deps sandbox-controller python -m qfr_eval.sandbox.socket_check`.
+This reports the mounted socket's numeric ownership/mode, process IDs/groups and
+effective connect permission. Exit 1 means the grant is missing; it changes
+nothing and does not contact Docker. Set the already-required GID variable to
+that observed group for this controller only, then rerun the diagnostic and actual
+Compose startup/boundary checks. There is no root entrypoint, chmod/chown, group
+auto-discovery fallback, host group edit or new endpoint. If effective access is
+still denied, startup fails and the reason must be investigated.
+
+The config is a
 `DockerControllerConfiguration`, with the native profile, loaded immutable image,
 `docker_socket=/var/run/docker.sock`,
 `control_socket=/run/qfr-sandbox/controller.sock`, `max_parallel_jobs=1`.

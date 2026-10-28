@@ -515,3 +515,46 @@ images from the corrected source, then rerun actual sandbox tests, all four
 registered P0/P1 cases and Compose-controller/socket boundaries. Full host and
 container evidence must identify that source and the actual host/engine platforms.
 Stage 3 remains incomplete; no later stage or merge is authorized by this result.
+
+## Native resource and controller-grant correction — October 28, 2026
+
+Mac acceptance on `7f19b5d` passed the 146 focused checks and all four actual
+registered P0/P1 execution/measurement/reproduction cases. The full native suite
+reported 744 passed, two failed and no skips. The two failures were inaccurate
+OOM and fork-exhaustion classifications; they were not waived. Container CI
+reported 722 passed and 24 skipped. Compose controller access remained blocked:
+the mounted engine socket had GID 0, while its supplemental grant used the Mac
+host's GID 20. These observations belong to that source, not to this follow-up.
+
+S3-28 introduces a native-only supervisor within the unchanged job cgroup. It
+opens bounded, non-inherited kernel event observations before guest launch, waits
+for the child, then reads the result without starting another process. OOM and
+PID events take precedence over candidate output; unobservable evidence fails
+closed. A separate actual SIGKILL fixture must remain ordinary runtime failure
+without OOM evidence. The controller still enforces the external timeout and
+verifies removal of the container, descendants and input volume.
+
+S3-29 documents and diagnoses the existing controller-only group grant using the
+socket as mounted inside Docker. The process remains non-root with all
+capabilities dropped. No host ownership/mode/group, new endpoint, credential,
+security setting or backend change is needed by this correction. The only
+supplemental socket group belongs to the already-authorized trusted controller;
+candidate/staging inspections reject any supplemental group. The read-only
+diagnostic and exact operational procedure are in [SANDBOX.md](SANDBOX.md).
+
+Rebuild core and evaluator/controller images for the follow-up. Mac acceptance
+must repeat the genuine OOM/fork/SIGKILL cases and full sandbox suite, fresh
+Registry P0/P1 evidence, and actual Compose startup/restart/socket boundaries
+with the observed controller socket group. Full final-source host/container and
+image evidence remain required. Nothing here completes Stage 3 or starts Stage 4.
+
+Bounded cloud verification of this follow-up: all seven `just check` commands
+pass (253 formatted files, 140 type-checked sources, five import boundaries,
+108 public contracts, private contracts and five package license checks).
+The focused supervisor/socket/native/network/Compose-contract suite passes
+191 tests in 1.70 seconds. Offline `just test` passes 621 tests, with 169 explicit
+prerequisite skips and one unchanged warning, in 111.17 seconds (116.98 seconds
+with wrapper startup); peak child RSS is 304,692 KiB. The extra skip is the new
+real-sandbox SIGKILL control case, not a removed assertion. Core/evaluator wheel
+checks confirm the exact new modules are packaged. No heavy image build or
+actual OOM/fork fixture ran in cloud. These checks do not establish Mac acceptance.

@@ -27,6 +27,7 @@ from qfr_eval.sandbox.models import DockerControllerConfiguration, DockerControl
 from qfr_eval.sandbox.native import DockerNativeRunner
 from qfr_eval.sandbox.native_plan import LABEL
 from qfr_eval.sandbox.runner import SandboxCleanupError, SandboxUnavailable
+from qfr_eval.sandbox.socket_check import require_socket_access
 
 
 def receive(stream: socket.socket, limit: int, deadline: float) -> bytes:
@@ -174,6 +175,7 @@ def serve(config: DockerControllerConfiguration) -> None:
         # Don't delete an existing live or uncertain socket to pretend startup succeeded.
         raise ValueError("controller socket already exists; verify previous shutdown")
     controller = Controller(config)
+    require_socket_access(config.docker_socket)
     controller.require_quiescent_start()
     previous = os.umask(0o177)
     try:
