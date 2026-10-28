@@ -1,0 +1,43 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "cpu_subtype": {
+      "title": "Cpu Subtype",
+      "type": "integer"
+    },
+    "cpu_type": {
+      "title": "Cpu Type",
+      "type": "integer"
+    },
+    "image_uuid": {
+      "format": "uuid",
+      "title": "Image Uuid",
+      "type": "string"
+    },
+    "install_name": {
+      "minLength": 1,
+      "title": "Install Name",
+      "type": "string"
+    },
+    "text_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Text Bytes",
+      "type": "integer"
+    },
+    "text_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Text Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "install_name",
+    "image_uuid",
+    "cpu_type",
+    "cpu_subtype",
+    "text_bytes",
+    "text_sha256"
+  ],
+  "title": "AccelerateImage",
+  "type": "object"
+}

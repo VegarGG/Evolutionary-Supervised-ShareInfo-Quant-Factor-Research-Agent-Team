@@ -374,3 +374,22 @@ Capture the observed numerical identity and exact result/series/fingerprint/clus
 hash comparisons. Native host and Linux container runs are distinct evidence.
 Final-source live suites, rebuilt images and the blocked Apple sandbox gates
 remain outstanding; this checkpoint does not complete Stage 3.
+
+The Mac follow-up of `3fad621` failed before EVL-04: its Accelerate backend returned
+an empty threadpoolctl list. The Apple correction introduces a separate numerical
+identity revision with public API verification, calling-thread single-threaded
+execution, OS/build identity and loaded-code fingerprints. Linux behavior and
+legacy serialization are preserved. See [NUMERICAL_RUNTIME.md](NUMERICAL_RUNTIME.md)
+and decision S3-21. A cloud pass cannot establish native Apple compatibility; the
+new native API/SDK and exact reproduction tests remain required.
+
+Apple correction cloud verification: `just check` passed (235 formatted files,
+131 mypy sources, five import boundaries, public/private contracts and five
+package license checks). Bounded offline `just test` passed 466 tests with 164
+explicit skips and one unchanged dependency warning in 56.59 seconds. Two skips
+are the new native Apple API/SDK checks; the other 162 retain their preceding
+database, licensed-input, actual-sandbox and original-oracle prerequisites.
+Focused parser/runtime/schema/adapter checks passed 75 tests with the same two
+native-only skips. Final full-suite process RSS peaked at 304,364 KiB and
+environment memory at 894,480,384 bytes; no 180-second/5-GiB guard or OOM event
+occurred. These cloud results do not establish Apple or Stage 3 acceptance.

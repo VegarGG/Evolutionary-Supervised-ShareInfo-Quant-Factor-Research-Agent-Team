@@ -1,8 +1,160 @@
 {
   "$defs": {
+    "AccelerateImage": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_subtype": {
+          "title": "Cpu Subtype",
+          "type": "integer"
+        },
+        "cpu_type": {
+          "title": "Cpu Type",
+          "type": "integer"
+        },
+        "image_uuid": {
+          "format": "uuid",
+          "title": "Image Uuid",
+          "type": "string"
+        },
+        "install_name": {
+          "minLength": 1,
+          "title": "Install Name",
+          "type": "string"
+        },
+        "text_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Text Bytes",
+          "type": "integer"
+        },
+        "text_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Text Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "install_name",
+        "image_uuid",
+        "cpu_type",
+        "cpu_subtype",
+        "text_bytes",
+        "text_sha256"
+      ],
+      "title": "AccelerateImage",
+      "type": "object"
+    },
+    "AppleAccelerateExecution": {
+      "additionalProperties": false,
+      "properties": {
+        "consumers": {
+          "additionalProperties": {
+            "const": "accelerate",
+            "type": "string"
+          },
+          "propertyNames": {
+            "enum": [
+              "numpy",
+              "scipy"
+            ]
+          },
+          "title": "Consumers",
+          "type": "object"
+        },
+        "cpu_brand": {
+          "minLength": 1,
+          "title": "Cpu Brand",
+          "type": "string"
+        },
+        "effective_threads": {
+          "const": 1,
+          "title": "Effective Threads",
+          "type": "integer"
+        },
+        "extension_hashes": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Extension Hashes",
+          "type": "object"
+        },
+        "hardware_model": {
+          "minLength": 1,
+          "title": "Hardware Model",
+          "type": "string"
+        },
+        "images": {
+          "items": {
+            "$ref": "#/$defs/AccelerateImage"
+          },
+          "title": "Images",
+          "type": "array"
+        },
+        "os_build": {
+          "minLength": 1,
+          "title": "Os Build",
+          "type": "string"
+        },
+        "os_version": {
+          "minLength": 1,
+          "title": "Os Version",
+          "type": "string"
+        },
+        "policy_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Policy Sha256",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "threading_mode": {
+          "const": "single_threaded",
+          "title": "Threading Mode",
+          "type": "string"
+        },
+        "threading_scope": {
+          "const": "calling_thread",
+          "title": "Threading Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "policy_sha256",
+        "threading_mode",
+        "threading_scope",
+        "effective_threads",
+        "os_version",
+        "os_build",
+        "hardware_model",
+        "cpu_brand",
+        "consumers",
+        "extension_hashes",
+        "images"
+      ],
+      "title": "AppleAccelerateExecution",
+      "type": "object"
+    },
     "NumericalExecution": {
       "additionalProperties": false,
       "properties": {
+        "accelerate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AppleAccelerateExecution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "libraries": {
           "items": {
             "$ref": "#/$defs/NumericalLibrary"
@@ -21,7 +173,10 @@
           "type": "integer"
         },
         "schema_version": {
-          "const": "1",
+          "enum": [
+            "1",
+            "2"
+          ],
           "title": "Schema Version",
           "type": "string"
         },

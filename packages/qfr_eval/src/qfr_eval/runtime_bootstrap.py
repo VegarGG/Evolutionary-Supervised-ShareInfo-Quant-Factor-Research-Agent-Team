@@ -30,6 +30,10 @@ def prepare_execution(runtime: RuntimeIdentity) -> None:
             os.environ.pop(key, None)
         else:
             os.environ[key] = value
+    if runtime.numerical_execution.accelerate is not None:
+        from qfr_eval.apple_runtime import initialize_single_thread
+
+        initialize_single_thread()
 
 
 def _reproduction_runtime(record_id: UUID, root: Path) -> RuntimeIdentity:

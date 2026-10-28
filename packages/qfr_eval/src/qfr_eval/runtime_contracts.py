@@ -1,6 +1,7 @@
 """Private execution identity; importing this module initializes no numerical library."""
 
 from typing import Any, Literal, Self
+from uuid import UUID
 
 from pydantic import PositiveInt, SerializerFunctionWrapHandler, model_serializer, model_validator
 from qfr_core.contracts.base import Contract, Sha256, Text
@@ -29,13 +30,56 @@ class NumericalLibrary(Contract):
     binary_sha256: Sha256
 
 
-class NumericalExecution(Contract):
+class AccelerateImage(Contract):
+    install_name: Text
+    image_uuid: UUID
+    cpu_type: int
+    cpu_subtype: int
+    text_bytes: PositiveInt
+    text_sha256: Sha256
+
+
+class AppleAccelerateExecution(Contract):
     schema_version: Literal["1"]
+    policy_sha256: Sha256
+    threading_mode: Literal["single_threaded"]
+    threading_scope: Literal["calling_thread"]
+    effective_threads: Literal[1]
+    os_version: Text
+    os_build: Text
+    hardware_model: Text
+    cpu_brand: Text
+    consumers: dict[Literal["numpy", "scipy"], Literal["accelerate"]]
+    extension_hashes: dict[Text, Sha256]
+    images: list[AccelerateImage]
+
+    @model_validator(mode="after")
+    def complete_evidence(self) -> Self:
+        if not self.consumers or not self.extension_hashes or not self.images:
+            raise ValueError("Accelerate requires consumers, extensions and loaded image evidence")
+        names = [image.install_name for image in self.images]
+        if len(names) != len(set(names)) or not all(
+            name.startswith("/System/Library/Frameworks/Accelerate.framework/")
+            and "/../" not in name
+            for name in names
+        ):
+            raise ValueError("Accelerate requires unique system framework images")
+        if not all(
+            any(name.endswith("/" + lib) for name in names)
+            for lib in ("libBLAS.dylib", "libLAPACK.dylib")
+        ):
+            raise ValueError("Accelerate requires loaded BLAS and LAPACK images")
+        return self
+
+
+class NumericalExecution(Contract):
+    schema_version: Literal["1", "2"]
     system: Text
     machine: Text
     polars_threads: PositiveInt
     thread_environment: dict[Text, Text | None]
     libraries: list[NumericalLibrary]
+    accelerate: AppleAccelerateExecution | None = None
 
     @model_validator(mode="after")
     def closed_startup_environment(self) -> Self:
@@ -51,7 +95,11 @@ class NumericalExecution(Contract):
                 raise ValueError("thread counts must be positive decimal integers")
         if self.thread_environment["POLARS_MAX_THREADS"] != str(self.polars_threads):
             raise ValueError("Polars startup and effective pool must agree")
-        if not any(lib.user_api == "blas" for lib in self.libraries):
+        if (self.schema_version == "2") != (self.accelerate is not None):
+            raise ValueError("numerical v2 requires explicit Accelerate evidence")
+        if self.accelerate is not None and (self.system, self.machine) != ("Darwin", "arm64"):
+            raise ValueError("Accelerate evidence requires native Apple ARM64 execution")
+        if not any(lib.user_api == "blas" for lib in self.libraries) and self.accelerate is None:
             raise ValueError("effective BLAS thread pools must be observable")
         controls = {
             "openblas": "OPENBLAS_NUM_THREADS",
@@ -63,6 +111,13 @@ class NumericalExecution(Contract):
             if self.thread_environment[controls[lib.internal_api]] != str(lib.num_threads):
                 raise ValueError("library startup and effective thread pools must agree")
         return self
+
+    @model_serializer(mode="wrap")
+    def preserve_previous_execution(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        if self.schema_version == "1":
+            value.pop("accelerate", None)
+        return value
 
 
 class RuntimeIdentity(Contract):

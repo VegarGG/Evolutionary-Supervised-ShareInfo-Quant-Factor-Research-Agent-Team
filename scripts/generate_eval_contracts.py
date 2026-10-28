@@ -22,7 +22,13 @@ from qfr_eval.records import (
     StoredFile,
     TrialLedgerEntry,
 )
-from qfr_eval.runtime_contracts import THREAD_VARIABLES, NumericalExecution, NumericalLibrary
+from qfr_eval.runtime_contracts import (
+    THREAD_VARIABLES,
+    AccelerateImage,
+    AppleAccelerateExecution,
+    NumericalExecution,
+    NumericalLibrary,
+)
 from qfr_eval.sandbox.models import SandboxProfile, SandboxReadiness
 from qfr_eval.scheduler.dedup import digest
 from qfr_eval.scheduler.models import (
@@ -230,7 +236,34 @@ def generate(check=False):
     pinned_runtime = runtime.model_copy(
         update={"schema_version": "2", "numerical_execution": execution}
     )
-    for value in (library, execution, pinned_runtime):
+    apple_image = AccelerateImage(
+        install_name="/System/Library/Frameworks/Accelerate.framework/libBLAS.dylib",
+        image_uuid="00000000-0000-0000-0000-000000000001",
+        cpu_type=16777228,
+        cpu_subtype=0,
+        text_bytes=4096,
+        text_sha256="0" * 64,
+    )
+    apple = AppleAccelerateExecution(
+        schema_version="1",
+        policy_sha256="0" * 64,
+        threading_mode="single_threaded",
+        threading_scope="calling_thread",
+        effective_threads=1,
+        os_version="fixture",
+        os_build="fixture",
+        hardware_model="fixture",
+        cpu_brand="fixture",
+        consumers={"numpy": "accelerate", "scipy": "accelerate"},
+        extension_hashes={"fixture": "0" * 64},
+        images=[
+            apple_image,
+            apple_image.model_copy(
+                update={"install_name": apple_image.install_name.replace("libBLAS", "libLAPACK")}
+            ),
+        ],
+    )
+    for value in (library, execution, pinned_runtime, apple_image, apple):
         model = type(value)
         name = "RuntimeIdentityV2" if model is RuntimeIdentity else model.__name__
         sample = value.model_dump(mode="json")

@@ -133,6 +133,23 @@ def test_effective_blas_change_is_rejected_and_restored():
     from threadpoolctl import threadpool_limits
 
     runtime = capture_runtime(evaluator_git_sha="0" * 40, image_digest="0" * 64)
+    if runtime.numerical_execution.accelerate is not None:
+        from qfr_eval.apple_runtime import threading_api
+
+        getter, setter = threading_api()
+        assert getter() == 1
+        try:
+            assert setter(0) == 0 and getter() == 0
+            with pytest.raises(RuntimeCompatibilityError, match="accelerate_not_single_threaded"):
+                verify_runtime(runtime)
+            worker = object.__new__(ScreeningWorker)
+            worker.runtime = runtime
+            with pytest.raises(RuntimeCompatibilityError, match="accelerate_not_single_threaded"):
+                worker.run_once()
+        finally:
+            assert setter(1) == 0 and getter() == 1
+        verify_runtime(runtime)
+        return
     pools = {
         lib.num_threads for lib in runtime.numerical_execution.libraries if lib.user_api == "blas"
     }

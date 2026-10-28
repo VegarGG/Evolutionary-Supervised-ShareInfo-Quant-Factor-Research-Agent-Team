@@ -84,8 +84,10 @@ image_digest=...)` from the runtime being used. The trusted operator must verify
 Git/image identity. The evaluator compares installed code, numerical package
 versions, host OS/CPU, effective Polars and observable BLAS/OpenMP pools, loaded
 library hashes and the closed startup-control set before measurement. This freezes
-the observed settings; it does not impose a new numerical tolerance or thread-count
-default. Unobservable or incompatible pools fail explicitly.
+the observed settings on Linux. The native Apple Accelerate profile explicitly
+selects and verifies single-threaded BLAS/LAPACK through Apple's public APIs;
+see [numerical runtime details and acceptance limits](NUMERICAL_RUNTIME.md).
+No numerical tolerance changes. Unobservable or incompatible execution fails explicitly.
 
 The CLI reads the frozen request (or hash-verified receipt context for reproduce)
 before importing numerical libraries and restores only its allowlisted startup

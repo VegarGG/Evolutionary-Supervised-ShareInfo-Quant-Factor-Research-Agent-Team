@@ -76,6 +76,10 @@ def numerical_execution() -> NumericalExecution:
     libraries = []
     counts: dict[str, int] = {}
     try:
+        from qfr_eval import apple_runtime
+
+        apple_consumers = apple_runtime.consumers()
+        accelerate = apple_runtime.observe(apple_consumers) if apple_consumers else None
         for item in threadpool_info():
             api = item["internal_api"]
             if api not in controls:
@@ -101,12 +105,13 @@ def numerical_execution() -> NumericalExecution:
             )
         libraries.sort(key=lambda item: canonical_json(item.model_dump(mode="json")))
         return NumericalExecution(
-            schema_version="1",
+            schema_version="2" if accelerate else "1",
             system=platform.system(),
             machine=platform.machine(),
             polars_threads=threads,
             thread_environment=environment,
             libraries=libraries,
+            accelerate=accelerate,
         )
     except RuntimeCompatibilityError:
         raise
@@ -115,6 +120,12 @@ def numerical_execution() -> NumericalExecution:
 
 
 def capture_runtime(*, evaluator_git_sha: str, image_digest: str) -> RuntimeIdentity:
+    from qfr_eval import apple_runtime
+
+    if apple_runtime.consumers():
+        # This explicit new-runtime profile chooses the only Accelerate mode
+        # with a verifiable fixed thread count. Never rewrite a frozen identity.
+        apple_runtime.initialize_single_thread()
     return RuntimeIdentity(
         schema_version="2",
         evaluator_git_sha=evaluator_git_sha,
