@@ -11,6 +11,7 @@ from uuid import uuid4
 import polars as pl
 import psycopg
 import pytest
+from pilot_inventory import original_package_inventory
 from pydantic import ValidationError
 from qfr_core.configuration import load_yaml
 from qfr_core.contracts.data import ExposureAndQuality
@@ -406,7 +407,7 @@ def test_authorized_original_pilot_ingest_preserves_inputs_and_private_slice(
         pytest.skip("Original licensed pilot inputs required: QFR_PILOT_ROOT; ingest gate unrun")
     source_root = Path(root)
     package = source_root / "P1_English_Delivery_20261022"
-    before = {p: file_hash(p) for p in source_root.rglob("*") if p.is_file()}
+    before = original_package_inventory(source_root)
     protocol = load_yaml(
         ROOT / "configs/evaluation/pilot_p0_p1_verification_v1.yaml", FrozenProtocol
     )
@@ -470,4 +471,4 @@ def test_authorized_original_pilot_ingest_preserves_inputs_and_private_slice(
         frame = research.read(table.name)
         for column in {table.date_column, table.available_date_column} - {None}:
             assert frame[column].max() <= plan.research_cutoff
-    assert {p: file_hash(p) for p in source_root.rglob("*") if p.is_file()} == before
+    assert original_package_inventory(source_root) == before

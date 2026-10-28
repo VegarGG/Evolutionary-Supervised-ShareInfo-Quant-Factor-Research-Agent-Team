@@ -315,6 +315,31 @@ release-clock modification occurred. Follow the
 [Mac acceptance handoff](STAGE_4_MAC_ACCEPTANCE.md) on exact reviewed source;
 elapsed batch evidence and actual client/pilot/deployment gates remain pending.
 
+## Original-input fixture correction
+
+The initial Mac run on `fa0bb86` reported static checks passing, 212 focused
+component passes, and a full native result of **1,115 passed / 1 failed / 0 skips**.
+The failure was the ingest test's before/after inventory of the entire directory
+containing the original packages. New sibling acceptance evidence changed that
+inventory without changing P0/P1 input files. A scoped Mac test-only correction
+passed its targeted rerun; that is not a final-source full-suite pass.
+
+The reviewed fixture now hashes every file inside both original delivery
+directories, including the checksum manifests, rather than unrelated siblings.
+Fifteen lightweight regressions prove that sibling evidence is excluded while
+byte changes, additions, deletions, renames, missing packages and non-regular
+entries inside either original package remain failures. A read-only inventory of
+available originals verified all **339 manifest-listed files** with zero hash
+mismatches, plus the two checksum manifests themselves. No original file, golden
+value or production source changed; see decision S4-22.
+
+All seven `just check` commands pass. The required-PostgreSQL ordinary suite has
+**1,049 passed / 82 explicit skips**, 140.35 seconds (144.60 seconds including the
+wrapper), peak child RSS **370,400 KiB**. The 15 new filesystem regressions passed
+in 0.37 seconds. The actual original-ingest and full acceptance reruns remain on
+the Mac, along with deployed clients, elapsed release, delivery/export and restart
+evidence. Application/image inputs, dependency lock and protocol are unchanged.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

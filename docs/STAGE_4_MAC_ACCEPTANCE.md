@@ -34,6 +34,21 @@ into public logs, or place licensed inputs in image layers or Git.
 
 ## Actual human-driven sequence
 
+For the reviewed original-input fixture correction, preserve/compare any local
+test patch before synchronizing the new exact commit. With the existing real
+PostgreSQL and licensed-input environment, run:
+
+```sh
+uv run --locked --all-packages python -m pytest --require-postgres \
+  tests/test_pilot_inventory_scope.py \
+  tests/evaluator/test_authorized_ingest.py::test_authorized_original_pilot_ingest_preserves_inputs_and_private_slice
+```
+
+Then record the final-source native/container results as required below. This
+test-only correction does not change application/image inputs; retain original
+image evidence with its actual identity and prove any carried-forward input
+equivalence instead of relabelling an old build as newly built.
+
 1. Run required-PostgreSQL native/static checks and the corresponding CI-container
    checks on the exact source, with real licensed inputs, original oracle and
    actual sandbox enabled. Record every skip reason independently. Use the
