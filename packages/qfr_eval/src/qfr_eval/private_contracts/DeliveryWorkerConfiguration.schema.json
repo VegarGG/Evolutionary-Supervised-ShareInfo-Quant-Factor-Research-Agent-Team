@@ -6,7 +6,8 @@
         "checker_id": {
           "enum": [
             "pilot-research-delivery-v1",
-            "pilot-research-delivery-v2"
+            "pilot-research-delivery-v2",
+            "pilot-research-delivery-v3"
           ],
           "title": "Checker Id",
           "type": "string"
@@ -51,7 +52,8 @@
         "schema_version": {
           "enum": [
             "1",
-            "2"
+            "2",
+            "3"
           ],
           "title": "Schema Version",
           "type": "string"

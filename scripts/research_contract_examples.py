@@ -12,7 +12,7 @@ from qfr_core.contracts.artifacts import ArtifactReference
 from qfr_core.contracts.blackboard import BlackboardRecord, ResearchProgram
 from qfr_core.contracts.delivery import DeliveryProposal
 from qfr_core.contracts.intake import InputBundle
-from qfr_core.contracts.jobs import JobRecord, ResearchBrief
+from qfr_core.contracts.jobs import JobRecord, PilotDeliveryAssessment, ResearchBrief
 from qfr_core.contracts.publication import RegistryClientConfiguration
 
 
@@ -55,6 +55,15 @@ def examples(root: Path, existing):
         created_at=at,
     )
     return [
+        PilotDeliveryAssessment(
+            schema_version="1",
+            assessed_artifact_refs=[
+                ArtifactReference(artifact_version_id=str(identity), content_hash="0" * 64)
+            ],
+            reference_artifact_refs=[
+                ArtifactReference(artifact_version_id=str(UUID(int=31)), content_hash="1" * 64)
+            ],
+        ),
         m.MCPPolicy.model_validate_json((root / "configs/research/mcp_v1.json").read_bytes()),
         m.MCPBackendBinding(
             principal="schema-example",
@@ -88,7 +97,7 @@ def examples(root: Path, existing):
         t.FinalizeUpload(sha256="0" * 64),
         t.AssetPage(items=[transfer], next_after_id=None, has_more=False),
         r.ResearchApiPolicy.model_validate_json(
-            (root / "configs/research/api_v1.json").read_bytes()
+            (root / "configs/research/api_v2.json").read_bytes()
         ),
         r.ProgramCreate(
             program_id=identity, name="Schema example", charter={"purpose": "research"}

@@ -288,6 +288,33 @@ insufficient uncertainty cannot support delivery. This is not a failed statistic
 gate to bypass; candidate/reference roles need explicit, versioned handling before
 the real pilot flow. No measurement rule or receipt was changed in this checkpoint.
 
+## Frozen assessment roles
+
+Checker v3 and exit-gate schema version 2 separate exact assessed candidates from
+preserved references before job admission. The P0/P1 demonstration assesses P0
+against P1 while retaining both signed reports and exact replay. The reference's
+zero-delta self-comparison remains insufficient for candidate inference; it cannot
+be shortlisted or support a positive conclusion. All assessed-candidate uncertainty
+and resolved-hurdle requirements remain unchanged. Legacy gate serialization,
+checker v1/v2 semantics and earlier receipts remain immutable. See
+[DELIVERY_CHECKER.md](DELIVERY_CHECKER.md) and decision S4-21.
+
+All seven `just check` commands pass (166 public contracts). The ordinary
+required-PostgreSQL `just test` run has **1,034 passed / 82 explicit skips**,
+144.90 seconds test time (149.29 seconds with wrapper), peak child RSS
+**366,436 KiB**. The initial focused checker/scope suite passed 45 tests; the
+broader 71-test run found a test calling an internal status-formatting helper,
+corrected to the public status-read method. That regression and the final full
+suite pass. Tests cover frozen-role tampering, wrong checker versions, reference
+omission/hash/coverage/replay failures, insufficient candidates, and signed
+completion/export. Financial/replay fixtures remain explicitly synthetic.
+
+The approved measurement protocol, dependency lock, sandbox policies and original
+data/golden evidence are unchanged. No confirmation query, provider call or real
+release-clock modification occurred. Follow the
+[Mac acceptance handoff](STAGE_4_MAC_ACCEPTANCE.md) on exact reviewed source;
+elapsed batch evidence and actual client/pilot/deployment gates remain pending.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

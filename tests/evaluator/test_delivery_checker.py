@@ -98,11 +98,21 @@ class SyntheticRegistry:
         return self.values[value.manifest.artifact_version_id][1]
 
 
-def delivery_case(factory, root, *, overall="fail", replay=True, insufficient=False):
-    program = str(uuid4())
+def delivery_case(
+    factory,
+    root,
+    *,
+    overall="fail",
+    replay=True,
+    insufficient=False,
+    program=None,
+    signer=None,
+    measured_updates=None,
+):
+    program = program or str(uuid4())
     factor, factor_bytes = artifact(program)
     store = EvidenceStore(root / "evidence")
-    signer = EvaluatorSigner(
+    signer = signer or EvaluatorSigner(
         secrets.token_bytes(32),
         purposes=[
             "released_report",
@@ -152,6 +162,8 @@ def delivery_case(factory, root, *, overall="fail", replay=True, insufficient=Fa
         ),
         hurdle={"overall": overall, "coverage": "pass", "paired_primary": overall},
     )
+    if measured_updates:
+        measured = changed(measured, **measured_updates)
     record = changed(
         record,
         reason_codes=[],

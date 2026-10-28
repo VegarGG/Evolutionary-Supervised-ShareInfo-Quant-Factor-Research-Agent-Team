@@ -24,6 +24,8 @@ from qfr_core.delivery_rules import (
     content_sha256,
     gate_hash,
     job_config_hash,
+    pilot_checker_matches_gate,
+    validate_pilot_assessment,
     validate_pilot_delivery_gate,
 )
 from qfr_core.signatures import EvidenceVerifier
@@ -171,6 +173,7 @@ def verify_export(
     get("configuration_reference", "job-config:" + receipt.job_id, path="job_config.json")
     get("source_manifest", "sources:" + bundle.bundle_id, path="source_manifest.json")
     validate_pilot_delivery_gate(brief.exit_gate)
+    validate_pilot_assessment(brief)
     if (
         configs.get("input-bundle:" + bundle.bundle_id)
         != content_sha256(bundle.model_dump(mode="json"))
@@ -189,6 +192,7 @@ def verify_export(
         or proposal.released_report_refs != receipt.released_report_refs
         or receipt.allowed_conclusions != brief.exit_gate.allowed_conclusions
         or receipt.conclusion != proposal.conclusion
+        or not pilot_checker_matches_gate(brief.exit_gate, receipt.independent_checker)
         or sorted(c.check_id for c in receipt.checks) != sorted(brief.exit_gate.required_checks)
         or (brief.exit_gate.human_signoff_required and not receipt.human_signoff_ref)
         or set(configs)

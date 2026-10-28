@@ -1,9 +1,18 @@
 """Frozen research intent and independent delivery requirements, with no job runner."""
 
-from typing import Literal, Self
+from typing import Any, Literal, Self
 
-from pydantic import AwareDatetime, Field, NonNegativeFloat, PositiveInt, model_validator
+from pydantic import (
+    AwareDatetime,
+    Field,
+    NonNegativeFloat,
+    PositiveInt,
+    SerializerFunctionWrapHandler,
+    model_serializer,
+    model_validator,
+)
 
+from qfr_core.contracts.artifacts import ArtifactReference
 from qfr_core.contracts.base import Contract, Sha256, Text
 from qfr_core.contracts.data import ExposureAndQuality
 from qfr_core.contracts.enums import Conclusion, JobState
@@ -16,8 +25,24 @@ class DeliverableRequirement(Contract):
     evidence_refs_required: bool
 
 
-class ExitGateSpecification(Contract):
+class PilotDeliveryAssessment(Contract):
+    """Exact artifact roles frozen before the human-driven pilot job is admitted."""
+
     schema_version: Literal["1"]
+    assessed_artifact_refs: list[ArtifactReference] = Field(min_length=1)
+    reference_artifact_refs: list[ArtifactReference]
+
+    @model_validator(mode="after")
+    def disjoint_roles(self) -> Self:
+        refs = [*self.assessed_artifact_refs, *self.reference_artifact_refs]
+        if len({ref.artifact_version_id for ref in refs}) != len(refs):
+            raise ValueError("assessment roles must be unique and disjoint")
+        return self
+
+
+class ExitGateSpecification(Contract):
+    schema_version: Literal["1", "2"]
+    assessment_scope: PilotDeliveryAssessment | None = None
     gate_id: Text
     gate_type: Literal["research_delivery", "investment_promotion"]
     required_deliverables: list[DeliverableRequirement] = Field(min_length=1)
@@ -34,11 +59,22 @@ class ExitGateSpecification(Contract):
 
     @model_validator(mode="after")
     def promotion_is_separate(self) -> Self:
+        if (self.schema_version == "2") != (self.assessment_scope is not None):
+            raise ValueError("gate version 2 requires explicit artifact assessment roles")
+        if self.schema_version == "2" and self.gate_type != "research_delivery":
+            raise ValueError("explicit pilot assessment is research delivery only")
         if self.gate_type == "investment_promotion" and (
             not self.human_signoff_required or not self.forward_evidence_required
         ):
             raise ValueError("promotion requires forward evidence and human sign-off")
         return self
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_gate(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        if self.schema_version == "1":
+            value.pop("assessment_scope", None)
+        return value
 
 
 class DecisionCycle(Contract):

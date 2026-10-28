@@ -9,8 +9,10 @@ from qfr_core.contracts.publication import RegistryClientConfiguration
 
 
 class PilotDeliveryPolicy(Contract):
-    schema_version: Literal["1", "2"]
-    checker_id: Literal["pilot-research-delivery-v1", "pilot-research-delivery-v2"]
+    schema_version: Literal["1", "2", "3"]
+    checker_id: Literal[
+        "pilot-research-delivery-v1", "pilot-research-delivery-v2", "pilot-research-delivery-v3"
+    ]
     scope: Literal["P0_P1_verification_only"]
     release_policy_sha256: Sha256
     required_execution: Literal["registry"]

@@ -10,9 +10,10 @@
   "max_source_assets": 1024,
   "polling_seconds": 5,
   "request_body_timeout_seconds": 15,
-  "revision": 1,
+  "revision": 2,
   "statement_timeout_ms": 30000,
   "trusted_delivery_checkers": {
-    "pilot-research-delivery-v2": "0e4572fd3a7d531d3b6aabe052d3b3f7605ca71916b45c4ed7a430df0549ff53"
+    "pilot-research-delivery-v2": "0e4572fd3a7d531d3b6aabe052d3b3f7605ca71916b45c4ed7a430df0549ff53",
+    "pilot-research-delivery-v3": "3a53692c1dbc08edc35b8c7643854912841907cad7c138254545db75cebfc51d"
   }
 }

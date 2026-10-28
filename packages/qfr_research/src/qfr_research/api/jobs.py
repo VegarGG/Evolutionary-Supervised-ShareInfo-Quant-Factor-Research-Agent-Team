@@ -25,6 +25,7 @@ from qfr_core.delivery_rules import (
     admission_hash,
     content_sha256,
     job_config_hash,
+    validate_pilot_assessment,
     validate_pilot_delivery_gate,
 )
 from qfr_core.identifiers import uuid7
@@ -42,6 +43,7 @@ class Jobs(Programs):
     def intent(self, program: UUID, value: JobAdmission) -> None:
         bundle, brief = value.input_bundle, value.brief
         validate_pilot_delivery_gate(brief.exit_gate)
+        validate_pilot_assessment(brief)
         if (
             brief.project_id != str(program)
             or brief.input_bundle_id != bundle.bundle_id
@@ -75,6 +77,12 @@ class Jobs(Programs):
             set(bundle.baseline_refs)
         ) != len(bundle.baseline_refs):
             raise InvalidResearchRequest("duplicate admission reference")
+        assessment = brief.exit_gate.assessment_scope
+        if assessment is not None and (
+            len(assessment.assessed_artifact_refs) + len(assessment.reference_artifact_refs)
+            > self.policy.max_artifacts
+        ):
+            raise InvalidResearchRequest("assessment exceeds configured reference bound")
 
     def validate_input(
         self, principal: ServicePrincipal, program: UUID, value: JobAdmission
@@ -123,6 +131,12 @@ class Jobs(Programs):
         for asset in bundle.source_assets:
             self.evidence.source(program, asset)
             assets.append(asset.asset_id)
+        assessment = brief.exit_gate.assessment_scope
+        if assessment is not None:
+            for ref in [*assessment.assessed_artifact_refs, *assessment.reference_artifact_refs]:
+                artifact = self.evidence.artifact(program, ref)
+                if artifact.manifest.kind.value not in {"factor", "model", "strategy"}:
+                    raise InvalidResearchRequest("frozen pilot assessment requires executables")
         if bundle.readiness == "ready":
             for reference in brief.exit_gate.protocol_refs:
                 self.evidence.protocol_exists(program, reference)

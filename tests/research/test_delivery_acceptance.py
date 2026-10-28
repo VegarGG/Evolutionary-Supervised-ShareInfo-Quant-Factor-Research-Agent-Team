@@ -142,12 +142,29 @@ class SyntheticSignedEvidence(SyntheticPublicEvidence):
         return self.verifier.delivery(self.receipt_value)
 
 
-def delivery_setup(research_connect, tmp_path, *, human=False, service_class=Deliveries):
+def delivery_setup(
+    research_connect, tmp_path, *, human=False, assessment=False, service_class=Deliveries
+):
     case = setup_service(research_connect, tmp_path, service_class=service_class)
     evidence = SyntheticSignedEvidence(case.program, case.registration.dataset_version_id)
     case.service.evidence = evidence
-    if human:
-        gate = changed(case.admission.brief.exit_gate, human_signoff_required=True)
+    if human or assessment:
+        gate = changed(case.admission.brief.exit_gate, human_signoff_required=human)
+        if assessment:
+            gate = changed(
+                gate,
+                schema_version="2",
+                assessment_scope=dict(
+                    schema_version="1",
+                    assessed_artifact_refs=[reference(evidence.factor)],
+                    reference_artifact_refs=[],
+                ),
+            )
+            policy = type(case.service.policy).model_validate_json(
+                (ROOT / "configs/research/api_v2.json").read_bytes()
+            )
+            case.service.storage.policy = policy
+            case.service.policy = policy
         gate = changed(gate, spec_hash=gate_hash(gate))
         case.admission = changed(
             case.admission,
@@ -190,7 +207,11 @@ def seal_receipt(case, **updates):
         case.principal, UUID(case.status.job.job_id), UUID(case.proposal.proposal_id)
     )
     job, brief, proposal = candidate.context.job, candidate.context.brief, candidate.proposal
-    checker = "pilot-research-delivery-v2"
+    checker = (
+        "pilot-research-delivery-v3"
+        if job.exit_gate.schema_version == "2"
+        else "pilot-research-delivery-v2"
+    )
     config = {
         "input-bundle:" + candidate.context.input_bundle.bundle_id: content_sha256(
             candidate.context.input_bundle.model_dump(mode="json")
@@ -250,6 +271,53 @@ def seal_receipt(case, **updates):
         DeliveryReceipt, "delivery_receipt", body
     )
     return case.evidence.receipt_value
+
+
+def test_frozen_assessment_is_verified_at_admission_and_survives_restart(
+    research_connect, tmp_path
+):
+    case = delivery_setup(research_connect, tmp_path, assessment=True)
+    original = case.status.job
+    restarted = Deliveries(case.service.storage, case.evidence, case.service.research_root)
+    actual = restarted.get_job(case.principal, UUID(original.job_id))
+    assert actual.job.exit_gate == original.exit_gate
+    assert actual.job.payload_hash == original.payload_hash
+    assert actual.job.exit_gate.assessment_scope.assessed_artifact_refs == [
+        reference(case.evidence.factor)
+    ]
+    # Reusing admission identity with changed role/hash cannot replace the original.
+    gate = changed(
+        case.admission.brief.exit_gate,
+        assessment_scope=dict(
+            schema_version="1",
+            assessed_artifact_refs=[reference(case.evidence.note)],
+            reference_artifact_refs=[],
+        ),
+    )
+    gate = changed(gate, spec_hash=gate_hash(gate))
+    changed_admission = changed(case.admission, brief=changed(case.admission.brief, exit_gate=gate))
+    with pytest.raises(ResearchConflict):
+        restarted.admit(case.principal, case.program, changed_admission, uuid4())
+    fresh = changed(changed_admission, idempotency_key=str(uuid4()))
+    with pytest.raises(InvalidResearchRequest, match="requires executables"):
+        restarted.admit(case.principal, case.program, fresh, uuid4())
+
+
+def test_matching_signature_cannot_relabel_checker_semantics(research_connect, tmp_path):
+    case = delivery_setup(research_connect, tmp_path, assessment=True)
+    receipt = seal_receipt(case)
+    refs = [
+        {
+            "reference_id": "pilot-research-delivery-v2",
+            "sha256": case.service.policy.trusted_delivery_checkers["pilot-research-delivery-v2"],
+        }
+        if ref.reference_id == "pilot-research-delivery-v3"
+        else ref.model_dump()
+        for ref in receipt.config_refs
+    ]
+    seal_receipt(case, independent_checker="pilot-research-delivery-v2", config_refs=refs)
+    with pytest.raises(InvalidResearchRequest, match="frozen job"):
+        accept(case)
 
 
 def accept(case, *, key="accept"):

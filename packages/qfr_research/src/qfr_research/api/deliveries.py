@@ -7,7 +7,7 @@ from qfr_core.contracts.delivery import DeliveryCandidate, DeliveryReceipt
 from qfr_core.contracts.enums import JobState
 from qfr_core.contracts.jobs import JobRecord, ReceiptReference
 from qfr_core.contracts.research import DeliveryProposalRequest, DeliveryReceiptRequest, JobStatus
-from qfr_core.delivery_rules import content_sha256
+from qfr_core.delivery_rules import content_sha256, pilot_checker_matches_gate
 
 from qfr_research.api.checkpoints import Checkpoints
 from qfr_research.api.errors import InvalidResearchRequest, ResearchConflict
@@ -129,6 +129,7 @@ class Deliveries(Checkpoints):
             or {r.reference_id: r.sha256 for r in receipt.config_refs} != expected_config
             or receipt.job_id != job.job_id
             or receipt.gate_spec_hash != job.exit_gate.spec_hash
+            or not pilot_checker_matches_gate(job.exit_gate, receipt.independent_checker)
             or receipt.allowed_conclusions != job.exit_gate.allowed_conclusions
             or receipt.conclusion != proposal.conclusion
             or receipt.created_at < job.created_at

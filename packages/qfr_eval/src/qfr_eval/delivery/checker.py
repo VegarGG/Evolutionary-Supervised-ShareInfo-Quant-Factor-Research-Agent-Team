@@ -28,6 +28,8 @@ from qfr_core.delivery_rules import (
     admission_hash,
     content_sha256,
     job_config_hash,
+    pilot_checker_matches_gate,
+    validate_pilot_assessment,
     validate_pilot_delivery_gate,
 )
 from qfr_core.signatures import EvidenceVerifier
@@ -48,6 +50,10 @@ class RegistryEvidence(Protocol):
 
 def frozen_context_valid(context: AdmittedDeliveryContext, proposal: DeliveryProposal) -> bool:
     job, brief, bundle = context.job, context.brief, context.input_bundle
+    try:
+        validate_pilot_assessment(brief)
+    except ValueError:
+        return False
     return (
         job.job_id == proposal.job_id
         and job.project_id == brief.project_id
@@ -177,6 +183,8 @@ def check_delivery(
     proposal = DeliveryProposal.model_validate(proposal.model_dump())
     gate = context.job.exit_gate
     validate_pilot_delivery_gate(gate)
+    if not pilot_checker_matches_gate(gate, policy.checker_id):
+        raise ValueError("delivery checker and frozen assessment gate versions differ")
     if proposal.job_id != context.job.job_id or proposal.conclusion not in gate.allowed_conclusions:
         raise ValueError("proposal differs from frozen job or allowed conclusion")
     if len(proposal.artifact_refs) > policy.maximum_artifacts or (
@@ -190,6 +198,7 @@ def check_delivery(
     cards: dict[str, PublicProtocolCard] = {}
     measurements: list[Measurement] = []
     replays: list[bool] = []
+    assessed_ids: set[str] = set()
     total_bytes = 0
     try:
         for ref in proposal.artifact_refs:
@@ -250,6 +259,18 @@ def check_delivery(
             for key, artifact in artifacts.items()
             if artifact.manifest.kind.value in {"factor", "model", "strategy"}
         }
+        assessed_ids = executable_ids
+        scope = gate.assessment_scope
+        if scope is not None:
+            assessed_ids = {ref.artifact_version_id for ref in scope.assessed_artifact_refs}
+            scoped = [*scope.assessed_artifact_refs, *scope.reference_artifact_refs]
+            outcomes["artifact_integrity"] &= {
+                ref.artifact_version_id for ref in scoped
+            } == executable_ids and all(
+                ref.artifact_version_id in artifacts
+                and artifacts[ref.artifact_version_id].manifest.content_hash == ref.content_hash
+                for ref in scoped
+            )
         outcomes["released_evidence"] = (
             bool(reports)
             and {r.identity.artifact_version_id for r in reports} == executable_ids
@@ -268,6 +289,16 @@ def check_delivery(
                 if name in bindings
             )
         )
+        if scope is not None:
+            outcomes["released_evidence"] &= all(
+                any(
+                    r.identity.artifact_version_id == identity
+                    and r.identity.protocol_version == protocol
+                    for r in reports
+                )
+                for identity in assessed_ids
+                for protocol in gate.protocol_refs
+            )
     except (ValueError, KeyError, TypeError, OSError):
         outcomes["released_evidence"] = False
     outcomes["measurement_quality"] = outcomes["released_evidence"] and all(
@@ -276,8 +307,16 @@ def check_delivery(
         and not report.reason_codes
         and report.content.hurdle_flags.coverage == "pass"
         and measured.status == "complete"
-        and measured.uncertainty is not None
-        and measured.uncertainty.status == "estimated"
+        and (
+            (measured.uncertainty is not None and measured.uncertainty.status == "estimated")
+            if report.identity.artifact_version_id in assessed_ids
+            else (
+                gate.assessment_scope is not None
+                and measured.period_count > 0
+                and not measured.reason_codes
+                and report.content.scalar.measurement.value is not None
+            )
+        )
         for report, measured in zip(reports, measurements, strict=True)
     )
     outcomes["reproduction"] = outcomes["released_evidence"] and all(replays)
@@ -285,12 +324,14 @@ def check_delivery(
         report.identity.artifact_version_id
         for report in reports
         if isinstance(report.content, PilotRelease)
+        and report.identity.artifact_version_id in assessed_ids
         and report.content.hurdle_flags.overall == "pass"
     }
     resolved = all(
         isinstance(report.content, PilotRelease)
         and report.content.hurdle_flags.overall in {"pass", "fail"}
         for report in reports
+        if report.identity.artifact_version_id in assessed_ids
     )
     outcomes["conclusion_support"] = (
         outcomes["measurement_quality"]
@@ -321,7 +362,11 @@ def check_delivery(
     checks = [
         DeliveryCheck(
             check_id=name,
-            schema_ref="pilot-research-delivery-v1:" + name,
+            schema_ref=(
+                policy.checker_id if policy.schema_version == "3" else "pilot-research-delivery-v1"
+            )
+            + ":"
+            + name,
             result="pass" if outcomes[name] else "fail",
             evidence_refs=common_evidence,
         )
@@ -358,7 +403,7 @@ def check_delivery(
                             sha256=context.job.payload_hash,
                         ),
                     ]
-                    if policy.schema_version == "2"
+                    if policy.schema_version in {"2", "3"}
                     else []
                 ),
                 VersionReference(

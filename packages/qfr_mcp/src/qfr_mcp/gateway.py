@@ -25,7 +25,7 @@ from qfr_core.contracts.research import (
 )
 from qfr_core.contracts.transfers import AssetPage
 from qfr_core.data_layer.snapshots import canonical_json
-from qfr_core.delivery_rules import content_sha256
+from qfr_core.delivery_rules import content_sha256, pilot_checker_matches_gate
 from qfr_core.exports import read_archive, verify_export
 from qfr_core.registry_client import RegistryClient
 from qfr_core.service_client import PublicServiceClient
@@ -152,6 +152,7 @@ class Gateway:
             or receipt.result != job.receipt.result
             or content_sha256(receipt.model_dump(mode="json")) != job.receipt.receipt_sha256
             or receipt.gate_spec_hash != job.exit_gate.spec_hash
+            or not pilot_checker_matches_gate(job.exit_gate, receipt.independent_checker)
             or configs.get("admission:" + job.job_id) != job.payload_hash
             or configs.get("job-config:" + job.job_id) != job.config_hash
             or receipt.independent_checker not in self.export_policy.trusted_delivery_checkers

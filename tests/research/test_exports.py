@@ -20,8 +20,8 @@ from test_research_jobs import changed
 pytestmark = pytest.mark.database
 
 
-def setup_export(connect, root):
-    case = delivery_setup(connect, root, service_class=Exports)
+def setup_export(connect, root, *, assessment=False):
+    case = delivery_setup(connect, root, assessment=assessment, service_class=Exports)
     seal_receipt(case)
     accept(case)
     request = DeliveryExportRequest(operation_key="export", shortlist_only=False)
@@ -45,6 +45,28 @@ def repack(files):
         entry.update(bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
     files["manifest.json"] = canonical_json(manifest)
     return pack(files)
+
+
+def test_export_preserves_admitted_assessment_roles_and_refuses_tampering(
+    research_connect, tmp_path
+):
+    case, _, _, raw = setup_export(research_connect, tmp_path, assessment=True)
+    _, receipt = verify_export(raw, case.evidence.verifier, case.service.policy)
+    assert receipt.independent_checker == "pilot-research-delivery-v3"
+    files = read_archive(raw, case.service.policy)
+    brief = json.loads(files["brief.json"])
+    scope = brief["exit_gate"]["assessment_scope"]
+    assert scope["assessed_artifact_refs"] == [
+        dict(
+            artifact_version_id=case.evidence.factor.manifest.artifact_version_id,
+            content_hash=case.evidence.factor.manifest.content_hash,
+        )
+    ]
+    assert scope["reference_artifact_refs"] == []
+    scope["assessed_artifact_refs"][0]["content_hash"] = "f" * 64
+    files["brief.json"] = canonical_json(brief)
+    with pytest.raises(ValueError):
+        verify_export(repack(files), case.evidence.verifier, case.service.policy)
 
 
 def test_export_is_durable_scoped_and_independently_verifiable(research_connect, tmp_path):

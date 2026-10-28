@@ -20,6 +20,11 @@ programs, principals, role bindings, verification keys, upstream URLs, policy
 hashes and existing credential references. Backend token scopes must agree with
 the caller mappings. The MCP and Research services receive public verification
 keys only. Private signing keys remain with the separately invoked evaluator.
+For new explicit P0/P1 candidate/reference jobs, use `configs/research/api_v2.json`
+in Research and MCP export verification, checker
+`configs/delivery/pilot_research_delivery_v3.json`, and exit-gate schema version 2.
+Legacy gate/checker identities remain valid only with their original semantics;
+never relabel an existing admitted job or signed receipt.
 
 `configs/research/http_server_v1.json` records bounded concurrency and connection/
 shutdown settings. Native service examples bind `127.0.0.1`; container launch

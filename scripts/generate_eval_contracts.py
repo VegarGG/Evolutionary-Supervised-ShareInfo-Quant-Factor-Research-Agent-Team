@@ -748,7 +748,7 @@ def generate(check=False):
     from scripts.release_contract_examples import examples as release_examples
 
     delivery_policy = PilotDeliveryPolicy.model_validate_json(
-        (ROOT / "configs/delivery/pilot_research_delivery_v2.json").read_bytes()
+        (ROOT / "configs/delivery/pilot_research_delivery_v3.json").read_bytes()
     )
     for value in [
         *release_examples(ROOT),

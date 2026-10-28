@@ -89,6 +89,14 @@ Use `research_delivery` for the Stage 4 pilot. Required evidence includes an
 immutable, evidence-backed `ResearchNotePayload`; its schema and required status
 must be explicit. Freeze all eight checks from `PILOT_DELIVERY_CHECKS`, exact
 results/series replay, verified released reports and the exact protocol reference.
+Use exit-gate schema version 2 with the exact checker v3. Before admission, freeze
+`assessment_scope`: P0 is assessed relative to P1, and P1 is a preserved reference;
+both retain exact version/hash bindings, signed released reports and replay evidence.
+Keep both in the registered baseline list. P1's zero-delta self-comparison remains
+insufficient for inference and cannot be selected or described as a passing
+candidate. P0 must independently have sufficient data and a resolved hurdle;
+if it does not, delivery fails. Do not change scope or protocol to obtain a pass.
+See [delivery semantics and legacy compatibility](DELIVERY_CHECKER.md).
 Permit `supported_negative` and/or `empty_shortlist` explicitly when appropriate;
 failure of the research hurdle can support a negative result, but missing or
 insufficient evidence cannot. Human sign-off, if required, binds the exact proposal.

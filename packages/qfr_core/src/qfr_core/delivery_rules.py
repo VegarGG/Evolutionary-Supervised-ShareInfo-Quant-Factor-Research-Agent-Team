@@ -38,6 +38,24 @@ def job_config_hash(bundle: InputBundle) -> str:
     return content_sha256(bundle.job_config.model_dump(mode="json"))
 
 
+def validate_pilot_assessment(brief: ResearchBrief) -> None:
+    """A reference cannot become an ad-hoc exclusion after a result is observed."""
+    scope = brief.exit_gate.assessment_scope
+    if scope is None:
+        return  # Legacy gates keep their original all-executable assessment semantics.
+    assessed = {ref.artifact_version_id for ref in scope.assessed_artifact_refs}
+    references = {ref.artifact_version_id for ref in scope.reference_artifact_refs}
+    baselines = set(brief.baseline_artifact_ids)
+    if not references <= baselines or not baselines <= assessed | references:
+        raise ValueError("frozen assessment must retain all baselines and declare reference roles")
+
+
+def pilot_checker_matches_gate(gate: ExitGateSpecification, checker: str) -> bool:
+    if gate.schema_version == "2":
+        return checker == "pilot-research-delivery-v3"
+    return checker in {"pilot-research-delivery-v1", "pilot-research-delivery-v2"}
+
+
 def validate_pilot_delivery_gate(gate: ExitGateSpecification) -> None:
     """Unknown or omitted requirements cannot be silently treated as satisfied."""
     if (
