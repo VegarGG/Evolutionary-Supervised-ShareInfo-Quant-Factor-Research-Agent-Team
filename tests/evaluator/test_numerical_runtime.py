@@ -23,9 +23,19 @@ from qfr_eval.runtime_bootstrap import prepare_execution
 
 data = json.load(sys.stdin)
 pin = RuntimeIdentity.model_validate(data['pin']) if data['pin'] else None
-if data['restore']:
+if data['restore'] or data['restore_except_polars']:
     assert not any(name in sys.modules for name in ('numpy', 'polars', 'scipy'))
+    requested_polars = os.environ['POLARS_MAX_THREADS']
     prepare_execution(pin)
+    if data['restore_except_polars']:
+        # Establish all other frozen controls, including Apple's thread-local
+        # mode, while retaining the one deliberately varied control under test.
+        os.environ['POLARS_MAX_THREADS'] = requested_polars
+if data['accelerate_drift']:
+    assert pin.numerical_execution.accelerate is not None
+    from qfr_eval.apple_runtime import threading_api
+    getter, setter = threading_api()
+    assert setter(0) == 0 and getter() == 0
 import polars as pl
 from qfr_eval.runtime import capture_runtime, verify_runtime
 from qfr_eval.statistics.diagnostics import yearly_deltas
@@ -47,7 +57,8 @@ print(json.dumps({'pin': pin.model_dump(mode='json'), 'result': result,
 """
 
 
-def child(pool, pin=None, *, restore=False):
+def child(pool, pin=None, *, restore=False, restore_except_polars=False, accelerate_drift=False):
+    assert not (restore and restore_except_polars)
     # Independent of test-runner/provider credentials and its numerical defaults.
     environment = {
         "PATH": str(Path(sys.executable).parent),
@@ -61,7 +72,14 @@ def child(pool, pin=None, *, restore=False):
         [sys.executable, "-c", CHILD],
         cwd=ROOT,
         env=environment,
-        input=json.dumps({"pin": pin, "restore": restore}),
+        input=json.dumps(
+            {
+                "pin": pin,
+                "restore": restore,
+                "restore_except_polars": restore_except_polars,
+                "accelerate_drift": accelerate_drift,
+            }
+        ),
         text=True,
         capture_output=True,
         timeout=20,
@@ -80,7 +98,7 @@ def pinned_child():
 
 def test_same_settings_reproduce_exact_unrounded_yearly_mean(pinned_child, monkeypatch):
     monkeypatch.setenv("DEEPSEEK_API_KEY", "synthetic-secret-never-forwarded")
-    code, result = child(1, pinned_child["pin"])
+    code, result = child(1, pinned_child["pin"], restore_except_polars=True)
     assert code == 0
     assert result["result_hash"] == pinned_child["result_hash"]
     assert result["result"] == pinned_child["result"]
@@ -88,7 +106,7 @@ def test_same_settings_reproduce_exact_unrounded_yearly_mean(pinned_child, monke
 
 
 def test_actual_different_pool_refused_before_measurement(pinned_child):
-    code, result = child(2, pinned_child["pin"])
+    code, result = child(2, pinned_child["pin"], restore_except_polars=True)
     assert code == 7
     assert result == {"refused": "numerical_execution", "effective_threads": 2}
     assert "result_hash" not in result
@@ -99,6 +117,15 @@ def test_frozen_startup_restored_before_library_initialization(pinned_child):
     assert code == 0 and result["effective_threads"] == 1
     assert result["result_hash"] == pinned_child["result_hash"]
     assert result["pin"] == pinned_child["pin"]
+
+
+def test_fresh_apple_child_refuses_actual_drift_after_bootstrap(pinned_child):
+    if not pinned_child["pin"]["numerical_execution"].get("accelerate"):
+        pytest.skip("UNRUN: real Apple Accelerate child required for thread-mode drift")
+    code, result = child(1, pinned_child["pin"], restore=True, accelerate_drift=True)
+    assert code == 7
+    assert result == {"refused": "accelerate_not_single_threaded", "effective_threads": 1}
+    assert "result_hash" not in result
 
 
 def test_legacy_identity_preserves_serialization_and_refuses_execution():

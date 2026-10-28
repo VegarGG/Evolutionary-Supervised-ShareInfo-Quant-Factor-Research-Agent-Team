@@ -393,3 +393,24 @@ Focused parser/runtime/schema/adapter checks passed 75 tests with the same two
 native-only skips. Final full-suite process RSS peaked at 304,364 KiB and
 environment memory at 894,480,384 bytes; no 180-second/5-GiB guard or OOM event
 occurred. These cloud results do not establish Apple or Stage 3 acceptance.
+
+Mac follow-up at `accb9d0`: all eight Apple runtime tests passed, including native
+SDK compilation, API read-back and thread-local refusal. EVL-04 passed with parent
+Polars pool 4 and with the normal default; all seven static commands passed. The
+combined focused suite still had two fixture failures (16 passed, two failed,
+zero skipped): its matching-settings and Polars-only mismatch children had not
+initialized Accelerate's thread-local mode. Those fixtures now establish the
+other frozen controls explicitly and leave the Polars setting under test. A new
+native child regression rejects deliberate Accelerate drift after bootstrap.
+Production runtime code, strict hashes and protocol are unchanged by this test
+correction. Native rerun and broader Mac CI remain required. Original-oracle
+replay is still unrun there without its pinned image and separately verified
+original dependencies; no new oracle output is claimed.
+
+Cloud verification of this fixture correction: `just check` passed all seven
+commands; offline `just test` passed 466 tests with 165 explicit skips and one
+unchanged warning in 54.21 seconds. The two runtime test files passed 15 tests
+with three native-only skips. Peak process RSS was 303,884 KiB and environment
+memory 890,929,152 bytes; no timeout, memory/disk guard or OOM event occurred.
+Real database, licensed-input and sandbox gates were not enabled in this bounded
+offline run and are not claimed as passed.

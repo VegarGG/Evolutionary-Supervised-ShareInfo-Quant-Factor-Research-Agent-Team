@@ -66,6 +66,14 @@ restoration, and compare exact hashes in real subprocesses with different initia
 Polars settings. Record all effective identities and the result on the real Mac;
 Linux skips are explicitly unrun.
 
+The matching-settings and Polars-mismatch subprocess fixtures explicitly bootstrap
+all frozen controls, then retain their requested Polars value before imports. A
+serialized identity alone does not initialize Accelerate's thread-local mode in a
+new process. The full-restoration case separately proves that bootstrap overrides
+a conflicting Polars default. A separate native child switches Accelerate back to
+adaptive mode after bootstrap and must fail before producing any measurement.
+Verification itself never repairs drift; all exact hash assertions are retained.
+
 With initialized test PostgreSQL and original `QFR_PILOT_ROOT`, run
 `tests/evaluator/test_records.py::test_evl_04_cli_reproduces_frozen_record_despite_later_trials`
 using `--require-postgres`, first with parent `POLARS_MAX_THREADS=4`, then with the
