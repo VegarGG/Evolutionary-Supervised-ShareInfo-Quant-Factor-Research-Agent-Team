@@ -27,7 +27,13 @@ from qfr_core.contracts.intake import ExecutionContract
 from qfr_core.data_layer.snapshots import canonical_json
 from qfr_core.runner_tables import unpack_table
 
-from qfr_eval.sandbox.models import SandboxCode, SandboxProfile, SandboxReadiness
+from qfr_eval.sandbox.models import (
+    SandboxCode,
+    SandboxProfile,
+    SandboxProfileValue,
+    SandboxReadiness,
+    SandboxReadinessValue,
+)
 
 
 class SandboxUnavailable(RuntimeError):
@@ -99,7 +105,7 @@ def _relative_file(name: str) -> str:
     return path.as_posix()
 
 
-def unpack_package(data: bytes, profile: SandboxProfile) -> dict[str, bytes]:
+def unpack_package(data: bytes, profile: SandboxProfileValue) -> dict[str, bytes]:
     if len(data) > profile.max_package_bytes:
         raise ValueError("package exceeds configured byte bound")
     result: dict[str, bytes] = {}
@@ -153,7 +159,7 @@ def decode_result(data: bytes, limit: int) -> ExecutionResult:
 class SandboxRunner:
     def __init__(
         self,
-        profile: SandboxProfile,
+        profile: SandboxProfileValue,
         image_digest: str,
         *,
         docker_host: str = "unix:///var/run/docker.sock",
@@ -165,7 +171,7 @@ class SandboxRunner:
             raise ValueError("sandbox control requires an explicit local Unix socket")
         self.profile, self.image = profile, image_digest
         self.prefix = [docker_binary, "--host=" + docker_host]
-        self._ready: SandboxReadiness | None = None
+        self._ready: SandboxReadinessValue | None = None
 
     def _command(self, args: list[str], *, timeout: float, limit: int = 65536) -> bytes:
         # No shell, inherited stdin, candidate output logs or unbounded capture.
@@ -233,6 +239,8 @@ class SandboxRunner:
         options: dict[str, Any],
     ) -> ExecutionResult:
         p = self.profile
+        if not isinstance(p, SandboxProfile):
+            raise SandboxUnavailable("native profiles require the explicit native backend")
         name = "qfr-sbx-" + uuid4().hex
         control = p.control_timeout_seconds
         created = False
@@ -398,8 +406,10 @@ class SandboxRunner:
                         raise SandboxCleanupError("sandbox cleanup could not be verified") from exc
         return ExecutionResult(result.code, result.output, result.output_sha256, isolation)
 
-    def readiness(self) -> SandboxReadiness:
+    def readiness(self) -> SandboxReadinessValue:
         p = self.profile
+        if not isinstance(p, SandboxProfile):
+            raise SandboxUnavailable("native profiles require the explicit native backend")
         host_os = architecture = "unknown"
         checks: dict[str, bool] = {}
         try:
@@ -456,44 +466,11 @@ class SandboxRunner:
     def execute(
         self, contract: ExecutionContract, package: bytes, request: RunnerInput
     ) -> ExecutionResult:
-        p = self.profile
-        if request.seed > 2**32 - 1:
-            raise ValueError("runner seed exceeds supported deterministic range")
-        if (
-            contract.image_digest != self.image
-            or contract.approved_sandbox_profile_ref != p.profile_id
-            or contract.dependency_lock_sha256 != p.dependency_lock_sha256
-            or contract.runner != "qfr-json-runner/1"
-            or contract.input_schema_ref != "RunnerInput/1"
-            or contract.output_schema_ref != "RunnerOutput/1"
-            or request.seed not in contract.seeds
-        ):
-            raise ValueError("runner contract does not bind the approved execution profile")
-        limits = contract.limits
-        if (
-            limits.cpu_seconds != p.cpu_seconds
-            or limits.memory_bytes != p.memory_bytes
-            or limits.timeout_seconds != p.timeout_seconds
-            or limits.max_output_bytes != p.max_output_bytes
-        ):
-            raise ValueError("runner limits differ from frozen profile")
-        files = unpack_package(package, p)
-        if contract.interface == "function":
-            function = contract.function or ""
-            if not re.fullmatch(r"[A-Za-z0-9_/.-]+\.py:[A-Za-z_][A-Za-z0-9_]*", function):
-                raise ValueError("unsupported function interface")
-            source = _relative_file(function.split(":")[0])
-        else:
-            command = contract.command or []
-            if len(command) != 2 or command[0] != "python":
-                raise ValueError("command interface requires python and one declared script")
-            source = _relative_file(command[1])
-        if source not in files or not source.endswith(".py"):
-            raise ValueError("declared entry point is absent")
+        files = validate_execution(self.profile, self.image, contract, package, request)
         if self._ready is None:
             self.readiness()
         if self._ready is None or self._ready.status != "ready":
-            raise SandboxUnavailable("executable kind requires validated runsc readiness")
+            raise SandboxUnavailable("executable kind requires validated frozen-backend readiness")
         return self._execute(
             files,
             request,
@@ -503,3 +480,47 @@ class SandboxRunner:
                 "command": contract.command,
             },
         )
+
+
+def validate_execution(
+    profile: SandboxProfileValue,
+    image: str,
+    contract: ExecutionContract,
+    package: bytes,
+    request: RunnerInput,
+) -> dict[str, bytes]:
+    p = profile
+    if request.seed > 2**32 - 1:
+        raise ValueError("runner seed exceeds supported deterministic range")
+    if (
+        contract.image_digest != image
+        or contract.approved_sandbox_profile_ref != p.profile_id
+        or contract.dependency_lock_sha256 != p.dependency_lock_sha256
+        or contract.runner != "qfr-json-runner/1"
+        or contract.input_schema_ref != "RunnerInput/1"
+        or contract.output_schema_ref != "RunnerOutput/1"
+        or request.seed not in contract.seeds
+    ):
+        raise ValueError("runner contract does not bind the approved execution profile")
+    limits = contract.limits
+    if (
+        limits.cpu_seconds != p.cpu_seconds
+        or limits.memory_bytes != p.memory_bytes
+        or limits.timeout_seconds != p.timeout_seconds
+        or limits.max_output_bytes != p.max_output_bytes
+    ):
+        raise ValueError("runner limits differ from frozen profile")
+    files = unpack_package(package, p)
+    if contract.interface == "function":
+        function = contract.function or ""
+        if not re.fullmatch(r"[A-Za-z0-9_/.-]+\.py:[A-Za-z_][A-Za-z0-9_]*", function):
+            raise ValueError("unsupported function interface")
+        source = _relative_file(function.split(":")[0])
+    else:
+        command = contract.command or []
+        if len(command) != 2 or command[0] != "python":
+            raise ValueError("command interface requires python and one declared script")
+        source = _relative_file(command[1])
+    if source not in files or not source.endswith(".py"):
+        raise ValueError("declared entry point is absent")
+    return files

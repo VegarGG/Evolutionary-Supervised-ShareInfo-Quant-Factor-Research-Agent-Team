@@ -15,7 +15,8 @@ from qfr_eval.artifact_store import EvidenceStore
 from qfr_eval.execution_bundle import ArtifactExecutionBundle
 from qfr_eval.protocols.models import Cycle, FrozenProtocol
 from qfr_eval.records import EvaluationRequest, RegistryExecutionBinding, StoredFile
-from qfr_eval.sandbox.runner import SandboxRunner, SandboxUnavailable
+from qfr_eval.sandbox.client import configured_runner
+from qfr_eval.sandbox.runner import SandboxUnavailable
 from qfr_eval.scheduler.dedup import digest
 from qfr_eval.screening.execution import StaticFailure, prepare_execution
 from qfr_eval.screening.persistence import verify_screening_receipt
@@ -189,7 +190,7 @@ class RegistryPilotExecution:
             raise ValueError("measurement identity or disposition differs from screening")
         self.request, self.protocol, self.record = request, protocol, record
         self.receipt, self.bundle, self.store = receipt, bundle, store
-        self.sandbox = SandboxRunner(
+        self.sandbox = configured_runner(
             bundle.sandbox_profile, implementation.execution_contract.image_digest
         )
         self.cache: dict[str, PilotArtifactOutput] = {}

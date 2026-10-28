@@ -29,7 +29,14 @@ from qfr_eval.runtime_contracts import (
     NumericalExecution,
     NumericalLibrary,
 )
-from qfr_eval.sandbox.models import SandboxProfile, SandboxReadiness
+from qfr_eval.sandbox.models import (
+    DockerControllerConfiguration,
+    DockerControllerRequest,
+    DockerNativeProfile,
+    DockerNativeReadiness,
+    SandboxProfile,
+    SandboxReadiness,
+)
 from qfr_eval.scheduler.dedup import digest
 from qfr_eval.scheduler.models import (
     DevelopmentBehavior,
@@ -491,6 +498,42 @@ def generate(check=False):
         checks={},
         reason_code="failed:backend_unavailable",
     )
+    native = DockerNativeProfile.model_validate_json(
+        (ROOT / "configs/evaluation/sandbox_docker_native_v1.json").read_bytes()
+    )
+    controller_config = DockerControllerConfiguration(
+        schema_version="1",
+        profile=native,
+        image_digest="sha256:" + "0" * 64,
+        docker_socket="/var/run/docker.sock",
+        control_socket="/run/qfr-sandbox/controller.sock",
+        max_parallel_jobs=1,
+    )
+    controller_request = DockerControllerRequest(
+        schema_version="1",
+        operation="readiness",
+        profile_sha256=native.sha256,
+        image_digest="sha256:" + "0" * 64,
+        contract=None,
+        package_base64=None,
+        request=None,
+    )
+    native_readiness = DockerNativeReadiness(
+        schema_version="2",
+        status="unavailable",
+        profile_sha256=native.sha256,
+        image_digest="sha256:" + "0" * 64,
+        engine_os="unknown",
+        engine_architecture="unknown",
+        engine_version="unknown",
+        engine_id_sha256=None,
+        controller_os="unknown",
+        controller_architecture="unknown",
+        runtime="runc",
+        boundary="docker_shared_kernel",
+        checks={},
+        reason_code="failed:backend_unavailable",
+    )
     execution = ScreeningExecutionPolicy.model_validate_json(
         (ROOT / "configs/evaluation/screening_execution_v1.json").read_bytes()
     )
@@ -673,6 +716,10 @@ def generate(check=False):
         behavior,
         sandbox,
         readiness,
+        native,
+        native_readiness,
+        controller_config,
+        controller_request,
         execution,
         adapter,
         session,

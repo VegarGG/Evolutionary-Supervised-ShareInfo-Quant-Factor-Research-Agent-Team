@@ -9,7 +9,7 @@ from qfr_core.registry_client import RegistryClient
 
 from qfr_eval.artifact_store import EvidenceStore
 from qfr_eval.protocols.store import get_active
-from qfr_eval.sandbox.runner import SandboxRunner
+from qfr_eval.sandbox.client import configured_runner
 from qfr_eval.scheduler.intake import IntakeScheduler
 from qfr_eval.screening.documents import ReleasedEvidence
 from qfr_eval.screening.models import ScreeningSessionConfiguration
@@ -52,7 +52,7 @@ def run_command(
     with connect() as conn:
         protocol = get_active(conn, config.campaign.protocol_ref, config.protocol_version)
     sandbox = (
-        SandboxRunner(config.sandbox_profile, "sha256:" + config.sandbox_image_digest)
+        configured_runner(config.sandbox_profile, "sha256:" + config.sandbox_image_digest)
         if config.sandbox_profile is not None and config.sandbox_image_digest is not None
         else None
     )

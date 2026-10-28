@@ -1,0 +1,17 @@
+{
+  "boundary": "docker_shared_kernel",
+  "checks": {},
+  "controller_architecture": "unknown",
+  "controller_os": "unknown",
+  "engine_architecture": "unknown",
+  "engine_id_sha256": null,
+  "engine_os": "unknown",
+  "engine_version": "unknown",
+  "image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "profile_sha256": "d359c8de0dd585558c224e0c3f3a3abc59813b8759b23ef8431b52760cfc2026",
+  "reason_code": "failed:backend_unavailable",
+  "runtime": "runc",
+  "schema_version": "2",
+  "status": "unavailable",
+  "unapproved": true
+}

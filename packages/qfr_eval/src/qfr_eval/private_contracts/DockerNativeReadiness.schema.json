@@ -1,0 +1,111 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "boundary": {
+      "const": "docker_shared_kernel",
+      "title": "Boundary",
+      "type": "string"
+    },
+    "checks": {
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Checks",
+      "type": "object"
+    },
+    "controller_architecture": {
+      "minLength": 1,
+      "title": "Controller Architecture",
+      "type": "string"
+    },
+    "controller_os": {
+      "minLength": 1,
+      "title": "Controller Os",
+      "type": "string"
+    },
+    "engine_architecture": {
+      "minLength": 1,
+      "title": "Engine Architecture",
+      "type": "string"
+    },
+    "engine_id_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Engine Id Sha256"
+    },
+    "engine_os": {
+      "minLength": 1,
+      "title": "Engine Os",
+      "type": "string"
+    },
+    "engine_version": {
+      "minLength": 1,
+      "title": "Engine Version",
+      "type": "string"
+    },
+    "image_digest": {
+      "minLength": 1,
+      "title": "Image Digest",
+      "type": "string"
+    },
+    "profile_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Profile Sha256",
+      "type": "string"
+    },
+    "reason_code": {
+      "enum": [
+        "ok",
+        "failed:backend_unavailable"
+      ],
+      "title": "Reason Code",
+      "type": "string"
+    },
+    "runtime": {
+      "const": "runc",
+      "title": "Runtime",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "2",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "profile_sha256",
+    "image_digest",
+    "engine_os",
+    "engine_architecture",
+    "engine_version",
+    "engine_id_sha256",
+    "controller_os",
+    "controller_architecture",
+    "runtime",
+    "boundary",
+    "checks",
+    "reason_code"
+  ],
+  "title": "DockerNativeReadiness",
+  "type": "object"
+}

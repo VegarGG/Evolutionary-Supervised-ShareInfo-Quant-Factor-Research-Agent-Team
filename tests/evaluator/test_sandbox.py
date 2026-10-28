@@ -191,14 +191,14 @@ def test_staged_input_readability_under_umask_077_keeps_private_parent(
 
 
 @pytest.fixture
-def actual_runner(probe_profile):
+def actual_runner(probe_profile, backend_runner):
     image = os.environ.get("QFR_TEST_SANDBOX_IMAGE")
     if image is None:
         pytest.skip("actual runsc requires explicit local immutable QFR_TEST_SANDBOX_IMAGE")
-    runner = SandboxRunner(probe_profile, image)
-    readiness = runner.readiness()
-    assert readiness.status == "ready", readiness.model_dump_json()
-    return runner
+    with backend_runner(probe_profile, image) as runner:
+        readiness = runner.readiness()
+        assert readiness.status == "ready", readiness.model_dump_json()
+        yield runner
 
 
 def test_sbx_actual_controls_determinism_single_result_and_cleanup(actual_runner, runner_input):
@@ -256,7 +256,9 @@ def test_sbx_actual_bounded_negative_fixtures(actual_runner, runner_input, sourc
         ("def run(v):\n return sum(i*i for i in range(100000000))", "failed:cpu_limit"),
     ],
 )
-def test_sbx_actual_resource_exhaustion_is_bounded(probe_profile, runner_input, source, code):
+def test_sbx_actual_resource_exhaustion_is_bounded(
+    probe_profile, runner_input, source, code, backend_runner
+):
     image = os.environ.get("QFR_TEST_SANDBOX_IMAGE")
     if image is None:
         pytest.skip("actual resource enforcement requires explicit local sandbox image")
@@ -267,10 +269,10 @@ def test_sbx_actual_resource_exhaustion_is_bounded(probe_profile, runner_input, 
             "timeout_seconds": 15 if code == "failed:memory" else 8,
         }
     )
-    runner = SandboxRunner(profile, image)
-    result = runner.execute(contract(profile, image), package(source), runner_input)
-    assert result.code == code
-    assert result.output is None
+    with backend_runner(profile, image) as runner:
+        result = runner.execute(contract(runner.profile, image), package(source), runner_input)
+        assert result.code == code
+        assert result.output is None
 
 
 @pytest.mark.parametrize("case", ["lookahead", "nondeterminism"])

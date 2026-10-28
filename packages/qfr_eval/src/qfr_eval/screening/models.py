@@ -8,7 +8,7 @@ from qfr_core.dsl.language import DSLConfig
 
 from qfr_eval.backtest.prefix import PrefixCheck
 from qfr_eval.records import RuntimeIdentity
-from qfr_eval.sandbox.models import SandboxCode, SandboxProfile
+from qfr_eval.sandbox.models import SandboxCode, SandboxProfileValue
 from qfr_eval.scheduler.models import IntakeCampaign, IntakePolicy, PilotScreeningPolicy
 
 
@@ -132,7 +132,7 @@ class ScreeningSessionConfiguration(Contract):
     dsl_configs: dict[Literal["pilot_industry_v1", "stock_daily_v1"], DSLConfig]
     protocol_version: Text
     runtime: RuntimeIdentity
-    sandbox_profile: SandboxProfile | None
+    sandbox_profile: SandboxProfileValue | None
     sandbox_image_digest: Sha256 | None
 
     @model_validator(mode="after")

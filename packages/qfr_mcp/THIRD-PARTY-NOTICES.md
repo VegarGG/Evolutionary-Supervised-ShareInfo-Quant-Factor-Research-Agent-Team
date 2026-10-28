@@ -46,3 +46,11 @@ external source material retain their owners' rights. If a specific uncredited
 copy or incompatible obligation is identified, resolve it before distributing
 the affected material; this bounded inventory is not a complete ownership or
 legal-clearance determination.
+
+## Vendored Docker seccomp profile
+
+The evaluator includes the unchanged Moby default seccomp policy, separately
+licensed Apache-2.0 by the Moby contributors. Source, frozen SHA256 and the complete
+license accompany it under `qfr_eval/sandbox/vendor/`. Project noncommercial terms
+do not replace third-party permissions. This policy is shipped in the evaluator
+wheel and image; no runtime upstream download is required.

@@ -24,7 +24,14 @@ from qfr_eval.runtime_contracts import (
     NumericalExecution,
     NumericalLibrary,
 )
-from qfr_eval.sandbox.models import SandboxProfile, SandboxReadiness
+from qfr_eval.sandbox.models import (
+    DockerControllerConfiguration,
+    DockerControllerRequest,
+    DockerNativeProfile,
+    DockerNativeReadiness,
+    SandboxProfile,
+    SandboxReadiness,
+)
 from qfr_eval.scheduler.models import (
     DevelopmentBehavior,
     IntakeCampaign,
@@ -52,6 +59,10 @@ from qfr_eval.statistics.hurdles import TurnoverResult
 from qfr_eval.statistics.incremental import IncrementalResult
 
 MODELS = (
+    DockerControllerConfiguration,
+    DockerControllerRequest,
+    DockerNativeProfile,
+    DockerNativeReadiness,
     AccelerateImage,
     AppleAccelerateExecution,
     NumericalExecution,

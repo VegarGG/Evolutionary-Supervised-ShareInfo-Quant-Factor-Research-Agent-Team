@@ -49,23 +49,16 @@ and isolation through the actual Desktop deployment. A container-only Python pas
 does not cover these host integration paths. No runtime fingerprint or old report
 is retrospectively relabelled as macOS evidence.
 
-## Current unresolved boundary
+## Current execution boundary
 
-The Stage 3 implementation requires registered gVisor `runsc` and fails closed
-when it is unavailable. Bounded cloud Linux AMD64 probes passed in their recorded
-environment. They establish neither Mac readiness nor complete Linux AMD64
-production acceptance. The Mac's existing Docker Desktop has not supplied a
-validated backend for the required sandbox and full Registry P0/P1 execution
-gates. These remain blocked/unrun; Stage 3 is not complete.
+Decision S3-26 records owner approval for an ordinary-Docker backend on the
+existing engine, accepting residual shared-kernel risk and granting Docker API
+access only to a trusted evaluator controller. No extra VM, gVisor registration,
+privileged container, broad socket mode change or TCP Docker endpoint is part of
+this deployment. Research/MCP/Registry/artifacts receive no controller channel.
 
-This correction authorizes no new VM, nested runtime, alternative backend,
-installation, runtime registration, host/Docker security change or fallback.
-Compatibility between the retained backend contract and the chosen Mac deployment
-remains unresolved. Any necessary design or security change needs a separately
-approved decision and the unchanged boundary tests. Independent PostgreSQL,
-ordinary test and image-build evidence does not resolve that conflict.
-
-Earlier stage acceptance reports, decision entries and files under `docs/evidence/`
-remain historical records of their exact source and environment. They do not grant
-Apple host acceptance. Heavy validation stays on the Mac under the owner's
-resource-placement instruction; this amendment starts no test or deployment.
+Implementation and actual Apple acceptance are separate. The new backend's Mac
+readiness, SBX controls, controller/Compose boundary and four Registry P0/P1 cases
+remain UNRUN until measured on the exact source/image. Historical runsc evidence
+keeps its original Linux scope. Native Linux AMD64 acceptance remains separately
+required before claiming that target ready. See [SANDBOX.md](SANDBOX.md).

@@ -21,8 +21,10 @@ is [DEPLOYMENT_TARGETS.md](DEPLOYMENT_TARGETS.md), decision S3-18.
 
 The historical checkpoints below retain their source, counts and environment.
 Cloud runsc probes are not Apple validation or full Linux production acceptance.
-The Mac backend required by the current runsc-only implementation remains
-unvalidated; required Apple SBX and Registry pilot execution are blocked/unrun.
+Decision S3-26 now approves a versioned ordinary-Docker backend and evaluator-only
+controller API grant, with explicit shared-kernel risk acceptance. Its actual Apple
+SBX, Compose controller and Registry pilot execution remain UNRUN; the following
+checkpoints retain their historical backend and evidence.
 This documentation change does not modify settings, run tests on the Mac, select
 another backend or complete Stage 3. Native Linux AMD64 release validation remains
 required later, but does not gate the first Apple release.
@@ -454,3 +456,28 @@ tests passed 20 with four native-only skips. Process RSS peaked at 297,252 KiB
 and environment memory at 893,218,816 bytes, without OOM or timeout/memory/disk
 guard events. The actual PostgreSQL concurrency and native drift regressions
 remain for Mac validation; offline skips are not gate evidence.
+
+## Docker-native implementation handoff — October 28, 2026
+
+S3-26 records the owner's exact boundary/grant approval. The native profile,
+private schemas, bounded local Docker transport, controller/client, sealed tmpfs
+handoff, ownership-verified cleanup and opt-in Compose overlay are implemented for
+Mac validation. The measurement protocol, original inputs/goldens, dependency lock
+and legacy profile/schema bytes are unchanged. Vendored Moby seccomp retains its
+Apache-2.0 license; project notices identify the shipped third-party material.
+
+Current bounded cloud evidence: all seven `just check` commands pass; focused
+native-control/private-contract/Compose tests pass (85 tests). Offline `just test`
+passes 515 tests, with 168 explicit prerequisite skips and one unchanged warning,
+in 138.75 seconds (147.79 seconds including wrapper startup), peak child RSS
+304,804 KiB. These tests never execute candidate code in the host. They do not
+certify Docker-native isolation, PostgreSQL, private pilot or Apple acceptance.
+
+Required Mac follow-up on the published exact source: rebuild the core-only
+sandbox and evaluator images; verify existing Docker socket path/GID without
+changing modes; run the actual native SBX fixtures, all four Registry P0/P1
+execution/measurement/reproduction cases, actual Compose-controller and role/socket
+boundaries, final host/container/DB suites and serial image matrix. Report every
+missing prerequisite as UNRUN and every supplied-but-failed control as FAIL.
+Keep the PR draft, with no merge or Stage 4. Details and resource budgets are in
+[SANDBOX.md](SANDBOX.md).

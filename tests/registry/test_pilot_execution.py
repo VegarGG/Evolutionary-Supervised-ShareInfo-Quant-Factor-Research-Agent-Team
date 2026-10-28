@@ -29,8 +29,7 @@ from qfr_eval.protocols.store import activate_protocol, create_protocol
 from qfr_eval.registry_execution import request_from_screen
 from qfr_eval.reproduce import reproduce
 from qfr_eval.runtime import builtin_definition, capture_runtime
-from qfr_eval.sandbox.models import SandboxProfile
-from qfr_eval.sandbox.runner import SandboxRunner
+from qfr_eval.sandbox.models import DockerNativeProfile, SandboxProfile
 from qfr_eval.scheduler.dedup import digest
 from qfr_eval.scheduler.intake import IntakeScheduler
 from qfr_eval.scheduler.models import IntakeCampaign, IntakePolicy, PilotScreeningPolicy
@@ -94,17 +93,21 @@ def test_registry_six_v4_dsl_features_equal_independent_polars(
 
 
 @pytest.fixture
-def pilot_sandbox():
+def pilot_sandbox(backend_runner):
     image = os.environ.get("QFR_TEST_PILOT_SANDBOX_IMAGE")
     if image is None:
         pytest.skip("UNRUN: full pilot requires the explicitly built core-only sandbox image")
     profile = SandboxProfile.model_validate_json(
         (ROOT / "configs/evaluation/sandbox_pilot_v2.json").read_bytes()
     )
-    runner = SandboxRunner(profile, image)
-    readiness = runner.readiness()
-    assert readiness.status == "ready", readiness.model_dump(mode="json")
-    return runner
+    if os.environ.get("QFR_TEST_SANDBOX_BACKEND") == "docker-native":
+        profile = DockerNativeProfile.model_validate_json(
+            (ROOT / "configs/evaluation/sandbox_docker_native_v1.json").read_bytes()
+        )
+    with backend_runner(profile, image) as runner:
+        readiness = runner.readiness()
+        assert readiness.status == "ready", readiness.model_dump(mode="json")
+        yield runner
 
 
 @pytest.fixture(params=[("P0", "baseline"), ("P1", "P1_reversal_momentum")])

@@ -1,3 +1,9 @@
+> Update 2026-10-28: S3-26 approves the ordinary-Docker shared-kernel boundary
+> and evaluator-controller-only Docker API grant. The following checkpoint retains
+> its original tested source and counts; it does not certify the subsequent native
+> implementation. New Mac SBX, controller/Compose and Registry pilot gates remain
+> UNRUN. See [SANDBOX.md](SANDBOX.md). Stage 3 is still not merge-ready.
+
 # Stage 3 checkpoint — October 28, 2026
 
 **DRAFT — NOT MERGE-READY. Stage 3 has not passed its exit gate.** Actual Apple
@@ -79,7 +85,7 @@ sandbox acceptance, an unseen holdout result or a confirmation query.
 |---|---|
 | REG-01–04 and AUD-01 | Development checks are covered by the real Mac suites; retain final-source CI evidence before final stage acceptance |
 | EVL-01, EVL-03, EVL-05 | Implemented and component-tested; sandbox-dependent integration remains unrun on the Apple target |
-| SBX-01–04 and actual Apple backend readiness | BLOCKED/UNRUN: the approved runsc backend is not validated in the chosen Desktop environment; no alternate backend or security change is authorized |
+| SBX-01–04 and actual Apple backend readiness | BLOCKED/UNRUN: the historical runsc backend lacks Apple evidence; S3-26 now approves the native design, whose actual Mac gates remain UNRUN |
 | SBX-05 deployment boundary | Static/Compose boundary checks exist; retain actual final deployment evidence; static success cannot substitute for runtime isolation |
 | Registered six-feature DSL parity | Component test included in the native suite: `test_registry_six_v4_dsl_features_equal_independent_polars`; this does not execute the P0/P1 packages in a sandbox |
 | Registry P0/P1 sandbox reproduction | BLOCKED/UNRUN: run the four full-package cases in `tests/registry/test_pilot_execution.py` with real inputs, the declared core-only image and a ready approved backend |

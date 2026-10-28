@@ -33,11 +33,20 @@ def _code(error: BaseException) -> str:
 
 
 def main() -> None:
-    # This process runs inside runsc, with external wall-clock cleanup enforced
-    # by the evaluator. Even a candidate that exits or tampers with this bridge
+    # This process runs inside the selected validated sandbox. The evaluator
+    # enforces external cleanup. Even a candidate that exits or tampers with this bridge
     # cannot cause host execution or bypass the parent's output validation.
     options = json.loads(Path("/input/options.json").read_bytes())
-    resource.setrlimit(resource.RLIMIT_NPROC, (options["process_limit"],) * 2)
+    if options.get("process_accounting", "rlimit_nproc") == "cgroup_total_tasks":
+        # Linux RLIMIT_NPROC counts a real UID across containers. The native
+        # backend instead bounds *all* container tasks, including trusted ones.
+        actual = Path("/sys/fs/cgroup/pids.max").read_text().strip()
+        if actual != str(options["pids_limit"]):
+            raise RuntimeError("native task limit not established")
+    elif options.get("process_accounting", "rlimit_nproc") == "rlimit_nproc":
+        resource.setrlimit(resource.RLIMIT_NPROC, (options["process_limit"],) * 2)
+    else:
+        raise RuntimeError("unsupported task accounting")
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     os.umask(0o077)
     os.chdir("/input/package")

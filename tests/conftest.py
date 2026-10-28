@@ -1,7 +1,12 @@
 """Real-database migration setup shared by all stage boundary suites."""
 
+import contextlib
 import json
 import os
+import subprocess
+import sys
+import tempfile
+import time
 from pathlib import Path
 
 import psycopg
@@ -17,6 +22,105 @@ from qfr_registry.storage.migrations import migrate as migrate_registry
 
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_TEST_POLICY = json.loads((ROOT / "configs/testing/postgres_v1.json").read_text())
+
+
+@pytest.fixture
+def backend_runner(monkeypatch):
+    """Opt-in native acceptance uses a separate credential-free controller.
+
+    The test process never passes its PostgreSQL/provider environment to it.
+    This is an actual-engine fixture, not an offline replacement for isolation.
+    """
+    from qfr_eval.sandbox.client import DockerControllerClient
+    from qfr_eval.sandbox.models import DockerControllerConfiguration, DockerNativeProfile
+    from qfr_eval.sandbox.runner import SandboxRunner
+
+    @contextlib.contextmanager
+    def create(profile, image):
+        backend = os.environ.get("QFR_TEST_SANDBOX_BACKEND", "runsc")
+        if backend == "runsc":
+            yield SandboxRunner(profile, image)
+            return
+        if backend != "docker-native":
+            pytest.fail("unknown explicitly selected sandbox backend")
+        docker_socket = os.environ.get("QFR_TEST_DOCKER_SOCKET")
+        if not docker_socket:
+            pytest.fail("native acceptance requires explicit existing QFR_TEST_DOCKER_SOCKET")
+        if not isinstance(profile, DockerNativeProfile):
+            native = json.loads(
+                (ROOT / "configs/evaluation/sandbox_docker_native_v1.json").read_bytes()
+            )
+            # Preserve each existing bounded negative fixture's distinct CPU/
+            # memory/deadline budgets. The backend's security fields stay frozen.
+            native.update(
+                {
+                    key: value
+                    for key, value in profile.model_dump().items()
+                    if key not in {"schema_version", "runtime", "process_limit", "pids_limit"}
+                }
+            )
+            native["profile_id"] += "-docker-native-v1"
+            profile = DockerNativeProfile.model_validate(native)
+        with tempfile.TemporaryDirectory(prefix="qfr-ctl-", dir="/tmp") as directory:
+            root = Path(directory)
+            socket_path = str(root / "controller.sock")
+            config = DockerControllerConfiguration(
+                schema_version="1",
+                profile=profile,
+                image_digest=image,
+                docker_socket=docker_socket,
+                control_socket=socket_path,
+                max_parallel_jobs=1,
+            )
+            path = root / "configuration.json"
+            path.write_text(config.model_dump_json())
+            with (root / "controller.stderr").open("wb") as errors:
+                child = subprocess.Popen(
+                    [sys.executable, "-m", "qfr_eval.sandbox.controller", str(path)],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=errors,
+                    env={
+                        "PATH": os.defpath,
+                        "PYTHONDONTWRITEBYTECODE": "1",
+                        "POLARS_MAX_THREADS": "1",
+                        "OPENBLAS_NUM_THREADS": "1",
+                        "OMP_NUM_THREADS": "1",
+                    },
+                )
+                try:
+                    deadline = time.monotonic() + 30
+                    while not Path(socket_path).exists() and child.poll() is None:
+                        if time.monotonic() >= deadline:
+                            pytest.fail("native controller startup exceeded 30 seconds")
+                        time.sleep(0.05)
+                    assert child.poll() is None, (
+                        "native controller startup failed; check prerequisites"
+                    )
+                    with monkeypatch.context() as environment:
+                        # Reproduction subprocesses inherit only the private evaluator
+                        # channel; they are not granted the engine socket.
+                        environment.setenv("QFR_SANDBOX_CONTROLLER_SOCKET", socket_path)
+                        yield DockerControllerClient(profile, image, socket_path)
+                finally:
+                    if child.poll() is None:
+                        child.terminate()
+                    try:
+                        child.wait(
+                            timeout=2 * profile.timeout_seconds
+                            + 60 * profile.control_timeout_seconds
+                        )
+                    except subprocess.TimeoutExpired:
+                        child.kill()
+                        child.wait()
+                        pytest.fail(
+                            "controller shutdown uncertain; native resources require inspection"
+                        )
+                    assert not Path(socket_path).exists(), (
+                        "controller did not confirm graceful shutdown"
+                    )
+
+    return create
 
 
 def pytest_addoption(parser):

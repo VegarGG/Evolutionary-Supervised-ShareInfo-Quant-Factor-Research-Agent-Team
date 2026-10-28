@@ -11,7 +11,7 @@ from qfr_core.contracts.base import Contract, Text
 from qfr_core.contracts.publication import PublishedArtifact
 from qfr_core.dsl.language import DSLConfig
 
-from qfr_eval.sandbox.models import SandboxProfile, SandboxReadiness
+from qfr_eval.sandbox.models import SandboxProfileValue, SandboxReadinessValue
 from qfr_eval.scheduler.dedup import verify_publication
 from qfr_eval.screening.models import KindAdapterProfile, ScreeningExecutionPolicy
 
@@ -23,8 +23,8 @@ class ArtifactExecutionBundle(Contract):
     execution_policy: ScreeningExecutionPolicy
     adapter_profile: KindAdapterProfile
     dsl_config: DSLConfig | None
-    sandbox_profile: SandboxProfile | None
-    screening_backend: SandboxReadiness | None
+    sandbox_profile: SandboxProfileValue | None
+    screening_backend: SandboxReadinessValue | None
 
     def assets(self) -> dict[str, bytes]:
         try:

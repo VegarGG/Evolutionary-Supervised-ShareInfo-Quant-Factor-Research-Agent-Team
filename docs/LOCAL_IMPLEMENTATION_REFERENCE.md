@@ -230,6 +230,7 @@ There are two distinct decisions, and they belong to different owners. Evolution
 | Evaluation | Research | Research-zone data snapshot | Read-only volume produced by data ingest | One-way |
 | Humans | Research | Charters, budgets, start and pause | Research API with the research-lead token | Write |
 | Humans | Evaluation | Protocols, policies, quotas, epochs, acceptance decisions | Eval admin API with the evaluation-owner or approver token | Write |
+| Evaluation worker | Trusted sandbox controller | Bounded frozen contract, package and authorized input slices | Private Unix socket; no generic Docker proxy | Evaluator only |
 | Research | Evaluation | Nothing else: no job submission, priority hints, cancellations, configuration or simulation control | None | Forbidden |
 
 ### 4.4 End-to-end feedback cycle
@@ -367,13 +368,22 @@ In v1 a single PostgreSQL instance hosts three databases, and the separation com
 | research-worker | qfr_research | research_rw on research_db | postgres, registry-api, feedback-api, LLM provider endpoints | LLM API keys, registry publisher token, feedback reader token | Research snapshot, read-only |
 | registry-api | qfr_registry | registry_app on registry_db | postgres | Registry tokens | None |
 | eval-scheduler | qfr_eval | eval_rw on eval_db | postgres, registry-api | Registry evaluator token | Full snapshot and epochs, read-only |
-| eval-worker (N replicas) | qfr_eval | eval_rw on eval_db | postgres only, no egress | None | Full snapshot and epochs, read-only |
+| eval-worker (N replicas) | qfr_eval | eval_rw on eval_db | postgres and private sandbox controller, no egress | None | Full snapshot and epochs, read-only; private controller socket |
+| sandbox-controller (serialized) | qfr_eval | None | Existing local Docker Unix API only; no network | None | Private control socket and reviewed configuration; no full data or DB secrets |
 | release-worker | qfr_eval | eval_rw on eval_db | postgres | None | None |
 | sim-engine | qfr_eval | eval_rw on eval_db | postgres | None | Full snapshot, read-only |
 | feedback-api | qfr_eval feedback module | feedback_ro on eval_db, SELECT on feedback views only | postgres | Feedback tokens | None |
 | eval-admin-api | qfr_eval | eval_rw on eval_db | postgres | Evaluation-owner and approver tokens | Epochs, read-only |
 | data-ingest | qfr_eval ingest module | eval_rw on eval_db | Internet (data source only), postgres | None | Raw and snapshots, read-write |
 | dashboard | apps/dashboard | None, calls the APIs only | The APIs | Per-role tokens held server-side | None |
+
+Owner-approved Stage 3 amendment S3-26: the Docker-native backend accepts ordinary
+containers' residual shared-kernel risk. Its controller alone receives Docker API
+access; no research, MCP, Registry or artifact receives that socket or controller
+channel. The opt-in overlay adds no host/runtime setting or new VM. New profiles,
+actual engine/guest controls and Mac Registry P0/P1 tests are required; historical
+runsc evidence is preserved without becoming an Apple gate substitute. See
+[SANDBOX.md](SANDBOX.md) and its explicitly UNRUN acceptance matrix.
 
 Database roles and grants:
 

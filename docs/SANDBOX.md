@@ -1,12 +1,87 @@
 # Artifact execution boundary
 
-Deployment acceptance is macOS/Apple Silicon first on the Mac Studio's existing
-Docker Desktop, then native Linux AMD64; see [the target matrix](DEPLOYMENT_TARGETS.md).
-The Linux ARM64 engine inside Desktop is not Apple host acceptance. The retained
-runsc-only runner has no validated Mac backend yet, so Apple isolation and full
-Registry pilot execution remain blocked/unrun. Cloud probes below are development
-evidence only. No new VM, alternative backend or runtime/security change is
-authorized by this deployment correction.
+macOS/Apple Silicon on the existing Mac Studio Docker Desktop is the first
+acceptance target; Linux AMD64 remains a separately validated target. Decision
+S3-26 records approval of ordinary Docker's residual shared-kernel risk and the
+trusted evaluator controller's Docker API grant. No extra VM, gVisor registration,
+privileged container, added capability, TCP endpoint or host permission change is
+part of that grant. **New Docker-native runtime gates are UNRUN.**
+
+## Docker-native backend
+
+`DockerNativeProfile/2` and `DockerNativeReadiness/2` identify the new shared-kernel
+boundary; `sandbox_docker_native_v1.json` is distinct from retained runsc profiles.
+The approved financial protocol, seeds, goldens and exposure accounting are
+unchanged. Old records are not relabelled or rewritten. The native profile uses
+16 total container tasks, including trusted overhead, instead of cross-container
+per-real-UID RLIMIT_NPROC; all other pilot CPU/memory/deadline/output limits remain.
+
+Only the trusted controller opens the existing Unix Docker API. It has no DB
+credential, provider key, signing key or full-data mount. The evaluator worker
+uses a 0600 Unix socket in a 0700 named volume. Research/MCP/Registry/artifacts
+have neither socket mounted. The serialized controller accepts only bounded
+contract/package/input requests for its preconfigured profile and immutable image.
+It cannot accept caller-supplied Docker options, mounts, runtimes, URLs or pulls.
+A read-only Docker socket mount still grants powerful API authority; it is not a
+read-only API. Explicit engine socket path and existing socket GID are required.
+
+Each job uses a labelled size-bounded tmpfs volume for sanitized inputs. A trusted
+idle helper mounts it while the controller transfers a generated regular-file tar
+through the local Docker API. Checksums and modes are verified. The candidate's
+read-only mount starts before the helper is removed, retaining the tmpfs contents;
+writer removal and a second seal check precede candidate execution. There is no
+host-data bind or writable host result mount. Capped results use the existing
+no-follow reader and independent typed validation. Input volume and containers
+are removed with ownership and absence checks. Uncertain cleanup poisons the
+controller; startup refuses leftover labelled resources, requiring explicit
+inspection, rather than silently deleting them or accepting another job.
+
+The engine must implement API v1.45, cgroup v2, runc and seccomp. Every actual job
+is inspected for its runtime, namespaces, no-network setting, non-root UID,
+capabilities, no-new-privileges, exact memory/swap/CPU/PID/ulimit/tmpfs limits,
+readonly input, image and pinned Moby seccomp policy. Readiness additionally checks
+the guest's effective cgroup values, process flags, denied writes/network and
+absence of private packages/assets. Native engine OS/CPU and controller OS/CPU are
+separate evidence fields; a Linux controller cannot certify the physical Mac host.
+
+`infra/docker-compose.sandbox.yml` is an opt-in overlay (`--profile sandbox`),
+not an automatic startup or research trigger. Supply reviewed
+`QFR_SANDBOX_CONTROLLER_CONFIG`, `QFR_DOCKER_SOCKET`, and `QFR_DOCKER_SOCKET_GID`
+without changing their host permissions. The config is a
+`DockerControllerConfiguration`, with the native profile, loaded immutable image,
+`docker_socket=/var/run/docker.sock`,
+`control_socket=/run/qfr-sandbox/controller.sock`, `max_parallel_jobs=1`.
+It contains no credential. The controller image pre-provisions the private socket
+directory; only controller/eval-worker mount it. The existing eval-worker remains
+idle until explicitly invoked with an evaluator-owned session configuration.
+
+The controller has a 1.5 GiB/1 CPU/32-task envelope. A pilot job reserves two
+1 GiB containers during handoff plus a 128 MiB input tmpfs; output scratch is
+within the candidate's 1 GiB cgroup. Only one job runs at a time. Allow additional
+headroom for the trusted evaluator, database and Docker overhead; run full pilot,
+image matrices and large suites on the Mac. A measured budget violation fails;
+no automatic resource increase or weaker profile is selected.
+
+For actual Mac acceptance, load the rebuilt core-only sandbox image and set
+`QFR_TEST_SANDBOX_BACKEND=docker-native`, `QFR_TEST_DOCKER_SOCKET` to the verified
+existing engine Unix socket path, and `QFR_TEST_SANDBOX_IMAGE` to its immutable
+local image ID. Run `tests/evaluator/test_sandbox.py`; the fixture launches a
+separate controller with a curated environment that excludes DB/provider secrets.
+For all four Registry pilot gates, additionally set
+`QFR_TEST_PILOT_SANDBOX_IMAGE` to the same full core image and run
+`tests/registry/test_pilot_execution.py` with required PostgreSQL, private inputs
+and original oracle prerequisites. The tests retain every assertion; missing
+inputs are UNRUN and supplied-but-unavailable controls fail. Test the real Compose
+controller and role/socket boundaries separately; native fixture success does not
+prove the containerized controller or Apple host acceptance.
+
+See [the approved design](proposals/DOCKER_NATIVE_SANDBOX.md) for the complete
+remaining gate matrix. Passing these tests cannot prove absence of kernel exploits.
+
+## Retained runsc backend and historical evidence
+
+The following describes the original versioned backend and its historical evidence.
+It is retained for those records; it is not a fallback for a selected native profile.
 
 The private evaluator controls Docker through an explicit local Unix socket.
 Artifacts, research and MCP receive no socket. `SandboxRunner` accepts an immutable

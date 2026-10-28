@@ -69,3 +69,29 @@ def test_compose_trust_zones():
             assert service["cap_drop"] == ["ALL"]
             assert "postgres_password" not in service.get("secrets", [])
             assert not any("docker.sock" in item for item in service.get("volumes", []))
+
+
+def test_native_overlay_grants_only_controller_and_private_evaluator_channel():
+    overlay = yaml.safe_load((ROOT / "infra/docker-compose.sandbox.yml").read_text())
+    assert set(overlay["services"]) == {"sandbox-controller", "eval-worker"}
+    controller = overlay["services"]["sandbox-controller"]
+    assert controller["profiles"] == ["sandbox"]
+    assert controller["network_mode"] == "none"
+    assert controller["read_only"] and controller["cap_drop"] == ["ALL"]
+    assert controller["user"] == "65532:65532"
+    assert controller["security_opt"] == ["no-new-privileges:true"]
+    assert not controller.get("secrets") and not controller.get("ports")
+    assert not controller.get("devices") and not controller.get("privileged")
+    assert not controller.get("use_api_socket")
+    mounts = controller["volumes"]
+    assert len(mounts) == 3
+    assert mounts[0]["target"] == "/var/run/docker.sock"
+    assert mounts[0]["read_only"] and not mounts[0]["bind"]["create_host_path"]
+    assert "${QFR_DOCKER_SOCKET:?" in mounts[0]["source"]
+    assert mounts[1]["target"] == "/etc/qfr/sandbox-controller.json"
+    assert mounts[2] == "sandbox-control:/run/qfr-sandbox"
+    worker = overlay["services"]["eval-worker"]
+    assert worker["volumes"] == ["sandbox-control:/run/qfr-sandbox:ro"]
+    assert worker["environment"] == {
+        "QFR_SANDBOX_CONTROLLER_SOCKET": "/run/qfr-sandbox/controller.sock"
+    }

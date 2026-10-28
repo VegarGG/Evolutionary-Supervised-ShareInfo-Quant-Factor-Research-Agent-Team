@@ -620,6 +620,277 @@
       "title": "DateRange",
       "type": "object"
     },
+    "DockerNativeProfile": {
+      "additionalProperties": false,
+      "description": "New shared-kernel contract. Never reinterpret a historical runsc profile.",
+      "properties": {
+        "approval_ref": {
+          "const": "owner-approved-2026-10-28-docker-native-v1",
+          "title": "Approval Ref",
+          "type": "string"
+        },
+        "boundary": {
+          "const": "docker_shared_kernel",
+          "title": "Boundary",
+          "type": "string"
+        },
+        "control_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Control Timeout Seconds",
+          "type": "integer"
+        },
+        "cpu_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Cpu Seconds",
+          "type": "integer"
+        },
+        "cpus": {
+          "exclusiveMinimum": 0,
+          "maximum": 2,
+          "title": "Cpus",
+          "type": "number"
+        },
+        "dependency_lock_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Dependency Lock Sha256",
+          "type": "string"
+        },
+        "file_descriptors": {
+          "exclusiveMinimum": 0,
+          "title": "File Descriptors",
+          "type": "integer"
+        },
+        "input_tmpfs_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Input Tmpfs Bytes",
+          "type": "integer"
+        },
+        "max_input_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Input Bytes",
+          "type": "integer"
+        },
+        "max_output_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Output Bytes",
+          "type": "integer"
+        },
+        "max_package_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Package Bytes",
+          "type": "integer"
+        },
+        "max_package_files": {
+          "exclusiveMinimum": 0,
+          "title": "Max Package Files",
+          "type": "integer"
+        },
+        "memory_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Memory Bytes",
+          "type": "integer"
+        },
+        "pids_limit": {
+          "exclusiveMinimum": 0,
+          "maximum": 16,
+          "minimum": 4,
+          "title": "Pids Limit",
+          "type": "integer"
+        },
+        "process_accounting": {
+          "const": "cgroup_total_tasks",
+          "title": "Process Accounting",
+          "type": "string"
+        },
+        "profile_id": {
+          "minLength": 1,
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "runtime": {
+          "const": "runc",
+          "title": "Runtime",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "P0_P1_verification_only",
+            "bounded_synthetic_acceptance"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "seccomp_sha256": {
+          "const": "514c38e72edc5363e87287ea87212211172c6c3251a974ca21ebfd05a56c7f5d",
+          "title": "Seccomp Sha256",
+          "type": "string"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "integer"
+        },
+        "tmpfs_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Tmpfs Bytes",
+          "type": "integer"
+        },
+        "user_id": {
+          "exclusiveMinimum": 0,
+          "title": "User Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "profile_id",
+        "revision",
+        "scope",
+        "runtime",
+        "boundary",
+        "approval_ref",
+        "user_id",
+        "cpus",
+        "memory_bytes",
+        "pids_limit",
+        "process_accounting",
+        "cpu_seconds",
+        "timeout_seconds",
+        "tmpfs_bytes",
+        "input_tmpfs_bytes",
+        "max_input_bytes",
+        "max_package_bytes",
+        "max_package_files",
+        "max_output_bytes",
+        "control_timeout_seconds",
+        "file_descriptors",
+        "dependency_lock_sha256",
+        "seccomp_sha256"
+      ],
+      "title": "DockerNativeProfile",
+      "type": "object"
+    },
+    "DockerNativeReadiness": {
+      "additionalProperties": false,
+      "properties": {
+        "boundary": {
+          "const": "docker_shared_kernel",
+          "title": "Boundary",
+          "type": "string"
+        },
+        "checks": {
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Checks",
+          "type": "object"
+        },
+        "controller_architecture": {
+          "minLength": 1,
+          "title": "Controller Architecture",
+          "type": "string"
+        },
+        "controller_os": {
+          "minLength": 1,
+          "title": "Controller Os",
+          "type": "string"
+        },
+        "engine_architecture": {
+          "minLength": 1,
+          "title": "Engine Architecture",
+          "type": "string"
+        },
+        "engine_id_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Engine Id Sha256"
+        },
+        "engine_os": {
+          "minLength": 1,
+          "title": "Engine Os",
+          "type": "string"
+        },
+        "engine_version": {
+          "minLength": 1,
+          "title": "Engine Version",
+          "type": "string"
+        },
+        "image_digest": {
+          "minLength": 1,
+          "title": "Image Digest",
+          "type": "string"
+        },
+        "profile_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Profile Sha256",
+          "type": "string"
+        },
+        "reason_code": {
+          "enum": [
+            "ok",
+            "failed:backend_unavailable"
+          ],
+          "title": "Reason Code",
+          "type": "string"
+        },
+        "runtime": {
+          "const": "runc",
+          "title": "Runtime",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "2",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "status",
+        "profile_sha256",
+        "image_digest",
+        "engine_os",
+        "engine_architecture",
+        "engine_version",
+        "engine_id_sha256",
+        "controller_os",
+        "controller_architecture",
+        "runtime",
+        "boundary",
+        "checks",
+        "reason_code"
+      ],
+      "title": "DockerNativeReadiness",
+      "type": "object"
+    },
     "DocumentImplementation": {
       "additionalProperties": false,
       "properties": {
@@ -2314,9 +2585,13 @@
           "$ref": "#/$defs/SandboxProfile"
         },
         {
+          "$ref": "#/$defs/DockerNativeProfile"
+        },
+        {
           "type": "null"
         }
-      ]
+      ],
+      "title": "Sandbox Profile"
     },
     "schema_version": {
       "const": "1",
@@ -2329,9 +2604,13 @@
           "$ref": "#/$defs/SandboxReadiness"
         },
         {
+          "$ref": "#/$defs/DockerNativeReadiness"
+        },
+        {
           "type": "null"
         }
-      ]
+      ],
+      "title": "Screening Backend"
     }
   },
   "required": [
