@@ -1,0 +1,32 @@
+{
+  "$defs": {
+    "JsonValue": {}
+  },
+  "additionalProperties": false,
+  "properties": {
+    "charter": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Charter",
+      "type": "object"
+    },
+    "name": {
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "program_id": {
+      "format": "uuid",
+      "title": "Program Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "program_id",
+    "name",
+    "charter"
+  ],
+  "title": "ProgramCreate",
+  "type": "object"
+}

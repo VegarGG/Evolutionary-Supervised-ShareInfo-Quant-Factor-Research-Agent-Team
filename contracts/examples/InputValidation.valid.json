@@ -1,0 +1,10 @@
+{
+  "baseline_refs_verified": [],
+  "data_refs_verified": [],
+  "readiness": "needs_input",
+  "runnable": false,
+  "source_assets_verified": [],
+  "unresolved_requirements": [
+    "Dataset required"
+  ]
+}

@@ -26,6 +26,13 @@ The bounded review recorded in docs/LICENSING_REVIEW.md identified:
   (BSD-3-Clause) from the existing dependency lock. HTTPX is a direct core client
   dependency; the evaluator declares FastAPI/Uvicorn for its GET-only feedback
   edge. Dependency versions and upstream notices remain unchanged.
+- The Stage 4 MCP adapter pins the official Python `mcp` 2.3.0 SDK and
+  `mcp-types` 2.3.0 (MIT). Its locked dependencies add `httpx2`/`httpcore2`
+  2.16.0 and `sse-starlette` 3.6.0 (BSD-3-Clause), PyJWT 2.15.1 and
+  Truststore 0.10.5 (MIT), and python-multipart 0.0.32 (Apache-2.0).
+  These are referenced/installed packages, not copied source. Retain their
+  complete installed notices; conditional packages for other platforms remain
+  governed by their own upstream terms. This is not binary redistribution clearance.
 - Ed25519 signing/verification uses cryptography 50.0.2 (Apache-2.0 OR
   BSD-3-Clause); its locked CFFI dependency uses MIT-0 and Pycparser uses
   BSD-3-Clause. Wheels may bundle OpenSSL and other components; retain their

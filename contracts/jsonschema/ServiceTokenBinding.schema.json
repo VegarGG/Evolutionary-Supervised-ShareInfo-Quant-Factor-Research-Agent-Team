@@ -19,7 +19,8 @@
       "items": {
         "enum": [
           "reader",
-          "research_lead"
+          "research_lead",
+          "human_reviewer"
         ],
         "type": "string"
       },

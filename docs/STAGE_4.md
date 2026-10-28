@@ -209,6 +209,36 @@ The private pilot test remains unrun here; new container volume/image evidence
 and the complete human-driven flow remain for Mac acceptance. The measurement
 protocol, dependency lock and original evidence are unchanged.
 
+## P4.9 Research API, exports and transport checkpoint
+
+The typed Research API, scoped durable manual jobs, registrations, human checkpoints,
+independent-receipt completion and immutable export/download are implemented; see
+[RESEARCH_API.md](RESEARCH_API.md). The new delivery checker v2 signs the complete
+input/admission binding, preserving all v1 evidence and measurement settings.
+[QUARANTINE_TRANSPORT.md](QUARANTINE_TRANSPORT.md) describes the separate data-only
+intake service: durable bounded upload, mapped regular-file import, checksum and
+archive checks, immutable history and metadata-only reference verification. It
+has no evaluator credentials/control or raw-source download. Runtime service
+wiring, standard MCP adapter and actual two-client evidence are still pending.
+
+All seven `just check` commands pass. The required-PostgreSQL ordinary suite has
+**967 passed, 82 explicit skips**, in 104.72 seconds (108.45 seconds including the
+wrapper), peak child RSS **331,552 KiB**. The focused research/delivery/export/
+transport suite has **93 passed** in 15.06 seconds. HTTP cancellation, lost-response
+retry, service recreation, real database transactions, ephemeral signatures,
+conflicting intent, malicious ZIPs, links/FIFOs and interrupted chunks are tested.
+The synthetic signed evidence remains labelled as such, not pilot acceptance.
+A test-client startup wait in the restricted execution harness was diagnosed
+before application entry; running with the local networking permission used by
+other HTTP/database tests passed. No application isolation setting was changed.
+
+The maintained MCP SDK and new dependencies are pinned and notices retained;
+previous dependency versions are unchanged. New sandbox profiles v6 (runsc) and
+v5 (Docker-native) differ only in identity, revision and the dependency-lock hash.
+Final Mac evidence must use that lock and fresh runtime identities. The approved
+measurement protocol file remains SHA256
+`a234bcc99af5c6c34b8fb585eb0701dca614d55048629418030876ff6dc752fb`.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

@@ -7,7 +7,7 @@ from pydantic import Field, HttpUrl, PositiveFloat, PositiveInt, StringConstrain
 from qfr_core.contracts.base import Contract, SecretRef, Text
 
 ProgramId = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$")]
-ServiceRole = Literal["reader", "research_lead"]
+ServiceRole = Literal["reader", "research_lead", "human_reviewer"]
 
 
 class PublicServiceClientConfiguration(Contract):
@@ -45,7 +45,7 @@ class ServiceTokenBinding(Contract):
 
 class ServiceAuthentication(Contract):
     revision: PositiveInt
-    audience: Literal["feedback", "research", "mcp"]
+    audience: Literal["feedback", "research", "mcp", "intake"]
     minimum_token_bytes: PositiveInt = Field(ge=32)
     maximum_token_bytes: PositiveInt = Field(le=4096)
     bindings: list[ServiceTokenBinding] = Field(min_length=1, max_length=1000)

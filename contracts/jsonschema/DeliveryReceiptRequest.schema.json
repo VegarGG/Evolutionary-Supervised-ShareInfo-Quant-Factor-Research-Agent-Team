@@ -1,0 +1,34 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "expected_revision": {
+      "exclusiveMinimum": 0,
+      "title": "Expected Revision",
+      "type": "integer"
+    },
+    "operation_key": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Operation Key",
+      "type": "string"
+    },
+    "proposal_id": {
+      "format": "uuid",
+      "title": "Proposal Id",
+      "type": "string"
+    },
+    "receipt_id": {
+      "format": "uuid",
+      "title": "Receipt Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "operation_key",
+    "expected_revision",
+    "receipt_id",
+    "proposal_id"
+  ],
+  "title": "DeliveryReceiptRequest",
+  "type": "object"
+}

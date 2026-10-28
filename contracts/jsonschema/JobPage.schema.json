@@ -1,0 +1,483 @@
+{
+  "$defs": {
+    "Conclusion": {
+      "enum": [
+        "supported_positive",
+        "supported_negative",
+        "empty_shortlist",
+        "data_blocked"
+      ],
+      "title": "Conclusion",
+      "type": "string"
+    },
+    "DeliverableRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_refs_required": {
+          "title": "Evidence Refs Required",
+          "type": "boolean"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        },
+        "schema_ref": {
+          "minLength": 1,
+          "title": "Schema Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "schema_ref",
+        "required",
+        "evidence_refs_required"
+      ],
+      "title": "DeliverableRequirement",
+      "type": "object"
+    },
+    "ExitGateSpecification": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_conclusions": {
+          "items": {
+            "$ref": "#/$defs/Conclusion"
+          },
+          "minItems": 1,
+          "title": "Allowed Conclusions",
+          "type": "array"
+        },
+        "evidence_release_requirements": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Release Requirements",
+          "type": "array"
+        },
+        "forward_evidence_required": {
+          "title": "Forward Evidence Required",
+          "type": "boolean"
+        },
+        "frozen_at": {
+          "format": "date-time",
+          "title": "Frozen At",
+          "type": "string"
+        },
+        "gate_id": {
+          "minLength": 1,
+          "title": "Gate Id",
+          "type": "string"
+        },
+        "gate_type": {
+          "enum": [
+            "research_delivery",
+            "investment_promotion"
+          ],
+          "title": "Gate Type",
+          "type": "string"
+        },
+        "human_signoff_required": {
+          "title": "Human Signoff Required",
+          "type": "boolean"
+        },
+        "independent_checker_required": {
+          "const": true,
+          "title": "Independent Checker Required",
+          "type": "boolean"
+        },
+        "protocol_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Protocol Refs",
+          "type": "array"
+        },
+        "reproducibility_criteria": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Reproducibility Criteria",
+          "type": "array"
+        },
+        "required_checks": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Checks",
+          "type": "array"
+        },
+        "required_deliverables": {
+          "items": {
+            "$ref": "#/$defs/DeliverableRequirement"
+          },
+          "minItems": 1,
+          "title": "Required Deliverables",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "spec_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Spec Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "gate_id",
+        "gate_type",
+        "required_deliverables",
+        "protocol_refs",
+        "required_checks",
+        "reproducibility_criteria",
+        "evidence_release_requirements",
+        "allowed_conclusions",
+        "human_signoff_required",
+        "forward_evidence_required",
+        "independent_checker_required",
+        "frozen_at",
+        "spec_hash"
+      ],
+      "title": "ExitGateSpecification",
+      "type": "object"
+    },
+    "JobRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "authorized_spend_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Authorized Spend Ref"
+        },
+        "brief_id": {
+          "minLength": 1,
+          "title": "Brief Id",
+          "type": "string"
+        },
+        "checkpoint_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Checkpoint Refs",
+          "type": "array"
+        },
+        "config_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Config Hash",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "evaluator_status_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Evaluator Status Ref"
+        },
+        "exit_gate": {
+          "$ref": "#/$defs/ExitGateSpecification"
+        },
+        "generation_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Generation Id"
+        },
+        "idempotency_key": {
+          "minLength": 1,
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "input_bundle_id": {
+          "minLength": 1,
+          "title": "Input Bundle Id",
+          "type": "string"
+        },
+        "job_id": {
+          "minLength": 1,
+          "title": "Job Id",
+          "type": "string"
+        },
+        "payload_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Payload Hash",
+          "type": "string"
+        },
+        "project_id": {
+          "minLength": 1,
+          "title": "Project Id",
+          "type": "string"
+        },
+        "provider_profiles_ref": {
+          "minLength": 1,
+          "title": "Provider Profiles Ref",
+          "type": "string"
+        },
+        "public_protocol_card_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Public Protocol Card Ref"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "blocked_on_data",
+                "required_input_missing",
+                "budget_exhausted",
+                "outcome_unknown",
+                "operator_pause",
+                "internal_error"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason"
+        },
+        "receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReceiptReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/JobState"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "job_id",
+        "project_id",
+        "idempotency_key",
+        "payload_hash",
+        "input_bundle_id",
+        "brief_id",
+        "config_hash",
+        "provider_profiles_ref",
+        "public_protocol_card_ref",
+        "authorized_spend_ref",
+        "exit_gate",
+        "state",
+        "generation_id",
+        "evaluator_status_ref",
+        "checkpoint_refs",
+        "reason",
+        "receipt",
+        "created_at",
+        "updated_at"
+      ],
+      "title": "JobRecord",
+      "type": "object"
+    },
+    "JobState": {
+      "enum": [
+        "received",
+        "validating",
+        "ready",
+        "running",
+        "awaiting_evaluation",
+        "validating_delivery",
+        "completed",
+        "needs_input",
+        "paused",
+        "budget_paused",
+        "waiting_for_data",
+        "failed",
+        "cancelled"
+      ],
+      "title": "JobState",
+      "type": "string"
+    },
+    "JobStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "job": {
+          "$ref": "#/$defs/JobRecord"
+        },
+        "next_action": {
+          "enum": [
+            "start",
+            "manual_research",
+            "poll_released_feedback",
+            "request_delivery_check",
+            "export",
+            "supply_new_intent",
+            "register_data",
+            "resume",
+            "budget_authorization",
+            "inspect_failure",
+            "none"
+          ],
+          "title": "Next Action",
+          "type": "string"
+        },
+        "polling_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Polling Seconds",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "job",
+        "revision",
+        "next_action",
+        "polling_seconds"
+      ],
+      "title": "JobStatus",
+      "type": "object"
+    },
+    "ReceiptReference": {
+      "additionalProperties": false,
+      "properties": {
+        "gate_spec_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Gate Spec Hash",
+          "type": "string"
+        },
+        "independent_checker": {
+          "minLength": 1,
+          "title": "Independent Checker",
+          "type": "string"
+        },
+        "job_id": {
+          "minLength": 1,
+          "title": "Job Id",
+          "type": "string"
+        },
+        "receipt_id": {
+          "minLength": 1,
+          "title": "Receipt Id",
+          "type": "string"
+        },
+        "receipt_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Receipt Sha256",
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "signature_verified": {
+          "title": "Signature Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "job_id",
+        "gate_spec_hash",
+        "result",
+        "independent_checker",
+        "receipt_sha256",
+        "signature_verified"
+      ],
+      "title": "ReceiptReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "has_more": {
+      "title": "Has More",
+      "type": "boolean"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/JobStatus"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "next_after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Next After Id"
+    }
+  },
+  "required": [
+    "items",
+    "next_after_id",
+    "has_more"
+  ],
+  "title": "JobPage",
+  "type": "object"
+}

@@ -4,7 +4,10 @@
       "additionalProperties": false,
       "properties": {
         "checker_id": {
-          "const": "pilot-research-delivery-v1",
+          "enum": [
+            "pilot-research-delivery-v1",
+            "pilot-research-delivery-v2"
+          ],
           "title": "Checker Id",
           "type": "string"
         },
@@ -46,7 +49,10 @@
           "type": "string"
         },
         "schema_version": {
-          "const": "1",
+          "enum": [
+            "1",
+            "2"
+          ],
           "title": "Schema Version",
           "type": "string"
         },

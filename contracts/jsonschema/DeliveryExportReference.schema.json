@@ -1,0 +1,45 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "archive_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Archive Bytes",
+      "type": "integer"
+    },
+    "archive_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Archive Sha256",
+      "type": "string"
+    },
+    "download_path": {
+      "minLength": 1,
+      "title": "Download Path",
+      "type": "string"
+    },
+    "export_id": {
+      "format": "uuid",
+      "title": "Export Id",
+      "type": "string"
+    },
+    "job_id": {
+      "format": "uuid",
+      "title": "Job Id",
+      "type": "string"
+    },
+    "manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Manifest Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "export_id",
+    "job_id",
+    "manifest_sha256",
+    "archive_sha256",
+    "archive_bytes",
+    "download_path"
+  ],
+  "title": "DeliveryExportReference",
+  "type": "object"
+}

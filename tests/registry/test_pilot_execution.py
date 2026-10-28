@@ -98,11 +98,11 @@ def pilot_sandbox(backend_runner):
     if image is None:
         pytest.skip("UNRUN: full pilot requires the explicitly built core-only sandbox image")
     profile = SandboxProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_pilot_v5.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_pilot_v6.json").read_bytes()
     )
     if os.environ.get("QFR_TEST_SANDBOX_BACKEND") == "docker-native":
         profile = DockerNativeProfile.model_validate_json(
-            (ROOT / "configs/evaluation/sandbox_docker_native_v4.json").read_bytes()
+            (ROOT / "configs/evaluation/sandbox_docker_native_v5.json").read_bytes()
         )
     with backend_runner(profile, image) as runner:
         readiness = runner.readiness()

@@ -1,0 +1,15 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "registration_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Registration Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "registration_id"
+  ],
+  "title": "DatasetRegistrationRequest",
+  "type": "object"
+}

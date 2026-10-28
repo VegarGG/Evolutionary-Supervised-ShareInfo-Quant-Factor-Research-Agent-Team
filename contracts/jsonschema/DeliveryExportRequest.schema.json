@@ -1,0 +1,21 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "operation_key": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Operation Key",
+      "type": "string"
+    },
+    "shortlist_only": {
+      "title": "Shortlist Only",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "operation_key",
+    "shortlist_only"
+  ],
+  "title": "DeliveryExportRequest",
+  "type": "object"
+}

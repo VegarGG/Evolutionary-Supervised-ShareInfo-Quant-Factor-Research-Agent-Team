@@ -28,9 +28,9 @@ class ServicePrincipal:
     def __post_init__(self) -> None:
         if not self.name.strip() or not self.roles or not self.programs:
             raise ValueError("explicit service principal and scopes required")
-        if self.audience not in ("feedback", "research", "mcp"):
+        if self.audience not in ("feedback", "research", "mcp", "intake"):
             raise ValueError("unsupported public service audience")
-        if not self.roles <= {"reader", "research_lead"}:
+        if not self.roles <= {"reader", "research_lead", "human_reviewer"}:
             raise ValueError("unsupported public service role")
         if self.audience == "feedback" and self.roles != {"reader"}:
             raise ValueError("feedback permits only reader authority")

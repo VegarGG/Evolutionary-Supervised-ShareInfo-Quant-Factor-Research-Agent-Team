@@ -28,6 +28,8 @@ MODULES = [
     "providers",
     "publication",
     "reports",
+    "research",
+    "transfers",
 ]
 
 

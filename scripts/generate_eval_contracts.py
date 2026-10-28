@@ -486,7 +486,7 @@ def generate(check=False):
         }
     )
     sandbox = SandboxProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_pilot_v5.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_pilot_v6.json").read_bytes()
     )
     readiness = SandboxReadiness(
         schema_version="1",
@@ -500,7 +500,7 @@ def generate(check=False):
         reason_code="failed:backend_unavailable",
     )
     native = DockerNativeProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_docker_native_v4.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_docker_native_v5.json").read_bytes()
     )
     controller_config = DockerControllerConfiguration(
         schema_version="1",
@@ -748,7 +748,7 @@ def generate(check=False):
     from scripts.release_contract_examples import examples as release_examples
 
     delivery_policy = PilotDeliveryPolicy.model_validate_json(
-        (ROOT / "configs/delivery/pilot_research_delivery_v1.json").read_bytes()
+        (ROOT / "configs/delivery/pilot_research_delivery_v2.json").read_bytes()
     )
     for value in [
         *release_examples(ROOT),

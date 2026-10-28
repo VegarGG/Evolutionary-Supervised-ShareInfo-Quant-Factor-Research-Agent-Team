@@ -1,0 +1,12 @@
+{
+  "bytes_received": 0,
+  "chunk_bytes": 4194304,
+  "created_at": "2026-10-28T00:00:00Z",
+  "execution_authorized": false,
+  "expected_bytes": 1,
+  "program_id": "00000000-0000-0000-0000-00000000001e",
+  "source": null,
+  "state": "staging",
+  "upload_id": "00000000-0000-0000-0000-00000000001e",
+  "validation": "transport_only"
+}

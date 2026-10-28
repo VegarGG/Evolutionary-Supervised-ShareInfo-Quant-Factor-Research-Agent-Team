@@ -3,7 +3,7 @@
   "image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
   "operation": "readiness",
   "package_base64": null,
-  "profile_sha256": "265feb291346d8b9aeab47fc7608fc8ad005c1d13363fb0e61336a34926a4704",
+  "profile_sha256": "3308f5bae767fe284b0636265f98289b11184b369adc373314ecd4e950c0f78e",
   "request": null,
   "schema_version": "1"
 }

@@ -974,4 +974,7 @@ def examples(root: Path):
             research_manifest_sha256=H,
         )
     )
+    from scripts.research_contract_examples import examples as research_examples
+
+    roots.extend(research_examples(root, roots))
     return roots

@@ -347,6 +347,20 @@ def check_delivery(
                 for ref, card in sorted(cards.items())
             ],
             config_refs=[
+                *(
+                    [
+                        VersionReference(
+                            reference_id="input-bundle:" + context.input_bundle.bundle_id,
+                            sha256=content_sha256(context.input_bundle.model_dump(mode="json")),
+                        ),
+                        VersionReference(
+                            reference_id="admission:" + context.job.job_id,
+                            sha256=context.job.payload_hash,
+                        ),
+                    ]
+                    if policy.schema_version == "2"
+                    else []
+                ),
                 VersionReference(
                     reference_id="job-config:" + context.job.job_id, sha256=context.job.config_hash
                 ),

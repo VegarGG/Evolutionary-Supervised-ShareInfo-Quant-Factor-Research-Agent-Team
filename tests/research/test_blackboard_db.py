@@ -86,7 +86,7 @@ def test_research_migration_is_idempotent_and_wrong_database_refused(
     migrate(migration_dsn("research_db"))
     with research_connect("postgres") as owner:
         assert owner.execute("SELECT version_num FROM research.alembic_version").fetchone() == (
-            "0001_blackboard",
+            "0003_active_delivery",
         )
         for table in ("program_revisions", "briefs", "checkpoints", "checkpoint_answers"):
             assert owner.execute("SELECT to_regclass(%s)", [f"research.{table}"]).fetchone()[0]

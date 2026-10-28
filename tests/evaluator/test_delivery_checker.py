@@ -336,6 +336,30 @@ def test_dlv_03_positive_and_negative_must_match_resolved_hurdle(eval_connect, t
     )
 
 
+def test_delivery_v2_binds_input_without_relabelling_v1_evidence(eval_connect, tmp_path):
+    case = delivery_case(eval_connect, tmp_path)
+    original = check(eval_connect, case)
+    assert len(original.config_refs) == 4 and original.independent_checker.endswith("-v1")
+    policy = PilotDeliveryPolicy.model_validate_json(
+        (ROOT / "configs/delivery/pilot_research_delivery_v2.json").read_bytes()
+    )
+    assert {
+        k: v for k, v in policy.model_dump().items() if k not in {"schema_version", "checker_id"}
+    } == {
+        k: v
+        for k, v in case.policy.model_dump().items()
+        if k not in {"schema_version", "checker_id"}
+    }
+    current = check(eval_connect, case, policy=policy)
+    assert current.result == "pass" and len(current.config_refs) == 6
+    refs = {r.reference_id: r.sha256 for r in current.config_refs}
+    assert refs["input-bundle:" + case.context.input_bundle.bundle_id] == content_sha256(
+        case.context.input_bundle.model_dump(mode="json")
+    )
+    assert refs["admission:" + case.context.job.job_id] == case.context.job.payload_hash
+    assert case.verifier.delivery(original) == original  # No legacy rewrite or verification bypass.
+
+
 @pytest.mark.parametrize("issue", ["missing_replay", "insufficient", "unresolved_hurdle"])
 def test_dlv_03_missing_or_insufficient_is_not_supported_negative(eval_connect, tmp_path, issue):
     case = delivery_case(

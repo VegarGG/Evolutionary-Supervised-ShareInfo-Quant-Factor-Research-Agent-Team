@@ -306,7 +306,7 @@ def test_parsed_kernel_bytes_preserve_all_address_and_route_semantics():
 
 def test_native_probe_uses_network_audit_and_preserves_other_controls():
     profile = DockerNativeProfile.model_validate_json(
-        Path("configs/evaluation/sandbox_docker_native_v4.json").read_bytes()
+        Path("configs/evaluation/sandbox_docker_native_v5.json").read_bytes()
     )
     source = native_probe_source(profile)
     compile(source, "trusted-native-probe", "exec")
