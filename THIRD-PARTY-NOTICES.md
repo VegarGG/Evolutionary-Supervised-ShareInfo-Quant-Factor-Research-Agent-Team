@@ -22,8 +22,8 @@ The bounded review recorded in docs/LICENSING_REVIEW.md identified:
   bundle additional components. NumPy and SciPy include component-specific
   notices; SciPy's wheel also records OpenBLAS and GCC runtime-library terms
   with the GCC Runtime Library Exception.
-- Psycopg and psycopg-binary under LGPL-3.0-only. The evaluator and Stage 3
-  registry use them at runtime as well as in development/test environments.
+- Psycopg and psycopg-binary under LGPL-3.0-only. The evaluator, registry and
+  Stage 4 research database service use them at runtime as well as in development/test environments.
   Their unmodified library files and
   notices must remain separable and replaceable. Any image distributor must
   satisfy the applicable LGPL source, notice, installation/relinking, and

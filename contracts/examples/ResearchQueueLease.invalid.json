@@ -1,0 +1,13 @@
+{
+  "attempt": 1,
+  "fence": 1,
+  "lease_until": "2026-10-25T12:00:00Z",
+  "payload": {
+    "input_ref": "bundle-example"
+  },
+  "program_id": "program-example",
+  "queue": "validation",
+  "queue_entry_id": "queue-example",
+  "research_job_id": "job-example",
+  "worker": "fixture-worker"
+}

@@ -32,7 +32,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @pytest.fixture
 def probe_profile():
-    original = json.loads((ROOT / "configs/evaluation/sandbox_pilot_v2.json").read_bytes())
+    original = json.loads((ROOT / "configs/evaluation/sandbox_pilot_v3.json").read_bytes())
     return SandboxProfile.model_validate(
         {
             **original,

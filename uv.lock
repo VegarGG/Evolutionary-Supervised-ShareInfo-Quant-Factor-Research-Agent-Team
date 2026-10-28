@@ -802,11 +802,17 @@ name = "qfr-research"
 version = "0.1.0"
 source = { editable = "packages/qfr_research" }
 dependencies = [
+    { name = "alembic" },
+    { name = "psycopg", extra = ["binary"] },
     { name = "qfr-core" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "qfr-core", editable = "packages/qfr_core" }]
+requires-dist = [
+    { name = "alembic" },
+    { name = "psycopg", extras = ["binary"] },
+    { name = "qfr-core", editable = "packages/qfr_core" },
+]
 
 [[package]]
 name = "referencing"

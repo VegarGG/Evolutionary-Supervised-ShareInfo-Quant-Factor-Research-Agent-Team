@@ -795,4 +795,28 @@ def examples(root: Path):
             ],
         ),
     ]
+    roots += [
+        b.ResearchProgram(
+            schema_version="1",
+            program_id="program-example",
+            name="Synthetic research context",
+            status="inactive",
+            charter_revision=1,
+            charter={"new_data_fetch": False, "paid_run_authorized": False},
+            created_by="fixture-author",
+            created_at=AT,
+        ),
+        b.ResearchQueueLease(
+            schema_version="1",
+            queue_entry_id="queue-example",
+            program_id="program-example",
+            research_job_id="job-example",
+            queue="validation",
+            worker="fixture-worker",
+            fence=1,
+            attempt=1,
+            lease_until=AT,
+            payload={"input_ref": "bundle-example"},
+        ),
+    ]
     return roots

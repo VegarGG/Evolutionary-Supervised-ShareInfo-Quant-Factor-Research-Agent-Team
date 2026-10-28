@@ -85,6 +85,8 @@
   "ResearchChecks",
   "ResearchNoteDocument",
   "ResearchNotePayload",
+  "ResearchProgram",
+  "ResearchQueueLease",
   "ResourceLimits",
   "RetryPolicy",
   "RoleProfile",

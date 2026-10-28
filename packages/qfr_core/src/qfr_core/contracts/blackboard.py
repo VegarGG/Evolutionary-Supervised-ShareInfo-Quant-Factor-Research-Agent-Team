@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import AwareDatetime
+from pydantic import AwareDatetime, JsonValue, PositiveInt
 
 from qfr_core.contracts.base import Contract, Text
 
@@ -33,3 +33,31 @@ class AuditEvent(Contract):
     entity_ref: Text
     evidence_refs: list[Text]
     at: AwareDatetime
+
+
+class ResearchProgram(Contract):
+    """Research context; an active program alone does not admit work."""
+
+    schema_version: Literal["1"]
+    program_id: Text
+    name: Text
+    status: Literal["inactive", "active", "paused"]
+    charter_revision: PositiveInt
+    charter: dict[str, JsonValue]
+    created_by: Text
+    created_at: AwareDatetime
+
+
+class ResearchQueueLease(Contract):
+    """One fenced task lease, separate from a research job's delivery state."""
+
+    schema_version: Literal["1"]
+    queue_entry_id: Text
+    program_id: Text
+    research_job_id: Text
+    queue: Text
+    worker: Text
+    fence: PositiveInt
+    attempt: PositiveInt
+    lease_until: AwareDatetime
+    payload: dict[str, JsonValue]

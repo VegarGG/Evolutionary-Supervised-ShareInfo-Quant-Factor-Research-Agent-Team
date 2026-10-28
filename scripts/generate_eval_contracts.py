@@ -485,7 +485,7 @@ def generate(check=False):
         }
     )
     sandbox = SandboxProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_pilot_v2.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_pilot_v3.json").read_bytes()
     )
     readiness = SandboxReadiness(
         schema_version="1",
@@ -499,7 +499,7 @@ def generate(check=False):
         reason_code="failed:backend_unavailable",
     )
     native = DockerNativeProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_docker_native_v1.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_docker_native_v2.json").read_bytes()
     )
     controller_config = DockerControllerConfiguration(
         schema_version="1",

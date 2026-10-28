@@ -36,7 +36,7 @@ JOB = "qfr-native-" + "0" * 32
 
 @pytest.fixture
 def native_profile():
-    value = json.loads(Path("configs/evaluation/sandbox_docker_native_v1.json").read_text())
+    value = json.loads(Path("configs/evaluation/sandbox_docker_native_v2.json").read_text())
     value.update(
         scope="bounded_synthetic_acceptance",
         cpus=0.5,
