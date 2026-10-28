@@ -1,7 +1,7 @@
 """Private versioned release rules and unsigned projections, never public evidence."""
 
 import hashlib
-from typing import Annotated, Literal, Self
+from typing import Annotated, Any, Literal, Self
 from uuid import UUID
 
 from pydantic import (
@@ -10,6 +10,8 @@ from pydantic import (
     NonNegativeInt,
     PositiveFloat,
     PositiveInt,
+    SerializerFunctionWrapHandler,
+    model_serializer,
     model_validator,
 )
 from qfr_core.contracts.base import Contract, Sha256, Text
@@ -17,6 +19,7 @@ from qfr_core.contracts.enums import DiagnosticFlag, ReasonCode
 from qfr_core.contracts.reports import (
     EvidenceIdentity,
     MetricValue,
+    PlanningDetectability,
     ReleasedContent,
     ReleasedScalar,
 )
@@ -46,12 +49,22 @@ class PilotReleasePolicy(Contract):
     secondary_metrics: Literal["withheld_pending_separate_family_summary"]
     rank_bucket_rule: Literal["frozen_family_midrank_tertiles"]
     automatic_campaign: Literal[False]
+    planning_detectability: PlanningDetectability | None = None
 
     @model_validator(mode="after")
     def whole_utc_batches(self) -> Self:
         if 24 % self.batch_hours:
             raise ValueError("release batches must divide a UTC day")
+        if (self.version == 1) != (self.planning_detectability is None):
+            raise ValueError("planning disclosure requires a new policy revision")
         return self
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_policy(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        if self.planning_detectability is None:
+            value.pop("planning_detectability", None)
+        return value
 
     @property
     def sha256(self) -> str:

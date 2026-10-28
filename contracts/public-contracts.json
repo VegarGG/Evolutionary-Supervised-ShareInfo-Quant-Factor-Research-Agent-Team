@@ -63,6 +63,7 @@
   "PayloadFile",
   "PilotHurdleFlags",
   "PilotRelease",
+  "PlanningDetectability",
   "PricingSnapshot",
   "Provenance",
   "ProviderEndpoint",

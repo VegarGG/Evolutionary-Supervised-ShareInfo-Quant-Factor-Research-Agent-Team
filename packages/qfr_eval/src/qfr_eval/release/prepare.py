@@ -25,6 +25,7 @@ from qfr_core.contracts.reports import (
 
 from qfr_eval.protocols.models import FrozenProtocol
 from qfr_eval.records import EvaluationRequest, Measurement, OfficialRecord, RuntimeIdentity
+from qfr_eval.release.cards import protocol_card_ref
 from qfr_eval.release.models import (
     LadderBest,
     PilotReleasePolicy,
@@ -382,7 +383,7 @@ def prepare_locked(
         lineage_ids=lineages,
         release_policy_ref=f"{policy.policy_id}@{policy.version}",
         release_policy_sha256=policy.sha256,
-        protocol_card_ref=identity.protocol_version,
+        protocol_card_ref=protocol_card_ref(identity.protocol_version, policy),
         profile=policy.profile,
         content=content,
         reason_codes=reasons,

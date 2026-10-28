@@ -593,6 +593,13 @@ def examples(root: Path):
             type="decision", decision="REJECTED", category="gate_failed", gate="quality"
         ),
         r.LibraryRelease(type="library", membership="baseline"),
+        r.PlanningDetectability(
+            metric="extreme_macro_recall",
+            critical_t=2,
+            period_source="released_scalar_origin_period_count",
+            assumption="independent_mature_matched_decisions",
+            admission_effect="none",
+        ),
         r.PublicProtocolCard(
             schema_version="1",
             protocol_version="pilot/1",

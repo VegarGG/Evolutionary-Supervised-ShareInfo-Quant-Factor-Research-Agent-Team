@@ -246,7 +246,7 @@ class FeedbackReader:
                 if card_ref != (
                     card.policy_ref
                     if isinstance(card, PublicReleasePolicyCard)
-                    else card.protocol_version
+                    else card.card_ref or card.protocol_version
                 ):
                     raise FeedbackUnavailable("public card identity differs")
                 cards.append(card)

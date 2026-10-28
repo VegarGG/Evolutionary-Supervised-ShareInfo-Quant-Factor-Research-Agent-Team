@@ -35,10 +35,10 @@ def queue(conn, record, policy):
     return key, ready
 
 
-def pilot_policy(conn):
+def pilot_policy(conn, *, version=1):
     path = ROOT / "configs/evaluation/pilot_p0_p1_verification_v1.yaml"
     policy = PilotReleasePolicy.model_validate_json(
-        (ROOT / "configs/evaluation/release_pilot_v1.json").read_bytes()
+        (ROOT / f"configs/evaluation/release_pilot_v{version}.json").read_bytes()
     )
     sha = create_protocol(conn, path, principal="synthetic-owner", request_id=uuid4())
     from qfr_core.configuration import load_yaml

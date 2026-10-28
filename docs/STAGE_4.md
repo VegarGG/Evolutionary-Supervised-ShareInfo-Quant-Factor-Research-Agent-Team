@@ -91,9 +91,9 @@ authoritative result. Absolute primary recall carries no invented Registry
 baseline ID; the frozen protocol retains its paired P1 comparison identity.
 Withheld results clear scores, sample counts, reasons and diagnostic flags.
 
-MDE and secondary numeric diagnostics stay private for the Stage 4 scalar/flags
-flow. The family summary at generation end remains Stage 6 work, as recorded in
-S4-06. Stock W1/W2 projection and quota tests use declared synthetic adapter inputs;
+The initial v1 policy withheld MDE and secondary numeric diagnostics. Decision
+S4-10 below reconciles planning MDE with §7.9; secondary performance metrics and
+the generation-end family summary remain Stage 6 work. Stock W1/W2 projection and quota tests use declared synthetic adapter inputs;
 they are not stock financial acceptance. Signing, public API visibility and the
 real elapsed-batch P0/P1 flow still require subsequent integration and Mac evidence.
 
@@ -126,10 +126,18 @@ FastAPI/Uvicorn by the feedback service. No dependency version changed. New
 `sandbox_pilot_v4.json` and `sandbox_docker_native_v3.json` pin the lock, retaining
 all controls and prior profiles. No production token grant was deployed.
 
-Before final release integration, reconcile §7.9's detectability metadata with
-S4-06's current withholding: a deterministic planning diagnostic derived from the
-already released metric identity/sample count must not expose another candidate
-performance result or bypass withheld budgets. This is not an exit-gate waiver.
+Release-policy revision 2 reconciles §7.9 with the scalar/flags boundary. Its
+planning-only MDE uses the existing closed-form null variance at t=2, explicitly
+conditional on independent mature matched decisions. Inputs are the public metric
+identity and the released scalar origin's period count, never current-child
+outcomes or private diagnostics. Withheld results disclose no MDE or sample count.
+This does not alter the frozen measurement protocol or its statistical gates.
+Earlier policy/card payloads and hashes retain their original serialization; new
+protocol-card references bind the release-policy hash to avoid overwriting cards.
+
+Planning reconciliation verification: seven check commands pass; required-PostgreSQL
+ordinary suite **825 passed / 81 explicit skips** (99.24 seconds). The six new
+planning/card tests pass. The frozen protocol and dependency lock are unchanged.
 
 ## Required exit evidence
 

@@ -1,6 +1,6 @@
 """Strict released-only projection; there is no private holdout metric field."""
 
-from typing import Annotated, Literal, Self
+from typing import Annotated, Any, Literal, Self
 
 from pydantic import (
     AwareDatetime,
@@ -8,6 +8,8 @@ from pydantic import (
     NonNegativeInt,
     PositiveFloat,
     PositiveInt,
+    SerializerFunctionWrapHandler,
+    model_serializer,
     model_validator,
 )
 
@@ -196,8 +198,19 @@ class ReleasedReport(Contract):
         return self
 
 
+class PlanningDetectability(Contract):
+    """A null-model planning calculation, never a candidate performance or gate."""
+
+    metric: Literal["extreme_macro_recall"]
+    critical_t: Literal[2]
+    period_source: Literal["released_scalar_origin_period_count"]
+    assumption: Literal["independent_mature_matched_decisions"]
+    admission_effect: Literal["none"]
+
+
 class PublicProtocolCard(Contract):
     schema_version: Literal["1"]
+    card_ref: Text | None = None
     protocol_version: Text
     profile: Literal["pilot_industry_v1", "stock_daily_v1"]
     universe: Text
@@ -207,6 +220,13 @@ class PublicProtocolCard(Contract):
     public_gate_descriptions: list[Text]
     release_policy_ref: Text
     exposure: Literal["previously_seen", "unknown", "prospective"]
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_card(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        if self.card_ref is None:
+            value.pop("card_ref", None)
+        return value
 
 
 class PublicReleasePolicyCard(Contract):
@@ -240,3 +260,11 @@ class PublicReleasePolicyCard(Contract):
     confirmation_metrics_released: Literal[False]
     diagnostics: Literal["enum_codes_only"]
     prior_best_origin_required: Literal[True]
+    planning_detectability: PlanningDetectability | None = None
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_card(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        if self.planning_detectability is None:
+            value.pop("planning_detectability", None)
+        return value

@@ -1,7 +1,7 @@
 """One scalar and enum flags from matching frozen validation evidence only."""
 
 from decimal import Decimal
-from math import isfinite
+from math import ceil, isfinite
 from typing import Literal
 
 from qfr_core.contracts.reports import (
@@ -17,6 +17,7 @@ from qfr_eval.records import EvaluationRequest, Measurement, OfficialRecord
 from qfr_eval.release.models import LadderBest, PilotReleasePolicy
 from qfr_eval.release.policy import coarsen
 from qfr_eval.scheduler.dedup import digest
+from qfr_eval.statistics.detectability import minimum_detectable_effect
 
 
 def scope_hash(request: EvaluationRequest, policy: PilotReleasePolicy, lineage: str) -> str:
@@ -167,13 +168,28 @@ def project_pilot(
         quality.append("small_sample_warning")
     if pit_grade_downgrade:
         quality.append("pit_grade_downgrade")
+    mde = MetricValue(value=None, missing_reason="withheld")
+    if policy.planning_detectability is not None:
+        mde = (
+            minimum_detectable_effect(
+                policy.planning_detectability.metric,
+                universe=protocol.metrics.industry_count,
+                selected=ceil(
+                    protocol.metrics.industry_count * protocol.metrics.selection_fraction
+                ),
+                periods=current.period_count,
+                critical_t=policy.planning_detectability.critical_t,
+            )
+            if current.measurement.value is not None
+            else MetricValue(value=None, missing_reason="insufficient_data")
+        )
     content = PilotRelease(
         type="pilot",
         scalar=current,
         hurdle_flags=PilotHurdleFlags.model_validate(flags),
         rank_bucket=rank_bucket(metric.value, frozen_family_scores),
         quality_flags=quality,
-        minimum_detectable_effect=MetricValue(value=None, missing_reason="withheld"),
+        minimum_detectable_effect=mde,
         not_for_selection=metric.value is None,
     )
     return content, updates

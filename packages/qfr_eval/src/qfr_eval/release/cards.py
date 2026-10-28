@@ -7,18 +7,27 @@ from psycopg.types.json import Jsonb
 from qfr_core.contracts.reports import PublicProtocolCard, PublicReleasePolicyCard
 
 from qfr_eval.protocols.models import FrozenProtocol
-from qfr_eval.release.models import PilotReleasePolicy
+from qfr_eval.release.models import PilotReleasePolicy, StockReleasePolicy
 from qfr_eval.release.policy import public_card
 from qfr_eval.release.store import active_policy
 from qfr_eval.scheduler.dedup import digest
 
 
+def protocol_card_ref(
+    protocol_version: str, policy: PilotReleasePolicy | StockReleasePolicy
+) -> str:
+    if isinstance(policy, PilotReleasePolicy) and policy.planning_detectability is not None:
+        return f"{protocol_version}:release-policy:{policy.sha256}"
+    return protocol_version
+
+
 def pilot_protocol_card(protocol: FrozenProtocol, policy: PilotReleasePolicy) -> PublicProtocolCard:
     if protocol.sha256 != policy.protocol_sha256 or protocol.scope != "P0_P1_verification_only":
         raise ValueError("public pilot card requires its exact approved protocol")
-    return PublicProtocolCard(
+    version = f"{protocol.protocol_id}@{protocol.version}"
+    card = PublicProtocolCard(
         schema_version="1",
-        protocol_version=f"{protocol.protocol_id}@{protocol.version}",
+        protocol_version=version,
         profile="pilot_industry_v1",
         universe="31 pilot industries; p60 eligible observations",
         label_definition=(
@@ -41,6 +50,23 @@ def pilot_protocol_card(protocol: FrozenProtocol, policy: PilotReleasePolicy) ->
         release_policy_ref=f"{policy.policy_id}@{policy.version}",
         exposure="previously_seen",
     )
+    if policy.planning_detectability is not None:
+        card = card.model_copy(
+            update={
+                "card_ref": protocol_card_ref(version, policy),
+                "metric_definitions": {
+                    **card.metric_definitions,
+                    "minimum_detectable_effect": (
+                        "Planning-only primary-recall null effect at t=2, conditional on "
+                        "independent mature matched decisions, derived from the released "
+                        "scalar origin's period "
+                        "count. Not a confidence interval, observed improvement or admission gate. "
+                        "Retained lineage bests retain their original sample count."
+                    ),
+                },
+            }
+        )
+    return card
 
 
 def store_card(
@@ -57,7 +83,11 @@ def store_card(
         if isinstance(card, PublicReleasePolicyCard)
         else "public_protocol_cards"
     )
-    ref = card.policy_ref if isinstance(card, PublicReleasePolicyCard) else card.protocol_version
+    ref = (
+        card.policy_ref
+        if isinstance(card, PublicReleasePolicyCard)
+        else card.card_ref or card.protocol_version
+    )
     body = card.model_dump(mode="json")
     sha = digest(body)
     key = uuid5(NAMESPACE_URL, "qfr-public-card:" + table + ":" + ref)

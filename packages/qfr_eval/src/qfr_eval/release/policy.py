@@ -95,6 +95,7 @@ def public_card(policy: PilotReleasePolicy | StockReleasePolicy) -> PublicReleas
             quotas={
                 "lineage_versions_per_generation": policy.feedback_versions_per_lineage_generation
             },
+            planning_detectability=policy.planning_detectability,
         )
     else:
         values = dict(
