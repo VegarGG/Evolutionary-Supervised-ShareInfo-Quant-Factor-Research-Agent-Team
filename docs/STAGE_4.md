@@ -163,6 +163,32 @@ Final Mac images and evidence must use the new lock and fresh runtime identities
 No persistent key or production grant was created. Independent delivery,
 on-demand import, Research API/MCP and final acceptance remain in progress.
 
+## Independent delivery checkpoint
+
+[DELIVERY_CHECKER.md](DELIVERY_CHECKER.md) describes the implemented pilot gate,
+independent evaluator HTTP pull, immutable attempts and signed receipts. The
+checker verifies actual committed releases, original private receipt files,
+Registry payload hashes and the existing exact-replay audit. It supports a
+declared negative result without treating missing/insufficient evidence as a
+pass. Proposal retries are idempotent; a failed receipt cannot be rewritten.
+Feedback exposes only the signed, program-scoped public receipt through GET.
+
+All seven `just check` commands pass. Required-PostgreSQL `just test` passed
+**873 tests / 81 explicit skips**, with the existing Starlette/httpx warning
+(116.90 seconds; 322,252 KiB peak RSS). Focused delivery/database tests passed
+**44 tests**. These tests use declared synthetic measurement/replay evidence and
+ephemeral signing keys, including real HTTP pull, transactional rollback,
+concurrent retry, conflicting proposals, tampering and program-scope denial.
+The first full run exposed a stale migration assertion and a test cursor filled
+by other programs' retained rows. The assertion now names migration 0008 and the
+release test uses its own policy/program scope, retaining exact batch-time and
+unsigned-visibility assertions. No existing evidence was deleted.
+
+The approved measurement protocol and dependency lock are unchanged. P4.9's
+Research API must bind receipt verification to completion/export, and the final
+Mac acceptance must supply actual pilot replay and elapsed batch evidence.
+P3.8, P4.9, client demonstrations and the complete Stage 4 gate remain pending.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

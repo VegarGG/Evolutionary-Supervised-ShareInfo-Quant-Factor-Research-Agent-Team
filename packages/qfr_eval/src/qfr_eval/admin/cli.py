@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from uuid import UUID
@@ -26,6 +27,8 @@ def main(arguments: list[str] | None = None) -> None:
     from qfr_eval.artifact_store import EvidenceStore
     from qfr_eval.cluster_job import cluster_job
     from qfr_eval.db import migrate
+    from qfr_eval.delivery.models import DeliveryWorkerConfiguration
+    from qfr_eval.delivery.worker import pull_and_check
     from qfr_eval.protocols.models import FrozenProtocol
     from qfr_eval.protocols.store import activate_protocol, create_protocol
     from qfr_eval.receipt_signing import sign_measurement_receipt
@@ -63,7 +66,11 @@ def main(arguments: list[str] | None = None) -> None:
     release.add_argument("--intake-runtime", type=Path)
     sign_receipt = sub.add_parser("sign-receipt")
     sign_receipt.add_argument("--record-id", type=UUID, required=True)
-    for command in (release, sign_receipt):
+    delivery = sub.add_parser("delivery-check")
+    delivery.add_argument("--configuration", type=Path, required=True)
+    delivery.add_argument("--job-id", type=UUID, required=True)
+    delivery.add_argument("--proposal-id", type=UUID, required=True)
+    for command in (release, sign_receipt, delivery):
         command.add_argument("--signing-key", type=Path, required=True)
         command.add_argument("--verification-policy", type=Path, required=True)
         command.add_argument("--evidence-root", type=Path, required=True)
@@ -91,6 +98,7 @@ def main(arguments: list[str] | None = None) -> None:
         cards,
         release,
         sign_receipt,
+        delivery,
     ):
         command.add_argument("--principal", required=True)
         command.add_argument("--request-id", type=UUID, required=True)
@@ -118,6 +126,36 @@ def main(arguments: list[str] | None = None) -> None:
             print(json.dumps({"migration": "complete"}))
             return
         with psycopg.connect(connection_dsn(), autocommit=True) as conn:
+            if args.action == "delivery-check":
+                delivery_result = pull_and_check(
+                    conn,
+                    DeliveryWorkerConfiguration.model_validate_json(
+                        args.configuration.read_bytes()
+                    ),
+                    os.environ,
+                    args.job_id,
+                    args.proposal_id,
+                    EvaluatorSigner.from_private_file(
+                        args.signing_key, purposes=["delivery_receipt"]
+                    ),
+                    EvidenceVerifier(
+                        VerificationPolicy.model_validate_json(
+                            args.verification_policy.read_bytes()
+                        )
+                    ),
+                    EvidenceStore(args.evidence_root),
+                    principal=args.principal,
+                    request_id=args.request_id,
+                )
+                print(
+                    json.dumps(
+                        {
+                            "delivery_receipt_id": delivery_result.receipt_id,
+                            "result": delivery_result.result,
+                        }
+                    )
+                )
+                return
             if args.action in ("release-ready", "sign-receipt"):
                 signer = EvaluatorSigner.from_private_file(
                     args.signing_key, purposes=["released_report", "measurement_receipt"]

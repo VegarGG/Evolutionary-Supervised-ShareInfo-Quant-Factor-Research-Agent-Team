@@ -1,0 +1,13 @@
+{
+  "checker_id": "pilot-research-delivery-v1",
+  "maximum_artifacts": 64,
+  "maximum_payload_bytes": 104857600,
+  "maximum_reports": 64,
+  "negative_meaning": "declared_scope_does_not_meet_frozen_research_hurdle",
+  "release_policy_sha256": "6cb263a4834cc068fe22dcc27e8d857fab9b4419ab58feb4da86a5ca3cb8841b",
+  "reproduction": "immutable_evaluator_exact_match_event",
+  "required_execution": "registry",
+  "schema_version": "1",
+  "scope": "P0_P1_verification_only",
+  "unapproved": true
+}

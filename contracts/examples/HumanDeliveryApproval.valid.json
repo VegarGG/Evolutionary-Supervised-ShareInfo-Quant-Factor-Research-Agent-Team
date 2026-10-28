@@ -1,0 +1,8 @@
+{
+  "approval_id": "approval-example",
+  "decision": "approve",
+  "gate_spec_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "principal": "synthetic-human",
+  "proposal_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "recorded_at": "2026-10-25T12:00:00Z"
+}

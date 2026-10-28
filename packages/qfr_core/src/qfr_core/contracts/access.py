@@ -2,12 +2,32 @@
 
 from typing import Annotated, Literal, Self
 
-from pydantic import Field, PositiveInt, StringConstraints, model_validator
+from pydantic import Field, HttpUrl, PositiveFloat, PositiveInt, StringConstraints, model_validator
 
 from qfr_core.contracts.base import Contract, SecretRef, Text
 
 ProgramId = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$")]
 ServiceRole = Literal["reader", "research_lead"]
+
+
+class PublicServiceClientConfiguration(Contract):
+    revision: PositiveInt
+    base_url: HttpUrl
+    token_ref: SecretRef
+    timeout_seconds: PositiveFloat
+    max_request_bytes: PositiveInt
+    max_response_bytes: PositiveInt
+
+    @model_validator(mode="after")
+    def unambiguous_origin(self) -> Self:
+        if (
+            self.base_url.username
+            or self.base_url.password
+            or self.base_url.query
+            or self.base_url.fragment
+        ):
+            raise ValueError("service URL cannot contain credentials, query or fragment")
+        return self
 
 
 class ServiceTokenBinding(Contract):

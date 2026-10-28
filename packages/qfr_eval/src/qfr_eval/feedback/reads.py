@@ -12,6 +12,7 @@ from psycopg import Connection
 from psycopg.pq import TransactionStatus
 from pydantic import ValidationError
 from qfr_core.access import ServicePrincipal
+from qfr_core.contracts.delivery import DeliveryReceipt
 from qfr_core.contracts.feedback import (
     ArtifactFeedback,
     FeedbackReadPolicy,
@@ -112,6 +113,27 @@ class FeedbackReader:
             if row is None:
                 raise FeedbackNotFound("released report unavailable")
             result = self._row(row, principal)
+            self._bounded(result)
+            return result
+
+    def delivery(self, principal: ServicePrincipal, identity: UUID) -> DeliveryReceipt:
+        with self.scoped(principal) as conn:
+            row = conn.execute(
+                "SELECT program_id,job_id,receipt_sha256,CASE WHEN octet_length(payload::text)"
+                "<=%s THEN payload ELSE NULL END FROM feedback.delivery_receipts_v WHERE id=%s",
+                [self.policy.max_page_bytes, identity],
+            ).fetchone()
+            if row is None:
+                raise FeedbackNotFound("released delivery receipt unavailable")
+            if row[3] is None or hashlib.sha256(canonical_json(row[3])).hexdigest() != row[2]:
+                raise FeedbackUnavailable("delivery receipt content differs")
+            result = self.verifier.delivery(DeliveryReceipt.model_validate(row[3]))
+            if (
+                result.receipt_id != str(identity)
+                or result.job_id != row[1]
+                or (row[0] not in principal.programs)
+            ):
+                raise FeedbackUnavailable("delivery receipt identity differs")
             self._bounded(result)
             return result
 

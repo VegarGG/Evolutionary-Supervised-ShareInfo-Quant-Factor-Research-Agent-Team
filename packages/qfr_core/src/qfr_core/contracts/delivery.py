@@ -8,12 +8,83 @@ from pydantic import AwareDatetime, Field, NonNegativeInt, model_validator
 from qfr_core.contracts.artifacts import ArtifactReference
 from qfr_core.contracts.base import Contract, Sha256, Text
 from qfr_core.contracts.enums import Conclusion
+from qfr_core.contracts.intake import InputBundle
+from qfr_core.contracts.jobs import JobRecord, ResearchBrief
 from qfr_core.contracts.reports import Signature
 
 
 class VersionReference(Contract):
     reference_id: Text
     sha256: Sha256
+
+
+class DeliverableBinding(Contract):
+    """A requested output names an immutable Registry artifact, not local bytes."""
+
+    name: Text
+    artifact: ArtifactReference
+
+
+class DeliveryProposal(Contract):
+    schema_version: Literal["1"]
+    proposal_id: Text
+    job_id: Text
+    conclusion: Conclusion
+    artifact_refs: list[ArtifactReference] = Field(min_length=1)
+    released_report_refs: list[VersionReference]
+    deliverables: list[DeliverableBinding] = Field(min_length=1)
+    shortlist: list[ArtifactReference]
+
+    @model_validator(mode="after")
+    def explicit_unique_scope(self) -> Self:
+        artifacts = {item.artifact_version_id: item.content_hash for item in self.artifact_refs}
+        if len(artifacts) != len(self.artifact_refs):
+            raise ValueError("duplicate delivery artifact")
+        if len({r.reference_id for r in self.released_report_refs}) != len(
+            self.released_report_refs
+        ):
+            raise ValueError("duplicate delivery report")
+        if len({b.name for b in self.deliverables}) != len(self.deliverables):
+            raise ValueError("duplicate deliverable binding")
+        if len({item.artifact_version_id for item in self.shortlist}) != len(self.shortlist):
+            raise ValueError("duplicate shortlist member")
+        for item in [*(b.artifact for b in self.deliverables), *self.shortlist]:
+            if artifacts.get(item.artifact_version_id) != item.content_hash:
+                raise ValueError("deliverable or shortlist outside declared artifact scope")
+        if bool(self.shortlist) != (self.conclusion == Conclusion.POSITIVE):
+            raise ValueError("only a supported positive conclusion has a nonempty shortlist")
+        return self
+
+
+class HumanDeliveryApproval(Contract):
+    approval_id: Text
+    gate_spec_hash: Sha256
+    proposal_sha256: Sha256
+    decision: Literal["approve", "reject"]
+    principal: Text
+    recorded_at: AwareDatetime
+
+
+class AdmittedDeliveryContext(Contract):
+    """Read from the trusted Research API; never accepted inside a proposal."""
+
+    schema_version: Literal["1"]
+    job: JobRecord
+    brief: ResearchBrief
+    input_bundle: InputBundle
+    human_approval: HumanDeliveryApproval | None
+
+
+class DeliveryCandidate(Contract):
+    schema_version: Literal["1"]
+    context: AdmittedDeliveryContext
+    proposal: DeliveryProposal
+
+    @model_validator(mode="after")
+    def same_job(self) -> Self:
+        if self.context.job.job_id != self.proposal.job_id:
+            raise ValueError("delivery proposal belongs to a different job")
+        return self
 
 
 class DeliveryCheck(Contract):

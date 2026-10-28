@@ -19,7 +19,7 @@ def test_migration_revision_and_forward_schema_only(eval_connect):
         assert conn.execute("SELECT count(*) FROM eval.jobs").fetchone()[0] >= 0
     with eval_connect("postgres") as owner:
         assert owner.execute("SELECT version_num FROM eval.alembic_version").fetchone() == (
-            "0007_signed_receipts",
+            "0008_delivery_evidence",
         )
 
 

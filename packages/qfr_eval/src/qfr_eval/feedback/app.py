@@ -11,6 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import AwareDatetime
 from qfr_core.access import AuthenticationRequired, BearerAuthority, ServicePrincipal
+from qfr_core.contracts.delivery import DeliveryReceipt
 from qfr_core.contracts.feedback import ArtifactFeedback, PublicCards, ReportKind, ReportPage
 from qfr_core.contracts.reports import ReleasedReport
 from starlette.responses import Response
@@ -145,6 +146,12 @@ def create_app(
         limit: Annotated[int, Query(ge=1)] = reader.policy.max_page_size,
     ) -> ArtifactFeedback:
         return reader.status(principal, version_id, after_id=after_id, limit=limit)
+
+    @app.get("/v1/delivery-receipts/{receipt_id}", response_model=DeliveryReceipt)
+    def delivery_receipt(
+        receipt_id: UUID, principal: Annotated[ServicePrincipal, Depends(authorized)]
+    ) -> DeliveryReceipt:
+        return reader.delivery(principal, receipt_id)
 
     @app.get("/v1/library", response_model=ReportPage)
     def library(

@@ -59,19 +59,27 @@ def pilot_policy(conn, *, version=1):
 
 
 def store_pilot(
-    conn, *, ordinal=1, score=0.5, failed=False, completed_at=None, evidence_store=None
+    conn,
+    *,
+    ordinal=1,
+    score=0.5,
+    failed=False,
+    completed_at=None,
+    evidence_store=None,
+    source_case=None,
 ):
     # Explicit synthetic source clock; not actual elapsed-batch acceptance.
     completed_at = completed_at or datetime.now(UTC)
-    record, request, measured, protocol = evidence(score)
-    request = request.model_copy(
-        update={
-            "program_id": str(uuid4()),
-            "family_id": str(uuid4()),
-            "generation_id": str(uuid4()),
-            "epoch_id": str(uuid4()),
-        }
-    )
+    record, request, measured, protocol = source_case or evidence(score)
+    if source_case is None:
+        request = request.model_copy(
+            update={
+                "program_id": str(uuid4()),
+                "family_id": str(uuid4()),
+                "generation_id": str(uuid4()),
+                "epoch_id": str(uuid4()),
+            }
+        )
     if failed:
         measured = measured.model_copy(update={"status": "failed"})
     run, trial = uuid4(), uuid4()

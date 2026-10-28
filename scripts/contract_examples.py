@@ -414,6 +414,40 @@ def examples(root: Path):
         a.ArtifactManifest.model_validate(artifact),
         r.ReleasedReport.model_validate(report),
         x.DeliveryReceipt.model_validate(receipt),
+        x.AdmittedDeliveryContext(
+            schema_version="1",
+            job=job,
+            brief=brief,
+            input_bundle=bundle,
+            human_approval=None,
+        ),
+        x.HumanDeliveryApproval(
+            approval_id="approval-example",
+            gate_spec_hash=H,
+            proposal_sha256=H,
+            decision="approve",
+            principal="synthetic-human",
+            recorded_at=AT,
+        ),
+        x.DeliveryProposal(
+            schema_version="1",
+            proposal_id="proposal-example",
+            job_id="job-example",
+            conclusion="supported_negative",
+            artifact_refs=[
+                a.ArtifactReference(artifact_version_id="artifact-example", content_hash=H)
+            ],
+            released_report_refs=[version],
+            deliverables=[
+                x.DeliverableBinding(
+                    name="research note",
+                    artifact=a.ArtifactReference(
+                        artifact_version_id="artifact-example", content_hash=H
+                    ),
+                )
+            ],
+            shortlist=[],
+        ),
         x.ExportManifest.model_validate(export),
         p.EffectiveTaskConfiguration.model_validate(effective),
         p.ProviderProfiles.model_validate(
@@ -901,6 +935,25 @@ def examples(root: Path):
                 ),
             ),
             feedback.PublicCards(schema_version="1", policies=[], protocols=[]),
+        ]
+    )
+    roots.extend(
+        [
+            x.DeliveryCandidate(
+                schema_version="1",
+                context=next(
+                    value for value in roots if isinstance(value, x.AdmittedDeliveryContext)
+                ),
+                proposal=next(value for value in roots if isinstance(value, x.DeliveryProposal)),
+            ),
+            access.PublicServiceClientConfiguration(
+                revision=1,
+                base_url="http://research-api:8000",
+                token_ref="env:QFR_RESEARCH_READER_TOKEN",
+                timeout_seconds=10,
+                max_request_bytes=1048576,
+                max_response_bytes=4194304,
+            ),
         ]
     )
     return roots

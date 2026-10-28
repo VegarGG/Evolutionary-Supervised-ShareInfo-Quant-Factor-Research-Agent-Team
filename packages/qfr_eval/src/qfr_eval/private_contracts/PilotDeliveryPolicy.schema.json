@@ -1,0 +1,71 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "checker_id": {
+      "const": "pilot-research-delivery-v1",
+      "title": "Checker Id",
+      "type": "string"
+    },
+    "maximum_artifacts": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000,
+      "title": "Maximum Artifacts",
+      "type": "integer"
+    },
+    "maximum_payload_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Maximum Payload Bytes",
+      "type": "integer"
+    },
+    "maximum_reports": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000,
+      "title": "Maximum Reports",
+      "type": "integer"
+    },
+    "negative_meaning": {
+      "const": "declared_scope_does_not_meet_frozen_research_hurdle",
+      "title": "Negative Meaning",
+      "type": "string"
+    },
+    "release_policy_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Release Policy Sha256",
+      "type": "string"
+    },
+    "reproduction": {
+      "const": "immutable_evaluator_exact_match_event",
+      "title": "Reproduction",
+      "type": "string"
+    },
+    "required_execution": {
+      "const": "registry",
+      "title": "Required Execution",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "const": "P0_P1_verification_only",
+      "title": "Scope",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "checker_id",
+    "scope",
+    "release_policy_sha256",
+    "required_execution",
+    "reproduction",
+    "negative_meaning",
+    "maximum_artifacts",
+    "maximum_reports",
+    "maximum_payload_bytes"
+  ],
+  "title": "PilotDeliveryPolicy",
+  "type": "object"
+}

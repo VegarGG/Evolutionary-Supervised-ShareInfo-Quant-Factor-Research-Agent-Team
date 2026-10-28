@@ -310,11 +310,26 @@ def test_rel_02_source_is_durable_deduplicated_and_never_visible_unsigned(eval_c
             assert first not in {
                 x[0]
                 for x in locked_ready(
-                    restarted, limit=100, control_time=ready - timedelta(microseconds=1)
+                    restarted,
+                    limit=100,
+                    control_time=ready - timedelta(microseconds=1),
+                    policy_hash=policy.sha256,
+                    program_id=item.program_id,
                 )
             }
         with restarted.transaction():
-            assert first in {x[0] for x in locked_ready(restarted, limit=100, control_time=ready)}
+            # Keep immutable evidence from earlier runs. Scope this fixture's
+            # cursor so other programs cannot fill its bounded page.
+            assert first in {
+                x[0]
+                for x in locked_ready(
+                    restarted,
+                    limit=100,
+                    control_time=ready,
+                    policy_hash=policy.sha256,
+                    program_id=item.program_id,
+                )
+            }
         assert restarted.execute(
             "SELECT count(*) FROM eval.released_reports WHERE artifact_version_id=%s",
             [item.artifact_version_id],

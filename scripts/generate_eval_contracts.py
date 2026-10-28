@@ -741,9 +741,29 @@ def generate(check=False):
                 model.__name__ + ".invalid.json": {**sample, "unapproved": True},
             }
         )
+    from qfr_core.contracts.access import PublicServiceClientConfiguration
+    from qfr_eval.delivery.models import DeliveryWorkerConfiguration, PilotDeliveryPolicy
+
     from scripts.release_contract_examples import examples as release_examples
 
-    for value in release_examples(ROOT):
+    delivery_policy = PilotDeliveryPolicy.model_validate_json(
+        (ROOT / "configs/delivery/pilot_research_delivery_v1.json").read_bytes()
+    )
+    for value in [
+        *release_examples(ROOT),
+        delivery_policy,
+        DeliveryWorkerConfiguration(
+            schema_version="1",
+            program_id="example-program",
+            research_client=PublicServiceClientConfiguration.model_validate_json(
+                (
+                    ROOT / "contracts/examples/PublicServiceClientConfiguration.valid.json"
+                ).read_bytes()
+            ),
+            registry_client=session.registry_client,
+            policy=delivery_policy,
+        ),
+    ]:
         model = type(value)
         sample = value.model_dump(mode="json")
         outputs.update(

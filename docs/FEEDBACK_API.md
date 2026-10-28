@@ -24,6 +24,7 @@ retain these metadata logs and disable raw access logs that copy query strings.
 |---|---|
 | `/v1/reports` | Bounded release-order page; `after_id`, aware `since`, `version_id`, `family_id`, `type`, `limit` filters |
 | `/v1/reports/{report_id}` | One scoped released report; absent and unauthorized IDs both return 404 |
+| `/v1/delivery-receipts/{receipt_id}` | Verified signed public delivery receipt, scoped by its independently recorded program; no private attempt payload |
 | `/v1/artifacts/{version_id}/status` | Latest released report and paged released timeline; no private queue status |
 | `/v1/library` | Paged released library-membership reports; no promotion or library mutation |
 | `/v1/cards/policy?ref=...` | Whitelisted public policy cards |
