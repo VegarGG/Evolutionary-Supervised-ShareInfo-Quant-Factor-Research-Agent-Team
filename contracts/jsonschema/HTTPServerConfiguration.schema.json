@@ -1,0 +1,73 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "access_log": {
+      "const": false,
+      "title": "Access Log",
+      "type": "boolean"
+    },
+    "host": {
+      "enum": [
+        "127.0.0.1",
+        "::1",
+        "0.0.0.0",
+        "::"
+      ],
+      "title": "Host",
+      "type": "string"
+    },
+    "limit_concurrency": {
+      "exclusiveMinimum": 0,
+      "title": "Limit Concurrency",
+      "type": "integer"
+    },
+    "log_level": {
+      "enum": [
+        "info",
+        "warning",
+        "error"
+      ],
+      "title": "Log Level",
+      "type": "string"
+    },
+    "port": {
+      "maximum": 65535,
+      "minimum": 1,
+      "title": "Port",
+      "type": "integer"
+    },
+    "proxy_headers": {
+      "const": false,
+      "title": "Proxy Headers",
+      "type": "boolean"
+    },
+    "revision": {
+      "const": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "timeout_graceful_shutdown": {
+      "exclusiveMinimum": 0,
+      "title": "Timeout Graceful Shutdown",
+      "type": "integer"
+    },
+    "timeout_keep_alive": {
+      "exclusiveMinimum": 0,
+      "title": "Timeout Keep Alive",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "revision",
+    "host",
+    "port",
+    "limit_concurrency",
+    "timeout_keep_alive",
+    "timeout_graceful_shutdown",
+    "access_log",
+    "proxy_headers",
+    "log_level"
+  ],
+  "title": "HTTPServerConfiguration",
+  "type": "object"
+}

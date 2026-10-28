@@ -977,4 +977,7 @@ def examples(root: Path):
     from scripts.research_contract_examples import examples as research_examples
 
     roots.extend(research_examples(root, roots))
+    from scripts.service_contract_examples import examples as service_examples
+
+    roots.extend(service_examples(root, roots))
     return roots

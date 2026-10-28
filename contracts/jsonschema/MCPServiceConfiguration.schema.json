@@ -1,0 +1,625 @@
+{
+  "$defs": {
+    "HTTPServerConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "access_log": {
+          "const": false,
+          "title": "Access Log",
+          "type": "boolean"
+        },
+        "host": {
+          "enum": [
+            "127.0.0.1",
+            "::1",
+            "0.0.0.0",
+            "::"
+          ],
+          "title": "Host",
+          "type": "string"
+        },
+        "limit_concurrency": {
+          "exclusiveMinimum": 0,
+          "title": "Limit Concurrency",
+          "type": "integer"
+        },
+        "log_level": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Log Level",
+          "type": "string"
+        },
+        "port": {
+          "maximum": 65535,
+          "minimum": 1,
+          "title": "Port",
+          "type": "integer"
+        },
+        "proxy_headers": {
+          "const": false,
+          "title": "Proxy Headers",
+          "type": "boolean"
+        },
+        "revision": {
+          "const": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "timeout_graceful_shutdown": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Graceful Shutdown",
+          "type": "integer"
+        },
+        "timeout_keep_alive": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Keep Alive",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "host",
+        "port",
+        "limit_concurrency",
+        "timeout_keep_alive",
+        "timeout_graceful_shutdown",
+        "access_log",
+        "proxy_headers",
+        "log_level"
+      ],
+      "title": "HTTPServerConfiguration",
+      "type": "object"
+    },
+    "MCPBackendBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "feedback": {
+          "$ref": "#/$defs/PublicServiceClientConfiguration"
+        },
+        "intake": {
+          "$ref": "#/$defs/PublicServiceClientConfiguration"
+        },
+        "principal": {
+          "minLength": 1,
+          "title": "Principal",
+          "type": "string"
+        },
+        "program_id": {
+          "format": "uuid",
+          "title": "Program Id",
+          "type": "string"
+        },
+        "registry": {
+          "$ref": "#/$defs/RegistryClientConfiguration"
+        },
+        "research": {
+          "$ref": "#/$defs/PublicServiceClientConfiguration"
+        },
+        "roles": {
+          "items": {
+            "enum": [
+              "reader",
+              "research_lead",
+              "human_reviewer"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "principal",
+        "program_id",
+        "roles",
+        "research",
+        "registry",
+        "feedback",
+        "intake"
+      ],
+      "title": "MCPBackendBinding",
+      "type": "object"
+    },
+    "MCPPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_hosts": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Allowed Hosts",
+          "type": "array"
+        },
+        "allowed_origins": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Allowed Origins",
+          "type": "array"
+        },
+        "default_page_size": {
+          "exclusiveMinimum": 0,
+          "title": "Default Page Size",
+          "type": "integer"
+        },
+        "dns_rebinding_protection": {
+          "const": true,
+          "title": "Dns Rebinding Protection",
+          "type": "boolean"
+        },
+        "max_inline_result_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Inline Result Bytes",
+          "type": "integer"
+        },
+        "max_page_size": {
+          "exclusiveMinimum": 0,
+          "title": "Max Page Size",
+          "type": "integer"
+        },
+        "max_request_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Request Bytes",
+          "type": "integer"
+        },
+        "request_body_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Request Body Timeout Seconds",
+          "type": "integer"
+        },
+        "resource_page_characters": {
+          "exclusiveMinimum": 0,
+          "title": "Resource Page Characters",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "stateless_transport": {
+          "const": true,
+          "title": "Stateless Transport",
+          "type": "boolean"
+        },
+        "upload_chunk_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Upload Chunk Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "max_request_bytes",
+        "request_body_timeout_seconds",
+        "max_inline_result_bytes",
+        "resource_page_characters",
+        "default_page_size",
+        "max_page_size",
+        "upload_chunk_bytes",
+        "allowed_hosts",
+        "allowed_origins",
+        "dns_rebinding_protection",
+        "stateless_transport"
+      ],
+      "title": "MCPPolicy",
+      "type": "object"
+    },
+    "PublicServiceClientConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "base_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Base Url",
+          "type": "string"
+        },
+        "max_request_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Request Bytes",
+          "type": "integer"
+        },
+        "max_response_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Response Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "number"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "base_url",
+        "token_ref",
+        "timeout_seconds",
+        "max_request_bytes",
+        "max_response_bytes"
+      ],
+      "title": "PublicServiceClientConfiguration",
+      "type": "object"
+    },
+    "RegistryClientConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "base_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Base Url",
+          "type": "string"
+        },
+        "max_request_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Request Bytes",
+          "type": "integer"
+        },
+        "max_response_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Response Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "number"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "base_url",
+        "token_ref",
+        "timeout_seconds",
+        "max_request_bytes",
+        "max_response_bytes"
+      ],
+      "title": "RegistryClientConfiguration",
+      "type": "object"
+    },
+    "ResearchApiPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "lock_timeout_ms": {
+          "exclusiveMinimum": 0,
+          "title": "Lock Timeout Ms",
+          "type": "integer"
+        },
+        "max_artifacts": {
+          "exclusiveMinimum": 0,
+          "title": "Max Artifacts",
+          "type": "integer"
+        },
+        "max_export_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Export Bytes",
+          "type": "integer"
+        },
+        "max_export_files": {
+          "exclusiveMinimum": 0,
+          "title": "Max Export Files",
+          "type": "integer"
+        },
+        "max_export_metadata_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Export Metadata Bytes",
+          "type": "integer"
+        },
+        "max_page_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Page Bytes",
+          "type": "integer"
+        },
+        "max_page_size": {
+          "exclusiveMinimum": 0,
+          "title": "Max Page Size",
+          "type": "integer"
+        },
+        "max_request_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Request Bytes",
+          "type": "integer"
+        },
+        "max_source_assets": {
+          "exclusiveMinimum": 0,
+          "title": "Max Source Assets",
+          "type": "integer"
+        },
+        "polling_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Polling Seconds",
+          "type": "integer"
+        },
+        "request_body_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Request Body Timeout Seconds",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "statement_timeout_ms": {
+          "exclusiveMinimum": 0,
+          "title": "Statement Timeout Ms",
+          "type": "integer"
+        },
+        "trusted_delivery_checkers": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "minProperties": 1,
+          "propertyNames": {
+            "minLength": 1
+          },
+          "title": "Trusted Delivery Checkers",
+          "type": "object"
+        }
+      },
+      "required": [
+        "revision",
+        "max_request_bytes",
+        "request_body_timeout_seconds",
+        "max_page_size",
+        "max_page_bytes",
+        "max_artifacts",
+        "max_source_assets",
+        "max_export_bytes",
+        "max_export_files",
+        "max_export_metadata_bytes",
+        "polling_seconds",
+        "statement_timeout_ms",
+        "lock_timeout_ms",
+        "trusted_delivery_checkers"
+      ],
+      "title": "ResearchApiPolicy",
+      "type": "object"
+    },
+    "ServiceAuthentication": {
+      "additionalProperties": false,
+      "properties": {
+        "audience": {
+          "enum": [
+            "feedback",
+            "research",
+            "mcp",
+            "intake"
+          ],
+          "title": "Audience",
+          "type": "string"
+        },
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/ServiceTokenBinding"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Bindings",
+          "type": "array"
+        },
+        "maximum_token_bytes": {
+          "exclusiveMinimum": 0,
+          "maximum": 4096,
+          "title": "Maximum Token Bytes",
+          "type": "integer"
+        },
+        "minimum_token_bytes": {
+          "exclusiveMinimum": 0,
+          "minimum": 32,
+          "title": "Minimum Token Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "audience",
+        "minimum_token_bytes",
+        "maximum_token_bytes",
+        "bindings"
+      ],
+      "title": "ServiceAuthentication",
+      "type": "object"
+    },
+    "ServiceTokenBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "principal": {
+          "minLength": 1,
+          "title": "Principal",
+          "type": "string"
+        },
+        "programs": {
+          "items": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Programs",
+          "type": "array"
+        },
+        "roles": {
+          "items": {
+            "enum": [
+              "reader",
+              "research_lead",
+              "human_reviewer"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Roles",
+          "type": "array"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "principal",
+        "token_ref",
+        "roles",
+        "programs"
+      ],
+      "title": "ServiceTokenBinding",
+      "type": "object"
+    },
+    "VerificationKey": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519",
+          "title": "Algorithm",
+          "type": "string"
+        },
+        "key_id": {
+          "minLength": 1,
+          "title": "Key Id",
+          "type": "string"
+        },
+        "public_key_hex": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Public Key Hex",
+          "type": "string"
+        },
+        "purposes": {
+          "items": {
+            "enum": [
+              "released_report",
+              "measurement_receipt",
+              "delivery_receipt"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Purposes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "key_id",
+        "public_key_hex",
+        "purposes"
+      ],
+      "title": "VerificationKey",
+      "type": "object"
+    },
+    "VerificationPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "canonicalization": {
+          "const": "qfr-signed-json-v1",
+          "title": "Canonicalization",
+          "type": "string"
+        },
+        "keys": {
+          "items": {
+            "$ref": "#/$defs/VerificationKey"
+          },
+          "minItems": 1,
+          "title": "Keys",
+          "type": "array"
+        },
+        "maximum_document_bytes": {
+          "exclusiveMinimum": 0,
+          "maximum": 16777216,
+          "title": "Maximum Document Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "const": 1,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "canonicalization",
+        "maximum_document_bytes",
+        "keys"
+      ],
+      "title": "VerificationPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "authentication": {
+      "$ref": "#/$defs/ServiceAuthentication"
+    },
+    "backends": {
+      "items": {
+        "$ref": "#/$defs/MCPBackendBinding"
+      },
+      "minItems": 1,
+      "title": "Backends",
+      "type": "array"
+    },
+    "export_policy": {
+      "$ref": "#/$defs/ResearchApiPolicy"
+    },
+    "policy": {
+      "$ref": "#/$defs/MCPPolicy"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "server": {
+      "$ref": "#/$defs/HTTPServerConfiguration"
+    },
+    "verification": {
+      "$ref": "#/$defs/VerificationPolicy"
+    }
+  },
+  "required": [
+    "schema_version",
+    "server",
+    "authentication",
+    "policy",
+    "export_policy",
+    "verification",
+    "backends"
+  ],
+  "title": "MCPServiceConfiguration",
+  "type": "object"
+}

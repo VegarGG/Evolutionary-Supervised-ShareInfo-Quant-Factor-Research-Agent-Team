@@ -481,3 +481,67 @@ def test_mcp_configuration_refuses_missing_or_widened_mapping(research_connect, 
         front.gateway.bindings.clear()
         with pytest.raises(PermissionError, match="not authorized"):
             create_app(front.gateway, authority=auth)
+
+
+def test_independent_cli_reconnects_without_model_calls(research_connect, tmp_path):
+    import json
+    import os
+    import subprocess
+    import sys
+
+    case = delivery_setup(research_connect, tmp_path / "research", service_class=Exports)
+    with frontdoor(case, tmp_path / "transport") as front:
+        config = tmp_path / "client.json"
+        config.write_text(
+            json.dumps(
+                dict(
+                    revision=1,
+                    base_url=front.url,
+                    token_ref="env:TRANSPORT_TOKEN",
+                    timeout_seconds=5,
+                    max_request_bytes=262144,
+                    max_response_bytes=1048576,
+                )
+            )
+        )
+        values = tmp_path / "arguments.json"
+        values.write_text(
+            json.dumps(
+                dict(program_id=str(case.program), value=case.admission.model_dump(mode="json"))
+            )
+        )
+        environment = {
+            "PATH": os.defpath,
+            "TRANSPORT_TOKEN": front.token,
+            "POLARS_MAX_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+        }
+        command = [sys.executable, "-m", "qfr_mcp.client", "--client-config", str(config)]
+        first = subprocess.run(
+            [*command, "call", "qfr_research_submit", str(values)],
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=12,
+        )
+        assert first.returncode == 0, first.stderr
+        second = subprocess.run(
+            [*command, "call", "qfr_research_submit", str(values)],
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=12,
+        )
+        assert second.returncode == 0, second.stderr
+        assert json.loads(first.stdout) == json.loads(second.stdout)
+        for raw in ['{"program_id":"a","program_id":"b"}', '{"a": NaN}']:
+            values.write_text(raw)
+            refused = subprocess.run(
+                [*command, "call", "qfr_program_read", str(values)],
+                env=environment,
+                capture_output=True,
+                text=True,
+                timeout=12,
+            )
+            assert refused.returncode == 1 and refused.stdout == ""
+            assert front.token not in refused.stderr

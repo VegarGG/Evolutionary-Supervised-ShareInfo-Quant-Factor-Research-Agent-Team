@@ -1,0 +1,132 @@
+# Explicit, human-driven API deployment. No scheduler, ingest campaign or provider starts.
+# Supply reviewed per-service JSON and private environment files; do not render env values.
+services:
+  mcp-api:
+    command: [python, -m, qfr_mcp.serve, /etc/qfr/service.json]
+    env_file:
+      - ${QFR_STAGE4_CONFIG_ROOT:?supply the reviewed private Stage 4 configuration directory}/mcp.env
+    ports:
+      - 127.0.0.1:${QFR_MCP_PORT}:8000
+    networks:
+      - research-edge
+      - registry-public
+      - feedback-public
+      - quarantine-edge
+    volumes:
+      - type: bind
+        source: ${QFR_STAGE4_CONFIG_ROOT}/mcp.json
+        target: /etc/qfr/service.json
+        read_only: true
+        bind:
+          create_host_path: false
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1
+    pids_limit: 64
+    stop_grace_period: 35s
+    logging: &bounded-logs
+      driver: json-file
+      options: {max-size: 10m, max-file: '2'}
+    healthcheck: &api-health
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2).close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  research-api:
+    command: [python, -m, qfr_research.serve, /etc/qfr/service.json]
+    env_file:
+      - ${QFR_STAGE4_CONFIG_ROOT}/research.env
+    networks:
+      - research-edge
+      - research-db
+      - registry-public
+      - feedback-public
+      - quarantine-edge
+    volumes:
+      - type: bind
+        source: ${QFR_STAGE4_CONFIG_ROOT}/research.json
+        target: /etc/qfr/service.json
+        read_only: true
+        bind:
+          create_host_path: false
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1
+    pids_limit: 64
+    stop_grace_period: 35s
+    logging: *bounded-logs
+    healthcheck: *api-health
+  registry-api:
+    command: [python, -m, qfr_registry.serve, /etc/qfr/service.json]
+    env_file:
+      - ${QFR_STAGE4_CONFIG_ROOT}/registry.env
+    volumes:
+      - type: bind
+        source: ${QFR_STAGE4_CONFIG_ROOT}/registry.json
+        target: /etc/qfr/service.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - ../configs/registry:/etc/qfr/policies/registry:ro
+      - ../configs/dsl:/etc/qfr/policies/dsl:ro
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1
+    pids_limit: 64
+    stop_grace_period: 35s
+    logging: *bounded-logs
+    healthcheck: *api-health
+  feedback-api:
+    command: [python, -m, qfr_eval.feedback.serve, /etc/qfr/service.json]
+    env_file:
+      - ${QFR_STAGE4_CONFIG_ROOT}/feedback.env
+    volumes:
+      - type: bind
+        source: ${QFR_STAGE4_CONFIG_ROOT}/feedback.json
+        target: /etc/qfr/service.json
+        read_only: true
+        bind:
+          create_host_path: false
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 1
+    pids_limit: 64
+    stop_grace_period: 35s
+    logging: *bounded-logs
+    healthcheck: *api-health
+  quarantine-api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        QFR_PACKAGE: qfr_eval
+    image: qfr/qfr_eval:stage0
+    command: [python, -m, qfr_eval.ingest.serve, /etc/qfr/service.json]
+    env_file:
+      - ${QFR_STAGE4_CONFIG_ROOT}/intake.env
+    user: 65532:65532
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: 'no'
+    networks: [quarantine-edge]
+    volumes:
+      - type: bind
+        source: ${QFR_STAGE4_CONFIG_ROOT}/intake.json
+        target: /etc/qfr/service.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - quarantine-sources:/data/quarantine
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1
+    pids_limit: 64
+    stop_grace_period: 35s
+    logging: *bounded-logs
+    healthcheck: *api-health
+networks:
+  quarantine-edge:
+    internal: true
+volumes:
+  quarantine-sources: {}

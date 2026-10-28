@@ -1,0 +1,10 @@
+{
+  "access_log": false,
+  "host": "127.0.0.1",
+  "limit_concurrency": 4,
+  "log_level": "info",
+  "port": 8000,
+  "proxy_headers": false,
+  "timeout_graceful_shutdown": 30,
+  "timeout_keep_alive": 5
+}

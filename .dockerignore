@@ -10,6 +10,9 @@
 !infra/docker/Dockerfile.sandbox
 !infra/docker/ci-entrypoint.sh
 !infra/docker-compose.yml
+!infra/docker-compose.stage4.yml
+!infra/docker-compose.stage4-import.yml
+!infra/docker-compose.sandbox.yml
 !infra/postgres/
 !infra/postgres/**
 !justfile

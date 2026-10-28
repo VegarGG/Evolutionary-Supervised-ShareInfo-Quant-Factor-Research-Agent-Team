@@ -1,0 +1,11 @@
+{
+  "revision": 1,
+  "host": "127.0.0.1",
+  "port": 8000,
+  "limit_concurrency": 4,
+  "timeout_keep_alive": 5,
+  "timeout_graceful_shutdown": 30,
+  "access_log": false,
+  "proxy_headers": false,
+  "log_level": "info"
+}

@@ -31,6 +31,7 @@ MODULES = [
     "research",
     "transfers",
     "mcp",
+    "services",
 ]
 
 

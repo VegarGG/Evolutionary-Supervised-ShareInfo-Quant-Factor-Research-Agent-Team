@@ -5,10 +5,11 @@ references and a proposed conclusion to its own API; it cannot submit trusted
 check results, provide a receipt, invoke evaluation or choose signing keys. The
 explicit evaluator-owner `delivery-check` CLI independently reads the admitted
 job and proposal over authenticated HTTP. Idle startup does not run the command.
-The Research API route and completion/export integration follow in P4.9.
+The Research API completion/export integration verifies the actual receipt independently; see [RESEARCH_API.md](RESEARCH_API.md).
 
-`configs/delivery/pilot_research_delivery_v1.json` is a versioned checker profile
-for this P0/P1 verification only. It binds release policy revision 2 without
+`configs/delivery/pilot_research_delivery_v2.json` is the checker profile for new
+API completion in this P0/P1 verification only. Version 2 signs complete input
+and admission hashes; version 1 profiles and immutable receipts remain unchanged. It binds release policy revision 2 without
 changing the measurement protocol, query allowance, windows, Ladder or admission
 thresholds. Its operational limits are 64 declared artifacts, 64 reports and
 100 MiB of payload bytes per check. Unknown gate requirements fail explicitly;

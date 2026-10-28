@@ -1,8 +1,9 @@
 # Human-driven research API (Stage 4 checkpoint)
 
 `qfr_research.api.app.create_app` implements the typed Research API. Deployment
-wiring, MCP and actual client acceptance are still in progress; this document is
-not a Stage 4 gate pass. It uses only `research_rw` in `research_db`, authorized
+wiring and [standard MCP](MCP_FRONT_DOOR.md) are implemented; actual Mac/client
+acceptance is pending. This document is not a Stage 4 gate pass. The API uses only
+`research_rw` in `research_db`, authorized
 research snapshots and HTTP reads of Registry/released Feedback. It holds no
 evaluation credentials, private protocol, signing key or evaluation control.
 

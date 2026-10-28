@@ -260,6 +260,34 @@ No dependency lock, measurement protocol, sandbox profile or real credential
 grant changed in this checkpoint. Actual Codex, real pilot/release timing,
 container restart, service deployment and final Mac CI remain required.
 
+## P4.9 service launch and client checkpoint
+
+Explicit launch modules now serve Research, Registry, Feedback, quarantine and
+MCP using typed, bounded configuration. The opt-in Compose overlay preserves
+database identities and data separation; startup performs no migration, grant,
+ingest, evaluation, release or job admission. Source quarantine has no PostgreSQL
+credentials or evaluator network. The independent SDK CLI connects without a
+model. See [service launch](STAGE_4_SERVICES.md), [client instructions](MCP_CLIENTS.md)
+and the [portable intake guide](PORTABLE_INTAKE_GUIDE.md).
+
+All seven `just check` commands pass: formatting/lint, typing (215 source files),
+five import boundaries, 165 public contracts, private evaluator contracts and
+licensing consistency. Required-PostgreSQL `just test` has **1,005 passed and
+82 explicit skips**, in 138.90 seconds (143.53 seconds including the wrapper),
+peak child RSS **364,408 KiB**. Focused service/client/Compose checks have
+**15 passed** in 10.97 seconds. They exercise missing-credential refusal, bounded
+configuration parsing, real database startup identity, authenticated HTTP, idle
+startup and independent CLI reconnect. Compose configuration was resolved without
+secret environment values; no cloud image build or deployment acceptance ran.
+
+The lock, measurement protocol, existing sandbox controls and all old evidence
+remain unchanged. Actual Mac service/restart/client/pilot evidence is pending.
+Review also identified a delivery-checker question: reference baselines are
+currently treated as assessed candidates, so a P1 self-comparison's correctly
+insufficient uncertainty cannot support delivery. This is not a failed statistical
+gate to bypass; candidate/reference roles need explicit, versioned handling before
+the real pilot flow. No measurement rule or receipt was changed in this checkpoint.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

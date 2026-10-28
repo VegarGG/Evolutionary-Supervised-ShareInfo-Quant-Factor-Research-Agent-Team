@@ -94,6 +94,7 @@ recovery, conflicts, cancellation, app recreation, scopes, pagination, malicious
 imports, checksummed upload, signatures and export integrity.
 
 These fixtures are not the actual Codex client, original pilot acceptance,
-container restart or full Stage 4 gate. Runtime deployment wiring, the portable
-intake guide and real Mac end-to-end evidence remain required. No provider calls,
+container restart or full Stage 4 gate. [Explicit service wiring](STAGE_4_SERVICES.md),
+[client examples](MCP_CLIENTS.md) and the [intake guide](PORTABLE_INTAKE_GUIDE.md)
+are available; real Mac end-to-end evidence remains required. No provider calls,
 confirmation query or persistent authentication grant were made by these tests.

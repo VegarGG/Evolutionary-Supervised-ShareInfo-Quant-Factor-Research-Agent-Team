@@ -1,0 +1,306 @@
+{
+  "$defs": {
+    "HTTPServerConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "access_log": {
+          "const": false,
+          "title": "Access Log",
+          "type": "boolean"
+        },
+        "host": {
+          "enum": [
+            "127.0.0.1",
+            "::1",
+            "0.0.0.0",
+            "::"
+          ],
+          "title": "Host",
+          "type": "string"
+        },
+        "limit_concurrency": {
+          "exclusiveMinimum": 0,
+          "title": "Limit Concurrency",
+          "type": "integer"
+        },
+        "log_level": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Log Level",
+          "type": "string"
+        },
+        "port": {
+          "maximum": 65535,
+          "minimum": 1,
+          "title": "Port",
+          "type": "integer"
+        },
+        "proxy_headers": {
+          "const": false,
+          "title": "Proxy Headers",
+          "type": "boolean"
+        },
+        "revision": {
+          "const": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "timeout_graceful_shutdown": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Graceful Shutdown",
+          "type": "integer"
+        },
+        "timeout_keep_alive": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Keep Alive",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "host",
+        "port",
+        "limit_concurrency",
+        "timeout_keep_alive",
+        "timeout_graceful_shutdown",
+        "access_log",
+        "proxy_headers",
+        "log_level"
+      ],
+      "title": "HTTPServerConfiguration",
+      "type": "object"
+    },
+    "IntakeTransportPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "chunk_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Chunk Bytes",
+          "type": "integer"
+        },
+        "max_archive_directory_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Archive Directory Bytes",
+          "type": "integer"
+        },
+        "max_archive_entries": {
+          "exclusiveMinimum": 0,
+          "title": "Max Archive Entries",
+          "type": "integer"
+        },
+        "max_expanded_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Expanded Bytes",
+          "type": "integer"
+        },
+        "max_member_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Member Bytes",
+          "type": "integer"
+        },
+        "max_metadata_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Metadata Bytes",
+          "type": "integer"
+        },
+        "max_reserved_bytes_per_program": {
+          "exclusiveMinimum": 0,
+          "title": "Max Reserved Bytes Per Program",
+          "type": "integer"
+        },
+        "max_upload_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Upload Bytes",
+          "type": "integer"
+        },
+        "max_uploads_per_program": {
+          "exclusiveMinimum": 0,
+          "title": "Max Uploads Per Program",
+          "type": "integer"
+        },
+        "media_types": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Media Types",
+          "type": "array"
+        },
+        "request_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Request Timeout Seconds",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "sqlite_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Sqlite Timeout Seconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "max_metadata_bytes",
+        "chunk_bytes",
+        "max_upload_bytes",
+        "max_uploads_per_program",
+        "max_reserved_bytes_per_program",
+        "max_archive_entries",
+        "max_archive_directory_bytes",
+        "max_expanded_bytes",
+        "max_member_bytes",
+        "request_timeout_seconds",
+        "sqlite_timeout_seconds",
+        "media_types"
+      ],
+      "title": "IntakeTransportPolicy",
+      "type": "object"
+    },
+    "ServiceAuthentication": {
+      "additionalProperties": false,
+      "properties": {
+        "audience": {
+          "enum": [
+            "feedback",
+            "research",
+            "mcp",
+            "intake"
+          ],
+          "title": "Audience",
+          "type": "string"
+        },
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/ServiceTokenBinding"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Bindings",
+          "type": "array"
+        },
+        "maximum_token_bytes": {
+          "exclusiveMinimum": 0,
+          "maximum": 4096,
+          "title": "Maximum Token Bytes",
+          "type": "integer"
+        },
+        "minimum_token_bytes": {
+          "exclusiveMinimum": 0,
+          "minimum": 32,
+          "title": "Minimum Token Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "audience",
+        "minimum_token_bytes",
+        "maximum_token_bytes",
+        "bindings"
+      ],
+      "title": "ServiceAuthentication",
+      "type": "object"
+    },
+    "ServiceTokenBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "principal": {
+          "minLength": 1,
+          "title": "Principal",
+          "type": "string"
+        },
+        "programs": {
+          "items": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Programs",
+          "type": "array"
+        },
+        "roles": {
+          "items": {
+            "enum": [
+              "reader",
+              "research_lead",
+              "human_reviewer"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Roles",
+          "type": "array"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "principal",
+        "token_ref",
+        "roles",
+        "programs"
+      ],
+      "title": "ServiceTokenBinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "authentication": {
+      "$ref": "#/$defs/ServiceAuthentication"
+    },
+    "policy": {
+      "$ref": "#/$defs/IntakeTransportPolicy"
+    },
+    "quarantine_root": {
+      "format": "path",
+      "title": "Quarantine Root",
+      "type": "string"
+    },
+    "readonly_import_mounts": {
+      "additionalProperties": {
+        "format": "path",
+        "type": "string"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Readonly Import Mounts",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "server": {
+      "$ref": "#/$defs/HTTPServerConfiguration"
+    }
+  },
+  "required": [
+    "schema_version",
+    "server",
+    "authentication",
+    "policy",
+    "quarantine_root",
+    "readonly_import_mounts"
+  ],
+  "title": "IntakeServiceConfiguration",
+  "type": "object"
+}
