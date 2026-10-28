@@ -4,13 +4,16 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
 
+from qfr_core.contracts import mcp as m
 from qfr_core.contracts import research as r
 from qfr_core.contracts import transfers as t
+from qfr_core.contracts.access import PublicServiceClientConfiguration
 from qfr_core.contracts.artifacts import ArtifactReference
 from qfr_core.contracts.blackboard import BlackboardRecord, ResearchProgram
 from qfr_core.contracts.delivery import DeliveryProposal
 from qfr_core.contracts.intake import InputBundle
 from qfr_core.contracts.jobs import JobRecord, ResearchBrief
+from qfr_core.contracts.publication import RegistryClientConfiguration
 
 
 def examples(root: Path, existing):
@@ -52,6 +55,31 @@ def examples(root: Path, existing):
         created_at=at,
     )
     return [
+        m.MCPPolicy.model_validate_json((root / "configs/research/mcp_v1.json").read_bytes()),
+        m.MCPBackendBinding(
+            principal="schema-example",
+            program_id=identity,
+            roles=["reader"],
+            research=pick(PublicServiceClientConfiguration),
+            registry=pick(RegistryClientConfiguration),
+            feedback=pick(PublicServiceClientConfiguration),
+            intake=pick(PublicServiceClientConfiguration),
+        ),
+        m.MCPReply(
+            summary="Schema example",
+            data={"status": "ready"},
+            resource_uri=None,
+            document_sha256=None,
+            official_signature_verified=False,
+        ),
+        m.ResourceDocumentPage(
+            uri="artifact://schema/0/0",
+            page=0,
+            pages=1,
+            document_sha256="0" * 64,
+            text="{}",
+            official_signature_verified=False,
+        ),
         t.IntakeTransportPolicy.model_validate_json(
             (root / "configs/research/intake_transport_v1.json").read_bytes()
         ),

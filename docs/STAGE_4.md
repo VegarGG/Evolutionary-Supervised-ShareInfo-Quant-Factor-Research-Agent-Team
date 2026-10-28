@@ -239,6 +239,27 @@ Final Mac evidence must use that lock and fresh runtime identities. The approved
 measurement protocol file remains SHA256
 `a234bcc99af5c6c34b8fb585eb0701dca614d55048629418030876ff6dc752fb`.
 
+## P4.9 MCP transport checkpoint
+
+The standard Streamable HTTP adapter is implemented with the maintained SDK;
+see [MCP_FRONT_DOOR.md](MCP_FRONT_DOOR.md). Its only QFR dependency is core.
+Per-request scopes, idempotent durable jobs, bounded resources, separate binary
+file transport and independent official-evidence verification are enforced.
+The adapter exposes no evaluator control, direct database or source execution.
+
+All seven `just check` commands pass. The ordinary required-PostgreSQL suite has
+**984 passed, 82 explicit skips**, in 131.84 seconds (135.60 seconds including
+the wrapper), peak child RSS **361,224 KiB**. The focused MCP suite has
+**13 passed** in 19.69 seconds, using real loopback HTTP and PostgreSQL, the SDK
+and a separate JSON-RPC test client, plus explicitly synthetic financial evidence.
+It covers disconnect/reconnect, lost acknowledgement, conflict, cancellation,
+app recreation, scope refusal, signatures, verified export, upload recovery,
+mount confinement and protocol generations 2025-03-26/2025-06-18/2025-11-25.
+
+No dependency lock, measurement protocol, sandbox profile or real credential
+grant changed in this checkpoint. Actual Codex, real pilot/release timing,
+container restart, service deployment and final Mac CI remain required.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

@@ -1,5 +1,6 @@
 """Bounded public-service HTTP transport with no credential-bearing redirects."""
 
+import hashlib
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -40,6 +41,7 @@ class PublicServiceClient:
         *,
         body: bytes | None = None,
         request_id: UUID | None = None,
+        chunk_offset: int | None = None,
     ) -> tuple[int, bytes]:
         url = urlsplit(path)
         decoded = unquote(url.path)
@@ -61,6 +63,17 @@ class PublicServiceClient:
         headers = {"Authorization": "Bearer " + self.token, "Accept": "application/json"}
         if body is not None:
             headers["Content-Type"] = "application/json"
+        if chunk_offset is not None:
+            if (
+                method != "POST"
+                or not url.path.endswith("/chunks")
+                or body is None
+                or chunk_offset < 0
+            ):
+                raise ValueError("binary chunks require a confined upload route")
+            headers["Content-Type"] = "application/octet-stream"
+            headers["X-Chunk-Offset"] = str(chunk_offset)
+            headers["X-Chunk-SHA256"] = hashlib.sha256(body).hexdigest()
         if request_id is not None:
             headers["X-Request-ID"] = str(request_id)
         request = Request(

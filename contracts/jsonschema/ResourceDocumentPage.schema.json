@@ -1,0 +1,43 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "document_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Document Sha256",
+      "type": "string"
+    },
+    "official_signature_verified": {
+      "title": "Official Signature Verified",
+      "type": "boolean"
+    },
+    "page": {
+      "minimum": 0,
+      "title": "Page",
+      "type": "integer"
+    },
+    "pages": {
+      "exclusiveMinimum": 0,
+      "title": "Pages",
+      "type": "integer"
+    },
+    "text": {
+      "title": "Text",
+      "type": "string"
+    },
+    "uri": {
+      "minLength": 1,
+      "title": "Uri",
+      "type": "string"
+    }
+  },
+  "required": [
+    "uri",
+    "page",
+    "pages",
+    "document_sha256",
+    "text",
+    "official_signature_verified"
+  ],
+  "title": "ResourceDocumentPage",
+  "type": "object"
+}
