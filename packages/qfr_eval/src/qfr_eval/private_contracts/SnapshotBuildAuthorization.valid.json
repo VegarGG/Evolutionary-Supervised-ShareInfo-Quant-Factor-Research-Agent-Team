@@ -1,0 +1,14 @@
+{
+  "authorization_ref": "example-not-authorized",
+  "authorized_at": "2026-10-28T00:00:00Z",
+  "authorized_principal": "example-owner",
+  "enabled": false,
+  "maximum_metadata_bytes": 1048576,
+  "maximum_source_bytes": 1073741824,
+  "maximum_source_files": 10000,
+  "maximum_table_cells": 10000000,
+  "network": "none",
+  "plan_sha256": "79f568729ff1073319bbddd597bab3495cc4c648150545da9ea49c12c2fa6d71",
+  "schedule": "on_demand_only",
+  "schema_version": "1"
+}

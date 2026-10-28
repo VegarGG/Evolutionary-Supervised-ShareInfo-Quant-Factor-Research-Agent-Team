@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "snapshot_replay",
+      "title": "Kind",
+      "type": "string"
+    },
+    "manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Manifest Sha256",
+      "type": "string"
+    },
+    "relative_path": {
+      "minLength": 1,
+      "title": "Relative Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "relative_path",
+    "manifest_sha256"
+  ],
+  "title": "SnapshotReplaySource",
+  "type": "object"
+}

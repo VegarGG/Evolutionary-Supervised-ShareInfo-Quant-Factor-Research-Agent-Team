@@ -187,7 +187,27 @@ unsigned-visibility assertions. No existing evidence was deleted.
 The approved measurement protocol and dependency lock are unchanged. P4.9's
 Research API must bind receipt verification to completion/export, and the final
 Mac acceptance must supply actual pilot replay and elapsed batch evidence.
-P3.8, P4.9, client demonstrations and the complete Stage 4 gate remain pending.
+P4.9, client demonstrations and the complete Stage 4 gate remain pending.
+
+## P3.8 authorized on-demand ingest
+
+The evaluation-side CLI now requires enabled authorization for an exact local
+build plan. Sources are bounded original-pilot inputs, verified snapshot replay
+or an explicit synthetic recipe; no supplier request, scheduled ingest or
+prospective campaign starts implicitly. Immutable requests/outcomes and audit
+records precede atomic research-only catalog publication. Retry verifies the
+original snapshots and recovers a catalog-publication interruption without
+regenerating evidence. Private full-snapshot metadata never enters the catalog.
+See [AUTHORIZED_INGEST.md](AUTHORIZED_INGEST.md) and decision S4-13.
+
+All seven `just check` commands pass. The required-PostgreSQL ordinary `just test`
+run has **892 passed, 82 explicitly skipped**, one existing dependency warning,
+109.63 seconds test time and 328,924 KiB peak child RSS. Focused ingest/snapshot
+checks have **26 passed, 2 licensed-input skips**. Synthetic concurrency, failures,
+crash recovery, real CLI persistence and a read-only output root are exercised.
+The private pilot test remains unrun here; new container volume/image evidence
+and the complete human-driven flow remain for Mac acceptance. The measurement
+protocol, dependency lock and original evidence are unchanged.
 
 ## Required exit evidence
 

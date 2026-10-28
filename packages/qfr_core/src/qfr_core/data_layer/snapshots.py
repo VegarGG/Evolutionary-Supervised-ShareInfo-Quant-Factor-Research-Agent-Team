@@ -234,6 +234,7 @@ def write_snapshot(
     request_id: str,
     release_tag: str | None = None,
     archive_sha256: str | None = None,
+    audit_root: Path | None = None,
 ) -> Snapshot:
     """Stage then atomically finalize; a repeat verifies and reuses the immutable snapshot."""
     if not principal or not request_id:
@@ -319,8 +320,10 @@ def write_snapshot(
             evidence_refs=[manifest.snapshot_id],
             at=datetime.now(UTC),
         )
+        audit = audit_root or root
+        audit.mkdir(parents=True, exist_ok=True)
         with os.fdopen(
-            os.open(root / "events.jsonl", os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600), "ab"
+            os.open(audit / "events.jsonl", os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600), "ab"
         ) as stream:
             stream.write(canonical_json(event.model_dump(mode="json")) + b"\n")
         return Snapshot(target, manifest)

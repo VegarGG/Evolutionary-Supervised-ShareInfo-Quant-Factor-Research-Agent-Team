@@ -956,4 +956,22 @@ def examples(root: Path):
             ),
         ]
     )
+    research_manifest = next(value for value in roots if isinstance(value, d.SnapshotManifest))
+    research_manifest = research_manifest.model_copy(
+        update={
+            "zone": "research",
+            "research_cutoff": research_manifest.as_of,
+        }
+    )
+    roots.append(
+        d.ResearchDatasetRegistration(
+            schema_version="1",
+            registration_id=H,
+            program_id="example-program",
+            dataset_version_id=H,
+            source_ref="example-source",
+            research_manifest=research_manifest,
+            research_manifest_sha256=H,
+        )
+    )
     return roots

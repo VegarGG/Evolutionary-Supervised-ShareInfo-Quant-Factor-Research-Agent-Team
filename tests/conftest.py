@@ -177,6 +177,11 @@ def migrated_evaluator():
 
 
 @pytest.fixture
+def evaluator_dsn():
+    return database_dsn("eval_rw")
+
+
+@pytest.fixture
 def eval_connect():
     def factory(role="eval_rw"):
         try:

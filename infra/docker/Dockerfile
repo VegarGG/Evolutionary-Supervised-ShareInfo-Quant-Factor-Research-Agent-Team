@@ -18,5 +18,8 @@ COPY --from=builder /app/.venv /app/.venv
 # Docker's private named volume inherits this directory's ownership and mode.
 # Only the opt-in controller and evaluator worker mount that volume.
 RUN mkdir -p /run/qfr-sandbox && chown 65532:65532 /run/qfr-sandbox && chmod 0700 /run/qfr-sandbox
+# New data volumes inherit the trusted ingester's ownership at first creation.
+# Research services mount only the research volume, read-only; no host chmod.
+RUN mkdir -p /data/full /data/research && chown 65532:65532 /data/full /data/research && chmod 0750 /data/full /data/research
 USER 65532:65532
 CMD ["python", "-c", "print('QFR Stage 0 service stub; no jobs, scheduling, evaluation or LLM calls.')"]

@@ -1,0 +1,488 @@
+{
+  "$defs": {
+    "PilotConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmarks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Benchmarks",
+          "type": "array"
+        },
+        "exposure": {
+          "const": "previously_seen",
+          "title": "Exposure",
+          "type": "string"
+        },
+        "feature_parity_atol": {
+          "title": "Feature Parity Atol",
+          "type": "number"
+        },
+        "feature_parity_rtol": {
+          "title": "Feature Parity Rtol",
+          "type": "number"
+        },
+        "fundamental_availability": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Fundamental Availability",
+          "type": "object"
+        },
+        "industry_count": {
+          "exclusiveMinimum": 0,
+          "title": "Industry Count",
+          "type": "integer"
+        },
+        "membership_note": {
+          "title": "Membership Note",
+          "type": "string"
+        },
+        "new_supplier_requests": {
+          "const": false,
+          "title": "New Supplier Requests",
+          "type": "boolean"
+        },
+        "price_overlap_atol": {
+          "title": "Price Overlap Atol",
+          "type": "number"
+        },
+        "price_overlap_rtol": {
+          "title": "Price Overlap Rtol",
+          "type": "number"
+        },
+        "profile": {
+          "const": "pilot_industry_v1",
+          "title": "Profile",
+          "type": "string"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "scores_and_ranks": {
+          "const": "exact",
+          "title": "Scores And Ranks",
+          "type": "string"
+        },
+        "vintage_note": {
+          "title": "Vintage Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "profile",
+        "industry_count",
+        "benchmarks",
+        "fundamental_availability",
+        "price_overlap_atol",
+        "price_overlap_rtol",
+        "feature_parity_atol",
+        "feature_parity_rtol",
+        "scores_and_ranks",
+        "exposure",
+        "vintage_note",
+        "membership_note",
+        "new_supplier_requests"
+      ],
+      "title": "PilotConfig",
+      "type": "object"
+    },
+    "PilotLocalSource": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/PilotConfig"
+        },
+        "fixture_manifests_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Fixture Manifests Sha256",
+          "type": "string"
+        },
+        "inventory_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Inventory Sha256",
+          "type": "string"
+        },
+        "kind": {
+          "const": "pilot",
+          "title": "Kind",
+          "type": "string"
+        },
+        "package": {
+          "minLength": 1,
+          "title": "Package",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "package",
+        "inventory_sha256",
+        "fixture_manifests_sha256",
+        "adapter"
+      ],
+      "title": "PilotLocalSource",
+      "type": "object"
+    },
+    "SnapshotReplaySource": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "snapshot_replay",
+          "title": "Kind",
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Manifest Sha256",
+          "type": "string"
+        },
+        "relative_path": {
+          "minLength": 1,
+          "title": "Relative Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "relative_path",
+        "manifest_sha256"
+      ],
+      "title": "SnapshotReplaySource",
+      "type": "object"
+    },
+    "SyntheticConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "alpha_upper_bound": {
+          "exclusiveMinimum": 0,
+          "title": "Alpha Upper Bound",
+          "type": "number"
+        },
+        "annual_churn_fraction": {
+          "exclusiveMaximum": 1,
+          "minimum": 0,
+          "title": "Annual Churn Fraction",
+          "type": "number"
+        },
+        "beta_max": {
+          "title": "Beta Max",
+          "type": "number"
+        },
+        "beta_min": {
+          "title": "Beta Min",
+          "type": "number"
+        },
+        "calibration_bisections": {
+          "exclusiveMinimum": 0,
+          "title": "Calibration Bisections",
+          "type": "integer"
+        },
+        "calibration_sweeps": {
+          "exclusiveMinimum": 0,
+          "title": "Calibration Sweeps",
+          "type": "integer"
+        },
+        "calibration_tolerance": {
+          "exclusiveMinimum": 0,
+          "maximum": 0.005,
+          "title": "Calibration Tolerance",
+          "type": "number"
+        },
+        "days": {
+          "minimum": 80,
+          "title": "Days",
+          "type": "integer"
+        },
+        "decay_w2_end_fraction": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Decay W2 End Fraction",
+          "type": "number"
+        },
+        "decay_w2_start_fraction": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Decay W2 Start Fraction",
+          "type": "number"
+        },
+        "idio_df": {
+          "exclusiveMinimum": 2,
+          "title": "Idio Df",
+          "type": "number"
+        },
+        "idio_std_max": {
+          "exclusiveMinimum": 0,
+          "title": "Idio Std Max",
+          "type": "number"
+        },
+        "idio_std_min": {
+          "exclusiveMinimum": 0,
+          "title": "Idio Std Min",
+          "type": "number"
+        },
+        "industries": {
+          "exclusiveMinimum": 0,
+          "title": "Industries",
+          "type": "integer"
+        },
+        "industry_std": {
+          "minimum": 0,
+          "title": "Industry Std",
+          "type": "number"
+        },
+        "initial_membership_fraction": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Initial Membership Fraction",
+          "type": "number"
+        },
+        "initial_price": {
+          "exclusiveMinimum": 0,
+          "title": "Initial Price",
+          "type": "number"
+        },
+        "instruments": {
+          "minimum": 4,
+          "title": "Instruments",
+          "type": "integer"
+        },
+        "log_volume_ar": {
+          "exclusiveMaximum": 1,
+          "minimum": 0,
+          "title": "Log Volume Ar",
+          "type": "number"
+        },
+        "log_volume_mean": {
+          "title": "Log Volume Mean",
+          "type": "number"
+        },
+        "log_volume_std": {
+          "exclusiveMinimum": 0,
+          "title": "Log Volume Std",
+          "type": "number"
+        },
+        "market_mean": {
+          "title": "Market Mean",
+          "type": "number"
+        },
+        "market_std": {
+          "exclusiveMinimum": 0,
+          "title": "Market Std",
+          "type": "number"
+        },
+        "min_listed_days": {
+          "exclusiveMinimum": 0,
+          "title": "Min Listed Days",
+          "type": "integer"
+        },
+        "min_names": {
+          "minimum": 3,
+          "title": "Min Names",
+          "type": "integer"
+        },
+        "price_limit": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Price Limit",
+          "type": "number"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        },
+        "suspension_probability": {
+          "exclusiveMaximum": 1,
+          "minimum": 0,
+          "title": "Suspension Probability",
+          "type": "number"
+        },
+        "target_rankic": {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Target Rankic",
+          "type": "array"
+        },
+        "trading_days_per_year": {
+          "exclusiveMinimum": 0,
+          "title": "Trading Days Per Year",
+          "type": "integer"
+        },
+        "volume_clip": {
+          "exclusiveMinimum": 0,
+          "title": "Volume Clip",
+          "type": "number"
+        },
+        "volume_return_coupling": {
+          "minimum": 0,
+          "title": "Volume Return Coupling",
+          "type": "number"
+        }
+      },
+      "required": [
+        "revision",
+        "seed",
+        "start",
+        "instruments",
+        "days",
+        "industries",
+        "market_mean",
+        "market_std",
+        "industry_std",
+        "beta_min",
+        "beta_max",
+        "idio_df",
+        "idio_std_min",
+        "idio_std_max",
+        "log_volume_mean",
+        "log_volume_ar",
+        "log_volume_std",
+        "volume_return_coupling",
+        "suspension_probability",
+        "annual_churn_fraction",
+        "trading_days_per_year",
+        "price_limit",
+        "initial_price",
+        "initial_membership_fraction",
+        "min_listed_days",
+        "min_names",
+        "volume_clip",
+        "target_rankic",
+        "calibration_tolerance",
+        "alpha_upper_bound",
+        "calibration_bisections",
+        "calibration_sweeps",
+        "decay_w2_start_fraction",
+        "decay_w2_end_fraction"
+      ],
+      "title": "SyntheticConfig",
+      "type": "object"
+    },
+    "SyntheticReplaySource": {
+      "additionalProperties": false,
+      "properties": {
+        "configuration": {
+          "$ref": "#/$defs/SyntheticConfig"
+        },
+        "kind": {
+          "const": "synthetic",
+          "title": "Kind",
+          "type": "string"
+        },
+        "world": {
+          "enum": [
+            "planted",
+            "null",
+            "decay"
+          ],
+          "title": "World",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "world",
+        "configuration"
+      ],
+      "title": "SyntheticReplaySource",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "as_of": {
+      "format": "date",
+      "title": "As Of",
+      "type": "string"
+    },
+    "build_code_version": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$",
+      "title": "Build Code Version",
+      "type": "string"
+    },
+    "plan_id": {
+      "format": "uuid",
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "program_id": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$",
+      "title": "Program Id",
+      "type": "string"
+    },
+    "research_cutoff": {
+      "format": "date",
+      "title": "Research Cutoff",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source": {
+      "discriminator": {
+        "mapping": {
+          "pilot": "#/$defs/PilotLocalSource",
+          "snapshot_replay": "#/$defs/SnapshotReplaySource",
+          "synthetic": "#/$defs/SyntheticReplaySource"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/PilotLocalSource"
+        },
+        {
+          "$ref": "#/$defs/SnapshotReplaySource"
+        },
+        {
+          "$ref": "#/$defs/SyntheticReplaySource"
+        }
+      ],
+      "title": "Source"
+    },
+    "source_ref": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$",
+      "title": "Source Ref",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan_id",
+    "program_id",
+    "source_ref",
+    "source",
+    "research_cutoff",
+    "as_of",
+    "build_code_version"
+  ],
+  "title": "SnapshotBuildPlan",
+  "type": "object"
+}

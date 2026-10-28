@@ -1,0 +1,81 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "authorization_ref": {
+      "minLength": 1,
+      "title": "Authorization Ref",
+      "type": "string"
+    },
+    "authorized_at": {
+      "format": "date-time",
+      "title": "Authorized At",
+      "type": "string"
+    },
+    "authorized_principal": {
+      "minLength": 1,
+      "title": "Authorized Principal",
+      "type": "string"
+    },
+    "enabled": {
+      "title": "Enabled",
+      "type": "boolean"
+    },
+    "maximum_metadata_bytes": {
+      "exclusiveMinimum": 0,
+      "maximum": 1048576,
+      "title": "Maximum Metadata Bytes",
+      "type": "integer"
+    },
+    "maximum_source_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Maximum Source Bytes",
+      "type": "integer"
+    },
+    "maximum_source_files": {
+      "exclusiveMinimum": 0,
+      "title": "Maximum Source Files",
+      "type": "integer"
+    },
+    "maximum_table_cells": {
+      "exclusiveMinimum": 0,
+      "title": "Maximum Table Cells",
+      "type": "integer"
+    },
+    "network": {
+      "const": "none",
+      "title": "Network",
+      "type": "string"
+    },
+    "plan_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Plan Sha256",
+      "type": "string"
+    },
+    "schedule": {
+      "const": "on_demand_only",
+      "title": "Schedule",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "enabled",
+    "plan_sha256",
+    "authorization_ref",
+    "authorized_principal",
+    "authorized_at",
+    "maximum_source_files",
+    "maximum_source_bytes",
+    "maximum_metadata_bytes",
+    "maximum_table_cells",
+    "network",
+    "schedule"
+  ],
+  "title": "SnapshotBuildAuthorization",
+  "type": "object"
+}

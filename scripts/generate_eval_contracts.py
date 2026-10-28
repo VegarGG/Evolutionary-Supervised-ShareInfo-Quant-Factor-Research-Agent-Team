@@ -744,6 +744,7 @@ def generate(check=False):
     from qfr_core.contracts.access import PublicServiceClientConfiguration
     from qfr_eval.delivery.models import DeliveryWorkerConfiguration, PilotDeliveryPolicy
 
+    from scripts.ingest_contract_examples import examples as ingest_examples
     from scripts.release_contract_examples import examples as release_examples
 
     delivery_policy = PilotDeliveryPolicy.model_validate_json(
@@ -751,6 +752,7 @@ def generate(check=False):
     )
     for value in [
         *release_examples(ROOT),
+        *ingest_examples(ROOT),
         delivery_policy,
         DeliveryWorkerConfiguration(
             schema_version="1",
