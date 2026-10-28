@@ -60,6 +60,12 @@ equivalence instead of relabelling an old build as newly built.
    health/authentication, actual volume access, database roles and denied private
    paths. Observe idle service/database counters: no job, ingest, evaluation,
    release or provider call may be started automatically.
+   Check actual port metadata with `scripts.check_mcp_publication`, then prove
+   authenticated Mac host connectivity separately. The current internal-only MCP
+   deployment has no active host mapping; the
+   [loopback repair proposal](MCP_LOOPBACK_PROPOSAL.md) requires specific network
+   activation approval. Do not continue the host-client gate through a substitute
+   container connection or silently attach an egress/database network.
 3. Follow [PORTABLE_INTAKE_GUIDE.md](PORTABLE_INTAKE_GUIDE.md), preserving A.2/A.8
    business rules, source hashes and exposure labels. Exercise real authenticated
    upload and mapped import with original-byte hash checks. The separately

@@ -7,6 +7,12 @@ the intended program and role. Never paste credential values into commands,
 configuration examples, model/tool arguments or public logs. No QFR provider call
 is needed for these transport demonstrations.
 
+The current Mac deployment has no active host port mapping despite the overlay's
+loopback declaration. Run the read-only publication check and then actual host
+readiness; see [MCP_LOOPBACK_PROPOSAL.md](MCP_LOOPBACK_PROPOSAL.md). Its network
+repair is proposed, not approved or activated. Container-side client tests cannot
+substitute for the Mac Codex connection below.
+
 ## Codex
 
 The installed Codex CLI advertises a standard Streamable HTTP connection and

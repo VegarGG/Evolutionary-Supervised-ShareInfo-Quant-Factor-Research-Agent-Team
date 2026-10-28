@@ -29,7 +29,11 @@ never relabel an existing admitted job or signed receipt.
 `configs/research/http_server_v1.json` records bounded concurrency and connection/
 shutdown settings. Native service examples bind `127.0.0.1`; container launch
 configurations must explicitly use `0.0.0.0:8000` inside their private networks.
-The Compose host publication remains `127.0.0.1`. Proxy-header trust and access
+The Compose host publication is declared as `127.0.0.1`; the current internal-only
+MCP topology did **not** produce an active host mapping on the Mac. See the
+[pending loopback proposal](MCP_LOOPBACK_PROPOSAL.md) before attempting host-client
+acceptance. Do not add an external bridge or forwarding listener without its
+specific approval. Proxy-header trust and access
 logs containing raw URLs are disabled. Application audit logs record scoped
 principal and server-generated request identity, not request bodies or credentials.
 The bootstrap parser refuses duplicate keys, nonfinite numbers and JSON larger
@@ -70,8 +74,10 @@ docker compose --env-file configs/deployment.env \
 
 Start and verify the existing PostgreSQL service and apply migrations before this
 sequence. Never publish `docker compose config` output with resolved environment
-values. A health response proves that a service is alive, not that every upstream
-or financial gate passed. Only the MCP host port is published by this overlay.
+values. A health response proves that a service is alive, not that every upstream,
+host connection or financial gate passed. Only the MCP host port is declared by
+this overlay; inspect the actual publication separately. The read-only
+`scripts.check_mcp_publication` command refuses a configured-but-unpublished port.
 The frozen ingest and evaluator-owner CLI operations remain separate; there is
 no background worker invoked by starting these APIs.
 

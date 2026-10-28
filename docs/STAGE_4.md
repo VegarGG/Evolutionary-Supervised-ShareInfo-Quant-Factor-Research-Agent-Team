@@ -340,6 +340,28 @@ in 0.37 seconds. The actual original-ingest and full acceptance reruns remain on
 the Mac, along with deployed clients, elapsed release, delivery/export and restart
 evidence. Application/image inputs, dependency lock and protocol are unchanged.
 
+## Mac suites and deployed connection blocker
+
+The Mac reported exact `ba803ef2850d072d4d3f06fe95f07f919bb11b69` results of
+**1,131 native tests passed / 0 skipped**, and **1,105 container tests passed /
+26 skipped**. The original-input fixture correction is included. Preserve the
+separate skip evidence; aggregate counts are not the Stage 4 exit gate.
+
+The deployed MCP service declares a loopback port but has no active Docker port
+mapping while attached only to internal networks. Actual Mac host clients and
+the elapsed six-hour release are unstarted. A read-only, redacted port-metadata
+checker now distinguishes a declaration from active publication; it grants no
+readiness success by itself. The [relay proposal](MCP_LOOPBACK_PROPOSAL.md) keeps
+MCP internal and states the relay's additional egress and plaintext-traffic risk.
+No new network, relay or settings change is active; see decision S4-23.
+
+The diagnostic checkpoint passes all seven `just check` commands and **40 focused
+publication/topology tests**. Its ordinary required-PostgreSQL `just test` result
+is **1,086 passed / 82 explicit skips**, 139.42 seconds (144.10 seconds including
+the wrapper), peak child RSS **366,628 KiB**. The 37 new diagnostic cases are
+offline metadata/CLI regressions; they are not a Mac network probe. Production
+packages, Compose files, lock, protocol and application-image inputs are unchanged.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

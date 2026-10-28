@@ -1,0 +1,7 @@
+{
+  "revision": 1,
+  "host_ip": "127.0.0.1",
+  "container_port": "8000/tcp",
+  "inspect_timeout_seconds": 10,
+  "max_inspection_bytes": 262144
+}
