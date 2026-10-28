@@ -740,6 +740,18 @@ def generate(check=False):
                 model.__name__ + ".invalid.json": {**sample, "unapproved": True},
             }
         )
+    from scripts.release_contract_examples import examples as release_examples
+
+    for value in release_examples(ROOT):
+        model = type(value)
+        sample = value.model_dump(mode="json")
+        outputs.update(
+            {
+                model.__name__ + ".schema.json": model.model_json_schema(),
+                model.__name__ + ".valid.json": sample,
+                model.__name__ + ".invalid.json": {**sample, "unapproved": True},
+            }
+        )
     for name, value in outputs.items():
         path = ROOT / "packages/qfr_eval/src/qfr_eval/private_contracts" / name
         content = json.dumps(value, sort_keys=True, ensure_ascii=False, indent=2) + "\n"

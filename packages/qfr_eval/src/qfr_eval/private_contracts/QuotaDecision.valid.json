@@ -1,0 +1,8 @@
+{
+  "admission_id": null,
+  "next_eligible_at": null,
+  "reason": "QUOTA_DEFERRED",
+  "schema_version": "1",
+  "state": "deferred",
+  "subject_sha256": "38da619b65258cb047830b75c455488f33946d4e473937fc1d9a40a21d83d2db"
+}

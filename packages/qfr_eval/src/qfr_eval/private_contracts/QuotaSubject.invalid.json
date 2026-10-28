@@ -1,0 +1,10 @@
+{
+  "artifact_version_id": "00000000-0000-0000-0000-000000000001",
+  "epoch_id": "synthetic-epoch",
+  "family_id": "synthetic-lineage",
+  "profile": "stock_daily_v1",
+  "program_id": "synthetic-program",
+  "schema_version": "1",
+  "stage": "w1",
+  "unapproved": true
+}

@@ -1,0 +1,33 @@
+{
+  "baseline_version_id": null,
+  "complexity": 0,
+  "cost_basis_ref": "synthetic-costs",
+  "coverage_bucket": "unavailable",
+  "created_at": "2026-10-25T18:00:00Z",
+  "decay_profile": {},
+  "economic_lineage_id": "synthetic-root",
+  "epoch_id": "synthetic-epoch",
+  "family_id": "synthetic-family",
+  "flags": [],
+  "gate_passed": false,
+  "generation_id": "synthetic-generation",
+  "identity": {
+    "artifact_version_id": "artifact-example",
+    "content_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "dataset_version_id": "dataset-example",
+    "evaluator_version": "fixture",
+    "protocol_version": "pilot/1"
+  },
+  "library_artifact_version_id": null,
+  "metrics": {},
+  "period_count": 0,
+  "program_id": "synthetic-program",
+  "reason_codes": [],
+  "record_id": "00000000-0000-0000-0000-000000000002",
+  "sampling_unit": "trading_date",
+  "schema_version": "1",
+  "stage": "stock_measurement",
+  "status": "failed",
+  "window": "W1",
+  "yearly_rank_ic": {}
+}

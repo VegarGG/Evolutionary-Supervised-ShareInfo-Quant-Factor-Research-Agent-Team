@@ -1,6 +1,16 @@
 {
   "additionalProperties": false,
   "properties": {
+    "coverage": {
+      "enum": [
+        "pass",
+        "fail",
+        "insufficient_data",
+        "not_applicable"
+      ],
+      "title": "Coverage",
+      "type": "string"
+    },
     "fold_majority": {
       "enum": [
         "pass",
@@ -41,6 +51,26 @@
       "title": "Novelty",
       "type": "string"
     },
+    "overall": {
+      "enum": [
+        "pass",
+        "fail",
+        "insufficient_data",
+        "not_applicable"
+      ],
+      "title": "Overall",
+      "type": "string"
+    },
+    "paired_primary": {
+      "enum": [
+        "pass",
+        "fail",
+        "insufficient_data",
+        "not_applicable"
+      ],
+      "title": "Paired Primary",
+      "type": "string"
+    },
     "placebo": {
       "enum": [
         "pass",
@@ -60,15 +90,29 @@
       ],
       "title": "Turnover",
       "type": "string"
+    },
+    "uncertainty_stability": {
+      "enum": [
+        "pass",
+        "fail",
+        "insufficient_data",
+        "not_applicable"
+      ],
+      "title": "Uncertainty Stability",
+      "type": "string"
     }
   },
   "required": [
+    "paired_primary",
     "incremental_contribution",
     "fold_majority",
     "placebo",
     "net_result",
     "turnover",
-    "novelty"
+    "novelty",
+    "uncertainty_stability",
+    "coverage",
+    "overall"
   ],
   "title": "PilotHurdleFlags",
   "type": "object"

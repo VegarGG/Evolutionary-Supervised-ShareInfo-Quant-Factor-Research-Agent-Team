@@ -1,0 +1,54 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "artifact_version_id": {
+      "format": "uuid",
+      "title": "Artifact Version Id",
+      "type": "string"
+    },
+    "epoch_id": {
+      "minLength": 1,
+      "title": "Epoch Id",
+      "type": "string"
+    },
+    "family_id": {
+      "minLength": 1,
+      "title": "Family Id",
+      "type": "string"
+    },
+    "profile": {
+      "const": "stock_daily_v1",
+      "title": "Profile",
+      "type": "string"
+    },
+    "program_id": {
+      "minLength": 1,
+      "title": "Program Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stage": {
+      "enum": [
+        "w1",
+        "w2"
+      ],
+      "title": "Stage",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "profile",
+    "artifact_version_id",
+    "program_id",
+    "family_id",
+    "epoch_id",
+    "stage"
+  ],
+  "title": "QuotaSubject",
+  "type": "object"
+}

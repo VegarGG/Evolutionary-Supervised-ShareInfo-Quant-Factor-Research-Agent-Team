@@ -1,0 +1,67 @@
+{
+  "content": {
+    "hurdle_flags": {
+      "coverage": "insufficient_data",
+      "fold_majority": "insufficient_data",
+      "incremental_contribution": "insufficient_data",
+      "net_result": "insufficient_data",
+      "novelty": "insufficient_data",
+      "overall": "insufficient_data",
+      "paired_primary": "insufficient_data",
+      "placebo": "insufficient_data",
+      "turnover": "insufficient_data",
+      "uncertainty_stability": "insufficient_data"
+    },
+    "minimum_detectable_effect": {
+      "missing_reason": "not_measured",
+      "value": null
+    },
+    "not_for_selection": true,
+    "quality_flags": [
+      "small_sample_warning"
+    ],
+    "rank_bucket": "withheld",
+    "scalar": {
+      "attribution": "current_version",
+      "baseline_version_id": null,
+      "cost_basis_ref": "pilot/costs",
+      "measurement": {
+        "missing_reason": "not_measured",
+        "value": null
+      },
+      "metric": "extreme_macro_recall",
+      "origin_artifact_version_id": "artifact-example",
+      "period_count": 0,
+      "sampling_unit": "mature_matched_decision"
+    },
+    "type": "pilot"
+  },
+  "eligible_at": "2026-10-25T18:00:00Z",
+  "epoch_id": "synthetic-epoch",
+  "family_id": "family-example",
+  "flags": [],
+  "generation_id": "synthetic-generation",
+  "identity": {
+    "artifact_version_id": "artifact-example",
+    "content_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "dataset_version_id": "dataset-example",
+    "evaluator_version": "fixture",
+    "protocol_version": "pilot/1"
+  },
+  "ladder_updates": {},
+  "lineage_ids": [
+    "synthetic-lineage"
+  ],
+  "numeric_values": 0,
+  "profile": "pilot_industry_v1",
+  "program_id": "program-example",
+  "protocol_card_ref": "pilot/card",
+  "reason_codes": [],
+  "release_policy_ref": "pilot-release-v1@1",
+  "release_policy_sha256": "6dcea5ac73f23ebe453891dc6ada432445df42a9492a2182c44895e1338ebbc9",
+  "report_id": "00000000-0000-0000-0000-000000000001",
+  "schema_version": "1",
+  "source_id": "00000000-0000-0000-0000-000000000002",
+  "source_kind": "official_record",
+  "visibility": "private_unsigned"
+}

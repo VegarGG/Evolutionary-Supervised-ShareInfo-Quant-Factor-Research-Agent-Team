@@ -1,0 +1,156 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "advancement_delay_days": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Advancement Delay Days"
+    },
+    "batch_hours": {
+      "exclusiveMinimum": 0,
+      "title": "Batch Hours",
+      "type": "integer"
+    },
+    "confirmation_metrics_released": {
+      "const": false,
+      "title": "Confirmation Metrics Released",
+      "type": "boolean"
+    },
+    "diagnostics": {
+      "const": "enum_codes_only",
+      "title": "Diagnostics",
+      "type": "string"
+    },
+    "disclosure": {
+      "enum": [
+        "scalar_plus_flags",
+        "coarsened_stock_reports"
+      ],
+      "title": "Disclosure",
+      "type": "string"
+    },
+    "fitness_profile": {
+      "enum": [
+        "pilot_single_scalar_flags_v1",
+        "stock_multi_metric_v1"
+      ],
+      "title": "Fitness Profile",
+      "type": "string"
+    },
+    "ladder_step": {
+      "exclusiveMinimum": 0,
+      "title": "Ladder Step",
+      "type": "number"
+    },
+    "policy_ref": {
+      "minLength": 1,
+      "title": "Policy Ref",
+      "type": "string"
+    },
+    "policy_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Policy Sha256",
+      "type": "string"
+    },
+    "prior_best_origin_required": {
+      "const": true,
+      "title": "Prior Best Origin Required",
+      "type": "boolean"
+    },
+    "profile": {
+      "enum": [
+        "pilot_industry_v1",
+        "stock_daily_v1"
+      ],
+      "title": "Profile",
+      "type": "string"
+    },
+    "quotas": {
+      "additionalProperties": {
+        "exclusiveMinimum": 0,
+        "type": "integer"
+      },
+      "propertyNames": {
+        "enum": [
+          "lineage_versions_per_generation",
+          "family_w1_per_24h",
+          "family_w2_per_7d",
+          "program_w1_per_day",
+          "program_w2_per_week",
+          "global_w1_per_day",
+          "global_w2_per_epoch"
+        ]
+      },
+      "title": "Quotas",
+      "type": "object"
+    },
+    "raw_series_released": {
+      "const": false,
+      "title": "Raw Series Released",
+      "type": "boolean"
+    },
+    "rounding": {
+      "additionalProperties": {
+        "exclusiveMinimum": 0,
+        "type": "number"
+      },
+      "propertyNames": {
+        "enum": [
+          "primary",
+          "rank_ic",
+          "ir",
+          "sharpe",
+          "shares",
+          "correlations",
+          "w2_best_rank_ic"
+        ]
+      },
+      "title": "Rounding",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "weekly_batch": {
+      "anyOf": [
+        {
+          "const": "Monday 00:00 UTC",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Weekly Batch"
+    }
+  },
+  "required": [
+    "schema_version",
+    "policy_ref",
+    "policy_sha256",
+    "profile",
+    "fitness_profile",
+    "disclosure",
+    "ladder_step",
+    "rounding",
+    "batch_hours",
+    "weekly_batch",
+    "advancement_delay_days",
+    "quotas",
+    "raw_series_released",
+    "confirmation_metrics_released",
+    "diagnostics",
+    "prior_best_origin_required"
+  ],
+  "title": "PublicReleasePolicyCard",
+  "type": "object"
+}

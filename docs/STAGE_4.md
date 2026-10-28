@@ -67,6 +67,44 @@ The ordinary test process peaked at 311,228 KiB RSS; the fresh PostgreSQL servic
 was bounded to 512 MiB and one CPU. Apple-native, licensed pilot/oracle and actual
 sandbox checks were not run here. Full final-source Mac acceptance remains required.
 
+## P3.5 release engine
+
+The two typed release policies are separate from the older draft YAML files.
+The pilot policy binds the approved protocol hash, exact fixed Ladder step and
+three-version lineage/generation budget. Six-hour UTC batches and frozen-family
+midrank tertiles are recorded operational choices. Stock rounding, rolling family
+limits, UTC day/week limits and seven-day deferral expiry follow local §9.
+No stock campaign or confirmation query is activated.
+
+Immutable official records and append-only intake transitions are queued by hash;
+mutable progress never changes an earlier release decision. Real PostgreSQL tests
+cover quota concurrency, idempotency, explicit deferral/expiry, restart recovery,
+policy freeze and audit rollback. A stock producer must reserve quota before its
+measurement. Pilot attempts reuse the existing economic-lineage reservations;
+budget-excess attempts remain counted and produce no outcome-dependent payload.
+
+Preparation holds the queue and Ladder scope locks inside the eventual publication
+transaction. It produces a private unsigned object, never a feedback row or a new
+Ladder best. The signing integration must atomically publish the verified report,
+update the Ladder and record numeric disclosure; a saved preparation is not an
+authoritative result. Absolute primary recall carries no invented Registry
+baseline ID; the frozen protocol retains its paired P1 comparison identity.
+Withheld results clear scores, sample counts, reasons and diagnostic flags.
+
+MDE and secondary numeric diagnostics stay private for the Stage 4 scalar/flags
+flow. The family summary at generation end remains Stage 6 work, as recorded in
+S4-06. Stock W1/W2 projection and quota tests use declared synthetic adapter inputs;
+they are not stock financial acceptance. Signing, public API visibility and the
+real elapsed-batch P0/P1 flow still require subsequent integration and Mac evidence.
+
+P3.5 package verification on the cloud Linux host: all seven `just check`
+commands passed; required-PostgreSQL `just test` passed **798 tests**, with
+**81 explicit skips** and the existing Starlette/httpx warning (105.39 seconds).
+Focused quota/preparation/database-boundary tests passed **35 tests**. Peak test
+RSS was 304,548 KiB. The first full run exposed missing owner-level delete guards
+on mutable release history; a forward migration and regression test fixed it.
+No skipped Mac, licensed-input or actual sandbox check is counted as acceptance.
+
 ## Required exit evidence
 
 REL-01–06, BND-03, MCP-01–06, JOB-01–03 and DLV-01–03 remain **UNRUN** as complete

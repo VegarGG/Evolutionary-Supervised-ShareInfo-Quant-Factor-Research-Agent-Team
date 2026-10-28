@@ -1,0 +1,142 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "approval_ref": {
+      "minLength": 1,
+      "title": "Approval Ref",
+      "type": "string"
+    },
+    "automatic_campaign": {
+      "const": false,
+      "title": "Automatic Campaign",
+      "type": "boolean"
+    },
+    "batch_hours": {
+      "exclusiveMinimum": 0,
+      "maximum": 24,
+      "title": "Batch Hours",
+      "type": "integer"
+    },
+    "confirmation_authorization": {
+      "const": "separate_explicit_owner_action",
+      "title": "Confirmation Authorization",
+      "type": "string"
+    },
+    "confirmation_queries_per_protocol": {
+      "const": 1,
+      "title": "Confirmation Queries Per Protocol",
+      "type": "integer"
+    },
+    "feedback_versions_per_lineage_generation": {
+      "const": 3,
+      "title": "Feedback Versions Per Lineage Generation",
+      "type": "integer"
+    },
+    "fitness_profile": {
+      "const": "pilot_single_scalar_flags_v1",
+      "title": "Fitness Profile",
+      "type": "string"
+    },
+    "ladder_reference": {
+      "const": "last_accepted_unrounded_score",
+      "title": "Ladder Reference",
+      "type": "string"
+    },
+    "ladder_step": {
+      "exclusiveMinimum": 0,
+      "title": "Ladder Step",
+      "type": "number"
+    },
+    "policy_id": {
+      "minLength": 1,
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "primary_metric": {
+      "const": "extreme_macro_recall",
+      "title": "Primary Metric",
+      "type": "string"
+    },
+    "profile": {
+      "const": "pilot_industry_v1",
+      "title": "Profile",
+      "type": "string"
+    },
+    "protocol_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Protocol Sha256",
+      "type": "string"
+    },
+    "rank_bucket_rule": {
+      "const": "frozen_family_midrank_tertiles",
+      "title": "Rank Bucket Rule",
+      "type": "string"
+    },
+    "release_cycle": {
+      "const": "weekly",
+      "title": "Release Cycle",
+      "type": "string"
+    },
+    "release_window": {
+      "const": "validation",
+      "title": "Release Window",
+      "type": "string"
+    },
+    "retain_origin_version": {
+      "const": true,
+      "title": "Retain Origin Version",
+      "type": "boolean"
+    },
+    "rounding": {
+      "const": "floor_to_step",
+      "title": "Rounding",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "const": "P0_P1_verification_only",
+      "title": "Scope",
+      "type": "string"
+    },
+    "secondary_metrics": {
+      "const": "withheld_pending_separate_family_summary",
+      "title": "Secondary Metrics",
+      "type": "string"
+    },
+    "version": {
+      "exclusiveMinimum": 0,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "policy_id",
+    "version",
+    "profile",
+    "scope",
+    "protocol_sha256",
+    "approval_ref",
+    "fitness_profile",
+    "release_window",
+    "release_cycle",
+    "primary_metric",
+    "ladder_step",
+    "rounding",
+    "ladder_reference",
+    "retain_origin_version",
+    "feedback_versions_per_lineage_generation",
+    "confirmation_queries_per_protocol",
+    "confirmation_authorization",
+    "batch_hours",
+    "secondary_metrics",
+    "rank_bucket_rule",
+    "automatic_campaign"
+  ],
+  "title": "PilotReleasePolicy",
+  "type": "object"
+}

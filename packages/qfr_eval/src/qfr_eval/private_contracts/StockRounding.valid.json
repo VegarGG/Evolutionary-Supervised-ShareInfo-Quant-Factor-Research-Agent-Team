@@ -1,0 +1,8 @@
+{
+  "correlations": 0.05,
+  "ir": 0.02,
+  "rank_ic": 0.005,
+  "shares": 0.05,
+  "sharpe": 0.25,
+  "w2_best_rank_ic": 0.01
+}

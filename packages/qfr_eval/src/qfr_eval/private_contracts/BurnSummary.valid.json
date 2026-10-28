@@ -1,0 +1,10 @@
+{
+  "epoch_id": "synthetic-epoch",
+  "queries_used": 0,
+  "query_budget": null,
+  "released_values": 0,
+  "schema_version": "1",
+  "status": "unthresholded",
+  "trials": 0,
+  "window": "validation"
+}

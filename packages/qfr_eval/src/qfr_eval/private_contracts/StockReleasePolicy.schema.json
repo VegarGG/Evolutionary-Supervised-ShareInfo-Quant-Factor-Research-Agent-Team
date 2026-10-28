@@ -1,0 +1,218 @@
+{
+  "$defs": {
+    "StockReleaseQuotas": {
+      "additionalProperties": false,
+      "properties": {
+        "burn_w1_amber": {
+          "exclusiveMinimum": 0,
+          "title": "Burn W1 Amber",
+          "type": "integer"
+        },
+        "burn_w1_red": {
+          "exclusiveMinimum": 0,
+          "title": "Burn W1 Red",
+          "type": "integer"
+        },
+        "deferral_expiry_days": {
+          "exclusiveMinimum": 0,
+          "title": "Deferral Expiry Days",
+          "type": "integer"
+        },
+        "family_w1_per_24h": {
+          "exclusiveMinimum": 0,
+          "title": "Family W1 Per 24H",
+          "type": "integer"
+        },
+        "family_w2_per_7d": {
+          "exclusiveMinimum": 0,
+          "title": "Family W2 Per 7D",
+          "type": "integer"
+        },
+        "global_w1_per_day": {
+          "exclusiveMinimum": 0,
+          "title": "Global W1 Per Day",
+          "type": "integer"
+        },
+        "global_w2_per_epoch": {
+          "exclusiveMinimum": 0,
+          "title": "Global W2 Per Epoch",
+          "type": "integer"
+        },
+        "program_w1_per_day": {
+          "exclusiveMinimum": 0,
+          "title": "Program W1 Per Day",
+          "type": "integer"
+        },
+        "program_w2_per_week": {
+          "exclusiveMinimum": 0,
+          "title": "Program W2 Per Week",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "family_w1_per_24h",
+        "family_w2_per_7d",
+        "program_w1_per_day",
+        "program_w2_per_week",
+        "global_w1_per_day",
+        "global_w2_per_epoch",
+        "deferral_expiry_days",
+        "burn_w1_amber",
+        "burn_w1_red"
+      ],
+      "title": "StockReleaseQuotas",
+      "type": "object"
+    },
+    "StockRounding": {
+      "additionalProperties": false,
+      "properties": {
+        "correlations": {
+          "exclusiveMinimum": 0,
+          "title": "Correlations",
+          "type": "number"
+        },
+        "ir": {
+          "exclusiveMinimum": 0,
+          "title": "Ir",
+          "type": "number"
+        },
+        "rank_ic": {
+          "exclusiveMinimum": 0,
+          "title": "Rank Ic",
+          "type": "number"
+        },
+        "shares": {
+          "exclusiveMinimum": 0,
+          "title": "Shares",
+          "type": "number"
+        },
+        "sharpe": {
+          "exclusiveMinimum": 0,
+          "title": "Sharpe",
+          "type": "number"
+        },
+        "w2_best_rank_ic": {
+          "exclusiveMinimum": 0,
+          "title": "W2 Best Rank Ic",
+          "type": "number"
+        }
+      },
+      "required": [
+        "rank_ic",
+        "ir",
+        "sharpe",
+        "shares",
+        "correlations",
+        "w2_best_rank_ic"
+      ],
+      "title": "StockRounding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "advancement_delay_days": {
+      "exclusiveMinimum": 0,
+      "title": "Advancement Delay Days",
+      "type": "integer"
+    },
+    "automatic_campaign": {
+      "const": false,
+      "title": "Automatic Campaign",
+      "type": "boolean"
+    },
+    "diagnostics": {
+      "const": "enum_codes_only",
+      "title": "Diagnostics",
+      "type": "string"
+    },
+    "fitness_profile": {
+      "const": "stock_multi_metric_v1",
+      "title": "Fitness Profile",
+      "type": "string"
+    },
+    "ladder_eta": {
+      "exclusiveMinimum": 0,
+      "title": "Ladder Eta",
+      "type": "number"
+    },
+    "ladder_reference": {
+      "const": "last_accepted_unrounded_score",
+      "title": "Ladder Reference",
+      "type": "string"
+    },
+    "policy_id": {
+      "minLength": 1,
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "profile": {
+      "const": "stock_daily_v1",
+      "title": "Profile",
+      "type": "string"
+    },
+    "quotas": {
+      "$ref": "#/$defs/StockReleaseQuotas"
+    },
+    "raw_series_released": {
+      "const": false,
+      "title": "Raw Series Released",
+      "type": "boolean"
+    },
+    "rounding": {
+      "$ref": "#/$defs/StockRounding"
+    },
+    "rounding_rule": {
+      "const": "nearest_half_away_from_zero",
+      "title": "Rounding Rule",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "version": {
+      "exclusiveMinimum": 0,
+      "title": "Version",
+      "type": "integer"
+    },
+    "w1_batch_hours": {
+      "exclusiveMinimum": 0,
+      "maximum": 24,
+      "title": "W1 Batch Hours",
+      "type": "integer"
+    },
+    "w2_batch": {
+      "const": "Monday 00:00 UTC",
+      "title": "W2 Batch",
+      "type": "string"
+    },
+    "w3_metrics_released": {
+      "const": false,
+      "title": "W3 Metrics Released",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "policy_id",
+    "version",
+    "profile",
+    "fitness_profile",
+    "w1_batch_hours",
+    "w2_batch",
+    "advancement_delay_days",
+    "rounding",
+    "rounding_rule",
+    "ladder_eta",
+    "ladder_reference",
+    "quotas",
+    "w3_metrics_released",
+    "raw_series_released",
+    "diagnostics",
+    "automatic_campaign"
+  ],
+  "title": "StockReleasePolicy",
+  "type": "object"
+}

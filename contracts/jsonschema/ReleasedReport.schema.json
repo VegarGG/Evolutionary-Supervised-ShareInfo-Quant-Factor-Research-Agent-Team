@@ -200,6 +200,16 @@
     "PilotHurdleFlags": {
       "additionalProperties": false,
       "properties": {
+        "coverage": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Coverage",
+          "type": "string"
+        },
         "fold_majority": {
           "enum": [
             "pass",
@@ -240,6 +250,26 @@
           "title": "Novelty",
           "type": "string"
         },
+        "overall": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Overall",
+          "type": "string"
+        },
+        "paired_primary": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Paired Primary",
+          "type": "string"
+        },
         "placebo": {
           "enum": [
             "pass",
@@ -259,15 +289,29 @@
           ],
           "title": "Turnover",
           "type": "string"
+        },
+        "uncertainty_stability": {
+          "enum": [
+            "pass",
+            "fail",
+            "insufficient_data",
+            "not_applicable"
+          ],
+          "title": "Uncertainty Stability",
+          "type": "string"
         }
       },
       "required": [
+        "paired_primary",
         "incremental_contribution",
         "fold_majority",
         "placebo",
         "net_result",
         "turnover",
-        "novelty"
+        "novelty",
+        "uncertainty_stability",
+        "coverage",
+        "overall"
       ],
       "title": "PilotHurdleFlags",
       "type": "object"
@@ -697,6 +741,31 @@
       ],
       "title": "StockW2Release",
       "type": "object"
+    },
+    "WithheldRelease": {
+      "additionalProperties": false,
+      "description": "No current score, flags, sample counts or other outcome-dependent payload.",
+      "properties": {
+        "reason": {
+          "enum": [
+            "budget",
+            "non_selectable"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "type": {
+          "const": "withheld",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "reason"
+      ],
+      "title": "WithheldRelease",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -712,7 +781,8 @@
           "screening": "#/$defs/StatusRelease",
           "sim": "#/$defs/SimulationRelease",
           "w1": "#/$defs/StockW1Release",
-          "w2": "#/$defs/StockW2Release"
+          "w2": "#/$defs/StockW2Release",
+          "withheld": "#/$defs/WithheldRelease"
         },
         "propertyName": "type"
       },
@@ -740,6 +810,9 @@
         },
         {
           "$ref": "#/$defs/LibraryRelease"
+        },
+        {
+          "$ref": "#/$defs/WithheldRelease"
         }
       ],
       "title": "Content"

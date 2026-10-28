@@ -328,12 +328,16 @@ def examples(root: Path):
         hurdle_flags={
             k: "insufficient_data"
             for k in [
+                "paired_primary",
                 "incremental_contribution",
                 "fold_majority",
                 "placebo",
                 "net_result",
                 "turnover",
                 "novelty",
+                "uncertainty_stability",
+                "coverage",
+                "overall",
             ]
         },
         rank_bucket="withheld",
@@ -817,6 +821,25 @@ def examples(root: Path):
             attempt=1,
             lease_until=AT,
             payload={"input_ref": "bundle-example"},
+        ),
+        r.WithheldRelease(type="withheld", reason="budget"),
+        r.PublicReleasePolicyCard(
+            schema_version="1",
+            policy_ref="pilot-release-v1@1",
+            policy_sha256=H,
+            profile="pilot_industry_v1",
+            fitness_profile="pilot_single_scalar_flags_v1",
+            disclosure="scalar_plus_flags",
+            ladder_step=0.011239912200318261,
+            rounding={"primary": 0.011239912200318261},
+            batch_hours=6,
+            weekly_batch=None,
+            advancement_delay_days=None,
+            quotas={"lineage_versions_per_generation": 3},
+            raw_series_released=False,
+            confirmation_metrics_released=False,
+            diagnostics="enum_codes_only",
+            prior_best_origin_required=True,
         ),
     ]
     return roots

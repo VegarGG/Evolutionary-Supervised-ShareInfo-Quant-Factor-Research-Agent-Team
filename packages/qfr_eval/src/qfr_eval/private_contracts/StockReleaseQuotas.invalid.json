@@ -1,0 +1,12 @@
+{
+  "burn_w1_amber": 3000,
+  "burn_w1_red": 6000,
+  "deferral_expiry_days": 7,
+  "family_w1_per_24h": 3,
+  "family_w2_per_7d": 1,
+  "global_w1_per_day": 200,
+  "global_w2_per_epoch": 400,
+  "program_w1_per_day": 60,
+  "program_w2_per_week": 10,
+  "unapproved": true
+}
