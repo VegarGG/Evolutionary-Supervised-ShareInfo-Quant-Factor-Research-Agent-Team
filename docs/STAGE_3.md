@@ -344,3 +344,33 @@ binds that lock while preserving every v1 backend/security/resource value; the v
 file remains unchanged. This is not permission to install or change a host backend.
 Only bounded offline checks run in cloud for this fix. Exact-commit Mac tests,
 licensed reproduction and final images must be revalidated before acceptance.
+
+Resumed verification on October 28: the unchanged code at `2021ee3` passed
+68 focused runtime/contract/adapter tests in 6.53 seconds. `just check` passed:
+233 formatted files, 130 mypy source files, five import boundaries, 108 public
+contracts, private contracts and five package license checks. Offline `just test`
+passed 458 tests, with 162 explicit skips and one unchanged dependency warning in
+52.24 seconds. The skipped checks comprise 95 database checks, 44 licensed-input
+checks, 14 actual sandbox checks and nine original-oracle checks. They provide no
+acceptance evidence. The full offline process peaked at 304,404 KiB RSS; environment
+memory peaked at 862,007,296 bytes. The 180-second/5-GiB guards did not trigger and
+there were no OOM events. The nine earlier lock-binding failures are resolved.
+
+The original Stage 1 captured panel and P0/P1 receipts were located and their
+recorded hashes verified privately. No replacement goldens were generated or
+licensed data published. The original-source replay recipe remains unchanged;
+running it on the Mac requires its pinned image and architecture-compatible
+original dependencies. That trusted historical replay is separate from the
+still-required Registry artifact sandbox execution.
+
+For the Mac follow-up, first install the changed locked workspace, preserve its
+existing test database and private input configuration, and run the numerical
+runtime tests plus
+`tests/evaluator/test_records.py::test_evl_04_cli_reproduces_frozen_record_despite_later_trials`
+with `--require-postgres`. Run the latter with parent `POLARS_MAX_THREADS=4` and
+with the normal Mac default; its sanitized child deliberately begins with a
+different value and must restore the frozen effective pool before computation.
+Capture the observed numerical identity and exact result/series/fingerprint/cluster
+hash comparisons. Native host and Linux container runs are distinct evidence.
+Final-source live suites, rebuilt images and the blocked Apple sandbox gates
+remain outstanding; this checkpoint does not complete Stage 3.
