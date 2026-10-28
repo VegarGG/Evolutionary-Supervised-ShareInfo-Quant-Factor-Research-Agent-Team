@@ -29,7 +29,7 @@ from qfr_eval.backtest.prefix import slice_inputs
 from qfr_eval.execution_bundle import ArtifactExecutionBundle
 from qfr_eval.protocols.models import FrozenProtocol
 from qfr_eval.records import RuntimeIdentity
-from qfr_eval.runtime import verify_runtime
+from qfr_eval.runtime import initialize_worker_thread, verify_runtime
 from qfr_eval.sandbox.runner import ExecutionResult, SandboxRunner, SandboxUnavailable
 from qfr_eval.scheduler.dedup import digest, verify_publication
 from qfr_eval.scheduler.intake import IntakeScheduler, transition
@@ -161,7 +161,7 @@ class ScreeningWorker:
         worker: str,
         released: ReleasedEvidence,
     ) -> None:
-        verify_runtime(runtime)
+        initialize_worker_thread(runtime)
         campaign = scheduler.campaign
         if (
             campaign.runtime_hash != digest(runtime.model_dump(mode="json"))

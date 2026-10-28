@@ -12,6 +12,7 @@ import psycopg
 
 from qfr_eval.credentials import connection_dsn
 from qfr_eval.runtime_contracts import RuntimeCompatibilityError, RuntimeIdentity
+from qfr_eval.runtime_threads import initialize_thread_controls
 
 
 def prepare_execution(runtime: RuntimeIdentity) -> None:
@@ -30,10 +31,7 @@ def prepare_execution(runtime: RuntimeIdentity) -> None:
             os.environ.pop(key, None)
         else:
             os.environ[key] = value
-    if runtime.numerical_execution.accelerate is not None:
-        from qfr_eval.apple_runtime import initialize_single_thread
-
-        initialize_single_thread()
+    initialize_thread_controls(accelerate=runtime.numerical_execution.accelerate is not None)
 
 
 def _reproduction_runtime(record_id: UUID, root: Path) -> RuntimeIdentity:

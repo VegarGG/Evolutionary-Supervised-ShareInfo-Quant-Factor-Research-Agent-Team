@@ -39,6 +39,21 @@ The CLI bootstrap restores the frozen single-threaded profile before numerical
 imports, then compares the actual initialized identity. OS/library changes are
 incompatibilities, not permission to relabel an old result.
 
+Trusted numerical worker threads call `initialize_worker_thread(runtime)` before
+work, for example through `ThreadPoolExecutor(initializer=initialize_worker_thread,
+initargs=(runtime,))`. Screening worker construction uses the same entry point;
+an object moved to another thread requires that thread's initializer. The lease
+renewal thread only performs database ownership updates and does not initialize
+numerical execution. Process-wide Polars/BLAS pools and environment values must
+already match; the thread initializer changes none of them.
+
+Runtime capture, CLI bootstrap and worker initialization share a once-per-thread
+setup guard. Only a fresh thread can select the frozen Accelerate mode. Reused
+threads verify their actual execution without resetting it, including when
+capturing another identity. Failed setup requires a fresh thread after readiness
+is fixed. `verify_runtime` remains observation-only at each job and persistence
+boundary, so drift cannot be hidden by initializing again before a write.
+
 Linux continues to record its observed Polars and threadpoolctl-backed pools.
 Its numerical identity remains version 1 with byte-equivalent serialization.
 Apple uses numerical identity version 2 inside runtime identity version 2.
@@ -54,7 +69,8 @@ they are not Apple acceptance. Native tests must run on the actual Mac:
 ```bash
 .venv/bin/python -m pytest -q \
   tests/evaluator/test_apple_runtime.py \
-  tests/evaluator/test_numerical_runtime.py
+  tests/evaluator/test_numerical_runtime.py \
+  tests/evaluator/test_runtime_threads.py
 ```
 
 The native SDK test compiles a tiny trusted C program against the already
@@ -81,6 +97,21 @@ normal Mac default. Result, series, fingerprints and clusters must match exactly
 Use a fresh counted test context; never amend old records. Native host evidence
 and Docker Desktop Linux-container evidence remain distinct. These checks do not
 resolve the separate runsc sandbox readiness blocker.
+
+The worker suite exercises four real concurrent threads with exact output hashes
+and no process-environment changes. Native Apple tests deliberately change a
+worker's API mode after initialization and require refusal from initialization,
+verification, recapture and screening before any claim. With required PostgreSQL,
+the concurrent screening retry must still produce one immutable record, one
+trial and one budget reservation. Its native drift negative test must produce
+none and leave the running ownership state unfinished:
+
+```bash
+.venv/bin/python -m pytest --require-postgres -q \
+  tests/registry/test_intake.py::test_screening_concurrent_retry_is_one_immutable_record_trial_and_budget_slot \
+  tests/registry/test_intake.py::test_screening_worker_initializes_on_own_thread_before_claim \
+  tests/registry/test_intake.py::test_native_screening_thread_drift_writes_no_record_trial_or_budget_slot
+```
 
 ## Primary references
 

@@ -1,5 +1,6 @@
 """P3.2 real HTTP/DB scheduling; synthetic outputs are not sandbox acceptance."""
 
+import platform
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from pathlib import Path
@@ -15,7 +16,7 @@ from qfr_core.registry_client import RegistryClient, RegistryTransportError
 from qfr_eval.artifact_store import EvidenceStore
 from qfr_eval.db.queue import finish
 from qfr_eval.protocols.models import FrozenProtocol
-from qfr_eval.runtime import capture_runtime
+from qfr_eval.runtime import capture_runtime, initialize_worker_thread
 from qfr_eval.scheduler.dedup import equivalent, semantic_scope, verify_publication
 from qfr_eval.scheduler.intake import IntakeScheduler, transition
 from qfr_eval.scheduler.models import (
@@ -626,7 +627,9 @@ def test_screening_concurrent_retry_is_one_immutable_record_trial_and_budget_slo
         with eval_connect() as conn, conn.transaction():
             return _persist_screening(conn, case, job, request, audit_id)
 
-    with ThreadPoolExecutor(4) as pool:
+    with ThreadPoolExecutor(
+        4, initializer=initialize_worker_thread, initargs=(request.runtime,)
+    ) as pool:
         receipts = list(pool.map(lambda _: run(), range(4)))
     assert all(value == receipts[0] for value in receipts)
     from qfr_eval.screening.persistence import verify_screening_receipt
@@ -653,6 +656,91 @@ def test_screening_concurrent_retry_is_one_immutable_record_trial_and_budget_slo
                 [request.program_id],
             ).fetchone()[0]
             == 1
+        )
+
+
+@pytest.mark.database
+def test_screening_worker_initializes_on_own_thread_before_claim(screening_worker_case):
+    from qfr_eval.screening.worker import ScreeningWorker
+
+    original, _, _ = screening_worker_case
+    original.scheduler.poll_once()
+
+    def run():
+        # No executor initializer: constructing the trusted worker is this
+        # entry path's thread setup, before run_once can claim any work.
+        worker = ScreeningWorker(
+            original.scheduler,
+            original.protocol,
+            original.runtime,
+            original.inputs,
+            original.store,
+            original.policy,
+            original.profiles,
+            original.sandbox,
+            worker=original.worker,
+            released=original.released,
+        )
+        return worker.run_once()
+
+    with ThreadPoolExecutor(1) as pool:
+        result = pool.submit(run).result(timeout=30)
+    assert result.status == "recorded" and result.receipt is not None
+
+
+@pytest.mark.database
+@pytest.mark.skipif(
+    platform.system() != "Darwin",
+    reason="UNRUN: native Apple screening thread and PostgreSQL required",
+)
+def test_native_screening_thread_drift_writes_no_record_trial_or_budget_slot(
+    screening_transaction_case, eval_connect
+):
+    from qfr_eval.apple_runtime import threading_api
+    from qfr_eval.runtime_contracts import RuntimeCompatibilityError
+
+    case = screening_transaction_case
+    _, artifact, _, _, _, claim_artifact = case
+    job, request = claim_artifact(artifact)
+    assert request.runtime.numerical_execution.accelerate is not None
+    getter, setter = threading_api()
+
+    def run():
+        assert getter() == 1
+        try:
+            assert setter(0) == 0 and getter() == 0
+            with pytest.raises(RuntimeCompatibilityError, match="accelerate_not_single_threaded"):
+                initialize_worker_thread(request.runtime)
+            with pytest.raises(RuntimeCompatibilityError, match="accelerate_not_single_threaded"):
+                with eval_connect() as conn, conn.transaction():
+                    _persist_screening(conn, case, job, request, uuid4())
+            assert getter() == 0
+        finally:
+            assert setter(1) == 0 and getter() == 1
+
+    with ThreadPoolExecutor(
+        1, initializer=initialize_worker_thread, initargs=(request.runtime,)
+    ) as pool:
+        pool.submit(run).result(timeout=30)
+    with eval_connect() as conn:
+        assert conn.execute(
+            "SELECT count(*) FROM eval.official_records WHERE artifact_version_id=%s",
+            [request.artifact_version_id],
+        ).fetchone() == (0,)
+        assert conn.execute(
+            "SELECT count(*) FROM eval.trial_ledger "
+            "WHERE payload->'identity'->>'artifact_version_id'=%s",
+            [str(request.artifact_version_id)],
+        ).fetchone() == (0,)
+        assert conn.execute(
+            "SELECT count(*) FROM eval.feedback_reservations WHERE program_id=%s",
+            [request.program_id],
+        ).fetchone() == (0,)
+        assert conn.execute(
+            "SELECT state FROM eval.intake WHERE id=%s", [request.intake_id]
+        ).fetchone() == ("screening",)
+        assert conn.execute("SELECT state FROM eval.jobs WHERE id=%s", [job["id"]]).fetchone() == (
+            "running",
         )
 
 

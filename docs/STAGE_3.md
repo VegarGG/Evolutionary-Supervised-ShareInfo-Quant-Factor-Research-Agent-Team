@@ -414,3 +414,38 @@ with three native-only skips. Peak process RSS was 303,884 KiB and environment
 memory 890,929,152 bytes; no timeout, memory/disk guard or OOM event occurred.
 Real database, licensed-input and sandbox gates were not enabled in this bounded
 offline run and are not claimed as passed.
+
+## Numerical worker thread follow-up
+
+Mac evidence for `2a1ae03`: focused runtime/EVL-04 checks passed 19 tests with
+parent Polars pool 4 and again with the default; native static checks passed.
+The full native suite with required PostgreSQL and private inputs reported
+603 passed, 27 skipped and one failure. Desktop Linux-container CI reported
+600 passed, 31 skipped and passing static checks. The native failure was the
+concurrent screening retry: four new executor threads had not initialized their
+calling-thread Accelerate mode. Those results are retained as prior evidence,
+not relabelled as acceptance of the follow-up.
+
+An explicit trusted worker initializer now sets a fresh thread's local controls
+and verifies the complete frozen identity before work. Screening construction
+and the concurrent persistence fixture use it. Capture, CLI bootstrap and worker
+initialization share a once-per-thread guard, preventing repeat initialization
+from repairing deliberate drift. Job and persistence verification remain
+observation-only. No process-wide thread pool, host setting, sandbox backend,
+statistical protocol, identity serialization or golden evidence changes.
+
+The evaluator implementation hash changes, so tests must create fresh runtime
+identities and counted contexts; existing immutable records are preserved. New
+tests cover exact hashes on four real worker threads, incompatible process pools,
+failed initialization and native drift before claims or database writes. Native
+follow-up and broader Mac CI remain required. Sandbox gates and nine original
+oracle cases remain unrun, so Stage 3 is not acceptance-ready.
+
+Bounded cloud verification: all seven `just check` commands passed (238 formatted
+files, 132 type-checked sources, five import boundaries, public/private contracts
+and five package license checks). Offline `just test` passed 471 tests with
+168 explicit skips and one unchanged warning in 59.13 seconds. Focused runtime
+tests passed 20 with four native-only skips. Process RSS peaked at 297,252 KiB
+and environment memory at 893,218,816 bytes, without OOM or timeout/memory/disk
+guard events. The actual PostgreSQL concurrency and native drift regressions
+remain for Mac validation; offline skips are not gate evidence.

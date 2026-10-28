@@ -25,6 +25,7 @@ from qfr_eval.runtime_contracts import (
     RuntimeCompatibilityError,
     RuntimeIdentity,
 )
+from qfr_eval.runtime_threads import initialize_thread_controls
 
 
 def implementation_hash() -> str:
@@ -122,10 +123,9 @@ def numerical_execution() -> NumericalExecution:
 def capture_runtime(*, evaluator_git_sha: str, image_digest: str) -> RuntimeIdentity:
     from qfr_eval import apple_runtime
 
-    if apple_runtime.consumers():
-        # This explicit new-runtime profile chooses the only Accelerate mode
-        # with a verifiable fixed thread count. Never rewrite a frozen identity.
-        apple_runtime.initialize_single_thread()
+    # New threads select the fixed calling-thread profile. A later capture on
+    # the same thread must observe drift rather than silently repairing it.
+    initialize_thread_controls(accelerate=bool(apple_runtime.consumers()))
     return RuntimeIdentity(
         schema_version="2",
         evaluator_git_sha=evaluator_git_sha,
@@ -136,7 +136,7 @@ def capture_runtime(*, evaluator_git_sha: str, image_digest: str) -> RuntimeIden
     )
 
 
-def verify_runtime(runtime: RuntimeIdentity) -> None:
+def _verified_implementation(runtime: RuntimeIdentity) -> NumericalExecution:
     if runtime.schema_version != "2" or runtime.numerical_execution is None:
         raise RuntimeCompatibilityError("legacy_runtime_missing_execution_identity")
     if (
@@ -144,7 +144,23 @@ def verify_runtime(runtime: RuntimeIdentity) -> None:
         or runtime.software != software_identity()
     ):
         raise RuntimeCompatibilityError("implementation_or_software")
-    if runtime.numerical_execution != numerical_execution():
+    return runtime.numerical_execution
+
+
+def initialize_worker_thread(runtime: RuntimeIdentity) -> None:
+    """Trusted worker/executor initializer, before measurement or claiming work.
+
+    Process-wide pools/environment must already match the frozen pin. Only the
+    calling thread's Accelerate mode can be initialized here, once. Every call
+    still verifies actual execution; a reused thread cannot reset later drift.
+    """
+    execution = _verified_implementation(runtime)
+    initialize_thread_controls(accelerate=execution.accelerate is not None)
+    verify_runtime(runtime)
+
+
+def verify_runtime(runtime: RuntimeIdentity) -> None:
+    if _verified_implementation(runtime) != numerical_execution():
         raise RuntimeCompatibilityError("numerical_execution")
 
 
