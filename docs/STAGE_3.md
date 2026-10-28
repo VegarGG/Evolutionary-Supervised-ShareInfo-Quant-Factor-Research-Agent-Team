@@ -1,5 +1,10 @@
 # Stage 3 — Registry, execution contracts and sandbox
 
+Current status: [October 28 draft checkpoint](STAGE_3_CHECKPOINT.md).
+**Not merge-ready:** historical oracle parity now passes on the Mac; required
+Apple sandbox and Registry sandbox execution gates remain blocked/unrun.
+The entries below retain each earlier checkpoint's evidence and limitations.
+
 Work starts from the verified Stage 2 commit
 `57fae27c956a0954f2347e203435a30883a42d09` on `stage-3-registry-sandbox`.
 The branch was created without merging the predecessor. Stage 3 does not implement feedback release,

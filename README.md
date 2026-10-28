@@ -6,6 +6,10 @@ Hybrid v1 multi-agent quantitative research and factor evolution: supervisor–w
 
 DeepSeek v4.1 Flash is the first model to integrate at the provider stage. Exact official endpoint/model identifiers and explicit live-call authorization are required there; no model integration or paid calls are part of Stage 2.
 
+The [Stage 3 draft checkpoint](docs/STAGE_3_CHECKPOINT.md) records native Mac and
+container tests plus historical oracle parity. It is **not merge-ready**: required
+Apple sandbox and Registry sandbox execution gates remain blocked/unrun.
+
 ## Start here
 
 1. [Development kickoff prompt](docs/DEVELOPMENT_KICKOFF_PROMPT.md): the prompt that starts Stage 0 and the template for every later stage.
