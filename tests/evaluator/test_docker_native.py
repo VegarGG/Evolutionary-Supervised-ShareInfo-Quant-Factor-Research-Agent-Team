@@ -7,6 +7,7 @@ import json
 import socket
 import struct
 import tarfile
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -423,47 +424,54 @@ def test_controller_poisoned_after_unverifiable_cleanup(native_profile, monkeypa
 
 
 @pytest.mark.parametrize("kind", ["oversize", "slow", "stderr", "truncated"])
-def test_docker_transport_limits_truncated_or_slow_streams(tmp_path, kind):
-    path = str(tmp_path / "engine.sock")
-    server = socket.socket(socket.AF_UNIX)
-    server.bind(path)
-    server.listen(1)
+def test_docker_transport_limits_truncated_or_slow_streams(kind):
+    with tempfile.TemporaryDirectory(prefix="qfr-net-", dir="/tmp") as directory:
+        path = str(Path(directory) / "engine.sock")
+        server = socket.socket(socket.AF_UNIX)
+        server.bind(path)
+        server.listen(1)
 
-    def worker():
-        conn, _ = server.accept()
-        with conn:
-            conn.recv(4096)
-            try:
-                conn.sendall(b"HTTP/1.0 200 OK\r\nContent-Type: application/octet-stream\r\n\r\n")
-                if kind == "slow":
-                    for _ in range(20):
-                        conn.sendall(b"x")
-                        time.sleep(0.03)
-                elif kind == "oversize":
-                    conn.sendall(b"x" * 100)
-                elif kind == "stderr":
-                    conn.sendall(b"\2\0\0\0" + struct.pack(">I", 1) + b"x")
-                else:
-                    conn.sendall(b"\1\0\0\0" + struct.pack(">I", 5) + b"x")
-            except OSError:
-                pass
+        def worker():
+            conn, _ = server.accept()
+            with conn:
+                conn.recv(4096)
+                try:
+                    conn.sendall(
+                        b"HTTP/1.0 200 OK\r\nContent-Type: application/octet-stream\r\n\r\n"
+                    )
+                    if kind == "slow":
+                        for _ in range(20):
+                            conn.sendall(b"x")
+                            time.sleep(0.03)
+                    elif kind == "oversize":
+                        conn.sendall(b"x" * 100)
+                    elif kind == "stderr":
+                        conn.sendall(b"\2\0\0\0" + struct.pack(">I", 1) + b"x")
+                    else:
+                        conn.sendall(b"\1\0\0\0" + struct.pack(">I", 5) + b"x")
+                except OSError:
+                    pass
 
-    thread = threading.Thread(target=worker, daemon=True)
-    thread.start()
-    start = time.monotonic()
-    try:
-        expected = {
-            "slow": TimeoutError,
-            "oversize": DockerBoundExceeded,
-            "stderr": ValueError,
-            "truncated": ValueError,
-        }[kind]
-        with pytest.raises(expected):
-            DockerAPI(path).request(
-                "GET", "/test", timeout=0.2, limit=50, raw_stream=kind in ("stderr", "truncated")
-            )
-        assert time.monotonic() - start < 1
-    finally:
-        thread.join(timeout=2)
-        server.close()
-        assert not thread.is_alive()
+        thread = threading.Thread(target=worker, daemon=True)
+        thread.start()
+        start = time.monotonic()
+        try:
+            expected = {
+                "slow": TimeoutError,
+                "oversize": DockerBoundExceeded,
+                "stderr": ValueError,
+                "truncated": ValueError,
+            }[kind]
+            with pytest.raises(expected):
+                DockerAPI(path).request(
+                    "GET",
+                    "/test",
+                    timeout=0.2,
+                    limit=50,
+                    raw_stream=kind in ("stderr", "truncated"),
+                )
+            assert time.monotonic() - start < 1
+        finally:
+            thread.join(timeout=2)
+            server.close()
+            assert not thread.is_alive()

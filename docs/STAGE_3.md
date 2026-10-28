@@ -481,3 +481,37 @@ boundaries, final host/container/DB suites and serial image matrix. Report every
 missing prerequisite as UNRUN and every supplied-but-failed control as FAIL.
 Keep the PR draft, with no merge or Stage 4. Details and resource budgets are in
 [SANDBOX.md](SANDBOX.md).
+
+## Docker-native network readiness correction — October 28, 2026
+
+The first Mac attempt on `f059eb9` reported 42 passed, six failed and 12 errors.
+Readiness failed closed because Docker Desktop exposed nine inactive tunnel
+templates in its no-network namespace; they had no IFF_UP flag or external route,
+and the negative network probes passed. Four independent Unix socket transport
+cases exceeded macOS's pathname limit; they passed using a short temporary path.
+Registry P0/P1 execution and actual Compose acceptance were unrun in that attempt.
+
+Decision S3-27 replaces the native interface-name assumption with complete,
+bounded kernel-state observations, strict link/address/route checks for both IP
+families, TCP/UDP no-route checks and a stable second observation. Inactive
+templates pass only when the complete isolation evidence passes. Missing,
+contradictory or incomplete evidence remains a readiness failure. The four
+transport fixtures use private short temporary paths and retain every original
+size, deadline and error assertion. Legacy runsc checks are unchanged.
+
+Current-source bounded cloud verification: all seven `just check` commands pass
+(249 formatted files, 138 type-checked sources, five import boundaries, 108 public
+contracts, private contracts and five package license checks). Focused network,
+Docker transport/control and private-contract regressions pass 146 tests in
+1.84 seconds. Offline `just test` passes 578 tests, with 168 explicit prerequisite
+skips and one unchanged dependency warning, in 124.12 seconds (130.42 seconds
+including wrapper startup). Peak child RSS was 303,804 KiB; the external timeout
+was 240 seconds. No candidate container, heavy image build, host setting change
+or real provider call ran in this cloud follow-up. Protocol, profiles, dependency
+lock and original golden evidence remain unchanged.
+
+These results do not pass the Mac gates. Rebuild the core-only guest and evaluator
+images from the corrected source, then rerun actual sandbox tests, all four
+registered P0/P1 cases and Compose-controller/socket boundaries. Full host and
+container evidence must identify that source and the actual host/engine platforms.
+Stage 3 remains incomplete; no later stage or merge is authorized by this result.

@@ -5,7 +5,8 @@ acceptance target; Linux AMD64 remains a separately validated target. Decision
 S3-26 records approval of ordinary Docker's residual shared-kernel risk and the
 trusted evaluator controller's Docker API grant. No extra VM, gVisor registration,
 privileged container, added capability, TCP endpoint or host permission change is
-part of that grant. **New Docker-native runtime gates are UNRUN.**
+part of that grant. **The first Mac Docker-native readiness attempt failed;
+acceptance of the corrected source remains pending.**
 
 ## Docker-native backend
 
@@ -43,6 +44,35 @@ readonly input, image and pinned Moby seccomp policy. Readiness additionally che
 the guest's effective cgroup values, process flags, denied writes/network and
 absence of private packages/assets. Native engine OS/CPU and controller OS/CPU are
 separate evidence fields; a Linux controller cannot certify the physical Mac host.
+
+The native no-egress probe reads complete, bounded Linux RTNETLINK link, address
+and route dumps for all families and routing tables. Device names are not a
+security boundary: Desktop may expose inactive tunnel templates even with
+`network=none`. Exactly one actual loopback device must be up. Every other device
+must have inactive administrative/carrier flags and a down operational state, no
+IP address, and no forwarding route. Loopback addresses and routes must remain
+entirely within 127/8 or ::1/128. Default/external routes, gateways, alternate
+nexthops, multipath, unknown forwarding features and contradictory state fail.
+Explicit discard routes are distinguished from routes that continue lookup.
+
+Only after those structural checks pass does the trusted probe attempt bounded
+IPv4 and IPv6 TCP/UDP connections to fixed documentation addresses, without DNS
+or application payload. Only the kernel's network-unreachable result passes;
+refusal, timeout, permission errors and connection success fail. An explicitly
+unsupported IPv6 socket family establishes protocol absence. A second full snapshot
+must match the first. Interrupted, filtered, truncated, malformed, unreadable or
+changing observations fail closed. The existing private namespace, `network=none`,
+dropped capabilities, pinned seccomp and no-new-privileges checks remain required.
+This is operational isolation evidence, not protection from a kernel escape.
+
+This probe follows the Linux [operstate semantics](https://www.kernel.org/doc/html/latest/networking/operstates.html),
+[netlink dump protocol](https://www.kernel.org/doc/html/latest/userspace-api/netlink/intro.html)
+and [RTNETLINK interface/address/route definitions](https://man7.org/linux/man-pages/man7/rtnetlink.7.html).
+Docker's [none-network example](https://docs.docker.com/engine/network/drivers/none/)
+does not establish an invariant about names of inactive kernel devices. The
+guest core package now contains the observer: rebuild both the core-only sandbox
+and evaluator/controller images for this source. An older image cannot supply
+the probe and must fail readiness. Legacy runsc probe/evidence are unchanged.
 
 `infra/docker-compose.sandbox.yml` is an opt-in overlay (`--profile sandbox`),
 not an automatic startup or research trigger. Supply reviewed

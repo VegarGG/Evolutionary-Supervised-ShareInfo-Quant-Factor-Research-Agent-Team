@@ -262,32 +262,7 @@ class DockerNativeRunner(SandboxRunner):
                 "runtime_registered": "runc" in info["Runtimes"],
             }
             if all(checks.values()):
-                probe = _PROBE.replace(
-                    "resource.getrlimit(resource.RLIMIT_NPROC)[0] > 0",
-                    'int(pathlib.Path("/sys/fs/cgroup/pids.max").read_text()) == '
-                    + str(p.pids_limit),
-                ).replace(
-                    '    return {"schema_version"',
-                    '''
-    cgroup = pathlib.Path('/sys/fs/cgroup')
-    status_all = pathlib.Path('/proc/self/status').read_text().splitlines()
-    checks['seccomp_filter'] = any(x.split() == ['Seccomp:', '2'] for x in status_all)
-    checks['cgroup_memory'] = (cgroup/'memory.max').read_text().strip() == MEMORY
-    checks['cgroup_swap'] = (cgroup/'memory.swap.max').read_text().strip() == '0'
-    checks['cgroup_pids'] = (cgroup/'pids.max').read_text().strip() == PIDS
-    quota, period = (cgroup/'cpu.max').read_text().split()
-    checks['cgroup_cpu'] = quota != 'max' and int(quota)/int(period) == CPUS
-    try:
-        pathlib.Path('/input/native-write-probe').write_text('probe')
-        checks['read_only_input'] = False
-    except OSError as e:
-        checks['read_only_input'] = e.errno == 30
-    return {"schema_version"''',
-                )
-                probe = (
-                    f"MEMORY={str(p.memory_bytes)!r}\nPIDS={str(p.pids_limit)!r}\n"
-                    f"CPUS={p.cpus!r}\n" + probe
-                )
+                probe = native_probe_source(p)
                 result = self._execute(
                     {"probe.py": probe.encode()},
                     RunnerInput.model_validate(
@@ -328,3 +303,34 @@ class DockerNativeRunner(SandboxRunner):
         )
         self._ready = value
         return value
+
+
+def native_probe_source(p: DockerNativeProfile) -> str:
+    """Retain non-network controls; use complete state-based native network proof."""
+    probe = _PROBE.replace(
+        "resource.getrlimit(resource.RLIMIT_NPROC)[0] > 0",
+        'int(pathlib.Path("/sys/fs/cgroup/pids.max").read_text()) == ' + str(p.pids_limit),
+    ).replace(
+        '    return {"schema_version"',
+        '''
+    cgroup = pathlib.Path('/sys/fs/cgroup')
+    status_all = pathlib.Path('/proc/self/status').read_text().splitlines()
+    checks['seccomp_filter'] = any(x.split() == ['Seccomp:', '2'] for x in status_all)
+    checks['cgroup_memory'] = (cgroup/'memory.max').read_text().strip() == MEMORY
+    checks['cgroup_swap'] = (cgroup/'memory.swap.max').read_text().strip() == '0'
+    checks['cgroup_pids'] = (cgroup/'pids.max').read_text().strip() == PIDS
+    quota, period = (cgroup/'cpu.max').read_text().split()
+    checks['cgroup_cpu'] = quota != 'max' and int(quota)/int(period) == CPUS
+    try:
+        pathlib.Path('/input/native-write-probe').write_text('probe')
+        checks['read_only_input'] = False
+    except OSError as e:
+        checks['read_only_input'] = e.errno == 30
+    return {"schema_version"''',
+    )
+    probe = f"MEMORY={str(p.memory_bytes)!r}\nPIDS={str(p.pids_limit)!r}\nCPUS={p.cpus!r}\n" + probe
+    start = probe.index("    with socket.socket() as s:\n")
+    end = probe.index("    cgroup = pathlib.Path", start)
+    probe = probe[:start] + "    checks.update(audit_network())\n" + probe[end:]
+    probe = probe.replace('[name for _,name in socket.if_nameindex()] == ["lo"]', "False")
+    return "from qfr_core.sandbox_network import audit_network\n" + probe
