@@ -2,7 +2,8 @@
 > records the later Docker-native implementation and reported passing Apple SBX
 > and Registry pilot tests. The following report retains its original source,
 > counts and then-blocked gates. It does not describe the current implementation.
-> Stage 3 is still not merge-ready while deployment evidence is reconciled.
+> The subsequent acceptance record closes those evidence gaps. This historical
+> checkpoint is not the current Stage 3 gate assessment.
 
 # Stage 3 checkpoint — October 28, 2026
 

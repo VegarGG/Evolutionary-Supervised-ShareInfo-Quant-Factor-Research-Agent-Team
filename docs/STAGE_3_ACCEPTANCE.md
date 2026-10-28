@@ -1,10 +1,11 @@
-# Stage 3 acceptance reconciliation — October 28, 2026
+# Stage 3 acceptance — October 28, 2026
 
-**NOT YET MERGE-READY.** The Mac validation report for the source below closes the
-previous sandbox and Registry pilot failures. Required deployment evidence is
-still incomplete in this review: actual Compose restart and socket boundaries,
-and the final local image matrix. These are evidence gaps, not newly observed
-test failures. Stage 4 has not started. GitHub mergeability is not gate acceptance.
+**STAGE 3 EXIT GATE: PASS for the Apple-first deployment scope.** The subsequent
+Mac reconciliation closes every deployment-evidence item left open at
+`2f6f32807d916d4ba11b5df4a6ce99f9bbb66c27`, without changing the implementation or
+waiving a gate. The PR remains a draft and has not been merged. Stage 4 has not
+started; its entry review is below. This is stage acceptance, not production
+acceptance or native Linux AMD64 deployment acceptance.
 
 ## Source and evidence scope
 
@@ -21,24 +22,25 @@ test failures. Stage 4 has not started. GitHub mergeability is not gate acceptan
 
 `PASS (Mac report)` below means the existing Mac validation session reported the
 test passing on this exact source with real PostgreSQL, private pilot inputs and
-the historical oracle. The implementation session reviewed the named assertions;
-it did not rerun those heavy checks in cloud or independently obtain the latest
-private Mac logs. `UNVERIFIED` means the required operational evidence was not
-supplied in that report; it does not mean that a check ran and failed, nor that it
-definitely has not run. Earlier failed/unrun checkpoints retain their original
-source and scope in [STAGE_3.md](STAGE_3.md) and
+the historical oracle. The implementation session reviewed the named assertions
+and the subsequent Mac reconciliation handoff; it did not rerun those heavy
+checks in cloud or independently obtain the private Mac logs. Sanitized commands,
+readiness identity, immutable image IDs and evidence hashes remain recorded with
+the Mac validation evidence. Earlier failed/unrun checkpoints retain their original
+source and scope in Git, [STAGE_3.md](STAGE_3.md) and
 [STAGE_3_CHECKPOINT.md](STAGE_3_CHECKPOINT.md).
 
 | Verification | Result on the tested implementation |
 |---|---|
 | Native macOS/Apple ARM64 suite | PASS (Mac report): **790 passed, zero skips**; actual OOM/fork/SIGKILL and all four registered P0/P1 cases passed |
 | Native static checks | PASS (Mac report): static checks green; full seven-command cloud `just check` also passes |
-| Docker Desktop Linux ARM64 CI suite | PASS (Mac report): **765 passed, 25 explicitly reported skips**, static checks green; exact skip categories still requested |
+| Docker Desktop Linux ARM64 CI suite | PASS (Mac report): **765 passed, 25 explicit skips**, static checks green; exact skip categories, commands and hashes recorded in the Mac reconciliation evidence; no skip counted as a pass |
 | Compose controller startup | PASS (Mac report): readiness succeeds; container-side socket GID 0 grant audited with no material unrelated permission gain |
-| Cleanup and database health | PASS (Mac report): task cleanup complete, PostgreSQL healthy; this does not prove controller restart recovery |
+| Cleanup and database health | PASS (Mac report): task cleanup complete, PostgreSQL healthy; actual controller restart and recovery independently verified below |
 | Bounded cloud `just test` | **621 passed, 169 prerequisite skips**, one unchanged warning, 111.17 s; this offline result does not satisfy real-service, licensed-input or sandbox gates |
 | Bounded cloud focused checks | **191 passed**, 1.70 s; resource-event, socket, native-network and Compose-contract regressions |
 | Exact-source hosted CI | PASS: [run 40715488584](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/40715488584); **709 passed, 81 skipped**, eight real-container PostgreSQL startup regressions, 15 live database boundary tests and all ten image builds |
+| Documentation checkpoint hosted CI | PASS: [run 40722256142](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/40722256142) on `2f6f328`; **709 passed, 81 skipped**, eight startup regressions, 15 database boundaries, both native Linux image jobs successful |
 
 Hosted builds ran on native Linux AMD64 and Linux ARM64 runners: four application
 images plus one core-only sandbox image per architecture. Those builds and their
@@ -73,9 +75,9 @@ substitute for coverage.
 | DSL v4 feature parity | PASS (Mac report) | `test_registry_six_v4_dsl_features_equal_independent_polars`: six published DSL definitions agree with the independent feature reference |
 | SBX-01 | PASS (Mac report) | `test_sbx_actual_output_drives_causality_gate[lookahead]` in [sandbox tests](../tests/evaluator/test_sandbox.py): actual output fails both prefix and perturbation checks with `failed:lookahead` |
 | SBX-02 | PASS (Mac report) | `test_sbx_actual_bounded_negative_fixtures` and `test_sbx_actual_resource_exhaustion_is_bounded`: network, private-file/root writes, timeout, capped output, symlink result, fork, memory and CPU controls; genuine OOM/PID evidence classified correctly, plain SIGKILL remains runtime failure |
-| SBX-03 | PASS (Mac report); readiness identity receipt requested | Actual Apple host / Docker Desktop backend readiness and `test_sbx_actual_controls_determinism_single_result_and_cleanup`; unavailable-backend and missing-sandbox intake tests fail closed. Preserve the actual host, engine, runtime, image and profile identities in the evidence handoff |
+| SBX-03 | PASS (Mac report) | Actual Apple host / Docker Desktop backend readiness and `test_sbx_actual_controls_determinism_single_result_and_cleanup`; unavailable-backend and missing-sandbox intake tests fail closed. The reconciled evidence records host, engine, runtime, image and profile identities |
 | SBX-04 | PASS (Mac report) | `test_sbx_actual_controls_determinism_single_result_and_cleanup` yields identical result hashes; `test_sbx_actual_output_drives_causality_gate[nondeterminism]` rejects the nondeterministic fixture |
-| SBX-05 | PASS (Mac report), configuration-test scope | `test_compose_trust_zones` and `test_native_overlay_grants_only_controller_and_private_evaluator_channel` in [Compose tests](../tests/boundary/test_compose.py): no engine socket, writable host mount or privileged flag in research/MCP/artifact roles; deployed-role evidence remains separately listed below |
+| SBX-05 | PASS (Mac report), configuration-test scope | `test_compose_trust_zones` and `test_native_overlay_grants_only_controller_and_private_evaluator_channel` in [Compose tests](../tests/boundary/test_compose.py): no engine socket, writable host mount or privileged flag in research/MCP/artifact roles; actual deployed-role access tests also pass below |
 | AUD-01 (Registry) | PASS (Mac report) | `test_registry_aud01_principal_request_time_and_rollback` in [Registry database tests](../tests/registry/test_registry_database.py), authenticated HTTP/retry audit tests: principal, UTC time and request identity; rollback does not leave a false success |
 
 Required implementation coverage also includes all five kind adapters, frozen
@@ -93,21 +95,31 @@ byte-for-byte; no model fit or provider request occurred. All nine original
 oracle cases are included in the reported zero-skip native run. This does not
 spend a confirmation query or generate replacement goldens from current code.
 
-## Required deployment evidence still to reconcile
+## Reconciled deployment evidence
 
 The following requirements come from the authorized full local CI scope and
 controller deployment handoff, in addition to the named section 10 tests. They
 are not silently added to, or removed from, SBX-05's configuration-test meaning.
-Use existing exact-source evidence where it exists; rerun only missing checks or
-checks whose inputs changed. No new privileged setting or backend is required.
+The Mac validation session supplied the following final reconciliation for
+implementation `b3506b6` and documentation-only checkpoint `2f6f328`. Original
+image identities and earlier test provenance were preserved. No new privileged
+setting or backend change was used to close these items.
 
-| Item | Status | Smallest outstanding verification |
+| Item | Status | Reconciled evidence |
 |---|---|---|
-| Actual Compose controller restart | UNVERIFIED | Stop/start or recreate the actual controller with its persistent IPC volume; verify stale-socket recovery, non-root 0700 directory/0600 socket, post-restart readiness and no orphan job containers/input volumes. Unit fake-engine restart tests alone do not establish this |
-| Deployed socket/trust boundaries | UNVERIFIED | Record effective mounts, UID/groups, capabilities and security options: only the trusted controller can reach the engine; evaluator can use only the private controller channel; research/MCP/Registry/candidates have neither channel. Verify denied access and that the controller has no DB/provider/signing secrets or full-data mount |
-| Final local image matrix | UNVERIFIED | Supply each final-source application/core image digest, source/input identity and build mode for Linux ARM64 and AMD64 on the Mac; label AMD64 emulation. Carry forward an older build only with identical build-input proof, preserving its actual revision label |
-| Mac PostgreSQL init/restart and live boundaries | UNVERIFIED as a separate startup-script run | Supply the exact-source `verify_postgres_startup.py` result (including incomplete-restart refusal) and live Compose database-boundary result, or verified unchanged-input evidence from its earlier passing Mac run. A healthy server and hosted Linux pass are insufficient substitutes |
-| Evidence identity and container skips | UNVERIFIED detail | Supply sanitized commands, host/engine/runtime/profile/image identities, result/log hashes and the 25 container skip categories. The aggregate does not establish what was skipped |
+| Actual Compose controller restart | PASS (Mac report) | Actual restart exercised; stale/uncertain socket refused startup, then readiness passed after explicit verified recovery. This is the implemented fail-closed contract, not a claim of unattended recovery after a crash |
+| Deployed socket/trust boundaries | PASS (Mac report) | Research, MCP and Registry denied both sockets; evaluator denied the Docker socket while reaching only its private controller channel. The controller-only GID mapping and absence of material unrelated access were audited; candidate controls and cleanup passed |
+| Final local image matrix | PASS (Mac report) | All ten final-source application/core images verified with immutable IDs and source/input identity. Mac Linux ARM64 execution is native to the engine; Linux AMD64 builds are explicitly labelled emulated. This does not establish native Linux AMD64 deployment acceptance |
+| Mac PostgreSQL init/restart and live boundaries | PASS (Mac report) | Eight real-container startup regressions carried forward with verified unchanged script, image and initialization inputs, including incomplete-restart refusal. Live database boundary tests pass in the zero-skip native suite; health is not used as their substitute |
+| Evidence identity and container skips | PASS (Mac report) | Sanitized readiness, exact 25 skip categories, commands and hashes recorded in the Mac evidence. Actual sandbox and Registry pilot gates are supplied by the separate zero-skip native run, not the skipped container cases |
+
+The stale-socket result matches `serve()` and `require_quiescent_start()` in the
+[controller](../packages/qfr_eval/src/qfr_eval/sandbox/controller.py): an existing
+socket or remaining labelled resources is an operator-visible readiness failure.
+It never silently deletes uncertain resources to manufacture success. Explicit
+recovery verifies the predecessor and its task-owned resources before restarting.
+Stage 4 must still prove its own durable job/reconnect tests; this Stage 3 result
+does not pre-approve them.
 
 The controller GID correction is restricted to the existing S3-26 grant. UID and
 primary GID remain 65532, capabilities remain dropped, root remains read-only,
@@ -116,10 +128,10 @@ supplemental group. The Mac report explicitly records no material unrelated
 access from the controller's container-local GID 0. No host chmod/chown, root
 launcher, additional capability or API grant is inferred from this evidence.
 
-## Stage 4 entry review — no implementation authorized by this report
+## Stage 4 entry review — implementation not started
 
 Exact next stage: **Blackboard, release policy, MCP front door and delivery export
-(M2)**. The unresolved prerequisite is a fully reconciled green Stage 3 gate.
+(M2)**. The Stage 3 prerequisite is now green in the required Apple scope.
 The pilot release choices have already been approved: scalar plus flags; fixed
 Ladder step `0.011239912200318261` (1.123991220031826 percentage points), rounded
 down; three feedback versions per economic lineage/generation; one confirmation
@@ -164,5 +176,7 @@ must be arranged and verified for its end-to-end test. Ephemeral synthetic test
 credentials do not authorize real persistent grants or deployment security
 changes. Inactive ingest uses existing authorized inputs; new supplier requests,
 live providers and confirmation queries remain unauthorized. Once Stage 3 is
-green and continuation is confirmed, a dependent branch may start from its
-verified commit without merging PR #7, with the base explicitly recorded.
+green, a dependent branch may start from its verified acceptance commit without
+merging PR #7, with the base explicitly recorded. The current continuation
+instruction permits preparing that separate branch; implementation starts only
+after the stage-specific entry checkpoint is reported.

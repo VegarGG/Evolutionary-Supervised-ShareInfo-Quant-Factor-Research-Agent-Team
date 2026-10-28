@@ -577,3 +577,29 @@ container skip breakdown still need reconciliation. They are **UNVERIFIED**, not
 invented failures or passes. Stage 3 remains not merge-ready; Stage 4 entry is
 reviewed only. No protocol, runtime profile, golden, code or test change is part
 of this documentation reconciliation (S3-30).
+
+## Stage 3 exit gate closure — October 28, 2026
+
+The subsequent Mac reconciliation for implementation `b3506b6` and
+documentation-only `2f6f328` closes the S3-30 evidence gaps: actual Compose restart
+with stale-socket refusal and readiness after explicit verified recovery;
+research/MCP/Registry denied both sockets while evaluation reaches only its
+private controller channel; all ten final-source images verified by immutable
+identity with AMD64 emulation labelled; eight PostgreSQL startup regressions
+carried forward with verified unchanged script/image/init inputs; sanitized
+readiness, commands, exact skip categories and hashes retained in Mac evidence.
+
+Every named Stage 3 gate and the required local workflow evidence is now PASS in
+the Apple-first scope, as mapped in [STAGE_3_ACCEPTANCE.md](STAGE_3_ACCEPTANCE.md).
+The 790-pass/zero-skip native run and 765-pass/25-skip container run retain their
+original source identity. Hosted `2f6f328` CI also passed all jobs (709 tests,
+81 explicit skips, eight startup regressions, 15 database boundaries and both
+native Linux image build jobs). No skipped test or earlier failed attempt is
+relabelled as a pass.
+
+S3-31 records the gate closure and Stage 4 entry readiness. The PR remains draft
+and unmerged. No code, protocol, security setting, credential, golden or runtime
+profile changes are part of closure. Stage 4 implementation has not started;
+native Linux AMD64 deployment and overall production acceptance remain later
+gates. An interrupted controller may require explicit operator recovery, as its
+existing fail-closed contract specifies.

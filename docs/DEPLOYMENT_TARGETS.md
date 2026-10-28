@@ -59,8 +59,8 @@ this deployment. Research/MCP/Registry/artifacts receive no controller channel.
 
 Implementation and actual Apple acceptance are separate. The latest Mac report
 passes actual readiness, SBX tests and the four Registry P0/P1 cases on the source
-identified in [STAGE_3_ACCEPTANCE.md](STAGE_3_ACCEPTANCE.md). Actual Compose restart,
-deployed socket boundaries and final local image evidence remain to be reconciled;
-Stage 3 is not yet green. Historical runsc evidence keeps its original Linux
-scope. Native Linux AMD64 acceptance remains separately required before claiming
+identified in [STAGE_3_ACCEPTANCE.md](STAGE_3_ACCEPTANCE.md). Subsequent reconciliation
+also passes actual Compose restart, deployed socket boundaries and final local
+image verification; Stage 3's Apple-first exit gate is green. Historical runsc
+evidence keeps its original Linux scope. Native Linux AMD64 acceptance remains separately required before claiming
 that target ready. See [SANDBOX.md](SANDBOX.md).
