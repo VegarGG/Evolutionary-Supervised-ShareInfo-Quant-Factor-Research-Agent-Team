@@ -20,7 +20,10 @@ The local `.tools` directory can be added to PATH on this Mac; it contains verif
 uv and just binaries and is intentionally ignored by Git.
 
 Read [the acceptance report](docs/phase0-acceptance.md) before use. Phase 0 is
-implemented but **not accepted**: hosted CI and AMD64 verification remain outstanding.
+implemented and ready for owner audit: local checks and canonical-repository CI
+pass, including all eight ARM64/AMD64 image builds. Owner acceptance and merge
+remain pending; [PR #10](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/pull/10)
+contains the replacement.
 The owner's network and memory decisions are applied. `just doctor` checks current
 OOM flags; 24 GiB is a planning expectation, not a required allocation. Test the
 host endpoint with `python scripts/smoke_mcp.py --host`. Domain placeholders still

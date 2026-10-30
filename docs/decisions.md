@@ -103,10 +103,14 @@ preserved original HTML plan or its verbatim AGENTS.md extract.
     No stale implementation files or instructions are carried into the new tree.
     The misplaced PR is superseded; no repository history is deleted.
 
-Open owner question: confirm the requested maximum-effort task configuration.
-Publishing and opening a PR are authorized in the canonical project. Hosted CI is
-still required for acceptance. The visible host default is gpt-6-astra/xhigh, not
-verified per turn.
+Publishing and opening a PR are authorized in the canonical project. PR #10 holds
+the replacement, and the misplaced PR is closed. Canonical CI run 41066156741
+passes all nine jobs: checks with PostgreSQL and all eight ARM64/AMD64 image
+builds. The recorded evidence identifies its exact head and tested merge commits.
+
+Model provenance limitation: the visible host default is gpt-6-astra/xhigh;
+the actual per-turn configuration and requested maximum effort remain unverified.
+No stronger configuration or owner acceptance is claimed.
 
 Implementation references: [official MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk),
 [Compose services](https://docs.docker.com/reference/compose-file/services/),

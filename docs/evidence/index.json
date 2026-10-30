@@ -1,6 +1,6 @@
 {
   "phase": 0,
-  "acceptance": "HOSTED_CI_UNVERIFIED",
+  "acceptance": "TECHNICAL_CHECKS_PASS_OWNER_REVIEW_PENDING",
   "files": [
     {
       "file": "check.log",
@@ -8,14 +8,49 @@
       "bytes": 1369
     },
     {
-      "file": "tests-postgres.log",
-      "sha256": "302c111f426cefb41184aa9c910131025e8b232aa6c750e61c00ffaa1416ac98",
-      "bytes": 3039
+      "file": "ci-images/mcp-amd64.json",
+      "sha256": "ccabd3aeb1fcb409c0fd254da0e735d41f6ab9ae18ce91d07c86d9f44cbc9f07",
+      "bytes": 2312
     },
     {
-      "file": "pytest-postgres.xml",
-      "sha256": "7547bd1948ad05e25794a9c30e77bb2fd1dbe6f6e7e1ad1ca675ae273cc48324",
-      "bytes": 8106
+      "file": "ci-images/mcp-arm64.json",
+      "sha256": "c8980b2e9b429fc1c0090c8be6fa96a2308e64a5c4de0fc2dff0c8965ce19143",
+      "bytes": 2312
+    },
+    {
+      "file": "ci-images/migrate-amd64.json",
+      "sha256": "bd4ee3a261d6f407291f709aca8d53f958a01eace2f43452b27a502ecf85125c",
+      "bytes": 2324
+    },
+    {
+      "file": "ci-images/migrate-arm64.json",
+      "sha256": "e0d9e28321b8cc14c1b79f2d23772d12c2bf6234307831b1cec7f9fda58ca4f4",
+      "bytes": 2324
+    },
+    {
+      "file": "ci-images/postgres-amd64.json",
+      "sha256": "bae530f68b8e940af0316b07a46278fc2b35e84b2a8b02072158b5ca63977a6c",
+      "bytes": 2119
+    },
+    {
+      "file": "ci-images/postgres-arm64.json",
+      "sha256": "360458c6029c60b9cb532d90087fc13bd5c7893cbf9bfd15dc1cd32373b949d1",
+      "bytes": 2119
+    },
+    {
+      "file": "ci-images/runtime-amd64.json",
+      "sha256": "e3236ea7cb2a0272e4c820604f9b95f071259060ee642608e8bf3c5388aeeb03",
+      "bytes": 2324
+    },
+    {
+      "file": "ci-images/runtime-arm64.json",
+      "sha256": "fc4cfaa5082ee59622aa5173d1ca4c3f0643d2830bdc5cdebd3e4831211b9322",
+      "bytes": 2324
+    },
+    {
+      "file": "dependency-downloads.json",
+      "sha256": "f9c6eb1fd9080183fc8e3ad0e0d728b431fc1e12068d16d9b8254026e2ef2026",
+      "bytes": 6047
     },
     {
       "file": "doctor-latest.json",
@@ -23,19 +58,14 @@
       "bytes": 16536
     },
     {
-      "file": "mcp-container-smoke.json",
-      "sha256": "e59e6739f44312e0b509b76dd286e1ab31fba2ade54699fd7f999fb961bc2d27",
-      "bytes": 1379
+      "file": "hosted-ci-checks.log",
+      "sha256": "279fa5c99c8920fb90aa5e067f64ce1c737c59728648bfaf9015c793d26527df",
+      "bytes": 6535
     },
     {
-      "file": "setup-provenance.json",
-      "sha256": "7d423fd9966239453a2e283646fd5bbafe6ca05f2f88452bbeccbaf37012fcf3",
-      "bytes": 431
-    },
-    {
-      "file": "image-runtime-arm64.json",
-      "sha256": "f8e2fccf9203219a720f2350a9bf411013e6263d87ab13d18242a8674c0d8c74",
-      "bytes": 2593
+      "file": "hosted-ci.json",
+      "sha256": "d9f4a02451440da29f60c1acacb9668604d29e7f9e6824a87d538da3dd94fc09",
+      "bytes": 12043
     },
     {
       "file": "image-mcp-arm64.json",
@@ -53,14 +83,14 @@
       "bytes": 1834
     },
     {
+      "file": "image-runtime-arm64.json",
+      "sha256": "f8e2fccf9203219a720f2350a9bf411013e6263d87ab13d18242a8674c0d8c74",
+      "bytes": 2593
+    },
+    {
       "file": "images-arm64.txt",
       "sha256": "01ef1a0409c59c699152e2e92d5ed930503192c57fe33981ac67703315d68c62",
       "bytes": 409
-    },
-    {
-      "file": "dependency-downloads.json",
-      "sha256": "f9c6eb1fd9080183fc8e3ad0e0d728b431fc1e12068d16d9b8254026e2ef2026",
-      "bytes": 6047
     },
     {
       "file": "linux-dependency-downloads.json",
@@ -68,14 +98,36 @@
       "bytes": 6542
     },
     {
+      "file": "mcp-container-smoke.json",
+      "sha256": "e59e6739f44312e0b509b76dd286e1ab31fba2ade54699fd7f999fb961bc2d27",
+      "bytes": 1379
+    },
+    {
       "file": "mcp-host-smoke.json",
       "sha256": "4de3c14e5543be7826cf0f7fc9948f8d862f89c142ae6e2bc757700c351c0c21",
       "bytes": 1369
     },
     {
+      "file": "pytest-postgres.xml",
+      "sha256": "7547bd1948ad05e25794a9c30e77bb2fd1dbe6f6e7e1ad1ca675ae273cc48324",
+      "bytes": 8106
+    },
+    {
       "file": "resource-usage.json",
       "sha256": "4637aedd5a07c6748dbdfb8b1d2aac807a9c3921d9d4a809eb0c2ee5f9f7b2b8",
       "bytes": 477
+    },
+    {
+      "file": "setup-provenance.json",
+      "sha256": "7d423fd9966239453a2e283646fd5bbafe6ca05f2f88452bbeccbaf37012fcf3",
+      "bytes": 431
+    },
+    {
+      "file": "tests-postgres.log",
+      "sha256": "302c111f426cefb41184aa9c910131025e8b232aa6c750e61c00ffaa1416ac98",
+      "bytes": 3039
     }
-  ]
+  ],
+  "ci_head_commit": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618",
+  "ci_run_id": 41066156741
 }
