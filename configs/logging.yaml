@@ -1,0 +1,15 @@
+version: '1'
+level: INFO
+rotate_bytes: 536870912
+compress_after_days: 7
+delete_after_days: 180
+disk_warning_bytes: 21474836480
+sensitive_field_pattern: '(?i)(api_key|token|authorization|password|secret|cookie)'
+secret_value_patterns:
+  - 'sk-[A-Za-z0-9_-]{20,}'
+  - '(?i)Bearer\s+[A-Za-z0-9._~+/-]+'
+  - '(?i)(postgres(?:ql)?(?:\+psycopg)?://[^:\s]+:)[^@\s]+'
+excluded_text_fields: [request_messages, response_text, prompt, response, raw_market_rows]
+default_search_hours: 24
+implicit_range_max_days: 7
+tail_default: 100

@@ -1,0 +1,600 @@
+{
+  "$defs": {
+    "AdvancementContent": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "ADVANCED",
+            "NOT_ADVANCED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "advancement",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status"
+      ],
+      "title": "AdvancementContent",
+      "type": "object"
+    },
+    "DecisionContent": {
+      "additionalProperties": false,
+      "properties": {
+        "gate": {
+          "anyOf": [
+            {
+              "enum": [
+                "G-W1",
+                "G-W2",
+                "G-HOLDOUT",
+                "G-DSR",
+                "G-PBO",
+                "G-HLZ",
+                "G-FWD",
+                "G-NOVELTY",
+                "G-OPS"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gate"
+        },
+        "reason": {
+          "enum": [
+            "gate_failed",
+            "owner_rejected",
+            "incubation_failed",
+            "gates_passed"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ACCEPTED",
+            "REJECTED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "decision",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "reason"
+      ],
+      "title": "DecisionContent",
+      "type": "object"
+    },
+    "DiagnosticFlag": {
+      "enum": [
+        "HIGH_TURNOVER",
+        "LOW_MONOTONICITY",
+        "SIGN_MISMATCH",
+        "CROWDED_WITH_LIBRARY",
+        "UNSTABLE_YEARLY",
+        "DECAYS_FAST",
+        "LOW_COVERAGE",
+        "WEAK_SIGNAL",
+        "COST_DOMINATED",
+        "HIGH_DRAWDOWN"
+      ],
+      "title": "DiagnosticFlag",
+      "type": "string"
+    },
+    "IntakeContent": {
+      "additionalProperties": false,
+      "properties": {
+        "duplicate_of": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duplicate Of"
+        },
+        "reasons": {
+          "items": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "DUPLICATE",
+            "DEFERRED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "intake",
+            "screening"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "reasons"
+      ],
+      "title": "IntakeContent",
+      "type": "object"
+    },
+    "LibraryContent": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "seed",
+            "active",
+            "retired"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "library",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status"
+      ],
+      "title": "LibraryContent",
+      "type": "object"
+    },
+    "ReasonCode": {
+      "enum": [
+        "SCHEMA_INVALID",
+        "KIND_UNSUPPORTED",
+        "PARSE_ERROR",
+        "TYPE_ERROR",
+        "COMPLEXITY_LIMIT",
+        "FORBIDDEN_CONSTRUCT",
+        "DECLARATION_MISMATCH",
+        "COMPONENT_INVALID",
+        "DUPLICATE_OF",
+        "NEAR_DUPLICATE_OF",
+        "QUOTA_DEFERRED",
+        "QUOTA_EXPIRED",
+        "LOW_COVERAGE",
+        "LOOKAHEAD_DETECTED",
+        "RUNTIME_LIMIT",
+        "DEGENERATE",
+        "INTERNAL_ERROR"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "SimulationContent": {
+      "additionalProperties": false,
+      "properties": {
+        "forward_rankic_bucket": {
+          "enum": [
+            "negative",
+            "0_to_0.01",
+            "0.01_to_0.03",
+            "above_0.03"
+          ],
+          "title": "Forward Rankic Bucket",
+          "type": "string"
+        },
+        "forward_sharpe_bucket": {
+          "title": "Forward Sharpe Bucket",
+          "type": "number"
+        },
+        "status": {
+          "enum": [
+            "COMPLETED",
+            "FAILED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "sim",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "forward_rankic_bucket",
+        "forward_sharpe_bucket"
+      ],
+      "title": "SimulationContent",
+      "type": "object"
+    },
+    "W1Content": {
+      "additionalProperties": false,
+      "properties": {
+        "complexity": {
+          "minimum": 0,
+          "title": "Complexity",
+          "type": "integer"
+        },
+        "coverage_bucket": {
+          "enum": [
+            "FAIL",
+            "PASS"
+          ],
+          "title": "Coverage Bucket",
+          "type": "string"
+        },
+        "decay_profile": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Decay Profile",
+          "type": "object"
+        },
+        "flags": {
+          "items": {
+            "$ref": "#/$defs/DiagnosticFlag"
+          },
+          "title": "Flags",
+          "type": "array"
+        },
+        "hit_ratio": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Hit Ratio",
+          "type": "number"
+        },
+        "library_empty": {
+          "title": "Library Empty",
+          "type": "boolean"
+        },
+        "library_version_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Library Version Id"
+        },
+        "ls_net_sharpe": {
+          "title": "Ls Net Sharpe",
+          "type": "number"
+        },
+        "max_library_correlation": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Library Correlation"
+        },
+        "monotonicity": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Monotonicity",
+          "type": "number"
+        },
+        "nw_t_bucket": {
+          "enum": [
+            "below_1",
+            "1_to_2",
+            "2_to_3",
+            "above_3"
+          ],
+          "title": "Nw T Bucket",
+          "type": "string"
+        },
+        "rank_autocorrelation": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Rank Autocorrelation",
+          "type": "number"
+        },
+        "rankic_ir": {
+          "title": "Rankic Ir",
+          "type": "number"
+        },
+        "rankic_mean": {
+          "title": "Rankic Mean",
+          "type": "number"
+        },
+        "size_neutral_rankic": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Size Neutral Rankic"
+        },
+        "strategy_drawdown_bucket": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategy Drawdown Bucket"
+        },
+        "strategy_ir": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategy Ir"
+        },
+        "strategy_net_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategy Net Sharpe"
+        },
+        "top_turnover": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Top Turnover",
+          "type": "number"
+        },
+        "type": {
+          "const": "w1",
+          "title": "Type",
+          "type": "string"
+        },
+        "yearly_rankic": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Yearly Rankic",
+          "type": "object"
+        }
+      },
+      "required": [
+        "type",
+        "rankic_mean",
+        "rankic_ir",
+        "nw_t_bucket",
+        "hit_ratio",
+        "decay_profile",
+        "ls_net_sharpe",
+        "monotonicity",
+        "top_turnover",
+        "rank_autocorrelation",
+        "max_library_correlation",
+        "library_version_id",
+        "library_empty",
+        "yearly_rankic",
+        "coverage_bucket",
+        "size_neutral_rankic",
+        "complexity",
+        "flags"
+      ],
+      "title": "W1Content",
+      "type": "object"
+    },
+    "W2Content": {
+      "additionalProperties": false,
+      "properties": {
+        "family_best_rankic": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Family Best Rankic"
+        },
+        "ladder_status": {
+          "enum": [
+            "IMPROVED",
+            "UNCHANGED"
+          ],
+          "title": "Ladder Status",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "w2",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "ladder_status",
+        "family_best_rankic"
+      ],
+      "title": "W2Content",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "content": {
+      "discriminator": {
+        "mapping": {
+          "advancement": "#/$defs/AdvancementContent",
+          "decision": "#/$defs/DecisionContent",
+          "intake": "#/$defs/IntakeContent",
+          "library": "#/$defs/LibraryContent",
+          "screening": "#/$defs/IntakeContent",
+          "sim": "#/$defs/SimulationContent",
+          "w1": "#/$defs/W1Content",
+          "w2": "#/$defs/W2Content"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IntakeContent"
+        },
+        {
+          "$ref": "#/$defs/W1Content"
+        },
+        {
+          "$ref": "#/$defs/W2Content"
+        },
+        {
+          "$ref": "#/$defs/AdvancementContent"
+        },
+        {
+          "$ref": "#/$defs/SimulationContent"
+        },
+        {
+          "$ref": "#/$defs/DecisionContent"
+        },
+        {
+          "$ref": "#/$defs/LibraryContent"
+        }
+      ],
+      "title": "Content"
+    },
+    "content_hash": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "data_snapshot_id": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Data Snapshot Id",
+      "type": "string"
+    },
+    "evaluator_code_version": {
+      "title": "Evaluator Code Version",
+      "type": "string"
+    },
+    "family_id": {
+      "format": "uuid7",
+      "title": "Family Id",
+      "type": "string"
+    },
+    "policy_ref": {
+      "title": "Policy Ref",
+      "type": "string"
+    },
+    "program_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Program Id"
+    },
+    "protocol_card_ref": {
+      "title": "Protocol Card Ref",
+      "type": "string"
+    },
+    "protocol_id": {
+      "title": "Protocol Id",
+      "type": "string"
+    },
+    "protocol_version": {
+      "title": "Protocol Version",
+      "type": "string"
+    },
+    "released_at": {
+      "format": "date-time",
+      "title": "Released At",
+      "type": "string"
+    },
+    "report_id": {
+      "format": "uuid7",
+      "title": "Report Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "version_id": {
+      "format": "uuid7",
+      "title": "Version Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "version_id",
+    "content_hash",
+    "protocol_id",
+    "protocol_version",
+    "data_snapshot_id",
+    "evaluator_code_version",
+    "schema_version",
+    "report_id",
+    "family_id",
+    "program_id",
+    "policy_ref",
+    "protocol_card_ref",
+    "released_at",
+    "content"
+  ],
+  "title": "ReleasedReport",
+  "type": "object"
+}

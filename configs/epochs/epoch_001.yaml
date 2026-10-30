@@ -1,0 +1,8 @@
+epoch_id: epoch_001
+version: '1'
+W0: {start: '2010-01-04', end: '2019-12-31'}
+W1: {start: '2020-02-04', end: '2022-12-30'}
+W2: {start: '2023-02-01', end: '2024-06-28'}
+W3: {start: '2024-08-01', end: null, end_rule: last_full_month_before_epoch_activation}
+embargo_trading_days: 20
+# Resolved and pinned when the evaluator activates the epoch; never wall-clock inferred during a run.

@@ -1,0 +1,22 @@
+{
+  "schema_version": "approval/1",
+  "approval_id": "019a35e0-0000-7000-8000-000000000001",
+  "created_at": "2026-10-30T00:00:00.000000Z",
+  "decision": "reject",
+  "scope": {
+    "job_id": "019a35e0-0000-7000-8000-000000000001",
+    "deliverable_id": null,
+    "version_ids": [],
+    "pool": null,
+    "tier": null,
+    "case_id": null,
+    "entry_ids": []
+  },
+  "owner_confirmation": "REJECT J-0001",
+  "rationale": "Contract validation only",
+  "short_codes_matched": [
+    "J-0001"
+  ],
+  "principal": "test",
+  "request_id": "test"
+}

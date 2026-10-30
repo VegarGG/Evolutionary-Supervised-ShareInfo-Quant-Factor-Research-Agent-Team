@@ -1,0 +1,7 @@
+policy_id: default
+version: '1'
+batching: {w1_hours: 6, w2_weekday: monday, w2_utc_time: '00:00', advancement_weekday: monday, advancement_min_delay_days: 7}
+rounding: {rankic: 0.005, ir: 0.02, sharpe: 0.25, shares: 0.05, correlations: 0.05, ladder_best: 0.01}
+t_buckets: [1, 2, 3]
+ladder: {eta: 0.005}
+release_w3_metrics: false

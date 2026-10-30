@@ -1,0 +1,39 @@
+# configs/research/providers.yaml (keys are referenced by environment variable name only;
+# every id and price below is an example to verify at setup, not a fact to rely on)
+providers:
+  deepseek:
+    base_url: https://api.deepseek.com
+    api_key_env: DEEPSEEK_API_KEY
+    pydantic_ai_provider: deepseek
+    models:
+      deepseek-v4-pro: {tier: strong, thinking: "on",  effort: high, price_cny_per_mtok: {in_miss: null, in_hit: null, out: null, offpeak_factor: 0.5}}
+      deepseek-flash:  {tier: fast,   thinking: "off",               price_cny_per_mtok: {in_miss: null, in_hit: null, out: null, offpeak_factor: 0.5}}
+  kimi:
+    base_url: https://api.moonshot.cn/v1          # international: https://api.moonshot.ai/v1
+    api_key_env: MOONSHOT_API_KEY
+    pydantic_ai_provider: moonshotai
+    models:
+      kimi-k3:   {tier: strong, thinking: always, effort: high, price_cny_per_mtok: {in_miss: null, in_hit: null, cache_write: null, out: null}}
+      kimi-k2.6: {tier: fast,   thinking: "off",                  price_cny_per_mtok: {in_miss: null, in_hit: null, out: null}}
+  glm:
+    base_url: https://open.bigmodel.cn/api/paas/v4   # international: https://api.z.ai/api/paas/v4
+    api_key_env: ZHIPU_API_KEY
+    pydantic_ai_provider: zai
+    models:
+      glm-5.3:       {tier: strong, thinking: always, effort: high, price_cny_per_mtok: {in_miss: null, in_hit: null, out: null}}
+      glm-5.3-flash: {tier: fast,   thinking: always,               price_cny_per_mtok: {in_miss: null, in_hit: null, out: null}}
+request:
+  concurrency: 4
+  timeout_s: {fast: 120, thinking: 600}
+  retries: 3
+  backoff_s: [2, 8, 30]
+  max_completion_tokens: {draft: 4096, review: 4096, plan: 16384, interpretation: 16384}
+  structured_output: {primary: tool, fallback: prompted_json_object, fallback_after_failures: 2}
+budget:
+  currency: CNY
+  usd_to_cny: null                                  # set at setup when any provider is billed in USD
+  generation_cap: 20
+  daily_cap: 200
+  job_cap_default: 500
+probe:
+  run_at: [setup, daily, job_start]

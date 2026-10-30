@@ -1,0 +1,11 @@
+{
+  "schema_version": "deliverable/1",
+  "deliverable_id": "019a35e0-0000-7000-8000-000000000001",
+  "job_id": "019a35e0-0000-7000-8000-000000000001",
+  "created_at": "2026-10-30T00:00:00.000000Z",
+  "status": "best_effort",
+  "items": [],
+  "summary": "Contract validation only",
+  "costs": {},
+  "short_codes": []
+}

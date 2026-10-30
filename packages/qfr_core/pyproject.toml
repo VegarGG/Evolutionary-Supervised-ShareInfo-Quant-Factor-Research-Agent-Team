@@ -1,0 +1,12 @@
+[project]
+name = "qfr-core"
+version = "0.0.1"
+requires-python = ">=3.12,<3.13"
+dependencies = ["pydantic>=2.11,<3", "pydantic-settings>=2.8,<3", "PyYAML>=6,<7", "structlog>=25,<27", "typer>=0.15,<1"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+qfr = "qfr_core.cli:app"

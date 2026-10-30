@@ -1,0 +1,8 @@
+{
+  "ts": "2026-10-30T00:00:00.000000Z",
+  "level": "INFO",
+  "service": "cli",
+  "zone": "control",
+  "event": "contract_validation",
+  "request_id": "test"
+}

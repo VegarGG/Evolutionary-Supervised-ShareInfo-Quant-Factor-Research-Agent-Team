@@ -1,0 +1,333 @@
+{
+  "$defs": {
+    "BriefConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "fields_allowed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields Allowed",
+          "type": "array"
+        },
+        "max_lookback_days": {
+          "minimum": 0,
+          "title": "Max Lookback Days",
+          "type": "integer"
+        },
+        "max_nodes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Nodes",
+          "type": "integer"
+        },
+        "operators_allowed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Operators Allowed",
+          "type": "array"
+        }
+      },
+      "required": [
+        "fields_allowed",
+        "operators_allowed",
+        "max_nodes",
+        "max_lookback_days"
+      ],
+      "title": "BriefConstraints",
+      "type": "object"
+    },
+    "BriefSeeds": {
+      "additionalProperties": false,
+      "properties": {
+        "expressions": {
+          "items": {
+            "$ref": "#/$defs/SeedExpression"
+          },
+          "title": "Expressions",
+          "type": "array"
+        },
+        "notes": {
+          "maxLength": 8000,
+          "title": "Notes",
+          "type": "string"
+        },
+        "pool_entry_ids": {
+          "items": {
+            "format": "uuid7",
+            "type": "string"
+          },
+          "title": "Pool Entry Ids",
+          "type": "array"
+        },
+        "version_ids": {
+          "items": {
+            "format": "uuid7",
+            "type": "string"
+          },
+          "title": "Version Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pool_entry_ids",
+        "version_ids",
+        "expressions",
+        "notes"
+      ],
+      "title": "BriefSeeds",
+      "type": "object"
+    },
+    "DeliverableCriteria": {
+      "additionalProperties": false,
+      "properties": {
+        "max_candidates": {
+          "exclusiveMinimum": 0,
+          "title": "Max Candidates",
+          "type": "integer"
+        },
+        "min_count": {
+          "exclusiveMinimum": 0,
+          "title": "Min Count",
+          "type": "integer"
+        },
+        "tier": {
+          "enum": [
+            "w1_pass",
+            "w2_pass",
+            "advanced",
+            "incubated"
+          ],
+          "title": "Tier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tier",
+        "min_count",
+        "max_candidates"
+      ],
+      "title": "DeliverableCriteria",
+      "type": "object"
+    },
+    "JobBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "max_cost": {
+          "exclusiveMinimum": 0,
+          "title": "Max Cost",
+          "type": "number"
+        },
+        "max_generations": {
+          "exclusiveMinimum": 0,
+          "title": "Max Generations",
+          "type": "integer"
+        },
+        "max_wall_clock_days": {
+          "exclusiveMinimum": 0,
+          "title": "Max Wall Clock Days",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_cost",
+        "max_generations",
+        "max_wall_clock_days"
+      ],
+      "title": "JobBudget",
+      "type": "object"
+    },
+    "SeedExpression": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_sign": {
+          "enum": [
+            -1,
+            1
+          ],
+          "title": "Expected Sign",
+          "type": "integer"
+        },
+        "expression": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Expression",
+          "type": "string"
+        },
+        "horizon_days": {
+          "enum": [
+            1,
+            5,
+            10,
+            20
+          ],
+          "title": "Horizon Days",
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 64,
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "rationale": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "expression",
+        "expected_sign",
+        "horizon_days",
+        "rationale"
+      ],
+      "title": "SeedExpression",
+      "type": "object"
+    },
+    "StrategySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "dropout": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Dropout",
+          "type": "integer"
+        },
+        "max_components": {
+          "maximum": 8,
+          "minimum": 1,
+          "title": "Max Components",
+          "type": "integer"
+        },
+        "top_k": {
+          "maximum": 100,
+          "minimum": 20,
+          "title": "Top K",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "top_k",
+        "dropout",
+        "max_components"
+      ],
+      "title": "StrategySpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "budget": {
+      "$ref": "#/$defs/JobBudget"
+    },
+    "constraints": {
+      "$ref": "#/$defs/BriefConstraints"
+    },
+    "deliverable": {
+      "$ref": "#/$defs/DeliverableCriteria"
+    },
+    "islands": {
+      "anyOf": [
+        {
+          "const": "auto",
+          "type": "string"
+        },
+        {
+          "items": {
+            "enum": [
+              "I1",
+              "I2",
+              "I3",
+              "I4",
+              "I5",
+              "I6"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        }
+      ],
+      "title": "Islands"
+    },
+    "mode": {
+      "enum": [
+        "new_factors",
+        "improve_factors",
+        "new_strategy",
+        "improve_strategy",
+        "review_and_iterate"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "objective": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Objective",
+      "type": "string"
+    },
+    "parent_job_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Parent Job Id"
+    },
+    "priority": {
+      "enum": [
+        "normal",
+        "low"
+      ],
+      "title": "Priority",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "brief/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seeds": {
+      "$ref": "#/$defs/BriefSeeds"
+    },
+    "strategy_spec": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StrategySpec"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "title": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "title",
+    "objective",
+    "mode",
+    "seeds",
+    "islands",
+    "constraints",
+    "strategy_spec",
+    "deliverable",
+    "budget",
+    "parent_job_id",
+    "priority"
+  ],
+  "title": "ResearchBrief",
+  "type": "object"
+}

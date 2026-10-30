@@ -1,0 +1,8 @@
+# configs/research/roles.yaml
+roles:
+  supervisor:    {primary: deepseek/deepseek-v4-pro, fallbacks: [kimi/kimi-k3, glm/glm-5.3],           temperature: 0.2}
+  hypothesis:    {primary: kimi/kimi-k3,             fallbacks: [glm/glm-5.3, deepseek/deepseek-v4-pro], temperature: 0.7}
+  engineer:      {primary: glm/glm-5.3-flash,        fallbacks: [deepseek/deepseek-flash, kimi/kimi-k2.6], temperature: 0.2}
+  critic:        {primary: deepseek/deepseek-v4-pro, fallbacks: [kimi/kimi-k3],                          temperature: 0.2, must_differ_from: engineer}
+  analyst:       {primary: kimi/kimi-k3,             fallbacks: [glm/glm-5.3],                           temperature: 0.2}
+  interp_review: {primary: glm/glm-5.3,              fallbacks: [deepseek/deepseek-v4-pro],              temperature: 0.2}

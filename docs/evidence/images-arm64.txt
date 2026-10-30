@@ -1,0 +1,4 @@
+[qfr-v2-placeholder:phase0] arm64 sha256:fa5513d54434ccf26968985a48eb39fac55c64463b92efec7a934b8ea789c501
+[qfr-v2-mcp:phase0] arm64 sha256:9797a19a9c1a88fbfd1ec707fb2a143ae5eeb4cd5074fdadb48e47ec95652f6f
+[qfr-v2-migrate:phase0] arm64 sha256:3d71f2b5d15eebbe807be489ea33807c13041b0e2f724774c9805e112b369c6b
+[qfr-v2-postgres:phase0] arm64 sha256:c121b1d48c7c4af2c61c218a5ff7b5a18b8aad5f0ec525e81784ac20314561b9

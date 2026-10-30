@@ -1,0 +1,7 @@
+quota_id: default
+version: '1'
+family: {w1_count: 3, w1_hours: 24, w2_count: 1, w2_days: 7}
+program: {w1_daily: 60, w2_weekly: 10}
+global: {w1_daily: 200, w2_per_epoch: 400, w3_per_epoch: 100, simulation_slots: 40}
+deferral_expiry_days: 7
+burn: {w1_amber: 3000, w1_red: 6000}
