@@ -1,6 +1,7 @@
 # Phase 0 implementation and acceptance record
 
-Status: **implementation ready for review; Phase 0 acceptance remains blocked**.
+Status: **local checks pass under the owner's clarified requirements; hosted CI
+and AMD64 acceptance remain unverified**.
 No later phase has begun. This is a new independent repository with no remote.
 
 ## Authority and provenance
@@ -28,11 +29,11 @@ verified**, and no stronger configuration is claimed.
 |---|---|---|
 | P0.1 | Python 3.12 uv workspace; five packages; ruff, mypy, pytest, hypothesis; required just targets | `just check`; PostgreSQL suite |
 | P0.2 | Four import-linter contracts, including MCP importing only core | Four contracts kept; zero broken |
-| P0.3 | PostgreSQL 16; four databases, five app roles, four migration roles; native images, hardened Compose, scoped mounts and networks; clean-exit placeholders | ARM64 builds, real database tests, deployed doctor; host ingress remains blocked |
+| P0.3 | PostgreSQL 16; four databases, five app roles, four migration roles; native images, hardened Compose, scoped mounts and networks; clean-exit placeholders | ARM64 builds, real database tests, deployed doctor and host ingress pass |
 | P0.4 | Nine YAML configuration categories, pydantic-settings, typed validation, canonical hashes; Section 20 defaults | Config and public-preview privacy tests |
 | P0.5 | Eleven public model contracts, two public enums, two private contracts; generated JSON Schema; one valid and invalid fixture per contract | Pydantic/JSON Schema tests and property-based release-boundary checks |
 | P0.6 | structlog JSON, context/HTTP/queue correlation, stdout and daily files, size rotation, mandatory redaction, search/tail/correlate CLI | LOG-01/02 across thirteen service names; pagination, rotation, range, secret and symlink tests |
-| P0.7 | Official FastMCP streamable HTTP, bearer auth, limits, fail-closed audit; exactly five read tools; client snippets | Scripted HTTP tests plus real container HTTP/DB/file checks; host connectivity remains blocked |
+| P0.7 | Official FastMCP streamable HTTP, bearer auth, limits, fail-closed audit; exactly five read tools; client snippets | Scripted HTTP tests plus real host HTTP/DB/file checks pass; live downstream trace acceptance is deferred by owner |
 | P0.8 | GitHub Actions checks with PostgreSQL and ARM64/AMD64 image matrices recording digests | Workflow authored; ARM64 built locally; hosted CI and AMD64 not executed |
 | P0.9 | Exact plan, AGENTS, decisions, this report and evidence | Source hash verified; reviewed locally |
 
@@ -53,7 +54,7 @@ status rather than reporting success.
 
 - `just check`: PASS. Ruff, formatting, mypy (strict core/MCP), all four import
   contracts, schema generation and public-card generation.
-- `just test-db`: **55 passed, zero skipped** against PostgreSQL 16. A Starlette
+- `just test-db`: **56 passed, zero skipped** against PostgreSQL 16. A Starlette
   TestClient deprecation warning remains; it does not affect test results.
 - BND-01: real database authentication succeeds for each tested role and fails
   across prohibited databases. Application and migration roles cannot update,
@@ -67,30 +68,35 @@ status rather than reporting success.
   AMD64 emulation was run: the plan assigns AMD64 to CI.
 - `just up` starts healthy PostgreSQL and MCP. Migration and domain placeholders
   complete with exit 0. Four databases and five application roles are present.
-- Container MCP smoke: all five tools return over real streamable HTTP. Each call
-  has exactly one matching `mcp_calls` row and one file audit line. This is a
-  scripted client inside the container, **not a successful Mac host connection**.
-- `just doctor`: **FAIL — 91 of 93 checks pass**. The two failures are Docker
-  memory and host MCP loopback reachability. See the complete JSON evidence.
+- Host MCP smoke: a scripted client on the Mac calls all five tools at
+  `127.0.0.1:8765/mcp` over real streamable HTTP. Each call has exactly one matching
+  `mcp_calls` row and one file audit line, verified inside the container without
+  exposing PostgreSQL on the host. No interactive agent client was registered.
+- `just doctor`: **PASS — 112 of 112 checks pass**, including host reachability,
+  exclusive MCP ingress, internal shared networks and every current container's
+  OOMKilled flag. Memory allocation is recorded separately as an observation.
 
 ## Setup results and unresolved acceptance
 
 The Mac is native arm64, with 18 CPUs and 36 GiB host RAM. Docker exposes 18 CPUs
-but only 8,317,267,968 bytes (about 7.75 GiB) of RAM. The plan requires at least
-24 GiB. Docker's disk capacity and free space meet the configured minimum. Sleep
+and 8,317,267,968 bytes (about 7.75 GiB) of RAM. The owner clarified that 24 GiB is
+an expectation and actual allocation will depend on performance. No current
+container reports OOMKilled. This does not establish capacity for later research
+or evaluation workloads; Phase 0 domain services are placeholders. Docker's disk
+capacity and free space meet the configured minimum. Sleep
 is disabled. Secrets are generated locally into a mode-0600 `.env`, excluded from
 Git and from image build contexts. Docker settings were not changed.
 
 | Remaining item | Exact blocker | State / next action |
 |---|---|---|
-| DEP-01 memory | Docker allocation is below 24 GiB | Owner decision pending; changing it restarts Docker and affects old containers |
-| Host MCP transport | Docker Desktop does not publish a port from the fully internal control network | Owner decision pending on a separate qfr-mcp-only ingress network; that network permits control-container outbound connectivity |
-| Live MCP-01 downstream trace | P0.3 requires domain placeholders to exit; MCP-01 expects live downstream log lines. Log tools also read files directly per Section 15.5 | Owner interpretation pending. Scripted propagation and real MCP audits pass, but live downstream completion is not claimed |
+| DEP-01 memory | Resolved by owner clarification | Allocation unchanged; expectation retained; current OOM flags checked and no OOM observed |
+| Host MCP transport | Resolved and verified | Owner-approved qfr-mcp-only ingress network; host calls and audit checks pass; research/evaluation shared networks remain internal |
+| Live MCP-01 downstream trace | Explicitly deferred by owner | Keep clean-exit placeholders. Scripted propagation and real MCP audits pass; live downstream completion is not claimed |
 | CI / AMD64 | New repository has no remote and publishing was not authorized | Workflow ready; hosted checks and two-architecture CI acceptance have not run |
 | Model requirement | Host default is visible; this turn's actual model/effort is not | Owner/task configuration must establish the requested maximum effort if mandatory |
 
-No action above was denied by automatic approval review. Configuration decisions
-remain pending; hosted CI was not attempted. The failed setup experiments were
+The three owner decisions are quoted and recorded in `decisions.md`. No action
+above was denied by automatic approval review; hosted CI was not attempted. The failed setup experiments were
 confined to this new project's disposable resources. No broad Docker pruning,
 global restart, paid provider calls or code publication occurred.
 
@@ -105,7 +111,7 @@ just check
 just test-db
 just up
 just doctor
-python scripts/smoke_mcp.py
+python scripts/smoke_mcp.py --host
 just logs tail --service qfr-mcp --n 5
 ```
 
@@ -130,3 +136,5 @@ docker buildx build --platform linux/arm64 --target mcp \
 Reviewed, non-secret evidence is under `docs/evidence/`; raw working receipts and
 logs are under ignored `exports/`. The evidence index records file hashes so an
 independent reviewer can distinguish verified results from unresolved acceptance.
+The earlier failed doctor report remains in Git history and the ignored raw
+`exports/doctor` directory; current evidence records the approved resolution.

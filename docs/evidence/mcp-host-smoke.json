@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "transport": "host-loopback-streamable-http",
+  "host_loopback_verified": true,
+  "tools": [
+    {
+      "tool": "qfr.status",
+      "request_id": "51c7cfcd-6250-45e0-98a3-9bfeecd3c7ff",
+      "tool_status": "partial",
+      "audit_rows": 1,
+      "downstream_request_ids": [
+        "51c7cfcd-6250-45e0-98a3-9bfeecd3c7ff"
+      ],
+      "file_audit_lines": 1
+    },
+    {
+      "tool": "qfr.config.get",
+      "request_id": "13db3514-08e1-4901-8a8c-9ffe7c0a44b2",
+      "tool_status": "ok",
+      "audit_rows": 1,
+      "downstream_request_ids": [],
+      "file_audit_lines": 1
+    },
+    {
+      "tool": "qfr.logs.tail",
+      "request_id": "523a06bd-03d5-41b4-a3c0-d6e25d869f4c",
+      "tool_status": "ok",
+      "audit_rows": 1,
+      "downstream_request_ids": [],
+      "file_audit_lines": 1
+    },
+    {
+      "tool": "qfr.logs.search",
+      "request_id": "a2342be9-c2e8-4657-9506-3c3051b68f9c",
+      "tool_status": "ok",
+      "audit_rows": 1,
+      "downstream_request_ids": [],
+      "file_audit_lines": 1
+    },
+    {
+      "tool": "qfr.logs.correlate",
+      "request_id": "fe7b0f14-e49a-48fe-b772-f62e434e867f",
+      "tool_status": "ok",
+      "audit_rows": 1,
+      "downstream_request_ids": [],
+      "file_audit_lines": 1
+    }
+  ],
+  "limitations": [
+    "Live downstream domain APIs remain deferred by owner decision."
+  ]
+}

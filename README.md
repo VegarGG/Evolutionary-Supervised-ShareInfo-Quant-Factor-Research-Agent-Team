@@ -16,7 +16,11 @@ The local `.tools` directory can be added to PATH on this Mac; it contains verif
 uv and just binaries and is intentionally ignored by Git.
 
 Read [the acceptance report](docs/phase0-acceptance.md) before use. Phase 0 is
-implemented but **not accepted**: setup and owner decisions remain outstanding.
+implemented but **not accepted**: hosted CI and AMD64 verification remain outstanding.
+The owner's network and memory decisions are applied. `just doctor` checks current
+OOM flags; 24 GiB is a planning expectation, not a required allocation. Test the
+host endpoint with `python scripts/smoke_mcp.py --host`. Domain placeholders still
+exit cleanly; live downstream tracing is deferred by the owner.
 `just setup`, `just backup` and `just bench` explicitly report their later phases.
 `just mcp-config` prints bearer-bearing client snippets; keep its output private.
 

@@ -48,13 +48,30 @@ def test_all_services_hardened_and_only_mcp_port_published():
             assert name == "qfr-mcp" and service["ports"] == ["127.0.0.1:8765:8765"]
 
 
-def test_only_two_authorized_services_have_external_egress():
+def test_only_owner_authorized_services_have_external_egress():
     networks = COMPOSE["networks"]
+    allowed = {
+        "research-worker": ["research_egress_net"],
+        "data-ingest": ["ingest_egress_net"],
+        "qfr-mcp": ["mcp_ingress_net"],
+    }
     for name, service in COMPOSE["services"].items():
         external = [
             n for n in service.get("networks", []) if not networks[n].get("internal", False)
         ]
-        assert not external or name in {"research-worker", "data-ingest"}
+        assert external == allowed.get(name, [])
+
+
+def test_mcp_ingress_is_exclusive_and_cannot_bridge_research_or_eval():
+    members = [
+        name
+        for name, service in COMPOSE["services"].items()
+        if "mcp_ingress_net" in service.get("networks", [])
+    ]
+    assert members == ["qfr-mcp"]
+    assert set(COMPOSE["services"]["qfr-mcp"]["networks"]) == {"control_net", "mcp_ingress_net"}
+    for name in ("control_net", "research_net", "registry_net", "eval_net"):
+        assert COMPOSE["networks"][name]["internal"] is True
 
 
 def test_no_private_config_baked_into_runtime_image():

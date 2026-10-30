@@ -1,7 +1,7 @@
 {
-  "at": "2026-10-30T12:08:13.792453+00:00",
+  "at": "2026-10-30T12:34:58.246718+00:00",
   "phase": 0,
-  "status": "FAIL",
+  "status": "PASS",
   "checks": [
     {
       "check": "native_arm64",
@@ -17,14 +17,6 @@
       }
     },
     {
-      "check": "docker_memory",
-      "status": "FAIL",
-      "detail": {
-        "bytes": 8317267968,
-        "minimum_gib": 24
-      }
-    },
-    {
       "check": "containers_exist",
       "status": "PASS",
       "detail": 15
@@ -33,6 +25,14 @@
       "check": "image_architecture:qfr-v2-placeholder:phase0",
       "status": "PASS",
       "detail": "arm64"
+    },
+    {
+      "check": "oom:data-ingest",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-data-ingest-1",
+        "oom_killed": false
+      }
     },
     {
       "check": "service:data-ingest",
@@ -63,6 +63,14 @@
       "detail": {}
     },
     {
+      "check": "oom:eval-admin-api",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-eval-admin-api-1",
+        "oom_killed": false
+      }
+    },
+    {
       "check": "service:eval-admin-api",
       "status": "PASS",
       "detail": {
@@ -89,6 +97,14 @@
       "check": "loopback_ports:eval-admin-api",
       "status": "PASS",
       "detail": {}
+    },
+    {
+      "check": "oom:eval-scheduler",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-eval-scheduler-1",
+        "oom_killed": false
+      }
     },
     {
       "check": "service:eval-scheduler",
@@ -119,6 +135,14 @@
       "detail": {}
     },
     {
+      "check": "oom:eval-worker",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-eval-worker-1",
+        "oom_killed": false
+      }
+    },
+    {
       "check": "service:eval-worker",
       "status": "PASS",
       "detail": {
@@ -147,6 +171,14 @@
       "detail": {}
     },
     {
+      "check": "oom:eval-worker",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-eval-worker-2",
+        "oom_killed": false
+      }
+    },
+    {
       "check": "service:eval-worker",
       "status": "PASS",
       "detail": {
@@ -173,6 +205,14 @@
       "check": "loopback_ports:eval-worker",
       "status": "PASS",
       "detail": {}
+    },
+    {
+      "check": "oom:feedback-api",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-feedback-api-1",
+        "oom_killed": false
+      }
     },
     {
       "check": "service:feedback-api",
@@ -201,6 +241,14 @@
       "check": "loopback_ports:feedback-api",
       "status": "PASS",
       "detail": {}
+    },
+    {
+      "check": "oom:init-volumes",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-init-volumes-1",
+        "oom_killed": false
+      }
     },
     {
       "check": "service:init-volumes",
@@ -236,6 +284,14 @@
       "detail": "arm64"
     },
     {
+      "check": "oom:migrate",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-migrate-1",
+        "oom_killed": false
+      }
+    },
+    {
       "check": "service:migrate",
       "status": "PASS",
       "detail": {
@@ -269,6 +325,14 @@
       "detail": "arm64"
     },
     {
+      "check": "oom:postgres",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-postgres-1",
+        "oom_killed": false
+      }
+    },
+    {
       "check": "service:postgres",
       "status": "PASS",
       "detail": {
@@ -300,6 +364,14 @@
       "check": "image_architecture:qfr-v2-mcp:phase0",
       "status": "PASS",
       "detail": "arm64"
+    },
+    {
+      "check": "oom:qfr-mcp",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-qfr-mcp-1",
+        "oom_killed": false
+      }
     },
     {
       "check": "service:qfr-mcp",
@@ -396,6 +468,14 @@
       }
     },
     {
+      "check": "oom:registry-api",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-registry-api-1",
+        "oom_killed": false
+      }
+    },
+    {
       "check": "service:registry-api",
       "status": "PASS",
       "detail": {
@@ -424,6 +504,14 @@
       "detail": {}
     },
     {
+      "check": "oom:release-worker",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-release-worker-1",
+        "oom_killed": false
+      }
+    },
+    {
       "check": "service:release-worker",
       "status": "PASS",
       "detail": {
@@ -450,6 +538,14 @@
       "check": "loopback_ports:release-worker",
       "status": "PASS",
       "detail": {}
+    },
+    {
+      "check": "oom:research-api",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-research-api-1",
+        "oom_killed": false
+      }
     },
     {
       "check": "service:research-api",
@@ -492,6 +588,14 @@
           "rw": true
         }
       ]
+    },
+    {
+      "check": "oom:research-worker",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-research-worker-1",
+        "oom_killed": false
+      }
     },
     {
       "check": "service:research-worker",
@@ -540,6 +644,14 @@
       ]
     },
     {
+      "check": "oom:sim-engine",
+      "status": "PASS",
+      "detail": {
+        "container": "/qfr-v2-sim-engine-1",
+        "oom_killed": false
+      }
+    },
+    {
       "check": "service:sim-engine",
       "status": "PASS",
       "detail": {
@@ -575,6 +687,36 @@
       }
     },
     {
+      "check": "internal_network:control_net",
+      "status": "PASS",
+      "detail": "internal Docker network"
+    },
+    {
+      "check": "internal_network:research_net",
+      "status": "PASS",
+      "detail": "internal Docker network"
+    },
+    {
+      "check": "internal_network:registry_net",
+      "status": "PASS",
+      "detail": "internal Docker network"
+    },
+    {
+      "check": "internal_network:eval_net",
+      "status": "PASS",
+      "detail": "internal Docker network"
+    },
+    {
+      "check": "mcp_only_ingress",
+      "status": "PASS",
+      "detail": {
+        "members": [
+          "qfr-mcp"
+        ],
+        "outbound_allowed_by_owner": true
+      }
+    },
+    {
       "check": "four_databases",
       "status": "PASS",
       "detail": [
@@ -600,24 +742,35 @@
       "status": "PASS",
       "detail": {
         "total_bytes": 485421555712,
-        "available_bytes": 380868952064
+        "available_bytes": 380869541888
       }
     },
     {
       "check": "disk_headroom",
       "status": "PASS",
       "detail": {
-        "available_bytes": 380868952064
+        "available_bytes": 380869541888
       }
     },
     {
       "check": "host_mcp_loopback",
-      "status": "FAIL",
+      "status": "PASS",
       "detail": "Expected bearer challenge on 127.0.0.1:8765"
+    }
+  ],
+  "observations": [
+    {
+      "observation": "docker_memory",
+      "bytes": 8317267968,
+      "expected_gib": 24,
+      "policy": "performance_based",
+      "below_expectation": true,
+      "minimum_enforced": false
     }
   ],
   "limitations": [
     "Domain services are successful Phase 0 placeholders.",
-    "Run the PostgreSQL boundary suite separately; this report does not replace it."
+    "Run the PostgreSQL boundary suite separately; this report does not replace it.",
+    "OOM checks cover current container state, not an indefinite historical event record."
   ]
 }

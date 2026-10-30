@@ -168,7 +168,8 @@
         }
       },
       "networks": [
-        "control_net"
+        "control_net",
+        "mcp_ingress_net"
       ],
       "command": [
         "python",
@@ -1225,6 +1226,16 @@
         "config": [
           {
             "subnet": "${QFR_INGEST_EGRESS_NET_SUBNET:-10.233.45.0/24}"
+          }
+        ]
+      }
+    },
+    "mcp_ingress_net": {
+      "internal": false,
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${QFR_MCP_INGRESS_NET_SUBNET:-10.233.47.0/24}"
           }
         ]
       }

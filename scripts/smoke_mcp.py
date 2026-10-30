@@ -8,12 +8,9 @@ import urllib.request
 from pathlib import Path
 
 
-def exercise():
-    from qfr_core.contracts import LogLine
-    from sqlalchemy import create_engine, text
-
+def exercise(token):
     headers = {
-        "Authorization": "Bearer " + os.environ["QFR_MCP_TOKEN"],
+        "Authorization": "Bearer " + token,
         "Content-Type": "application/json",
         "Accept": "application/json, text/event-stream",
     }
@@ -78,6 +75,13 @@ def exercise():
             "tool_status": result["structuredContent"]["status"],
         }
     )
+    return calls
+
+
+def verify(calls):
+    from qfr_core.contracts import LogLine
+    from sqlalchemy import create_engine, text
+
     engine = create_engine(os.environ["CONTROL_DB_URL"])
     with engine.connect() as connection:
         for call in calls:
@@ -107,26 +111,43 @@ def exercise():
         ]
         assert len(matching) == 1
         call["file_audit_lines"] = len(matching)
+    return calls
+
+
+def report(calls, host):
     print(
         json.dumps(
             {
                 "status": "PASS",
-                "transport": "container-loopback-streamable-http",
-                "host_loopback_verified": False,
+                "transport": "host-loopback-streamable-http"
+                if host
+                else "container-loopback-streamable-http",
+                "host_loopback_verified": host,
                 "tools": calls,
-                "limitations": [
-                    "This does not verify the Mac host ingress or live downstream APIs."
-                ],
+                "limitations": ["Live downstream domain APIs remain deferred by owner decision."],
             },
             indent=2,
         )
     )
 
 
-if os.environ.get("QFR_SMOKE_INSIDE") == "1":
-    exercise()
+mode = os.environ.get("QFR_SMOKE_INSIDE")
+if mode == "1":
+    report(verify(exercise(os.environ["QFR_MCP_TOKEN"])), host=False)
+elif mode == "verify":
+    print(json.dumps(verify(json.loads(os.environ["QFR_SMOKE_CALLS"]))))
 else:
     root = Path(__file__).resolve().parents[1]
+    host = "--host" in sys.argv[1:]
+    calls = []
+    if host:
+        values = dict(
+            line.split("=", 1)
+            for line in (root / ".env").read_text().splitlines()
+            if "=" in line and not line.startswith("#")
+        )
+        calls = exercise(values["QFR_MCP_TOKEN"])
+    extra = ["-e", "QFR_SMOKE_CALLS=" + json.dumps(calls)] if host else []
     result = subprocess.run(
         [
             "docker",
@@ -138,7 +159,8 @@ else:
             "exec",
             "-T",
             "-e",
-            "QFR_SMOKE_INSIDE=1",
+            "QFR_SMOKE_INSIDE=verify" if host else "QFR_SMOKE_INSIDE=1",
+            *extra,
             "qfr-mcp",
             "python",
             "-",
@@ -146,5 +168,11 @@ else:
         input=Path(__file__).read_text(),
         text=True,
         cwd=root,
+        capture_output=host,
     )
+    if host:
+        if result.returncode:
+            sys.stderr.write(result.stderr)
+        else:
+            report(json.loads(result.stdout), host=True)
     sys.exit(result.returncode)

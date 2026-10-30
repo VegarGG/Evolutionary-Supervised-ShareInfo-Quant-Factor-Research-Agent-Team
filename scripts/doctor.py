@@ -17,6 +17,7 @@ compose = [
     str(root / "infra/docker-compose.yml"),
 ]
 checks = []
+observations = []
 
 
 def record(name, passed, detail):
@@ -29,17 +30,24 @@ def run(args):
 
 try:
     info = json.loads(run(["docker", "info", "--format", "{{json .}} "]))
-    required = yaml.safe_load((root / "configs/deployment.yaml").read_text())["docker_minimum"]
+    deployment = yaml.safe_load((root / "configs/deployment.yaml").read_text())
+    required = deployment["docker_minimum"]
     record("native_arm64", info["Architecture"] in {"aarch64", "arm64"}, info["Architecture"])
     record(
         "docker_cpus",
         info["NCPU"] >= required["cpus"],
         {"actual": info["NCPU"], "minimum": required["cpus"]},
     )
-    record(
-        "docker_memory",
-        info["MemTotal"] >= required["memory_gb"] * 1024**3,
-        {"bytes": info["MemTotal"], "minimum_gib": required["memory_gb"]},
+    memory = deployment["docker_memory"]
+    observations.append(
+        {
+            "observation": "docker_memory",
+            "bytes": info["MemTotal"],
+            "expected_gib": memory["expected_gib"],
+            "policy": memory["policy"],
+            "below_expectation": info["MemTotal"] < memory["expected_gib"] * 1024**3,
+            "minimum_enforced": False,
+        }
     )
     ids = run(compose + ["ps", "-aq"]).split()
     containers = json.loads(run(["docker", "inspect", *ids])) if ids else []
@@ -59,6 +67,11 @@ try:
             record("image_architecture:" + config["Image"], architecture == "arm64", architecture)
             checked_images.add(image_id)
         state = container["State"]
+        record(
+            "oom:" + service,
+            state.get("OOMKilled") is False,
+            {"container": container["Name"], "oom_killed": state.get("OOMKilled")},
+        )
         if service in {"postgres", "qfr-mcp"}:
             good = state["Running"] and state.get("Health", {}).get("Status") == "healthy"
         else:
@@ -134,6 +147,40 @@ try:
         set(expected) <= seen,
         {"missing": sorted(set(expected) - seen)},
     )
+    networks = json.loads(
+        run(
+            [
+                "docker",
+                "network",
+                "inspect",
+                *sorted(
+                    {
+                        name
+                        for container in containers
+                        for name in container["NetworkSettings"]["Networks"]
+                    }
+                ),
+            ]
+        )
+    )
+    by_name = {
+        n["Labels"]["com.docker.compose.network"]: n
+        for n in networks
+        if (n.get("Labels") or {}).get("com.docker.compose.network")
+    }
+    for name in ("control_net", "research_net", "registry_net", "eval_net"):
+        record("internal_network:" + name, by_name[name]["Internal"], "internal Docker network")
+    ingress = by_name["mcp_ingress_net"]
+    ingress_members = [
+        c["Config"]["Labels"]["com.docker.compose.service"]
+        for c in containers
+        if ingress["Name"] in c["NetworkSettings"]["Networks"]
+    ]
+    record(
+        "mcp_only_ingress",
+        ingress_members == ["qfr-mcp"] and not ingress["Internal"],
+        {"members": ingress_members, "outbound_allowed_by_owner": True},
+    )
     sql = (
         "SELECT datname FROM pg_database WHERE datname IN "
         "('research_db','registry_db','eval_db','control_db') ORDER BY "
@@ -181,9 +228,11 @@ result = {
     "phase": 0,
     "status": "PASS" if checks and all(c["status"] == "PASS" for c in checks) else "FAIL",
     "checks": checks,
+    "observations": observations,
     "limitations": [
         "Domain services are successful Phase 0 placeholders.",
         "Run the PostgreSQL boundary suite separately; this report does not replace it.",
+        "OOM checks cover current container state, not an indefinite historical event record.",
     ],
 }
 directory = root / "exports/doctor"

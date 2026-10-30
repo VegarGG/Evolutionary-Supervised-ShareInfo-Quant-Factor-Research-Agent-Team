@@ -1,24 +1,31 @@
 uv run --locked python scripts/test_database.py
- Container qfr-v2-ci-postgres-1 Running 
+ Network qfr-v2-ci_ci_net Creating 
+ Network qfr-v2-ci_ci_net Creating 
+ Network qfr-v2-ci_ci_net Created 
+ Network qfr-v2-ci_ci_net Created 
+ Container qfr-v2-ci-postgres-1 Creating 
+ Container qfr-v2-ci-postgres-1 Created 
+ Container qfr-v2-ci-postgres-1 Starting 
+ Container qfr-v2-ci-postgres-1 Started 
  Container qfr-v2-ci-postgres-1 Waiting 
  Container qfr-v2-ci-postgres-1 Healthy 
-{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"registry"},"principal":"registry_migrator","request_id":"29e6cf37-6642-4a97-b760-6da2d356ef0c","service":"migrate","ts":"2026-10-30T12:03:36.761755Z","zone":"control"}
-{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"research"},"principal":"research_migrator","request_id":"5be646b1-0b1d-49ad-8dcc-958e457d3ea9","service":"migrate","ts":"2026-10-30T12:03:36.772576Z","zone":"control"}
-{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"eval"},"principal":"eval_migrator","request_id":"c7c458ae-f190-4e15-a5e6-39f694e39f11","service":"migrate","ts":"2026-10-30T12:03:36.781367Z","zone":"control"}
-{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"control"},"principal":"control_migrator","request_id":"e6087d83-2477-41c3-bb43-9c4cedf63ac2","service":"migrate","ts":"2026-10-30T12:03:36.789551Z","zone":"control"}
+{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"registry"},"principal":"registry_migrator","request_id":"265cfc7a-f99d-47ba-a9ed-570ebff865ab","service":"migrate","ts":"2026-10-30T12:35:03.170928Z","zone":"control"}
+{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"research"},"principal":"research_migrator","request_id":"f56bc6fd-d34f-4609-a577-32548dfa41f2","service":"migrate","ts":"2026-10-30T12:35:03.186998Z","zone":"control"}
+{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"eval"},"principal":"eval_migrator","request_id":"108e0416-6479-4bf4-b5ea-b816bf465db5","service":"migrate","ts":"2026-10-30T12:35:03.202867Z","zone":"control"}
+{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"control"},"principal":"control_migrator","request_id":"9d053b84-1b94-45f9-b2de-0408adf4234d","service":"migrate","ts":"2026-10-30T12:35:03.218462Z","zone":"control"}
 ============================= test session starts ==============================
 platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0
 rootdir: /Volumes/Work/Evolutionary Supervised ShareInfo Quant Factor Research Agent Team/qfr-v2
 configfile: pyproject.toml
 testpaths: tests
 plugins: xdist-3.8.0, hypothesis-6.170.14, anyio-4.15.1
-collected 55 items
+collected 56 items
 
-tests/boundary/test_compose.py .......                                   [ 12%]
-tests/boundary/test_database.py ...                                      [ 18%]
-tests/mcp/test_private_schema.py .                                       [ 20%]
-tests/mcp/test_server.py .....                                           [ 29%]
-tests/test_config.py ....                                                [ 36%]
+tests/boundary/test_compose.py ........                                  [ 14%]
+tests/boundary/test_database.py ...                                      [ 19%]
+tests/mcp/test_private_schema.py .                                       [ 21%]
+tests/mcp/test_server.py .....                                           [ 30%]
+tests/test_config.py ....                                                [ 37%]
 tests/test_contracts.py .................                                [ 67%]
 tests/test_logging.py ..................                                 [100%]
 
@@ -29,4 +36,4 @@ tests/mcp/test_server.py:11
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 - generated xml file: /Volumes/Work/Evolutionary Supervised ShareInfo Quant Factor Research Agent Team/qfr-v2/exports/pytest-postgres.xml -
-======================== 55 passed, 1 warning in 0.87s =========================
+======================== 56 passed, 1 warning in 0.89s =========================

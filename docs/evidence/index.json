@@ -1,6 +1,6 @@
 {
   "phase": 0,
-  "acceptance": "BLOCKED",
+  "acceptance": "HOSTED_CI_UNVERIFIED",
   "files": [
     {
       "file": "check.log",
@@ -9,18 +9,18 @@
     },
     {
       "file": "tests-postgres.log",
-      "sha256": "5d7df9a9c653ee6bd5a38993de7f09bf789ab8b23f858d1f4255a72606989100",
-      "bytes": 2772
+      "sha256": "302c111f426cefb41184aa9c910131025e8b232aa6c750e61c00ffaa1416ac98",
+      "bytes": 3039
     },
     {
       "file": "pytest-postgres.xml",
-      "sha256": "64c24a3657f6b152ff999c98262751f5978342eaac572be7cf8fc42915819e1f",
-      "bytes": 7967
+      "sha256": "7547bd1948ad05e25794a9c30e77bb2fd1dbe6f6e7e1ad1ca675ae273cc48324",
+      "bytes": 8106
     },
     {
       "file": "doctor-latest.json",
-      "sha256": "7933115bbb0f999fe84e8edef220f461165bd8fcd7084dc1b9fe6a8de1c922c4",
-      "bytes": 13094
+      "sha256": "a8b9d747cb416084b5fa4feb826aa5957e80723999adbb0ff7200ae3e0fbe7be",
+      "bytes": 16536
     },
     {
       "file": "mcp-container-smoke.json",
@@ -66,6 +66,16 @@
       "file": "linux-dependency-downloads.json",
       "sha256": "7919e00b40f43314475072fa3782c635dba54cbee36610a55945e6dae7f60eac",
       "bytes": 6542
+    },
+    {
+      "file": "mcp-host-smoke.json",
+      "sha256": "4de3c14e5543be7826cf0f7fc9948f8d862f89c142ae6e2bc757700c351c0c21",
+      "bytes": 1369
+    },
+    {
+      "file": "resource-usage.json",
+      "sha256": "4637aedd5a07c6748dbdfb8b1d2aac807a9c3921d9d4a809eb0c2ee5f9f7b2b8",
+      "bytes": 477
     }
   ]
 }
