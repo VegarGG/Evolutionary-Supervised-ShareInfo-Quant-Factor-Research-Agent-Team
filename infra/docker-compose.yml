@@ -956,7 +956,7 @@
         "resources": {
           "limits": {
             "cpus": "1",
-            "memory": "1G"
+            "memory": "4G"
           }
         }
       },
@@ -974,19 +974,22 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "eval",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-eval"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-eval:phase1",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
         "QFR_SERVICE": "data-ingest",
         "QFR_ZONE": "eval",
         "TZ": "Asia/Shanghai",
-        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}"
+        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
+        "QFR_FULL_SNAPSHOT_DIR": "/data/full",
+        "QFR_RESEARCH_SNAPSHOT_DIR": "/data/research",
+        "QFR_RAW_DIR": "/data/raw"
       },
       "volumes": [
         {
@@ -1009,6 +1012,30 @@
           "source": "snapshots_research",
           "target": "/data/research",
           "read_only": false
+        },
+        {
+          "type": "volume",
+          "source": "data_raw",
+          "target": "/data/raw",
+          "read_only": false
+        },
+        {
+          "type": "bind",
+          "source": "../configs/data",
+          "target": "/app/configs/data",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "../configs/epochs",
+          "target": "/app/configs/epochs",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "../configs/protocols",
+          "target": "/app/configs/protocols",
+          "read_only": true
         }
       ],
       "depends_on": {
@@ -1169,6 +1196,7 @@
     "pg_data": {},
     "snapshots_full": {},
     "snapshots_research": {},
+    "data_raw": {},
     "qfr_logs": {}
   },
   "networks": {

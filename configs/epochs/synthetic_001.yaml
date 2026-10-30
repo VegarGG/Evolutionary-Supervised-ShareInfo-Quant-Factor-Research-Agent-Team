@@ -1,0 +1,9 @@
+epoch_id: synthetic_001
+version: '1'
+# Windows over the synthetic weekday calendar (2,600 days from 2010-01-04), separated by
+# 20-trading-day embargoes. Used by tests and the benchmark harness only.
+W0: {start: '2010-01-04', end: '2014-12-26'}
+W1: {start: '2015-01-26', end: '2016-12-23'}
+W2: {start: '2017-01-23', end: '2018-05-11'}
+W3: {start: '2018-06-11', end: '2019-12-20'}
+embargo_trading_days: 20

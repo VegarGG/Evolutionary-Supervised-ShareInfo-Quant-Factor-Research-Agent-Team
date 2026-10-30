@@ -82,3 +82,56 @@ def test_no_private_config_baked_into_runtime_image():
     assert "COPY configs/epochs" not in runtime
     assert "COPY configs/protocols" not in runtime
     assert "COPY schemas/private" not in runtime
+
+
+def _mounts(source):
+    """Services mounting a volume or bind source, mapped to whether they may write it."""
+    return {
+        name: not volume["read_only"]
+        for name, service in COMPOSE["services"].items()
+        for volume in service.get("volumes", [])
+        if volume["source"] == source
+    }
+
+
+def test_bnd_06_research_services_see_only_the_research_snapshot():
+    for name in ("research-api", "research-worker"):
+        service = COMPOSE["services"][name]
+        sources = {v["source"] for v in service["volumes"]}
+        assert sources == {"qfr_logs", "snapshots_research"}, name
+        research = next(v for v in service["volumes"] if v["source"] == "snapshots_research")
+        assert research["read_only"] is True
+        assert service["environment"]["QFR_RESEARCH_SNAPSHOT_DIR"] == research["target"]
+        assert "QFR_FULL_SNAPSHOT_DIR" not in service["environment"]
+
+
+def test_bnd_06_only_data_ingest_writes_snapshots_and_raw_data():
+    assert {n for n, rw in _mounts("snapshots_research").items() if rw} == {"data-ingest"}
+    assert {n for n, rw in _mounts("snapshots_full").items() if rw} == {"data-ingest"}
+    assert _mounts("data_raw") == {"data-ingest": True}
+    full_readers = set(_mounts("snapshots_full"))
+    assert not full_readers & {"research-api", "research-worker", "qfr-mcp", "feedback-api"}
+
+
+def test_bnd_06_epochs_protocols_and_data_configs_stay_in_the_evaluation_zone():
+    for source in ("../configs/epochs", "../configs/protocols", "../configs/data"):
+        for name, writable in _mounts(source).items():
+            assert COMPOSE["services"][name]["environment"]["QFR_ZONE"] == "eval", name
+            assert writable is False
+    # The synthetic world's planted signals live in configs/data: ingest only.
+    assert set(_mounts("../configs/data")) == {"data-ingest"}
+
+
+def test_data_ingest_writes_each_zone_at_its_mount_point():
+    service = COMPOSE["services"]["data-ingest"]
+    targets = {v["source"]: v["target"] for v in service["volumes"]}
+    environment = service["environment"]
+    assert environment["QFR_FULL_SNAPSHOT_DIR"] == targets["snapshots_full"]
+    assert environment["QFR_RESEARCH_SNAPSHOT_DIR"] == targets["snapshots_research"]
+    assert environment["QFR_RAW_DIR"] == targets["data_raw"]
+    assert service["build"] == {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "eval",
+        "args": {"QFR_PACKAGE": "qfr-eval"},
+    }

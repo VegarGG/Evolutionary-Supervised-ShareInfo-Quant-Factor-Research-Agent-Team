@@ -5,6 +5,7 @@ docker_memory: {expected_gib: 24, policy: performance_based}
 service_limits:
   eval-worker: {cpus: 4, memory_gb: 6, replicas: 2}
   research-worker: {cpus: 2, memory_gb: 4}
+  data-ingest: {cpus: 1, memory_gb: 4}
   postgres: {cpus: 4, memory_gb: 8}
   default: {cpus: 1, memory_gb: 1}
 schedule: {ingest_local: '18:30', nightly_local: '02:30'}

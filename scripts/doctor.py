@@ -117,6 +117,19 @@ try:
                 ),
                 [{"destination": m["Destination"], "rw": m["RW"]} for m in mounts],
             )
+            record(
+                "BND-06:" + service,
+                all(m["Destination"] not in {"/data/full", "/data/raw"} for m in mounts)
+                and all(not m["RW"] for m in mounts if m["Destination"] == "/data/research"),
+                "research snapshot read-only; no full snapshot or raw data",
+            )
+        if service == "data-ingest":
+            writable = {m["Destination"] for m in mounts if m["RW"]}
+            record(
+                "BND-06:data-ingest",
+                {"/data/full", "/data/research", "/data/raw"} <= writable,
+                sorted(writable),
+            )
         if service == "qfr-mcp":
             record(
                 "BND-08:qfr-mcp",
