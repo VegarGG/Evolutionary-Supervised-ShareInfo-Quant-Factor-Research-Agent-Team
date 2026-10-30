@@ -57,7 +57,7 @@ from qfr_eval.runtime import (
 from qfr_eval.store import ArtifactStore
 
 SERVICE = "eval-worker"
-MANIFEST: TypeAdapter[Manifest] = TypeAdapter(Manifest)  # type: ignore[arg-type]
+MANIFEST: TypeAdapter[Manifest] = TypeAdapter(Manifest)
 GB = 1024**3
 
 

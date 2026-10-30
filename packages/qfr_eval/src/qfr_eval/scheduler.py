@@ -62,7 +62,7 @@ from qfr_eval.store import ArtifactStore
 
 SERVICE = "eval-scheduler"
 PRINCIPAL = "eval-scheduler"
-MANIFEST: TypeAdapter[Manifest] = TypeAdapter(Manifest)  # type: ignore[arg-type]
+MANIFEST: TypeAdapter[Manifest] = TypeAdapter(Manifest)
 POOL_STATUS = {"seed": "seed", "approved": "active", "retired": "retired"}
 # Versions that passed dedup and still count for behavioral comparisons.
 ADMITTED = ("Deferred", "Screening", "ScreenFailed", "W1Evaluated", "W1GateFailed")
