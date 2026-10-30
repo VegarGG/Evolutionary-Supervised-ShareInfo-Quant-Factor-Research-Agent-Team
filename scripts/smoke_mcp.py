@@ -33,7 +33,7 @@ def exercise(token):
         {
             "protocolVersion": "2025-06-18",
             "capabilities": {},
-            "clientInfo": {"name": "qfr-phase0-scripted-check", "version": "1"},
+            "clientInfo": {"name": "qfr-scripted-check", "version": "1"},
         },
     )
     _, catalog = rpc("tools/list", {})
@@ -44,13 +44,23 @@ def exercise(token):
         "qfr.logs.search",
         "qfr.logs.tail",
         "qfr.logs.correlate",
+        "qfr.setup.status",
+        "qfr.pool.import",
+        "qfr.pool.list",
+        "qfr.pool.get",
+        "qfr.dsl.validate",
+        "qfr.artifact.get",
     }
     calls = []
+    # Read-only calls only: the smoke check never imports or changes setup state.
     for name, arguments in (
         ("qfr.status", {}),
         ("qfr.config.get", {}),
         ("qfr.logs.tail", {"service": "qfr-mcp", "n": 5}),
         ("qfr.logs.search", {"query": {"services": ["qfr-mcp"], "limit": 5}}),
+        ("qfr.setup.status", {}),
+        ("qfr.pool.list", {"pool": "factor", "limit": 5}),
+        ("qfr.dsl.validate", {"expression": "Mean($close, 5) / Mean($close, 20) - 1"}),
     ):
         request_id, result = rpc("tools/call", {"name": name, "arguments": arguments})
         content = result["structuredContent"]
@@ -124,7 +134,7 @@ def report(calls, host):
                 else "container-loopback-streamable-http",
                 "host_loopback_verified": host,
                 "tools": calls,
-                "limitations": ["Live downstream domain APIs remain deferred by owner decision."],
+                "limitations": ["Downstream APIs other than registry-api arrive in later phases."],
             },
             indent=2,
         )

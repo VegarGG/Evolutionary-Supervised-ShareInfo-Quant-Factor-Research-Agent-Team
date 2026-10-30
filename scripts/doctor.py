@@ -1,4 +1,4 @@
-"""Inspect the running Phase 0 stack without changing Docker or host settings."""
+"""Inspect the running stack (Phase 2) without changing Docker or host settings."""
 
 import json
 import subprocess
@@ -18,6 +18,14 @@ compose = [
 ]
 checks = []
 observations = []
+# Long-running services by Phase 2; the rest are placeholders that exit 0.
+RUNNING_SERVICES = {"postgres", "qfr-mcp", "registry-api"}
+# BND-09: the registry's only mutation routes.
+REGISTRY_MUTATIONS = [
+    "POST /v1/artifacts",
+    "POST /v1/pools/{pool}/entries",
+    "POST /v1/pools/{pool}/entries/{entry_id}/events",
+]
 
 
 def record(name, passed, detail):
@@ -72,7 +80,7 @@ try:
             state.get("OOMKilled") is False,
             {"container": container["Name"], "oom_killed": state.get("OOMKilled")},
         )
-        if service in {"postgres", "qfr-mcp"}:
+        if service in RUNNING_SERVICES:
             good = state["Running"] and state.get("Health", {}).get("Status") == "healthy"
         else:
             good = state["Status"] == "exited" and state["ExitCode"] == 0
@@ -130,6 +138,17 @@ try:
                 {"/data/full", "/data/research", "/data/raw"} <= writable,
                 sorted(writable),
             )
+        if service == "registry-api" and state["Running"]:
+            openapi_probe = (
+                "import json,urllib.request; "
+                "d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/openapi.json')); "
+                "print(json.dumps(sorted(m.upper()+' '+p for p,i in d['paths'].items() "
+                "for m in i if m!='get')))"
+            )
+            mutations = json.loads(
+                run(compose + ["exec", "-T", "registry-api", "python", "-c", openapi_probe])
+            )
+            record("BND-09:registry_mutation_routes", mutations == REGISTRY_MUTATIONS, mutations)
         if service == "qfr-mcp":
             record(
                 "BND-08:qfr-mcp",
@@ -233,17 +252,52 @@ try:
     except OSError:
         pass
     record("host_mcp_loopback", reachable, "Expected bearer challenge on 127.0.0.1:8765")
-except (subprocess.CalledProcessError, KeyError, ValueError, IndexError) as error:
+    if reachable:
+        # Read-only: qfr.setup.status reports the setup state and the pool counts.
+        values = dict(
+            line.split("=", 1)
+            for line in (root / ".env").read_text().splitlines()
+            if "=" in line and not line.startswith("#")
+        )
+        request = urllib.request.Request(
+            "http://127.0.0.1:8765/mcp",
+            data=json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {"name": "qfr.setup.status", "arguments": {}},
+                }
+            ).encode(),
+            headers={
+                "Authorization": "Bearer " + values["QFR_MCP_TOKEN"],
+                "Content-Type": "application/json",
+                "Accept": "application/json, text/event-stream",
+            },
+        )
+        with urllib.request.urlopen(request, timeout=10) as response:
+            setup = json.load(response)["result"]["structuredContent"]["data"]
+        record("registry_reachable_from_mcp", setup["registry"] == "ok", setup["registry"])
+        observations.append(
+            {
+                "observation": "setup",
+                "pool": setup["steps"]["pool"]["status"],
+                "pool_counts": setup["pool_counts"],
+                "notice": setup["notice"],
+                "setup_complete": setup["setup_complete"],
+            }
+        )
+except (subprocess.CalledProcessError, KeyError, ValueError, IndexError, OSError) as error:
     record("doctor_execution", False, type(error).__name__)
 
 result = {
     "at": datetime.now(UTC).isoformat(),
-    "phase": 0,
+    "phase": 2,
     "status": "PASS" if checks and all(c["status"] == "PASS" for c in checks) else "FAIL",
     "checks": checks,
     "observations": observations,
     "limitations": [
-        "Domain services are successful Phase 0 placeholders.",
+        "Domain services other than registry-api are successful placeholders until their phase.",
         "Run the PostgreSQL boundary suite separately; this report does not replace it.",
         "OOM checks cover current container state, not an indefinite historical event record.",
     ],

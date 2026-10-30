@@ -82,7 +82,9 @@ class Provenance(Contract):
     parent_version_ids: list[UUID7]
     agent_runs: list[AgentRunRef]
     trace_ref: UUID7
-    research_snapshot_id: Hash
+    # Null only for setup imports: an owner's raw-pool factor was not developed on any
+    # QFR snapshot, and the front door never reads research-zone data (MCP-02).
+    research_snapshot_id: Hash | None
     qfr_core_version: Annotated[str, StringConstraints(pattern=r"^\d+\.\d+\.\d+$")]
 
     @model_validator(mode="after")
@@ -90,7 +92,13 @@ class Provenance(Contract):
         ids = (self.job_id, self.program_id, self.generation_id, self.island_id)
         if any(v is None for v in ids) and self.operator != "human_seed":
             raise ValueError("only setup imports may omit research identifiers")
+        if self.research_snapshot_id is None and not self.is_setup_import:
+            raise ValueError("only setup imports may omit the research snapshot")
         return self
+
+    @property
+    def is_setup_import(self) -> bool:
+        return self.operator == "human_seed" and self.job_id is None
 
 
 class Rationale(Contract):
@@ -544,19 +552,27 @@ class ApprovalRecord(Contract):
     request_id: str
 
 
+Tag = Annotated[str, StringConstraints(min_length=1, max_length=64)]
+PoolName = Literal["factor", "strategy"]
+PoolStatus = Literal["seed", "approved", "retired"]
+
+
 class PoolEntry(Contract):
+    """One row of pool_current_v: the entry with its current status (latest status event)."""
+
     schema_version: Literal["pool_entry/1"]
     entry_id: UUID7
-    pool: Literal["factor", "strategy"]
+    pool: PoolName
     version_id: UUID7
     title: ShortText
     created_at: AwareDatetime
     created_by: str
     approval_id: UUID7 | None
     setup_ref: UUID7 | None
-    status: Literal["seed", "approved", "retired"]
+    status: PoolStatus
     approved_tier: Tier | None
     tags: list[str]
+    last_event_at: AwareDatetime | None = None
 
     @model_validator(mode="after")
     def authority(self) -> Self:
@@ -580,16 +596,38 @@ class ImportStrategy(Contract):
     combination: Literal["zscore_weighted_sum"]
     portfolio: Portfolio
 
+    @model_validator(mode="after")
+    def unique_components(self) -> Self:
+        names = [c.name for c in self.components]
+        if len(names) != len(set(names)):
+            raise ValueError("components must name distinct factor entries")
+        return self
+
 
 class PoolImportEntry(Contract):
+    """One raw-pool row: a factor (expression) or a strategy over factor rows (strategy)."""
+
     name: Slug
     title: ShortText
-    expression: Annotated[str, StringConstraints(min_length=1, max_length=1000)]
+    expression: Annotated[str, StringConstraints(min_length=1, max_length=1000)] | None = None
     expected_sign: Sign
     horizon_days: Horizon
-    tags: list[str]
-    notes: str | None = None
+    tags: list[Tag] = Field(default_factory=list)
+    # The notes become the seed hypothesis's mechanism, which is limited to 1,500 chars.
+    notes: Annotated[str, StringConstraints(min_length=1, max_length=1500)] | None = None
     strategy: ImportStrategy | None = None
+
+    @model_validator(mode="after")
+    def one_kind(self) -> Self:
+        if (self.expression is None) == (self.strategy is None):
+            raise ValueError("an entry needs exactly one of expression (factor) or strategy")
+        if self.strategy is not None and self.expected_sign != 1:
+            raise ValueError("a strategy's direction is always +1 after component signs")
+        return self
+
+    @property
+    def kind(self) -> Literal["factor", "strategy"]:
+        return "factor" if self.expression is not None else "strategy"
 
 
 class PoolImport(Contract):
@@ -601,9 +639,10 @@ class PoolImport(Contract):
         names = [entry.name for entry in self.entries]
         if len(names) != len(set(names)):
             raise ValueError("import names must be unique")
+        factors = {entry.name for entry in self.entries if entry.expression is not None}
         for entry in self.entries:
-            if entry.strategy and any(c.name not in names for c in entry.strategy.components):
-                raise ValueError("import strategy references an unknown entry")
+            if entry.strategy and any(c.name not in factors for c in entry.strategy.components):
+                raise ValueError("import strategy references an unknown factor entry")
         return self
 
 

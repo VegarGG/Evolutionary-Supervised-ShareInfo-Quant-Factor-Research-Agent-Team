@@ -4,7 +4,7 @@ version = "0.0.1"
 license = "PolyForm-Noncommercial-1.0.0"
 license-files = ["LICENSE", "NOTICE", "ADDITIONAL-PERMISSION.md", "THIRD-PARTY-NOTICES.md"]
 requires-python = ">=3.12,<3.13"
-dependencies = ["qfr-core", "mcp>=1.20,<2", "httpx>=0.28,<1", "uvicorn>=0.34,<1", "SQLAlchemy>=2,<3", "psycopg[binary]>=3.2,<4", "alembic>=1.15,<2", "jsonschema>=4,<5"]
+dependencies = ["qfr-core", "mcp>=1.20,<2", "httpx>=0.28,<1", "uvicorn>=0.34,<1", "SQLAlchemy>=2,<3", "psycopg[binary]>=3.2,<4", "alembic>=1.15,<2", "jsonschema>=4,<5", "typer>=0.15,<1"]
 
 [build-system]
 requires = ["hatchling>=1.27"]
@@ -15,3 +15,6 @@ qfr-core = {workspace = true}
 
 [project.scripts]
 qfr-mcp = "qfr_mcp.server:main"
+
+[project.entry-points."qfr.commands"]
+setup = "qfr_mcp.setup_cli:app"

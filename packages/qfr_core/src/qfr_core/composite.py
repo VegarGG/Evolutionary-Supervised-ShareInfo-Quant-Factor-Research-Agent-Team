@@ -101,3 +101,49 @@ def strategy_canonical_hash(implementation: StrategyImplementation) -> str:
         "portfolio": implementation.portfolio.model_dump(mode="json"),
     }
     return hashlib.sha256(canonical_json(payload).encode()).hexdigest()
+
+
+def strategy_diff(
+    parent: StrategyImplementation, child: StrategyImplementation
+) -> list[dict[str, JsonValue]]:
+    """Deterministic edit script between two strategies, the strategy analogue of the
+    AST diff stored on lineage edges: components removed, added or reweighted (signs
+    and normalized weights rounded to 0.01, as in the canonical hash) and portfolio
+    parameter changes. Sorted by version id, then by field."""
+
+    def components(impl: StrategyImplementation) -> dict[str, dict[str, JsonValue]]:
+        weights = normalized_weights([c.weight for c in impl.components])
+        return {
+            str(c.version_id): {"sign": int(c.sign), "weight": round(w, 2)}
+            for c, w in zip(impl.components, weights, strict=True)
+        }
+
+    before, after = components(parent), components(child)
+    edits: list[dict[str, JsonValue]] = []
+    for version_id in sorted(set(before) | set(after)):
+        old, new = before.get(version_id), after.get(version_id)
+        if old is None:
+            edits.append({"op": "component_added", "version_id": version_id, "to": new})
+        elif new is None:
+            edits.append({"op": "component_removed", "version_id": version_id, "from": old})
+        elif old != new:
+            edits.append(
+                {"op": "component_changed", "version_id": version_id, "from": old, "to": new}
+            )
+    old_portfolio = parent.portfolio.model_dump(mode="json")
+    new_portfolio = child.portfolio.model_dump(mode="json")
+    for key in sorted(old_portfolio):
+        if old_portfolio[key] != new_portfolio[key]:
+            edits.append(
+                {
+                    "op": "portfolio_changed",
+                    "field": key,
+                    "from": old_portfolio[key],
+                    "to": new_portfolio[key],
+                }
+            )
+    if parent.combination != child.combination:
+        edits.append(
+            {"op": "combination_changed", "from": parent.combination, "to": child.combination}
+        )
+    return edits

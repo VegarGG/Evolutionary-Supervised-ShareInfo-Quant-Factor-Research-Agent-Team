@@ -39,6 +39,7 @@ for name in ("REGISTRY", "RESEARCH", "EVAL", "FEEDBACK", "CONTROL"):
         "@postgres:5432/", "@127.0.0.1:55433/"
     )
 env["QFR_TEST_CONTROL_MIGRATION_URL"] = env["CONTROL_MIGRATION_URL"]
+env["QFR_TEST_REGISTRY_MIGRATION_URL"] = env["REGISTRY_MIGRATION_URL"]
 result = subprocess.run(
     [sys.executable, "-m", "pytest", "--junitxml=exports/pytest-postgres.xml"],
     env=env,

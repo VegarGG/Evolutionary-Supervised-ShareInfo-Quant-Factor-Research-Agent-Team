@@ -63,6 +63,7 @@
     },
     "PoolImportEntry": {
       "additionalProperties": false,
+      "description": "One raw-pool row: a factor (expression) or a strategy over factor rows (strategy).",
       "properties": {
         "expected_sign": {
           "enum": [
@@ -73,10 +74,18 @@
           "type": "integer"
         },
         "expression": {
-          "maxLength": 1000,
-          "minLength": 1,
-          "title": "Expression",
-          "type": "string"
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expression"
         },
         "horizon_days": {
           "enum": [
@@ -97,6 +106,8 @@
         "notes": {
           "anyOf": [
             {
+              "maxLength": 1500,
+              "minLength": 1,
               "type": "string"
             },
             {
@@ -119,6 +130,8 @@
         },
         "tags": {
           "items": {
+            "maxLength": 64,
+            "minLength": 1,
             "type": "string"
           },
           "title": "Tags",
@@ -134,10 +147,8 @@
       "required": [
         "name",
         "title",
-        "expression",
         "expected_sign",
-        "horizon_days",
-        "tags"
+        "horizon_days"
       ],
       "title": "PoolImportEntry",
       "type": "object"

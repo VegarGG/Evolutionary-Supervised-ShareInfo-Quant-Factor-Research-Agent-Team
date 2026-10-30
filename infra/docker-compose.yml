@@ -108,7 +108,7 @@
           "QFR_PACKAGE": "qfr-mcp"
         }
       },
-      "image": "qfr-v2-mcp:phase0",
+      "image": "qfr-v2-mcp:phase2",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -125,7 +125,9 @@
         "REGISTRY_API_URL": "http://registry-api:8000",
         "RESEARCH_API_URL": "http://research-api:8000",
         "EVAL_ADMIN_API_URL": "http://eval-admin-api:8000",
-        "FEEDBACK_API_URL": "http://feedback-api:8000"
+        "FEEDBACK_API_URL": "http://feedback-api:8000",
+        "QFR_IMPORTS_DIR": "/imports",
+        "QFR_EXPORTS_DIR": "/exports"
       },
       "volumes": [
         {
@@ -165,6 +167,9 @@
         },
         "migrate": {
           "condition": "service_completed_successfully"
+        },
+        "registry-api": {
+          "condition": "service_started"
         }
       },
       "networks": [
@@ -383,7 +388,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import json,urllib.request; r=json.load(urllib.request.urlopen('http://127.0.0.1:8000/healthz')); assert r['status']=='ok', r"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -392,12 +397,12 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "registry",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-registry"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-registry:phase2",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -408,7 +413,8 @@
         "REGISTRY_PUBLISHER_TOKEN": "${REGISTRY_PUBLISHER_TOKEN:?run just init-secrets}",
         "REGISTRY_READER_TOKEN": "${REGISTRY_READER_TOKEN:?run just init-secrets}",
         "REGISTRY_EVALUATOR_TOKEN": "${REGISTRY_EVALUATOR_TOKEN:?run just init-secrets}",
-        "REGISTRY_CONTROL_TOKEN": "${REGISTRY_CONTROL_TOKEN:?run just init-secrets}"
+        "REGISTRY_CONTROL_TOKEN": "${REGISTRY_CONTROL_TOKEN:?run just init-secrets}",
+        "QFR_REGISTRY_BIND": "0.0.0.0"
       },
       "volumes": [
         {
@@ -436,6 +442,11 @@
         "registry_net",
         "control_net",
         "research_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_registry.app"
       ]
     },
     "eval-scheduler": {
@@ -1094,7 +1105,7 @@
           "QFR_PACKAGE": "qfr-core"
         }
       },
-      "image": "qfr-v2-migrate:phase0",
+      "image": "qfr-v2-migrate:phase2",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",

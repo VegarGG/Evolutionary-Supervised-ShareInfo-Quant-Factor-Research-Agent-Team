@@ -11,7 +11,16 @@ from pydantic import BaseModel, ConfigDict, Field, JsonValue, SecretStr, model_v
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ConfigKind = Literal[
-    "protocol", "policy", "quotas", "charter", "providers", "roles", "epoch", "logging", "mcp"
+    "protocol",
+    "policy",
+    "quotas",
+    "charter",
+    "providers",
+    "roles",
+    "epoch",
+    "logging",
+    "mcp",
+    "registry",
 ]
 CONFIG_FILES: dict[ConfigKind, str] = {
     "protocol": "protocols/cn_csi300_daily_v1.yaml",
@@ -23,7 +32,9 @@ CONFIG_FILES: dict[ConfigKind, str] = {
     "epoch": "epochs/epoch_001.yaml",
     "logging": "logging.yaml",
     "mcp": "mcp.yaml",
+    "registry": "registry.yaml",
 }
+PUBLIC_CARDS_FILE = "public_cards.json"
 
 
 class RuntimeSettings(BaseSettings):
@@ -74,6 +85,8 @@ class MCPConfig(BaseModel):
     approval_concurrency: Literal[1]
     confirmation_pattern: str
     downstream_timeout_seconds: float = Field(gt=0)
+    import_max_bytes: int = Field(gt=0)
+    import_max_entries: int = Field(gt=0)
 
     @model_validator(mode="after")
     def limits(self) -> "MCPConfig":
@@ -81,6 +94,28 @@ class MCPConfig(BaseModel):
             raise ValueError("MCP host publication must be loopback")
         if self.list_default > self.list_max:
             raise ValueError("default list size exceeds maximum")
+        return self
+
+
+class RegistryConfig(BaseModel):
+    """registry-api listener and read limits (PLAN Section 16.5)."""
+
+    model_config = ConfigDict(extra="forbid")
+    version: str
+    bind: str
+    port: int = Field(gt=0, le=65535)
+    request_body_bytes: int = Field(gt=0)
+    list_default: int = Field(gt=0)
+    list_max: int = Field(gt=0)
+    lineage_depth_default: int = Field(ge=0)
+    lineage_depth_max: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def limits(self) -> "RegistryConfig":
+        if self.list_default > self.list_max:
+            raise ValueError("default list size exceeds maximum")
+        if self.lineage_depth_default > self.lineage_depth_max:
+            raise ValueError("default lineage depth exceeds maximum")
         return self
 
 
@@ -249,6 +284,7 @@ def load_config(kind: ConfigKind, root: Path) -> ConfigDocument:
         "charter": CharterConfig,
         "providers": ProvidersConfig,
         "roles": RolesConfig,
+        "registry": RegistryConfig,
     }
     if kind in validators:
         validators[kind].model_validate(raw)
@@ -274,3 +310,27 @@ def logging_config(root: Path) -> LoggingConfig:
 
 def mcp_config(root: Path) -> MCPConfig:
     return MCPConfig.model_validate(load_config("mcp", root).values)
+
+
+def registry_config(root: Path) -> RegistryConfig:
+    return RegistryConfig.model_validate(load_config("registry", root).values)
+
+
+def public_cards(root: Path) -> dict[str, JsonValue]:
+    """The whitelist-built public protocol and policy cards (scripts/build_public_cards.py).
+
+    They are the only protocol content outside the evaluation zone, so the registry
+    and the front door take the DSL limits from here.
+    """
+    cards = json.loads((root / PUBLIC_CARDS_FILE).read_text(encoding="utf-8"))
+    if not isinstance(cards, dict) or not isinstance(cards.get("protocol"), dict):
+        raise ValueError("public cards must hold a protocol card")
+    return cards
+
+
+def public_protocol_section(root: Path, section: str) -> dict[str, JsonValue]:
+    protocol = public_cards(root)["protocol"]
+    value = protocol.get(section) if isinstance(protocol, dict) else None
+    if not isinstance(value, dict):
+        raise ValueError(f"the public protocol card has no {section} section")
+    return value

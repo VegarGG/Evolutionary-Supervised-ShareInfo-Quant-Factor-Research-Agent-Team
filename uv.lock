@@ -879,6 +879,7 @@ dependencies = [
     { name = "psycopg", extra = ["binary"] },
     { name = "qfr-core" },
     { name = "sqlalchemy" },
+    { name = "typer" },
     { name = "uvicorn" },
 ]
 
@@ -891,6 +892,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
     { name = "qfr-core", editable = "packages/qfr_core" },
     { name = "sqlalchemy", specifier = ">=2,<3" },
+    { name = "typer", specifier = ">=0.15,<1" },
     { name = "uvicorn", specifier = ">=0.34,<1" },
 ]
 
@@ -904,6 +906,7 @@ dependencies = [
     { name = "psycopg", extra = ["binary"] },
     { name = "qfr-core" },
     { name = "sqlalchemy" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -913,6 +916,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
     { name = "qfr-core", editable = "packages/qfr_core" },
     { name = "sqlalchemy", specifier = ">=2,<3" },
+    { name = "uvicorn", specifier = ">=0.34,<1" },
 ]
 
 [[package]]

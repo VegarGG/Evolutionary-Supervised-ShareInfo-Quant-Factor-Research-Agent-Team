@@ -7,6 +7,7 @@ import pytest
 from qfr_core.config import RuntimeSettings, logging_config
 from qfr_core.correlation import bind
 from qfr_core.logging import JsonLogger
+from qfr_mcp.control_store import MemoryControlStore
 from qfr_mcp.server import create_app
 from starlette.testclient import TestClient
 
@@ -48,7 +49,7 @@ def rig(tmp_path, monkeypatch):
         httpx, "AsyncClient", lambda **kw: original(**kw, transport=httpx.MockTransport(handler))
     )
     settings = RuntimeSettings(mcp_token="test-token", config_dir=Path("configs"), log_dir=tmp_path)
-    app = create_app(settings, audit)
+    app = create_app(settings, audit, MemoryControlStore())
     headers = {
         "Authorization": "Bearer test-token",
         "Content-Type": "application/json",
@@ -88,7 +89,7 @@ def test_mcp_01_status_tail_are_audited_and_request_id_reaches_downstream(rig):
     assert audit.calls[-1].downstream_request_ids == []
 
 
-def test_mcp_catalog_exactly_phase_zero_reads(rig):
+def test_mcp_catalog_is_the_phase_two_catalog(rig):
     client, _, headers, _ = rig
     response = call(client, headers, "tools/list")
     tools = {tool["name"] for tool in response.json()["result"]["tools"]}
@@ -98,7 +99,18 @@ def test_mcp_catalog_exactly_phase_zero_reads(rig):
         "qfr.logs.search",
         "qfr.logs.tail",
         "qfr.logs.correlate",
+        "qfr.setup.status",
+        "qfr.pool.import",
+        "qfr.pool.list",
+        "qfr.pool.get",
+        "qfr.dsl.validate",
+        "qfr.artifact.get",
     }
+    annotations = {
+        t["name"]: t.get("annotations") or {} for t in response.json()["result"]["tools"]
+    }
+    writes = {name for name, a in annotations.items() if not a.get("readOnlyHint")}
+    assert writes == {"qfr.pool.import"}
 
 
 def test_auth_limits_errors_and_audit_fail_closed(rig):
@@ -132,3 +144,47 @@ def test_protocol_and_tool_errors_are_audited_as_failures(rig):
     assert audit.calls[-1].error_code == "MCP_ERROR"
     call(client, headers, "nonexistent_method")
     assert audit.calls[-1].outcome == "failed"
+
+
+def structured(client, headers, tool, **arguments):
+    response = call(client, headers, "tools/call", {"name": tool, "arguments": arguments})
+    assert response.status_code == 200, response.text
+    return response.json()["result"]
+
+
+def test_dsl_validate_returns_canonical_form_complexity_and_explanation(rig):
+    client, audit, headers, _ = rig
+    result = structured(
+        client, headers, "qfr.dsl.validate", expression="Mean($close,20)/Mean($close,60)-1"
+    )
+    data = result["structuredContent"]["data"]
+    assert data["ok"] is True and data["errors"] == []
+    assert data["analysis"]["canonical"] == "((Mean($close,20)/Mean($close,60))-1)"
+    assert data["analysis"]["complexity"] > 0 and data["analysis"]["max_lookback_days"] == 59
+    assert "Mean over 20/60 days" in data["explanation"]["summary"]
+    assert audit.calls[-1].tool == "qfr.dsl.validate" and audit.calls[-1].outcome == "ok"
+    bad = structured(client, headers, "qfr.dsl.validate", expression="Mean($foo, 5)")
+    data = bad["structuredContent"]["data"]
+    assert data["ok"] is False and data["errors"][0]["code"] == "FORBIDDEN_CONSTRUCT"
+    assert data["explanation"] is None
+    capped = structured(client, headers, "qfr.dsl.validate", expression="Mean($close, 5000)")
+    assert capped["structuredContent"]["data"]["errors"][0]["code"] == "FORBIDDEN_CONSTRUCT"
+
+
+def test_registry_tools_fail_explicitly_when_the_registry_is_not_configured(rig):
+    client, audit, headers, _ = rig
+    status = structured(client, headers, "qfr.status")["structuredContent"]["data"]
+    assert status["phase"] == 2
+    assert status["services"]["registry-api"] == {"status": "not_configured"}
+    assert status["pool_counts"] is None and status["notice"] is None
+    setup = structured(client, headers, "qfr.setup.status")["structuredContent"]["data"]
+    assert setup["registry"] == "unavailable" and setup["steps"]["pool"]["status"] == "not_started"
+    for tool, arguments in (
+        ("qfr.pool.import", {"no_pool": True}),
+        ("qfr.pool.list", {"pool": "factor"}),
+        ("qfr.artifact.get", {"version_id": "019a35e0-0000-7000-8000-000000000001"}),
+    ):
+        result = structured(client, headers, tool, **arguments)
+        assert result["isError"] is True
+        assert "REGISTRY_UNCONFIGURED" in result["content"][0]["text"]
+        assert audit.calls[-1].outcome == "failed"
