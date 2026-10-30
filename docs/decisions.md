@@ -103,6 +103,17 @@ preserved original HTML plan or its verbatim AGENTS.md extract.
     No stale implementation files or instructions are carried into the new tree.
     The misplaced PR is superseded; no repository history is deleted.
 
+21. The Phase 0 tree replacement removed the owner-approved license (LIC-01,
+    2026-10-26). The owner asked on 2026-10-30 to put it back. LICENSE (unchanged
+    PolyForm Noncommercial 1.0.0, SHA-256 c0ea4a89...fabbe5), NOTICE,
+    ADDITIONAL-PERMISSION.md and THIRD-PARTY-NOTICES.md are restored at the root
+    and byte-identical in each of the five packages, with SPDX metadata in every
+    pyproject and `scripts/check_licenses.py` in `just check`. The license terms
+    are unchanged. THIRD-PARTY-NOTICES.md is updated to the Phase 0 dependency
+    set, which no longer includes Polars, NumPy, SciPy or Lark and adds the MCP
+    SDK, FastAPI, structlog and certifi (MPL-2.0). Runtime images carry the four
+    notice files in /app. See docs/LICENSING_REVIEW.md.
+
 Publishing and opening a PR are authorized in the canonical project. PR #10 holds
 the replacement, and the misplaced PR is closed. Canonical CI run 41066156741
 passes all nine jobs: checks with PostgreSQL and all eight ARM64/AMD64 image

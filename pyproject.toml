@@ -1,6 +1,8 @@
 [project]
 name = "qfr-workspace"
 version = "0.0.1"
+license = "PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE", "NOTICE", "ADDITIONAL-PERMISSION.md", "THIRD-PARTY-NOTICES.md"]
 requires-python = ">=3.12,<3.13"
 dependencies = ["qfr-core", "qfr-registry", "qfr-research", "qfr-eval", "qfr-mcp"]
 
