@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "transport": "container-loopback-streamable-http",
+  "host_loopback_verified": false,
+  "tools": [
+    {
+      "tool": "qfr.status",
+      "request_id": "17be2067-e886-444f-9e8d-2965a79d8b37",
+      "tool_status": "partial",
+      "audit_rows": 1,
+      "downstream_request_ids": [
+        "17be2067-e886-444f-9e8d-2965a79d8b37"
+      ],
+      "file_audit_lines": 1
+    },
+    {
+      "tool": "qfr.config.get",
+      "request_id": "742f466a-15d0-40be-aa14-85a2e2344752",
+      "tool_status": "ok",
+      "audit_rows": 1,
+      "downstream_request_ids": [],
+      "file_audit_lines": 1
+    },
+    {
+      "tool": "qfr.logs.tail",
+      "request_id": "7a1db3b4-1784-4565-aa5b-b00f20d57bd3",
+      "tool_status": "ok",
+      "audit_rows": 1,
+      "downstream_request_ids": [],
+      "file_audit_lines": 1
+    },
+    {
+      "tool": "qfr.logs.search",
+      "request_id": "3e706e9d-9d14-4db6-a11d-e4389e3b783c",
+      "tool_status": "ok",
+      "audit_rows": 1,
+      "downstream_request_ids": [],
+      "file_audit_lines": 1
+    },
+    {
+      "tool": "qfr.logs.correlate",
+      "request_id": "8673d295-63d7-42d9-bbc4-9a55f496c44b",
+      "tool_status": "ok",
+      "audit_rows": 1,
+      "downstream_request_ids": [],
+      "file_audit_lines": 1
+    }
+  ],
+  "limitations": [
+    "This does not verify the Mac host ingress or live downstream APIs."
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "phase": 0,
+  "acceptance": "BLOCKED",
+  "files": [
+    {
+      "file": "check.log",
+      "sha256": "8c46d22774446ec4281a3dc929c8f61b1b666c3f5b4f352070168459e08b8766",
+      "bytes": 1369
+    },
+    {
+      "file": "tests-postgres.log",
+      "sha256": "5d7df9a9c653ee6bd5a38993de7f09bf789ab8b23f858d1f4255a72606989100",
+      "bytes": 2772
+    },
+    {
+      "file": "pytest-postgres.xml",
+      "sha256": "64c24a3657f6b152ff999c98262751f5978342eaac572be7cf8fc42915819e1f",
+      "bytes": 7967
+    },
+    {
+      "file": "doctor-latest.json",
+      "sha256": "7933115bbb0f999fe84e8edef220f461165bd8fcd7084dc1b9fe6a8de1c922c4",
+      "bytes": 13094
+    },
+    {
+      "file": "mcp-container-smoke.json",
+      "sha256": "e59e6739f44312e0b509b76dd286e1ab31fba2ade54699fd7f999fb961bc2d27",
+      "bytes": 1379
+    },
+    {
+      "file": "setup-provenance.json",
+      "sha256": "7d423fd9966239453a2e283646fd5bbafe6ca05f2f88452bbeccbaf37012fcf3",
+      "bytes": 431
+    },
+    {
+      "file": "image-runtime-arm64.json",
+      "sha256": "f8e2fccf9203219a720f2350a9bf411013e6263d87ab13d18242a8674c0d8c74",
+      "bytes": 2593
+    },
+    {
+      "file": "image-mcp-arm64.json",
+      "sha256": "b4062e7301d421e2b4a2e8677837f1c67208460b5b086f67ee1aad47aed9f11d",
+      "bytes": 2673
+    },
+    {
+      "file": "image-migrate-arm64.json",
+      "sha256": "d196a5b3b01e96bb5beb2912cac77670c5e66d02fac84e5b1253e885c9902c09",
+      "bytes": 2589
+    },
+    {
+      "file": "image-postgres-arm64.json",
+      "sha256": "d402544187b0e2a22522f1d556fbd7ff18f6fbed72bc0a4668a8781dcac62808",
+      "bytes": 1834
+    },
+    {
+      "file": "images-arm64.txt",
+      "sha256": "01ef1a0409c59c699152e2e92d5ed930503192c57fe33981ac67703315d68c62",
+      "bytes": 409
+    },
+    {
+      "file": "dependency-downloads.json",
+      "sha256": "f9c6eb1fd9080183fc8e3ad0e0d728b431fc1e12068d16d9b8254026e2ef2026",
+      "bytes": 6047
+    },
+    {
+      "file": "linux-dependency-downloads.json",
+      "sha256": "7919e00b40f43314475072fa3782c635dba54cbee36610a55945e6dae7f60eac",
+      "bytes": 6542
+    }
+  ]
+}

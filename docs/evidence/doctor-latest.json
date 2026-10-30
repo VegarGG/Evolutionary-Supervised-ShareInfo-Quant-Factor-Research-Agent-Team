@@ -1,0 +1,623 @@
+{
+  "at": "2026-10-30T12:08:13.792453+00:00",
+  "phase": 0,
+  "status": "FAIL",
+  "checks": [
+    {
+      "check": "native_arm64",
+      "status": "PASS",
+      "detail": "aarch64"
+    },
+    {
+      "check": "docker_cpus",
+      "status": "PASS",
+      "detail": {
+        "actual": 18,
+        "minimum": 8
+      }
+    },
+    {
+      "check": "docker_memory",
+      "status": "FAIL",
+      "detail": {
+        "bytes": 8317267968,
+        "minimum_gib": 24
+      }
+    },
+    {
+      "check": "containers_exist",
+      "status": "PASS",
+      "detail": 15
+    },
+    {
+      "check": "image_architecture:qfr-v2-placeholder:phase0",
+      "status": "PASS",
+      "detail": "arm64"
+    },
+    {
+      "check": "service:data-ingest",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:data-ingest",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:data-ingest",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:data-ingest",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:data-ingest",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "service:eval-admin-api",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:eval-admin-api",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:eval-admin-api",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:eval-admin-api",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:eval-admin-api",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "service:eval-scheduler",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:eval-scheduler",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:eval-scheduler",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:eval-scheduler",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:eval-scheduler",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "service:eval-worker",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:eval-worker",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:eval-worker",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:eval-worker",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:eval-worker",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "service:eval-worker",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:eval-worker",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:eval-worker",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:eval-worker",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:eval-worker",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "service:feedback-api",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:feedback-api",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:feedback-api",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:feedback-api",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:feedback-api",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "service:init-volumes",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:init-volumes",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:init-volumes",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:init-volumes",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:init-volumes",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "image_architecture:qfr-v2-migrate:phase0",
+      "status": "PASS",
+      "detail": "arm64"
+    },
+    {
+      "check": "service:migrate",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:migrate",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:migrate",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:migrate",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:migrate",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "image_architecture:qfr-v2-postgres:phase0",
+      "status": "PASS",
+      "detail": "arm64"
+    },
+    {
+      "check": "service:postgres",
+      "status": "PASS",
+      "detail": {
+        "state": "running",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:postgres",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:postgres",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:postgres",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:postgres",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "image_architecture:qfr-v2-mcp:phase0",
+      "status": "PASS",
+      "detail": "arm64"
+    },
+    {
+      "check": "service:qfr-mcp",
+      "status": "PASS",
+      "detail": {
+        "state": "running",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:qfr-mcp",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:qfr-mcp",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:qfr-mcp",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:qfr-mcp",
+      "status": "PASS",
+      "detail": {
+        "8765/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "8765"
+          }
+        ]
+      }
+    },
+    {
+      "check": "BND-08:qfr-mcp",
+      "status": "PASS",
+      "detail": "whole logs volume read-only"
+    },
+    {
+      "check": "log_volume_permissions",
+      "status": "PASS",
+      "detail": {
+        "eval-scheduler": {
+          "read": true,
+          "write": false
+        },
+        "migrate": {
+          "read": true,
+          "write": false
+        },
+        "sim-engine": {
+          "read": true,
+          "write": false
+        },
+        "feedback-api": {
+          "read": true,
+          "write": false
+        },
+        "data-ingest": {
+          "read": true,
+          "write": false
+        },
+        "research-worker": {
+          "read": true,
+          "write": false
+        },
+        "release-worker": {
+          "read": true,
+          "write": false
+        },
+        "registry-api": {
+          "read": true,
+          "write": false
+        },
+        "eval-admin-api": {
+          "read": true,
+          "write": false
+        },
+        "research-api": {
+          "read": true,
+          "write": false
+        },
+        "qfr-mcp": {
+          "read": true,
+          "write": true
+        },
+        "eval-worker": {
+          "read": true,
+          "write": false
+        }
+      }
+    },
+    {
+      "check": "service:registry-api",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:registry-api",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:registry-api",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:registry-api",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:registry-api",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "service:release-worker",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:release-worker",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:release-worker",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:release-worker",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:release-worker",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "service:research-api",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:research-api",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:research-api",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:research-api",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:research-api",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "BND-08:research-api",
+      "status": "PASS",
+      "detail": [
+        {
+          "destination": "/data/research",
+          "rw": false
+        },
+        {
+          "destination": "/var/log/qfr/research-api",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "check": "service:research-worker",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:research-worker",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:research-worker",
+      "status": "PASS",
+      "detail": [
+        "DEEPSEEK_API_KEY",
+        "MOONSHOT_API_KEY",
+        "ZHIPU_API_KEY"
+      ]
+    },
+    {
+      "check": "timezone:research-worker",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:research-worker",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "BND-08:research-worker",
+      "status": "PASS",
+      "detail": [
+        {
+          "destination": "/data/research",
+          "rw": false
+        },
+        {
+          "destination": "/var/log/qfr/research-worker",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "check": "service:sim-engine",
+      "status": "PASS",
+      "detail": {
+        "state": "exited",
+        "exit_code": 0
+      }
+    },
+    {
+      "check": "hardening:sim-engine",
+      "status": "PASS",
+      "detail": "non-root, read-only, dropped capabilities"
+    },
+    {
+      "check": "BND-07:sim-engine",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "timezone:sim-engine",
+      "status": "PASS",
+      "detail": "Asia/Shanghai"
+    },
+    {
+      "check": "loopback_ports:sim-engine",
+      "status": "PASS",
+      "detail": {}
+    },
+    {
+      "check": "all_services_accounted_for",
+      "status": "PASS",
+      "detail": {
+        "missing": []
+      }
+    },
+    {
+      "check": "four_databases",
+      "status": "PASS",
+      "detail": [
+        "control_db",
+        "eval_db",
+        "registry_db",
+        "research_db"
+      ]
+    },
+    {
+      "check": "five_application_roles",
+      "status": "PASS",
+      "detail": [
+        "control_rw",
+        "eval_rw",
+        "feedback_ro",
+        "registry_app",
+        "research_rw"
+      ]
+    },
+    {
+      "check": "docker_disk",
+      "status": "PASS",
+      "detail": {
+        "total_bytes": 485421555712,
+        "available_bytes": 380868952064
+      }
+    },
+    {
+      "check": "disk_headroom",
+      "status": "PASS",
+      "detail": {
+        "available_bytes": 380868952064
+      }
+    },
+    {
+      "check": "host_mcp_loopback",
+      "status": "FAIL",
+      "detail": "Expected bearer challenge on 127.0.0.1:8765"
+    }
+  ],
+  "limitations": [
+    "Domain services are successful Phase 0 placeholders.",
+    "Run the PostgreSQL boundary suite separately; this report does not replace it."
+  ]
+}

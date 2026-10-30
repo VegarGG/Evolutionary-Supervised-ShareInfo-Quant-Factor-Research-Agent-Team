@@ -1,0 +1,41 @@
+{
+  "schema_version": "1",
+  "kind": "factor",
+  "family_id": null,
+  "name": "contract_validation",
+  "title": "Contract validation only",
+  "implementation": {
+    "language": "qfr-dsl/1",
+    "expression": "$close"
+  },
+  "declared": {
+    "expected_sign": 1,
+    "horizon_days": 1,
+    "fields_used": [
+      "close"
+    ],
+    "max_lookback_days": 0
+  },
+  "rationale": {
+    "hypothesis_id": "019a35e0-0000-7000-8000-000000000001",
+    "summary": "Contract validation only",
+    "mechanism": "Contract validation only",
+    "falsification": "Contract validation only"
+  },
+  "provenance": {
+    "job_id": null,
+    "program_id": null,
+    "generation_id": null,
+    "island_id": null,
+    "operator": "human_seed",
+    "parent_version_ids": [],
+    "agent_runs": [],
+    "trace_ref": "019a35e0-0000-7000-8000-000000000001",
+    "research_snapshot_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "qfr_core_version": "0.0.1"
+  },
+  "review": {
+    "verdict_id": "019a35e0-0000-7000-8000-000000000001",
+    "rounds": 0
+  }
+}

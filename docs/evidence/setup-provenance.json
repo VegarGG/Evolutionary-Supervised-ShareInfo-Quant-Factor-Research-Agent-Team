@@ -1,0 +1,12 @@
+{
+  "plan_sha256": "ed2f01c8697e75bf3b48c31fe128df883cf4de33e4e8e1a0067a309090609e56",
+  "agents_verbatim": "PASS",
+  "secret_file_mode": "0o600",
+  "client_snippets": "PASS; checked in memory; token-bearing output not saved",
+  "host_machine": "arm64",
+  "host_cpus": 18,
+  "host_memory_bytes": 38654705664,
+  "python": "Python 3.12.13",
+  "uv": "uv 0.11.19 (7b2cff1c3 2026-06-03 aarch64-apple-darwin)",
+  "just": "just 1.59.0"
+}

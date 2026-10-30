@@ -1,0 +1,12 @@
+[project]
+name = "qfr-eval"
+version = "0.0.1"
+requires-python = ">=3.12,<3.13"
+dependencies = ["qfr-core", "fastapi>=0.115,<1", "SQLAlchemy>=2,<3", "psycopg[binary]>=3.2,<4", "alembic>=1.15,<2"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv.sources]
+qfr-core = {workspace = true}

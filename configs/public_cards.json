@@ -1,0 +1,132 @@
+{
+  "policy": {
+    "batching": {
+      "advancement_min_delay_days": 7,
+      "advancement_weekday": "monday",
+      "w1_hours": 6,
+      "w2_utc_time": "00:00",
+      "w2_weekday": "monday"
+    },
+    "ladder": {
+      "eta": 0.005
+    },
+    "policy_id": "default",
+    "release_w3_metrics": false,
+    "rounding": {
+      "correlations": 0.05,
+      "ir": 0.02,
+      "ladder_best": 0.01,
+      "rankic": 0.005,
+      "shares": 0.05,
+      "sharpe": 0.25
+    },
+    "t_buckets": [
+      1,
+      2,
+      3
+    ],
+    "version": "1"
+  },
+  "protocol": {
+    "costs": {
+      "buy_bps": 5,
+      "long_short_bps_per_side": 10,
+      "sell_bps": 15
+    },
+    "dsl": {
+      "max_constants": 3,
+      "max_corr_cov_nesting": 2,
+      "max_depth": 7,
+      "max_fields": 4,
+      "max_lookback_days": 250,
+      "max_nodes": 30,
+      "windows": [
+        1,
+        2,
+        3,
+        5,
+        10,
+        20,
+        40,
+        60,
+        120,
+        250
+      ]
+    },
+    "eligibility": {
+      "cross_section_min": 30,
+      "exclude_suspended": true,
+      "listed_days_min": 60
+    },
+    "gates": {
+      "w1_factor": {
+        "ir_min": 0.12,
+        "library_correlation_max": 0.7,
+        "nw_t_min": 2.5,
+        "rankic_min": 0.02,
+        "sign": 1,
+        "turnover_max": 0.6
+      },
+      "w1_strategy": {
+        "drawdown_max": 0.25,
+        "ir_min": 0.5,
+        "net_sharpe_min": 0.8,
+        "nw_t_min": 2.5,
+        "rankic_min": 0.02,
+        "strategy_correlation_max": 0.8
+      },
+      "w2_factor": {
+        "ir_min": 0.08,
+        "ls_net_sharpe_min": 0.5,
+        "rankic_min": 0.015
+      },
+      "w2_strategy": {
+        "ir_min": 0.3,
+        "net_sharpe_min": 0.5
+      }
+    },
+    "label": {
+      "decision": "close_t",
+      "end": "close_t_plus_1_plus_h",
+      "execution": "close_t_plus_1",
+      "horizons": [
+        1,
+        5,
+        10,
+        20
+      ],
+      "primary": 1
+    },
+    "preprocessing": {
+      "normalization": "zscore",
+      "size_neutral_diagnostic": true,
+      "winsor_lower": 0.01,
+      "winsor_upper": 0.99
+    },
+    "protocol_id": "cn_csi300_daily",
+    "quantiles": 5,
+    "reference_strategy": {
+      "dropout": 5,
+      "long_only": true,
+      "rebalance": "daily",
+      "top_k": 50,
+      "type": "topk_dropout"
+    },
+    "strategy_bounds": {
+      "dropout": [
+        1,
+        20
+      ],
+      "max_components": 8,
+      "top_k": [
+        20,
+        100
+      ]
+    },
+    "universe": {
+      "membership": "point_in_time",
+      "name": "csi300"
+    },
+    "version": "1"
+  }
+}

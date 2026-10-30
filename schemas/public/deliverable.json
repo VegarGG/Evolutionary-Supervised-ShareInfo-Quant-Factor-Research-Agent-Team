@@ -1,0 +1,1701 @@
+{
+  "$defs": {
+    "AdvancementContent": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "ADVANCED",
+            "NOT_ADVANCED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "advancement",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status"
+      ],
+      "title": "AdvancementContent",
+      "type": "object"
+    },
+    "AgentRunRef": {
+      "additionalProperties": false,
+      "properties": {
+        "model_id": {
+          "title": "Model Id",
+          "type": "string"
+        },
+        "prompt_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Prompt Sha256",
+          "type": "string"
+        },
+        "prompt_template_id": {
+          "title": "Prompt Template Id",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "deepseek",
+            "kimi",
+            "glm"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "run_id": {
+          "format": "uuid7",
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "provider",
+        "model_id",
+        "prompt_template_id",
+        "prompt_sha256",
+        "run_id"
+      ],
+      "title": "AgentRunRef",
+      "type": "object"
+    },
+    "Component": {
+      "additionalProperties": false,
+      "properties": {
+        "sign": {
+          "enum": [
+            -1,
+            1
+          ],
+          "title": "Sign",
+          "type": "integer"
+        },
+        "version_id": {
+          "format": "uuid7",
+          "title": "Version Id",
+          "type": "string"
+        },
+        "weight": {
+          "exclusiveMinimum": 0,
+          "multipleOf": 0.01,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "version_id",
+        "sign",
+        "weight"
+      ],
+      "title": "Component",
+      "type": "object"
+    },
+    "DecisionContent": {
+      "additionalProperties": false,
+      "properties": {
+        "gate": {
+          "anyOf": [
+            {
+              "enum": [
+                "G-W1",
+                "G-W2",
+                "G-HOLDOUT",
+                "G-DSR",
+                "G-PBO",
+                "G-HLZ",
+                "G-FWD",
+                "G-NOVELTY",
+                "G-OPS"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gate"
+        },
+        "reason": {
+          "enum": [
+            "gate_failed",
+            "owner_rejected",
+            "incubation_failed",
+            "gates_passed"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ACCEPTED",
+            "REJECTED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "decision",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "reason"
+      ],
+      "title": "DecisionContent",
+      "type": "object"
+    },
+    "DeliverableItem": {
+      "additionalProperties": false,
+      "properties": {
+        "caveats": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Caveats",
+          "type": "array"
+        },
+        "iteration_history": {
+          "$ref": "#/$defs/IterationHistory"
+        },
+        "kind": {
+          "enum": [
+            "factor",
+            "strategy"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "manifest": {
+          "discriminator": {
+            "mapping": {
+              "factor": "#/$defs/FactorManifest",
+              "strategy": "#/$defs/StrategyManifest"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/FactorManifest"
+            },
+            {
+              "$ref": "#/$defs/StrategyManifest"
+            }
+          ],
+          "title": "Manifest"
+        },
+        "owner_evidence": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Owner Evidence"
+        },
+        "released_reports": {
+          "items": {
+            "$ref": "#/$defs/ReleasedReport"
+          },
+          "title": "Released Reports",
+          "type": "array"
+        },
+        "tier_reached": {
+          "enum": [
+            "w1_pass",
+            "w2_pass",
+            "advanced",
+            "incubated"
+          ],
+          "title": "Tier Reached",
+          "type": "string"
+        },
+        "trace_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Trace Hash",
+          "type": "string"
+        },
+        "trace_ref": {
+          "format": "uuid7",
+          "title": "Trace Ref",
+          "type": "string"
+        },
+        "version_id": {
+          "format": "uuid7",
+          "title": "Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version_id",
+        "kind",
+        "manifest",
+        "tier_reached",
+        "iteration_history",
+        "trace_ref",
+        "trace_hash",
+        "released_reports",
+        "owner_evidence",
+        "caveats"
+      ],
+      "title": "DeliverableItem",
+      "type": "object"
+    },
+    "DiagnosticFlag": {
+      "enum": [
+        "HIGH_TURNOVER",
+        "LOW_MONOTONICITY",
+        "SIGN_MISMATCH",
+        "CROWDED_WITH_LIBRARY",
+        "UNSTABLE_YEARLY",
+        "DECAYS_FAST",
+        "LOW_COVERAGE",
+        "WEAK_SIGNAL",
+        "COST_DOMINATED",
+        "HIGH_DRAWDOWN"
+      ],
+      "title": "DiagnosticFlag",
+      "type": "string"
+    },
+    "FactorDeclaration": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_sign": {
+          "enum": [
+            -1,
+            1
+          ],
+          "title": "Expected Sign",
+          "type": "integer"
+        },
+        "fields_used": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Fields Used",
+          "type": "array"
+        },
+        "horizon_days": {
+          "enum": [
+            1,
+            5,
+            10,
+            20
+          ],
+          "title": "Horizon Days",
+          "type": "integer"
+        },
+        "max_lookback_days": {
+          "minimum": 0,
+          "title": "Max Lookback Days",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "expected_sign",
+        "horizon_days",
+        "fields_used",
+        "max_lookback_days"
+      ],
+      "title": "FactorDeclaration",
+      "type": "object"
+    },
+    "FactorImplementation": {
+      "additionalProperties": false,
+      "properties": {
+        "expression": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Expression",
+          "type": "string"
+        },
+        "language": {
+          "const": "qfr-dsl/1",
+          "title": "Language",
+          "type": "string"
+        }
+      },
+      "required": [
+        "language",
+        "expression"
+      ],
+      "title": "FactorImplementation",
+      "type": "object"
+    },
+    "FactorManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "declared": {
+          "$ref": "#/$defs/FactorDeclaration"
+        },
+        "family_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Family Id"
+        },
+        "implementation": {
+          "$ref": "#/$defs/FactorImplementation"
+        },
+        "kind": {
+          "const": "factor",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 64,
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "rationale": {
+          "$ref": "#/$defs/Rationale"
+        },
+        "review": {
+          "$ref": "#/$defs/Review"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "self_assessment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResearchAssessment"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "family_id",
+        "name",
+        "title",
+        "implementation",
+        "declared",
+        "rationale",
+        "provenance",
+        "review"
+      ],
+      "title": "FactorManifest",
+      "type": "object"
+    },
+    "HistoryHop": {
+      "additionalProperties": false,
+      "properties": {
+        "ast_diff": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Ast Diff",
+          "type": "array"
+        },
+        "candidate_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Candidate Id"
+        },
+        "change_summary": {
+          "title": "Change Summary",
+          "type": "string"
+        },
+        "critic": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Critic"
+        },
+        "engineer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AgentRunRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluation": {
+          "items": {
+            "$ref": "#/$defs/ReleasedReport"
+          },
+          "title": "Evaluation",
+          "type": "array"
+        },
+        "expression_after": {
+          "title": "Expression After",
+          "type": "string"
+        },
+        "expression_before": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expression Before",
+          "type": "array"
+        },
+        "from_version_ids": {
+          "items": {
+            "format": "uuid7",
+            "type": "string"
+          },
+          "title": "From Version Ids",
+          "type": "array"
+        },
+        "generation_seq": {
+          "minimum": 0,
+          "title": "Generation Seq",
+          "type": "integer"
+        },
+        "hypothesis_title": {
+          "title": "Hypothesis Title",
+          "type": "string"
+        },
+        "operator": {
+          "title": "Operator",
+          "type": "string"
+        },
+        "outcome": {
+          "title": "Outcome",
+          "type": "string"
+        },
+        "owner_grade": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Owner Grade"
+        },
+        "targeted_flags": {
+          "items": {
+            "$ref": "#/$defs/DiagnosticFlag"
+          },
+          "title": "Targeted Flags",
+          "type": "array"
+        },
+        "to_version_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "To Version Id"
+        },
+        "workbench": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResearchAssessment"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "from_version_ids",
+        "to_version_id",
+        "candidate_id",
+        "generation_seq",
+        "operator",
+        "targeted_flags",
+        "hypothesis_title",
+        "change_summary",
+        "expression_before",
+        "expression_after",
+        "ast_diff",
+        "engineer",
+        "critic",
+        "workbench",
+        "evaluation",
+        "owner_grade",
+        "outcome"
+      ],
+      "title": "HistoryHop",
+      "type": "object"
+    },
+    "IntakeContent": {
+      "additionalProperties": false,
+      "properties": {
+        "duplicate_of": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duplicate Of"
+        },
+        "reasons": {
+          "items": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "DUPLICATE",
+            "DEFERRED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "intake",
+            "screening"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "reasons"
+      ],
+      "title": "IntakeContent",
+      "type": "object"
+    },
+    "IterationHistory": {
+      "additionalProperties": false,
+      "properties": {
+        "discarded": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Discarded",
+          "type": "array"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "hops": {
+          "items": {
+            "$ref": "#/$defs/HistoryHop"
+          },
+          "title": "Hops",
+          "type": "array"
+        },
+        "job_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Job Id"
+        },
+        "roots": {
+          "items": {
+            "format": "uuid7",
+            "type": "string"
+          },
+          "title": "Roots",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "iteration_history/1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "totals": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Totals",
+          "type": "object"
+        },
+        "trace_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Trace Hash",
+          "type": "string"
+        },
+        "version_id": {
+          "format": "uuid7",
+          "title": "Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "version_id",
+        "job_id",
+        "generated_at",
+        "trace_hash",
+        "roots",
+        "hops",
+        "discarded",
+        "totals"
+      ],
+      "title": "IterationHistory",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "LibraryContent": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "seed",
+            "active",
+            "retired"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "library",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status"
+      ],
+      "title": "LibraryContent",
+      "type": "object"
+    },
+    "Portfolio": {
+      "additionalProperties": false,
+      "properties": {
+        "dropout": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Dropout",
+          "type": "integer"
+        },
+        "long_only": {
+          "const": true,
+          "title": "Long Only",
+          "type": "boolean"
+        },
+        "rebalance": {
+          "const": "daily",
+          "title": "Rebalance",
+          "type": "string"
+        },
+        "top_k": {
+          "maximum": 100,
+          "minimum": 20,
+          "title": "Top K",
+          "type": "integer"
+        },
+        "type": {
+          "const": "topk_dropout",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "top_k",
+        "dropout",
+        "rebalance",
+        "long_only"
+      ],
+      "title": "Portfolio",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_runs": {
+          "items": {
+            "$ref": "#/$defs/AgentRunRef"
+          },
+          "title": "Agent Runs",
+          "type": "array"
+        },
+        "generation_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Generation Id"
+        },
+        "island_id": {
+          "anyOf": [
+            {
+              "enum": [
+                "I1",
+                "I2",
+                "I3",
+                "I4",
+                "I5",
+                "I6"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Island Id"
+        },
+        "job_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Job Id"
+        },
+        "operator": {
+          "enum": [
+            "explore",
+            "llm_mutation",
+            "syntactic_mutation",
+            "crossover",
+            "repair",
+            "human_seed"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "parent_version_ids": {
+          "items": {
+            "format": "uuid7",
+            "type": "string"
+          },
+          "title": "Parent Version Ids",
+          "type": "array"
+        },
+        "program_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Program Id"
+        },
+        "qfr_core_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Qfr Core Version",
+          "type": "string"
+        },
+        "research_snapshot_id": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Research Snapshot Id",
+          "type": "string"
+        },
+        "trace_ref": {
+          "format": "uuid7",
+          "title": "Trace Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "program_id",
+        "generation_id",
+        "island_id",
+        "operator",
+        "parent_version_ids",
+        "agent_runs",
+        "trace_ref",
+        "research_snapshot_id",
+        "qfr_core_version"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Rationale": {
+      "additionalProperties": false,
+      "properties": {
+        "change_summary": {
+          "anyOf": [
+            {
+              "maxLength": 600,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Change Summary"
+        },
+        "falsification": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Falsification",
+          "type": "string"
+        },
+        "hypothesis_id": {
+          "format": "uuid7",
+          "title": "Hypothesis Id",
+          "type": "string"
+        },
+        "mechanism": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Mechanism",
+          "type": "string"
+        },
+        "summary": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "hypothesis_id",
+        "summary",
+        "mechanism",
+        "falsification"
+      ],
+      "title": "Rationale",
+      "type": "object"
+    },
+    "ReasonCode": {
+      "enum": [
+        "SCHEMA_INVALID",
+        "KIND_UNSUPPORTED",
+        "PARSE_ERROR",
+        "TYPE_ERROR",
+        "COMPLEXITY_LIMIT",
+        "FORBIDDEN_CONSTRUCT",
+        "DECLARATION_MISMATCH",
+        "COMPONENT_INVALID",
+        "DUPLICATE_OF",
+        "NEAR_DUPLICATE_OF",
+        "QUOTA_DEFERRED",
+        "QUOTA_EXPIRED",
+        "LOW_COVERAGE",
+        "LOOKAHEAD_DETECTED",
+        "RUNTIME_LIMIT",
+        "DEGENERATE",
+        "INTERNAL_ERROR"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "ReleasedReport": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "discriminator": {
+            "mapping": {
+              "advancement": "#/$defs/AdvancementContent",
+              "decision": "#/$defs/DecisionContent",
+              "intake": "#/$defs/IntakeContent",
+              "library": "#/$defs/LibraryContent",
+              "screening": "#/$defs/IntakeContent",
+              "sim": "#/$defs/SimulationContent",
+              "w1": "#/$defs/W1Content",
+              "w2": "#/$defs/W2Content"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntakeContent"
+            },
+            {
+              "$ref": "#/$defs/W1Content"
+            },
+            {
+              "$ref": "#/$defs/W2Content"
+            },
+            {
+              "$ref": "#/$defs/AdvancementContent"
+            },
+            {
+              "$ref": "#/$defs/SimulationContent"
+            },
+            {
+              "$ref": "#/$defs/DecisionContent"
+            },
+            {
+              "$ref": "#/$defs/LibraryContent"
+            }
+          ],
+          "title": "Content"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "data_snapshot_id": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Data Snapshot Id",
+          "type": "string"
+        },
+        "evaluator_code_version": {
+          "title": "Evaluator Code Version",
+          "type": "string"
+        },
+        "family_id": {
+          "format": "uuid7",
+          "title": "Family Id",
+          "type": "string"
+        },
+        "policy_ref": {
+          "title": "Policy Ref",
+          "type": "string"
+        },
+        "program_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Program Id"
+        },
+        "protocol_card_ref": {
+          "title": "Protocol Card Ref",
+          "type": "string"
+        },
+        "protocol_id": {
+          "title": "Protocol Id",
+          "type": "string"
+        },
+        "protocol_version": {
+          "title": "Protocol Version",
+          "type": "string"
+        },
+        "released_at": {
+          "format": "date-time",
+          "title": "Released At",
+          "type": "string"
+        },
+        "report_id": {
+          "format": "uuid7",
+          "title": "Report Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "version_id": {
+          "format": "uuid7",
+          "title": "Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version_id",
+        "content_hash",
+        "protocol_id",
+        "protocol_version",
+        "data_snapshot_id",
+        "evaluator_code_version",
+        "schema_version",
+        "report_id",
+        "family_id",
+        "program_id",
+        "policy_ref",
+        "protocol_card_ref",
+        "released_at",
+        "content"
+      ],
+      "title": "ReleasedReport",
+      "type": "object"
+    },
+    "ResearchAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Metrics",
+          "type": "object"
+        },
+        "visibility": {
+          "const": "research_non_official",
+          "title": "Visibility",
+          "type": "string"
+        },
+        "window": {
+          "const": "W0",
+          "title": "Window",
+          "type": "string"
+        }
+      },
+      "required": [
+        "visibility",
+        "window",
+        "metrics"
+      ],
+      "title": "ResearchAssessment",
+      "type": "object"
+    },
+    "Review": {
+      "additionalProperties": false,
+      "properties": {
+        "rounds": {
+          "minimum": 0,
+          "title": "Rounds",
+          "type": "integer"
+        },
+        "verdict_id": {
+          "format": "uuid7",
+          "title": "Verdict Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "verdict_id",
+        "rounds"
+      ],
+      "title": "Review",
+      "type": "object"
+    },
+    "SimulationContent": {
+      "additionalProperties": false,
+      "properties": {
+        "forward_rankic_bucket": {
+          "enum": [
+            "negative",
+            "0_to_0.01",
+            "0.01_to_0.03",
+            "above_0.03"
+          ],
+          "title": "Forward Rankic Bucket",
+          "type": "string"
+        },
+        "forward_sharpe_bucket": {
+          "title": "Forward Sharpe Bucket",
+          "type": "number"
+        },
+        "status": {
+          "enum": [
+            "COMPLETED",
+            "FAILED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "sim",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "forward_rankic_bucket",
+        "forward_sharpe_bucket"
+      ],
+      "title": "SimulationContent",
+      "type": "object"
+    },
+    "StrategyDeclaration": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_sign": {
+          "const": 1,
+          "title": "Expected Sign",
+          "type": "integer"
+        },
+        "horizon_days": {
+          "enum": [
+            1,
+            5,
+            10,
+            20
+          ],
+          "title": "Horizon Days",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "expected_sign",
+        "horizon_days"
+      ],
+      "title": "StrategyDeclaration",
+      "type": "object"
+    },
+    "StrategyImplementation": {
+      "additionalProperties": false,
+      "properties": {
+        "combination": {
+          "const": "zscore_weighted_sum",
+          "title": "Combination",
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/Component"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Components",
+          "type": "array"
+        },
+        "language": {
+          "const": "qfr-strategy/1",
+          "title": "Language",
+          "type": "string"
+        },
+        "portfolio": {
+          "$ref": "#/$defs/Portfolio"
+        }
+      },
+      "required": [
+        "language",
+        "components",
+        "combination",
+        "portfolio"
+      ],
+      "title": "StrategyImplementation",
+      "type": "object"
+    },
+    "StrategyManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "declared": {
+          "$ref": "#/$defs/StrategyDeclaration"
+        },
+        "family_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Family Id"
+        },
+        "implementation": {
+          "$ref": "#/$defs/StrategyImplementation"
+        },
+        "kind": {
+          "const": "strategy",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 64,
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "rationale": {
+          "$ref": "#/$defs/StrategyRationale"
+        },
+        "review": {
+          "$ref": "#/$defs/Review"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "self_assessment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResearchAssessment"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "family_id",
+        "name",
+        "title",
+        "implementation",
+        "declared",
+        "rationale",
+        "provenance",
+        "review"
+      ],
+      "title": "StrategyManifest",
+      "type": "object"
+    },
+    "StrategyRationale": {
+      "additionalProperties": false,
+      "properties": {
+        "change_summary": {
+          "anyOf": [
+            {
+              "maxLength": 600,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Change Summary"
+        },
+        "composition_rationale": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Composition Rationale",
+          "type": "string"
+        },
+        "falsification": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Falsification",
+          "type": "string"
+        },
+        "hypothesis_id": {
+          "format": "uuid7",
+          "title": "Hypothesis Id",
+          "type": "string"
+        },
+        "mechanism": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Mechanism",
+          "type": "string"
+        },
+        "summary": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "hypothesis_id",
+        "summary",
+        "mechanism",
+        "falsification",
+        "composition_rationale"
+      ],
+      "title": "StrategyRationale",
+      "type": "object"
+    },
+    "W1Content": {
+      "additionalProperties": false,
+      "properties": {
+        "complexity": {
+          "minimum": 0,
+          "title": "Complexity",
+          "type": "integer"
+        },
+        "coverage_bucket": {
+          "enum": [
+            "FAIL",
+            "PASS"
+          ],
+          "title": "Coverage Bucket",
+          "type": "string"
+        },
+        "decay_profile": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Decay Profile",
+          "type": "object"
+        },
+        "flags": {
+          "items": {
+            "$ref": "#/$defs/DiagnosticFlag"
+          },
+          "title": "Flags",
+          "type": "array"
+        },
+        "hit_ratio": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Hit Ratio",
+          "type": "number"
+        },
+        "library_empty": {
+          "title": "Library Empty",
+          "type": "boolean"
+        },
+        "library_version_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Library Version Id"
+        },
+        "ls_net_sharpe": {
+          "title": "Ls Net Sharpe",
+          "type": "number"
+        },
+        "max_library_correlation": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Library Correlation"
+        },
+        "monotonicity": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Monotonicity",
+          "type": "number"
+        },
+        "nw_t_bucket": {
+          "enum": [
+            "below_1",
+            "1_to_2",
+            "2_to_3",
+            "above_3"
+          ],
+          "title": "Nw T Bucket",
+          "type": "string"
+        },
+        "rank_autocorrelation": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Rank Autocorrelation",
+          "type": "number"
+        },
+        "rankic_ir": {
+          "title": "Rankic Ir",
+          "type": "number"
+        },
+        "rankic_mean": {
+          "title": "Rankic Mean",
+          "type": "number"
+        },
+        "size_neutral_rankic": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Size Neutral Rankic"
+        },
+        "strategy_drawdown_bucket": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategy Drawdown Bucket"
+        },
+        "strategy_ir": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategy Ir"
+        },
+        "strategy_net_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategy Net Sharpe"
+        },
+        "top_turnover": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Top Turnover",
+          "type": "number"
+        },
+        "type": {
+          "const": "w1",
+          "title": "Type",
+          "type": "string"
+        },
+        "yearly_rankic": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Yearly Rankic",
+          "type": "object"
+        }
+      },
+      "required": [
+        "type",
+        "rankic_mean",
+        "rankic_ir",
+        "nw_t_bucket",
+        "hit_ratio",
+        "decay_profile",
+        "ls_net_sharpe",
+        "monotonicity",
+        "top_turnover",
+        "rank_autocorrelation",
+        "max_library_correlation",
+        "library_version_id",
+        "library_empty",
+        "yearly_rankic",
+        "coverage_bucket",
+        "size_neutral_rankic",
+        "complexity",
+        "flags"
+      ],
+      "title": "W1Content",
+      "type": "object"
+    },
+    "W2Content": {
+      "additionalProperties": false,
+      "properties": {
+        "family_best_rankic": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Family Best Rankic"
+        },
+        "ladder_status": {
+          "enum": [
+            "IMPROVED",
+            "UNCHANGED"
+          ],
+          "title": "Ladder Status",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "w2",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "ladder_status",
+        "family_best_rankic"
+      ],
+      "title": "W2Content",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "costs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Costs",
+      "type": "object"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "deliverable_id": {
+      "format": "uuid7",
+      "title": "Deliverable Id",
+      "type": "string"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/DeliverableItem"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "job_id": {
+      "format": "uuid7",
+      "title": "Job Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "deliverable/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "short_codes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Short Codes",
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "best_effort"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "deliverable_id",
+    "job_id",
+    "created_at",
+    "status",
+    "items",
+    "summary",
+    "costs",
+    "short_codes"
+  ],
+  "title": "Deliverable",
+  "type": "object"
+}

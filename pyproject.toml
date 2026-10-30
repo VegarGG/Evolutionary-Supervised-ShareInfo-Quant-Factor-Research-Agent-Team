@@ -1,0 +1,40 @@
+[project]
+name = "qfr-workspace"
+version = "0.0.1"
+requires-python = ">=3.12,<3.13"
+dependencies = ["qfr-core", "qfr-registry", "qfr-research", "qfr-eval", "qfr-mcp"]
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+qfr-core = {workspace = true}
+qfr-registry = {workspace = true}
+qfr-research = {workspace = true}
+qfr-eval = {workspace = true}
+qfr-mcp = {workspace = true}
+
+[dependency-groups]
+dev = ["ruff>=0.11,<1", "mypy>=1.15,<2", "pytest>=8,<10", "hypothesis>=6,<7", "pytest-xdist>=3,<4", "import-linter>=2,<3", "types-PyYAML", "jsonschema>=4,<5", "types-jsonschema"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["packages"]
+check_untyped_defs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["qfr_core.*", "qfr_mcp.*"]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = ["postgres: requires the Phase 0 PostgreSQL roles and migrations", "deployment: requires the running Compose stack"]

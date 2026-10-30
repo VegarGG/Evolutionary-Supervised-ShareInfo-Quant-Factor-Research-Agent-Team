@@ -1,0 +1,55 @@
+{
+  "schema_version": "1",
+  "kind": "strategy",
+  "family_id": null,
+  "name": "contract_validation",
+  "title": "Contract validation only",
+  "implementation": {
+    "language": "qfr-strategy/1",
+    "components": [
+      {
+        "version_id": "019a35e0-0000-7000-8000-000000000001",
+        "sign": 1,
+        "weight": 1.0
+      }
+    ],
+    "combination": "zscore_weighted_sum",
+    "portfolio": {
+      "type": "topk_dropout",
+      "top_k": 50,
+      "dropout": 5,
+      "rebalance": "daily",
+      "long_only": true
+    }
+  },
+  "declared": {
+    "expected_sign": 1,
+    "horizon_days": 1
+  },
+  "rationale": {
+    "hypothesis_id": "019a35e0-0000-7000-8000-000000000001",
+    "summary": "Contract validation only",
+    "mechanism": "Contract validation only",
+    "falsification": "Contract validation only",
+    "composition_rationale": "Contract validation only",
+    "change_summary": "Contract validation only"
+  },
+  "provenance": {
+    "job_id": null,
+    "program_id": null,
+    "generation_id": null,
+    "island_id": null,
+    "operator": "human_seed",
+    "parent_version_ids": [
+      "019a35e0-0000-7000-8000-000000000001"
+    ],
+    "agent_runs": [],
+    "trace_ref": "019a35e0-0000-7000-8000-000000000001",
+    "research_snapshot_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "qfr_core_version": "0.0.1"
+  },
+  "review": {
+    "verdict_id": "019a35e0-0000-7000-8000-000000000001",
+    "rounds": 0
+  }
+}

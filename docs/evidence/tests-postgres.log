@@ -1,0 +1,32 @@
+uv run --locked python scripts/test_database.py
+ Container qfr-v2-ci-postgres-1 Running 
+ Container qfr-v2-ci-postgres-1 Waiting 
+ Container qfr-v2-ci-postgres-1 Healthy 
+{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"registry"},"principal":"registry_migrator","request_id":"29e6cf37-6642-4a97-b760-6da2d356ef0c","service":"migrate","ts":"2026-10-30T12:03:36.761755Z","zone":"control"}
+{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"research"},"principal":"research_migrator","request_id":"5be646b1-0b1d-49ad-8dcc-958e457d3ea9","service":"migrate","ts":"2026-10-30T12:03:36.772576Z","zone":"control"}
+{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"eval"},"principal":"eval_migrator","request_id":"c7c458ae-f190-4e15-a5e6-39f694e39f11","service":"migrate","ts":"2026-10-30T12:03:36.781367Z","zone":"control"}
+{"event":"migration_completed","level":"INFO","outcome":"ok","payload":{"database":"control"},"principal":"control_migrator","request_id":"e6087d83-2477-41c3-bb43-9c4cedf63ac2","service":"migrate","ts":"2026-10-30T12:03:36.789551Z","zone":"control"}
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0
+rootdir: /Volumes/Work/Evolutionary Supervised ShareInfo Quant Factor Research Agent Team/qfr-v2
+configfile: pyproject.toml
+testpaths: tests
+plugins: xdist-3.8.0, hypothesis-6.170.14, anyio-4.15.1
+collected 55 items
+
+tests/boundary/test_compose.py .......                                   [ 12%]
+tests/boundary/test_database.py ...                                      [ 18%]
+tests/mcp/test_private_schema.py .                                       [ 20%]
+tests/mcp/test_server.py .....                                           [ 29%]
+tests/test_config.py ....                                                [ 36%]
+tests/test_contracts.py .................                                [ 67%]
+tests/test_logging.py ..................                                 [100%]
+
+=============================== warnings summary ===============================
+tests/mcp/test_server.py:11
+  /Volumes/Work/Evolutionary Supervised ShareInfo Quant Factor Research Agent Team/qfr-v2/tests/mcp/test_server.py:11: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Volumes/Work/Evolutionary Supervised ShareInfo Quant Factor Research Agent Team/qfr-v2/exports/pytest-postgres.xml -
+======================== 55 passed, 1 warning in 0.87s =========================

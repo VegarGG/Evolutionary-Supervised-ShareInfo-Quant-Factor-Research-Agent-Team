@@ -1,0 +1,11 @@
+{
+  "schema_version": "iteration_history/1",
+  "version_id": "019a35e0-0000-7000-8000-000000000001",
+  "job_id": null,
+  "generated_at": "2026-10-30T00:00:00.000000Z",
+  "trace_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "roots": [],
+  "hops": [],
+  "discarded": [],
+  "totals": {}
+}

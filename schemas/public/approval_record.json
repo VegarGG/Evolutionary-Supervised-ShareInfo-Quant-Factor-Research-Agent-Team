@@ -1,0 +1,178 @@
+{
+  "$defs": {
+    "ApprovalScope": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Case Id"
+        },
+        "deliverable_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Deliverable Id"
+        },
+        "entry_ids": {
+          "items": {
+            "format": "uuid7",
+            "type": "string"
+          },
+          "title": "Entry Ids",
+          "type": "array"
+        },
+        "job_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Job Id"
+        },
+        "pool": {
+          "anyOf": [
+            {
+              "enum": [
+                "factor",
+                "strategy"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Pool"
+        },
+        "tier": {
+          "anyOf": [
+            {
+              "enum": [
+                "w1_pass",
+                "w2_pass",
+                "advanced",
+                "incubated"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tier"
+        },
+        "version_ids": {
+          "items": {
+            "format": "uuid7",
+            "type": "string"
+          },
+          "title": "Version Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "job_id",
+        "deliverable_id",
+        "version_ids",
+        "pool",
+        "tier",
+        "case_id",
+        "entry_ids"
+      ],
+      "title": "ApprovalScope",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "approval_id": {
+      "format": "uuid7",
+      "title": "Approval Id",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "decision": {
+      "enum": [
+        "approve",
+        "reject",
+        "retire",
+        "accept_case",
+        "reject_case",
+        "rollover_epoch"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "owner_confirmation": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Owner Confirmation",
+      "type": "string"
+    },
+    "principal": {
+      "title": "Principal",
+      "type": "string"
+    },
+    "rationale": {
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "approval/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "$ref": "#/$defs/ApprovalScope"
+    },
+    "short_codes_matched": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Short Codes Matched",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "approval_id",
+    "created_at",
+    "decision",
+    "scope",
+    "owner_confirmation",
+    "rationale",
+    "short_codes_matched",
+    "principal",
+    "request_id"
+  ],
+  "title": "ApprovalRecord",
+  "type": "object"
+}

@@ -1,0 +1,271 @@
+{
+  "$defs": {
+    "JsonValue": {}
+  },
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "title": "Actor",
+      "type": "string"
+    },
+    "actor_kind": {
+      "enum": [
+        "owner",
+        "host_agent",
+        "llm",
+        "deterministic",
+        "evaluator"
+      ],
+      "title": "Actor Kind",
+      "type": "string"
+    },
+    "at": {
+      "format": "date-time",
+      "title": "At",
+      "type": "string"
+    },
+    "candidate_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Candidate Id"
+    },
+    "generation_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Generation Id"
+    },
+    "inputs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Inputs",
+      "type": "object"
+    },
+    "job_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Job Id"
+    },
+    "model_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model Id"
+    },
+    "outcome": {
+      "enum": [
+        "ok",
+        "failed",
+        "retried",
+        "fallback"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "payload": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Payload",
+      "type": "object"
+    },
+    "program_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Program Id"
+    },
+    "prompt_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prompt Sha256"
+    },
+    "prompt_template_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prompt Template Id"
+    },
+    "provider": {
+      "anyOf": [
+        {
+          "enum": [
+            "deepseek",
+            "kimi",
+            "glm"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Provider"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "run_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Run Id"
+    },
+    "schema_version": {
+      "const": "trace_step/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "step_id": {
+      "format": "uuid7",
+      "title": "Step Id",
+      "type": "string"
+    },
+    "step_type": {
+      "enum": [
+        "BRIEF_RECEIVED",
+        "SEEDS_PUBLISHED",
+        "CHARTER_DERIVED",
+        "GENERATION_STARTED",
+        "PROPOSAL_EMITTED",
+        "PLAN_WRITTEN",
+        "PLAN_VALIDATED",
+        "HYPOTHESIS_PROPOSED",
+        "PARENT_SELECTED",
+        "PROMPT_SENT",
+        "MODEL_RESPONDED",
+        "PROVIDER_FALLBACK",
+        "DRAFT_CREATED",
+        "DSL_VALIDATED",
+        "WORKBENCH_EVALUATED",
+        "SIMILARITY_CHECKED",
+        "CRITIC_REVIEWED",
+        "REVISION_REQUESTED",
+        "REVISED",
+        "PRESCREEN_EVALUATED",
+        "SELECTED",
+        "NOT_SELECTED",
+        "TRACE_CHECKED",
+        "PUBLISHED",
+        "REPORT_RECEIVED",
+        "INTERPRETED",
+        "INTERPRETATION_CHALLENGED",
+        "KNOWLEDGE_ADDED",
+        "MUTATION_APPLIED",
+        "CROSSOVER_APPLIED",
+        "SYNTACTIC_MUTATION_APPLIED",
+        "REPAIR_APPLIED",
+        "STRATEGY_COMPOSED",
+        "DELIVERABLE_CRITERIA_EVALUATED",
+        "DELIVERABLE_ASSEMBLED",
+        "DELIVERED",
+        "STEERING_ADDED",
+        "JOB_STATE_CHANGED",
+        "APPROVAL_RECORDED",
+        "POOL_EVENT"
+      ],
+      "title": "Step Type",
+      "type": "string"
+    },
+    "task_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Task Id"
+    },
+    "version_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Version Id"
+    }
+  },
+  "required": [
+    "schema_version",
+    "step_id",
+    "at",
+    "job_id",
+    "program_id",
+    "generation_id",
+    "task_id",
+    "candidate_id",
+    "version_id",
+    "step_type",
+    "actor_kind",
+    "actor",
+    "inputs",
+    "payload",
+    "outcome",
+    "request_id"
+  ],
+  "title": "TraceStep",
+  "type": "object"
+}
