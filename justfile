@@ -8,6 +8,7 @@ check:
     uv run --locked python scripts/generate_schemas.py
     uv run --locked python scripts/build_public_cards.py
     git diff --exit-code -- schemas configs/public_cards.json
+    uv run --locked python scripts/check_licenses.py
 
 test:
     uv run --locked pytest
