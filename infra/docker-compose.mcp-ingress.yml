@@ -1,0 +1,32 @@
+# Explicit owner-approved loopback ingress; only relay receives a non-internal bridge.
+services:
+  mcp-api:
+    ports: !reset []
+    networks:
+      - mcp-ingress
+  mcp-ingress:
+    image: qfr/qfr_mcp:stage0
+    command: [python, -m, qfr_mcp.relay, /etc/qfr/relay.json]
+    user: 65532:65532
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: 'no'
+    mem_limit: 128m
+    memswap_limit: 128m
+    cpus: 0.25
+    pids_limit: 32
+    stop_grace_period: 5s
+    logging:
+      driver: none
+    ports:
+      - 127.0.0.1:${QFR_MCP_PORT:?choose approved port 8066-8088}:8000
+    networks:
+      - mcp-host-edge
+      - mcp-ingress
+    volumes:
+      - ./../configs/infra/mcp_relay_v1.json:/etc/qfr/relay.json:ro
+networks:
+  mcp-host-edge: {}
+  mcp-ingress:
+    internal: true

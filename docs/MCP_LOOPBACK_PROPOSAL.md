@@ -1,4 +1,23 @@
-# Stage 4 loopback connectivity: pending deployment approval
+# Stage 4 loopback connectivity: approved restricted relay
+
+October 30 update: the owner approved this specific relay and assigned QFR the
+loopback port range **8066–8088**. The implemented opt-in overlay is
+`infra/docker-compose.mcp-ingress.yml`, with versioned bounds in
+`configs/infra/mcp_relay_v1.json`. Supply `QFR_MCP_PORT` explicitly within that
+range (the Mac acceptance run uses 8066). Do not use the earlier 8000 example as
+a host port. Internal service listeners remain on 8000.
+
+Actual Mac inspection verified loopback-only publication, IPv6 and active
+non-loopback refusal, exact network membership, and the proposed resource/mount
+controls. Real Codex and independent SDK calls passed through this relay.
+These are partial acceptance results; signed delivery/export, elapsed release,
+restart and final-source acceptance are still required. The implementation
+retains the residual risks below and makes no broader security change.
+
+## Historical proposal and approval scope
+
+The following October 28 text records the proposal before approval. Its pending
+approval statements describe that historical checkpoint, not current authority.
 
 Revision 1, October 28, 2026. **Proposal only.** No relay, network, listener or
 Docker/host setting has been created or activated by this change. The current
