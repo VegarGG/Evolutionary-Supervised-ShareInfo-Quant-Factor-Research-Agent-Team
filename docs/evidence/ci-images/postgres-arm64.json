@@ -1,0 +1,50 @@
+{
+  "source_artifact": {
+    "id": 12983420740,
+    "name": "image-digest-postgres-arm64",
+    "archive_sha256": "sha256:69ef1b535a5035c7d39600d291acd2060a9d457374eba921d203bf8c6d80b774",
+    "archive_sha256_verified": true,
+    "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/artifacts/12983420740",
+    "metadata_file": "postgres-arm64.json",
+    "metadata_file_sha256": "9b4bd0fb549c9b8365978862f469983ed598276da51307faa0d60371453bcbec"
+  },
+  "repository": "VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team",
+  "run_id": 41066156741,
+  "head_commit": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618",
+  "tested_merge_commit": "ad00b0875f3dcda5f8cf8bba72cc4a39bb2c8ca7",
+  "target": "postgres",
+  "platform": {
+    "architecture": "arm64",
+    "os": "linux"
+  },
+  "containerimage.digest": "sha256:1a76c4113ae1d3a342821aaa43d982ad09f72c13dcea58dd0b4e7399d6ce4d5d",
+  "containerimage.config.digest": "sha256:110789203faca2ea0d25dbefc43fed4e0d0831765ca472a2e6c6337b60f19d76",
+  "containerimage.descriptor": {
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "digest": "sha256:1a76c4113ae1d3a342821aaa43d982ad09f72c13dcea58dd0b4e7399d6ce4d5d",
+    "size": 3143,
+    "annotations": {
+      "org.opencontainers.image.created": "2026-10-30T13:47:46Z"
+    },
+    "platform": {
+      "architecture": "arm64",
+      "os": "linux"
+    }
+  },
+  "buildx.build.ref": "builder-47384e64-7ba0-4fd9-aab7-aab6a492af03/builder-47384e64-7ba0-4fd9-aab7-aab6a492af030/k6hz1tkr1rw7gf8ncfc9om88p",
+  "materials": [
+    {
+      "uri": "pkg:docker/docker/dockerfile@1",
+      "digest": {
+        "sha256": "4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e"
+      }
+    },
+    {
+      "uri": "pkg:docker/postgres@16?platform=linux%2Farm64",
+      "digest": {
+        "sha256": "1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c"
+      }
+    }
+  ],
+  "note": "Selected fields extracted from the hash-verified original artifact; complete metadata remains downloadable from the source artifact."
+}

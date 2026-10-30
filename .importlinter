@@ -6,28 +6,8 @@ root_packages =
     qfr_eval
     qfr_mcp
 
-[importlinter:contract:research-eval]
-name = Research never imports evaluation
-type = forbidden
-source_modules = qfr_research
-forbidden_modules = qfr_eval
-
-[importlinter:contract:eval-research]
-name = Evaluation never imports research
-type = forbidden
-source_modules = qfr_eval
-forbidden_modules = qfr_research
-
-[importlinter:contract:registry]
-name = Registry is independent of research and evaluation
-type = forbidden
-source_modules = qfr_registry
-forbidden_modules =
-    qfr_research
-    qfr_eval
-
 [importlinter:contract:core]
-name = Core has no other qfr dependencies
+name = Core has no imports of another QFR package
 type = forbidden
 source_modules = qfr_core
 forbidden_modules =
@@ -36,8 +16,23 @@ forbidden_modules =
     qfr_eval
     qfr_mcp
 
+[importlinter:contract:zones]
+name = Research and evaluation are independent
+type = independence
+modules =
+    qfr_research
+    qfr_eval
+
+[importlinter:contract:registry]
+name = Registry does not import research or evaluation
+type = forbidden
+source_modules = qfr_registry
+forbidden_modules =
+    qfr_research
+    qfr_eval
+
 [importlinter:contract:mcp]
-name = MCP uses only core and HTTP APIs
+name = MCP imports only core among QFR packages
 type = forbidden
 source_modules = qfr_mcp
 forbidden_modules =

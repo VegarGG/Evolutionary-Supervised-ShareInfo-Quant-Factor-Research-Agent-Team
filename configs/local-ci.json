@@ -1,6 +1,0 @@
-{
-  "image": "qfr/stage0-ci:local",
-  "container_name": "qfr-stage0-local-ci",
-  "database_network": "qfr-stage0_db-loopback",
-  "database_dsn": "postgresql://postgres:5432/postgres"
-}

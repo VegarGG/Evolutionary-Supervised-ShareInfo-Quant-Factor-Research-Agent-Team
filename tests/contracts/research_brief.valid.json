@@ -1,0 +1,32 @@
+{
+  "schema_version": "brief/1",
+  "title": "Contract validation",
+  "objective": "Contract validation only",
+  "mode": "new_factors",
+  "seeds": {
+    "pool_entry_ids": [],
+    "version_ids": [],
+    "expressions": [],
+    "notes": ""
+  },
+  "islands": "auto",
+  "constraints": {
+    "fields_allowed": [],
+    "operators_allowed": [],
+    "max_nodes": 30,
+    "max_lookback_days": 250
+  },
+  "strategy_spec": null,
+  "deliverable": {
+    "tier": "w1_pass",
+    "min_count": 1,
+    "max_candidates": 3
+  },
+  "budget": {
+    "max_cost": 500,
+    "max_generations": 10,
+    "max_wall_clock_days": 14
+  },
+  "parent_job_id": null,
+  "priority": "normal"
+}

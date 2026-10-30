@@ -1,5 +1,0 @@
-{
-  "evidence_refs_required": true,
-  "required": true,
-  "schema_ref": "ResearchNotePayload"
-}

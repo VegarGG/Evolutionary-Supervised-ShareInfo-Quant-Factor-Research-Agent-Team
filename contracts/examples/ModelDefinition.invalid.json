@@ -1,9 +1,0 @@
-{
-  "fallback_logic": "Unresolved",
-  "fit_interface": null,
-  "inference_interface": null,
-  "preprocessing": "Unresolved",
-  "serialization": null,
-  "specification": "Owner-supplied model",
-  "weight_asset_ids": []
-}

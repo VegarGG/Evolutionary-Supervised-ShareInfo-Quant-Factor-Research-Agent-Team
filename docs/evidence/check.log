@@ -1,0 +1,34 @@
+uv run --locked ruff check .
+All checks passed!
+uv run --locked ruff format --check .
+48 files already formatted
+uv run --locked mypy
+Success: no issues found in 17 source files
+uv run --locked lint-imports
+
+╔══╗─────────▶╔╗ ╔╗      ╔╗◀───┐
+╚╣╠╝◀─────┐  ╔╝╚╗║║────▶╔╝╚╗   │
+ ║║   ╔══╦══╦╩╗╔╝║║  ╔╦═╩╗╔╝╔═╦══╗
+ ║║╔══╣╔╗║╔╗║╔╣║ ║║ ╔╬╣╔╗║║ ║│║╔═╝
+╔╣╠╣║║║╚╝║╚╝║║║╚╗║╚═╝║║║║║╚╗║═╣║
+╚══╩╩╩╣╔═╩══╩╝╚═╝╚═══╩╩╝╚╩═╩╩═╩╝
+  └──▶║║                    ▲ 
+      ╚╝────────────────────┘
+
+
+---------
+Contracts
+---------
+
+Analyzed 17 files, 24 dependencies.
+-----------------------------------
+
+Core has no imports of another QFR package KEPT
+Research and evaluation are independent KEPT
+Registry does not import research or evaluation KEPT
+MCP imports only core among QFR packages KEPT
+
+Contracts: 4 kept, 0 broken.
+uv run --locked python scripts/generate_schemas.py
+uv run --locked python scripts/build_public_cards.py
+git diff --exit-code -- schemas configs/public_cards.json

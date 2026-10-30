@@ -1,42 +1,34 @@
-# Evolutionary Supervised ShareInfo Quant Factor Research Agent Team
+# QFR v2 — Phase 0
 
-Hybrid v1 multi-agent quantitative research and factor evolution: supervisor–worker coordination, a shared research blackboard, evolutionary candidate development and a strictly independent, deterministic evaluator. Delivered as a Docker Compose bundle for `linux/amd64` and `linux/arm64`, driven through a standard MCP front door by a host agent such as Codex, with online Kimi, GLM and DeepSeek as the mandatory research-side LLM providers.
+New, independent implementation of the owner's
+[authoritative plan](docs/QFR-Implementation-Plan-v2.1-EN.html).
+The canonical project is
+[Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team).
+Previous QFR code and PRs are outdated and are not dependencies of this repository.
+This Phase 0 proposal replaces the stale implementation and README while preserving
+their Git history for reference.
 
-**Status:** foundation, data snapshots, DSL, metrics and the independent pilot evaluator are implemented. The evaluator supports frozen protocols, audited private records, deterministic replay and trial clustering; see [Stage 2 operations](docs/STAGE_2.md). Registry execution/sandbox, feedback release, MCP orchestration and autonomous research remain later stages. Docker application services remain idle stubs until their stages implement scheduling.
+Scope: foundation, contracts, logging, database boundaries and five MCP read tools.
+No factors, strategies, research jobs, evaluation runs, provider calls or promotion
+workflows are implemented or preloaded.
 
-DeepSeek v4.1 Flash is the first model to integrate at the provider stage. Exact official endpoint/model identifiers and explicit live-call authorization are required there; no model integration or paid calls are part of Stage 2.
+Use Python 3.12, uv, just and Docker Compose v2. Start with `uv sync --locked`,
+`just check`, and `just test`. Run `just init-secrets` once, `just build`, then
+`just up`. Use `just test-db` for the full suite against the isolated PostgreSQL
+instance, `just doctor` for deployed checks and `just logs tail` for container logs.
+The local `.tools` directory can be added to PATH on this Mac; it contains verified
+uv and just binaries and is intentionally ignored by Git.
 
-## Start here
+Read [the acceptance report](docs/phase0-acceptance.md) before use. Phase 0 is
+implemented and ready for owner audit: local checks and canonical-repository CI
+pass, including all eight ARM64/AMD64 image builds. Owner acceptance and merge
+remain pending; [PR #10](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/pull/10)
+contains the replacement.
+The owner's network and memory decisions are applied. `just doctor` checks current
+OOM flags; 24 GiB is a planning expectation, not a required allocation. Test the
+host endpoint with `python scripts/smoke_mcp.py --host`. Domain placeholders still
+exit cleanly; live downstream tracing is deferred by the owner.
+`just setup`, `just backup` and `just bench` explicitly report their later phases.
+`just mcp-config` prints bearer-bearing client snippets; keep its output private.
 
-1. [Development kickoff prompt](docs/DEVELOPMENT_KICKOFF_PROMPT.md): the prompt that starts Stage 0 and the template for every later stage.
-2. [Aligned development plan](docs/HYBRID_V1_DEVELOPMENT_PLAN.md): product definition, operating model, architecture, contracts, interfaces, research and evaluation planes, technology, repository layout, the nine development stages with entry conditions and exit gates, verification and risks.
-3. [Requirements and reconciliation contract](docs/PLAN_ALIGNMENT.md): the owner's requirements R1–R6, conflict resolutions, provider/intake/MCP/lifecycle/Docker contracts and the acceptance checklist AC-01–AC-14. It governs when documents disagree.
-4. [Local implementation reference](docs/LOCAL_IMPLEMENTATION_REFERENCE.md): detailed DSL, metrics, database, API, invariant, test and default specifications; its daily-stock values belong to the named `stock_daily_v1` profile.
-
-## Supporting material
-
-- [Pilot case: P0/P1 industry rotation](docs/appendix-a-pilot-case-industry-rotation.md), the first preservation and reproduction fixture, labelled previously inspected history.
-- [Research notes](docs/appendix-b-research-notes.md), historical sources; Claude-specific recommendations are superseded and marked.
-- [Illustrative provider configuration](docs/examples/llm-profiles.example.json); exact endpoints, model identifiers, settings and spending are deployment configuration.
-- [Source provenance](docs/alignment-source-manifest.json) and [documentation validation](docs/plan-alignment-validation.json) from the alignment revision.
-
-No licensed sample data or credentials are included in this repository.
-
-## License and use
-
-Copyright 2026 Ziwei Huang. This is source-available software under the unchanged
-[PolyForm Noncommercial License 1.0.0](LICENSE), with a separate
-[additional permission](ADDITIONAL-PERMISSION.md) for individuals researching and
-trading their own funds in personal accounts, including for personal financial
-gain. It is not offered as OSI-approved open-source software. The additional
-permission does not cover running a business, work for employers or clients,
-managing others' money, or paid products, signals, advice, or services; it does
-not withdraw broader rights already granted by the PolyForm license.
-
-For uses outside the public license and additional permission:
-Commercial use requires a separate written license from Ziwei Huang.
-Separately authorized companies may use the software within their written
-license's scope. These grants cover only rights Ziwei Huang owns or is authorized
-to license; [third-party materials retain their own licenses](THIRD-PARTY-NOTICES.md).
-
-This system was originally developed for research purposes only; it provides no guarantee of investment performance, and, to the extent permitted by law, Ziwei Huang accepts no liability for gains, losses, or other consequences arising from its use.
+Do not proceed to Phase 1 until every Phase 0 acceptance check has passed.

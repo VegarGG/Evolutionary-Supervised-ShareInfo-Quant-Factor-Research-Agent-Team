@@ -1,8 +1,0 @@
-{
-  "max_output_tokens": null,
-  "reasoning_effort": null,
-  "temperature": null,
-  "thinking_budget_tokens": null,
-  "top_p": null,
-  "unexpected_field": true
-}

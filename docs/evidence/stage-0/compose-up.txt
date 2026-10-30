@@ -1,6 +1,0 @@
-uv run --locked --all-packages python scripts/local_secrets.py
-Local database secret files ready; no credentials printed.
-docker compose --env-file configs/deployment.env -p qfr-stage0 -f infra/docker-compose.yml up -d --wait postgres
- Container qfr-stage0-postgres-1 Running 
- Container qfr-stage0-postgres-1 Waiting 
- Container qfr-stage0-postgres-1 Healthy 

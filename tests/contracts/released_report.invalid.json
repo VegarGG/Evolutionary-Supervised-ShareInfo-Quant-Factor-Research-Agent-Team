@@ -1,0 +1,19 @@
+{
+  "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "protocol_id": "cn_csi300_daily",
+  "protocol_version": "1",
+  "data_snapshot_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "evaluator_code_version": "contract-test",
+  "schema_version": "1",
+  "report_id": "019a35e0-0000-7000-8000-000000000001",
+  "family_id": "019a35e0-0000-7000-8000-000000000001",
+  "program_id": null,
+  "policy_ref": "default/1",
+  "protocol_card_ref": "cn_csi300_daily/1",
+  "released_at": "2026-10-30T00:00:00.000000Z",
+  "content": {
+    "type": "screening",
+    "status": "PASS",
+    "reasons": []
+  }
+}

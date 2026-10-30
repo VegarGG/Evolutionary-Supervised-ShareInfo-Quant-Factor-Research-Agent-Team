@@ -1,0 +1,7 @@
+{
+  "level": "INFO",
+  "service": "cli",
+  "zone": "control",
+  "event": "contract_validation",
+  "request_id": "test"
+}

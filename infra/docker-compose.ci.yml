@@ -1,0 +1,86 @@
+{
+  "name": "qfr-v2-ci",
+  "services": {
+    "postgres": {
+      "image": "qfr-v2-postgres:phase0",
+      "user": "999:999",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=999,gid=999",
+        "/var/run/postgresql:rw,nosuid,size=16m,uid=999,gid=999"
+      ],
+      "environment": {
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_PASSWORD": "${POSTGRES_PASSWORD:?run just init-secrets}",
+        "POSTGRES_INITDB_ARGS": "--auth-host=scram-sha-256",
+        "TZ": "Asia/Shanghai",
+        "REGISTRY_PASSWORD": "${REGISTRY_PASSWORD:?run just init-secrets}",
+        "RESEARCH_PASSWORD": "${RESEARCH_PASSWORD:?run just init-secrets}",
+        "EVAL_PASSWORD": "${EVAL_PASSWORD:?run just init-secrets}",
+        "FEEDBACK_PASSWORD": "${FEEDBACK_PASSWORD:?run just init-secrets}",
+        "CONTROL_PASSWORD": "${CONTROL_PASSWORD:?run just init-secrets}",
+        "REGISTRY_MIGRATION_PASSWORD": "${REGISTRY_MIGRATION_PASSWORD:?run just init-secrets}",
+        "RESEARCH_MIGRATION_PASSWORD": "${RESEARCH_MIGRATION_PASSWORD:?run just init-secrets}",
+        "EVAL_MIGRATION_PASSWORD": "${EVAL_MIGRATION_PASSWORD:?run just init-secrets}",
+        "CONTROL_MIGRATION_PASSWORD": "${CONTROL_MIGRATION_PASSWORD:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "pg_data",
+          "target": "/var/lib/postgresql/data",
+          "read_only": false
+        }
+      ],
+      "networks": [
+        "ci_net"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d postgres"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "4",
+            "memory": "8G"
+          }
+        }
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "postgres"
+      },
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "ports": [
+        "127.0.0.1:55433:5432"
+      ]
+    }
+  },
+  "volumes": {
+    "pg_data": {}
+  },
+  "networks": {
+    "ci_net": {
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${QFR_CI_NET_SUBNET:-10.233.46.0/24}"
+          }
+        ]
+      }
+    }
+  }
+}

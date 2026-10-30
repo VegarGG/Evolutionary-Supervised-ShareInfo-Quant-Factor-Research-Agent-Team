@@ -1,0 +1,56 @@
+{
+  "source_artifact": {
+    "id": 12982474048,
+    "name": "image-digest-mcp-amd64",
+    "archive_sha256": "sha256:f9f4fc85b38efb6025261e799662f6b6494c47e3b034fea8818345238322acc1",
+    "archive_sha256_verified": true,
+    "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/artifacts/12982474048",
+    "metadata_file": "mcp-amd64.json",
+    "metadata_file_sha256": "2f45e73a52c5097f8a6194bfe7811e2c86c10c87abadfd91e06b447311e6e74a"
+  },
+  "repository": "VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team",
+  "run_id": 41066156741,
+  "head_commit": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618",
+  "tested_merge_commit": "ad00b0875f3dcda5f8cf8bba72cc4a39bb2c8ca7",
+  "target": "mcp",
+  "platform": {
+    "architecture": "amd64",
+    "os": "linux"
+  },
+  "containerimage.digest": "sha256:7ef1c3ac187735962f38935c15f82a5f7b3750f3542d0f5b55ff01d882a67ffc",
+  "containerimage.config.digest": "sha256:2a6080333127eed91d074d8d58aa8ede0dc072cfcde3ea5419ed6ad096766f77",
+  "containerimage.descriptor": {
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "digest": "sha256:7ef1c3ac187735962f38935c15f82a5f7b3750f3542d0f5b55ff01d882a67ffc",
+    "size": 2379,
+    "annotations": {
+      "org.opencontainers.image.created": "2026-10-30T13:47:51Z"
+    },
+    "platform": {
+      "architecture": "amd64",
+      "os": "linux"
+    }
+  },
+  "buildx.build.ref": "builder-b39ce546-d6f7-4e34-8c8d-f9ce7d0ddea3/builder-b39ce546-d6f7-4e34-8c8d-f9ce7d0ddea30/gomwhuazn6o4mzuc4xdgym4g4",
+  "materials": [
+    {
+      "uri": "pkg:docker/docker/dockerfile@1",
+      "digest": {
+        "sha256": "4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e"
+      }
+    },
+    {
+      "uri": "pkg:docker/python@3.12-slim?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159"
+      }
+    },
+    {
+      "uri": "pkg:docker/ghcr.io/astral-sh/uv@0.11.19?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "b46b03ddfcfbf8f547af7e9eaefdf8a39c8cebcba7c98858d3162bd28cf536f6"
+      }
+    }
+  ],
+  "note": "Selected fields extracted from the hash-verified original artifact; complete metadata remains downloadable from the source artifact."
+}

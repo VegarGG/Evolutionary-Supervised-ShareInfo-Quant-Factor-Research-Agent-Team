@@ -1,4 +1,0 @@
-{
-  "database_principals": ["postgres", "registry_app", "research_rw", "eval_rw", "feedback_ro"],
-  "secret_bytes": 32
-}

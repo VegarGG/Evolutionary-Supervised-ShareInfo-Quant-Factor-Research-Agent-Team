@@ -1,0 +1,66 @@
+name: Phase 0 acceptance
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ci-only-disposable-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.11.19'
+          python-version: '3.12'
+      - uses: extractions/setup-just@v3
+      - run: uv sync --locked
+      - run: just init-secrets
+      - run: uv run --locked python scripts/ci_database.py
+        env:
+          CI_POSTGRES_PASSWORD: ci-only-disposable-password
+      - run: just check
+      - run: just test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase0-schemas
+          path: schemas/
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, amd64]
+        target: [postgres, runtime, mcp, migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build without publishing and record platform digest
+        env:
+          TARGET: ${{ matrix.target }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          package=qfr-core
+          if [ "$TARGET" = mcp ]; then package=qfr-mcp; fi
+          mkdir -p exports/images
+          docker buildx build --platform "linux/$ARCH" --target "$TARGET" \
+            --build-arg "QFR_PACKAGE=$package" --file infra/Dockerfile \
+            --output "type=oci,dest=exports/images/$TARGET-$ARCH.tar" \
+            --metadata-file "exports/images/$TARGET-$ARCH.json" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image-digest-${{ matrix.target }}-${{ matrix.arch }}
+          path: exports/images/*.json

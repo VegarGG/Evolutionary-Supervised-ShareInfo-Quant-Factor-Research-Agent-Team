@@ -1,9 +1,0 @@
-{
-  "authorized_cost_usd": null,
-  "authorized_spend_ref": null,
-  "concurrency_limit": null,
-  "evaluator_quota_ref": "pilot/quota",
-  "max_generations": null,
-  "max_wall_clock_seconds": null,
-  "token_limit": null
-}

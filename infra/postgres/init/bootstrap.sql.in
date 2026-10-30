@@ -1,0 +1,43 @@
+CREATE ROLE registry_app LOGIN PASSWORD :'registry_password';
+CREATE ROLE research_rw LOGIN PASSWORD :'research_password';
+CREATE ROLE eval_rw LOGIN PASSWORD :'eval_password';
+CREATE ROLE feedback_ro LOGIN PASSWORD :'feedback_password';
+CREATE ROLE control_rw LOGIN PASSWORD :'control_password';
+CREATE ROLE registry_migrator LOGIN PASSWORD :'registry_migration_password';
+CREATE ROLE research_migrator LOGIN PASSWORD :'research_migration_password';
+CREATE ROLE eval_migrator LOGIN PASSWORD :'eval_migration_password';
+CREATE ROLE control_migrator LOGIN PASSWORD :'control_migration_password';
+CREATE DATABASE registry_db OWNER registry_migrator;
+CREATE DATABASE research_db OWNER research_migrator;
+CREATE DATABASE eval_db OWNER eval_migrator;
+CREATE DATABASE control_db OWNER control_migrator;
+REVOKE ALL ON DATABASE registry_db, research_db, eval_db, control_db FROM PUBLIC;
+REVOKE CONNECT ON DATABASE postgres, template1 FROM PUBLIC;
+GRANT CONNECT ON DATABASE registry_db TO registry_app;
+GRANT CONNECT ON DATABASE research_db TO research_rw;
+GRANT CONNECT ON DATABASE eval_db TO eval_rw, feedback_ro;
+GRANT CONNECT ON DATABASE control_db TO control_rw;
+\connect registry_db
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO registry_app;
+ALTER DEFAULT PRIVILEGES FOR ROLE registry_migrator IN SCHEMA public GRANT SELECT, INSERT ON TABLES TO registry_app;
+ALTER DEFAULT PRIVILEGES FOR ROLE registry_migrator IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO registry_app;
+\connect research_db
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO research_rw;
+ALTER DEFAULT PRIVILEGES FOR ROLE research_migrator IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO research_rw;
+ALTER DEFAULT PRIVILEGES FOR ROLE research_migrator IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO research_rw;
+\connect eval_db
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+CREATE SCHEMA eval AUTHORIZATION eval_migrator;
+CREATE SCHEMA feedback AUTHORIZATION eval_migrator;
+GRANT USAGE ON SCHEMA eval TO eval_rw;
+GRANT USAGE ON SCHEMA feedback TO feedback_ro;
+ALTER DEFAULT PRIVILEGES FOR ROLE eval_migrator IN SCHEMA eval GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO eval_rw;
+ALTER DEFAULT PRIVILEGES FOR ROLE eval_migrator IN SCHEMA eval GRANT USAGE, SELECT ON SEQUENCES TO eval_rw;
+-- Never blanket-grant feedback tables. Future migrations grant SELECT on the five views only.
+\connect control_db
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO control_rw;
+ALTER DEFAULT PRIVILEGES FOR ROLE control_migrator IN SCHEMA public GRANT SELECT, INSERT ON TABLES TO control_rw;
+ALTER DEFAULT PRIVILEGES FOR ROLE control_migrator IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO control_rw;

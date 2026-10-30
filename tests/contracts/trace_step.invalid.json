@@ -1,0 +1,17 @@
+{
+  "step_id": "019a35e0-0000-7000-8000-000000000001",
+  "at": "2026-10-30T00:00:00.000000Z",
+  "job_id": null,
+  "program_id": null,
+  "generation_id": null,
+  "task_id": null,
+  "candidate_id": null,
+  "version_id": null,
+  "step_type": "BRIEF_RECEIVED",
+  "actor_kind": "deterministic",
+  "actor": "contract-test",
+  "inputs": {},
+  "payload": {},
+  "outcome": "ok",
+  "request_id": "test"
+}

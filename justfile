@@ -1,29 +1,48 @@
-set shell := ["bash", "-euo", "pipefail", "-c"]
+set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 
 check:
-    uv run --locked --all-packages ruff check .
-    uv run --locked --all-packages ruff format --check .
-    uv run --locked --all-packages mypy
-    uv run --locked --all-packages lint-imports
-    uv run --locked --all-packages python -m scripts.generate_contracts --check
-    uv run --locked --all-packages python -m scripts.generate_eval_contracts --check
-    uv run --locked --all-packages python -m scripts.check_licenses
+    uv run --locked ruff check .
+    uv run --locked ruff format --check .
+    uv run --locked mypy
+    uv run --locked lint-imports
+    uv run --locked python scripts/generate_schemas.py
+    uv run --locked python scripts/build_public_cards.py
+    git diff --exit-code -- schemas configs/public_cards.json
 
 test:
-    uv run --locked --all-packages python -m pytest
+    uv run --locked pytest
+
+test-db:
+    uv run --locked python scripts/test_database.py
+
+build:
+    uv run --locked python scripts/generate_schemas.py
+    uv run --locked python scripts/build_public_cards.py
+    docker compose --env-file .env -f infra/docker-compose.yml build
 
 up:
-    uv run --locked --all-packages python scripts/local_secrets.py
-    docker compose --env-file configs/deployment.env -p qfr-stage0 -f infra/docker-compose.yml up -d --wait postgres
+    docker compose --env-file .env -f infra/docker-compose.yml up -d
 
 down:
-    docker compose --env-file configs/deployment.env -p qfr-stage0 -f infra/docker-compose.yml down
+    docker compose --env-file .env -f infra/docker-compose.yml down
 
-build-images:
-    bash scripts/build_images.sh
+init-secrets:
+    uv run --locked python scripts/ops.py init-secrets
 
-local-ci:
-    bash scripts/local_ci.sh
+setup:
+    uv run --locked qfr setup
 
-schemas:
-    uv run --locked --all-packages python -m scripts.generate_contracts
+doctor:
+    uv run --locked python scripts/doctor.py
+
+logs *args:
+    docker compose --env-file .env -f infra/docker-compose.yml exec -T qfr-mcp qfr logs {{args}}
+
+mcp-config:
+    uv run --locked python scripts/ops.py mcp-config
+
+backup:
+    uv run --locked python scripts/ops.py deferred backup Phase7
+
+bench:
+    uv run --locked python scripts/ops.py deferred bench Phase5

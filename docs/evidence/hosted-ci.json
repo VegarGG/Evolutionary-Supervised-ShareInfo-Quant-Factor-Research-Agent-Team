@@ -1,0 +1,260 @@
+{
+  "repository": "VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team",
+  "pull_request": 10,
+  "run_id": 41066156741,
+  "run_url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741",
+  "status": "completed",
+  "conclusion": "success",
+  "checks": {
+    "passed_tests": 56,
+    "skipped_tests": 0,
+    "warning_count": 1,
+    "postgres_database_tests_required": true
+  },
+  "jobs": [
+    {
+      "id": 124097980526,
+      "name": "images (arm64, runtime)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/job/124097980526"
+    },
+    {
+      "id": 124097980528,
+      "name": "checks",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/job/124097980528"
+    },
+    {
+      "id": 124097980673,
+      "name": "images (amd64, postgres)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/job/124097980673"
+    },
+    {
+      "id": 124097980751,
+      "name": "images (arm64, postgres)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/job/124097980751"
+    },
+    {
+      "id": 124097980765,
+      "name": "images (arm64, mcp)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/job/124097980765"
+    },
+    {
+      "id": 124097980798,
+      "name": "images (amd64, mcp)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/job/124097980798"
+    },
+    {
+      "id": 124097980824,
+      "name": "images (amd64, runtime)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/job/124097980824"
+    },
+    {
+      "id": 124097981034,
+      "name": "images (amd64, migrate)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/job/124097981034"
+    },
+    {
+      "id": 124097981158,
+      "name": "images (arm64, migrate)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/runs/41066156741/job/124097981158"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 12983420740,
+      "name": "image-digest-postgres-arm64",
+      "size_in_bytes": 5370,
+      "url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12983420740",
+      "archive_download_url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12983420740/zip",
+      "expired": false,
+      "created_at": "2026-10-30T13:47:47Z",
+      "expires_at": "2027-01-28T13:47:23Z",
+      "updated_at": "2026-10-30T13:47:47Z",
+      "digest": "sha256:69ef1b535a5035c7d39600d291acd2060a9d457374eba921d203bf8c6d80b774",
+      "workflow_run": {
+        "id": 41066156741,
+        "repository_id": 1430481200,
+        "head_repository_id": 1430481200,
+        "head_branch": "phase0/owner-plan",
+        "head_sha": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618"
+      }
+    },
+    {
+      "id": 12983155209,
+      "name": "image-digest-migrate-arm64",
+      "size_in_bytes": 5453,
+      "url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12983155209",
+      "archive_download_url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12983155209/zip",
+      "expired": false,
+      "created_at": "2026-10-30T13:49:01Z",
+      "expires_at": "2027-01-28T13:47:23Z",
+      "updated_at": "2026-10-30T13:49:01Z",
+      "digest": "sha256:2180cbfc9a1a818e08adb56e07f23f0d437a8df5cdc9c28269682885f282dfea",
+      "workflow_run": {
+        "id": 41066156741,
+        "repository_id": 1430481200,
+        "head_repository_id": 1430481200,
+        "head_branch": "phase0/owner-plan",
+        "head_sha": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618"
+      }
+    },
+    {
+      "id": 12982667589,
+      "name": "image-digest-mcp-arm64",
+      "size_in_bytes": 5437,
+      "url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982667589",
+      "archive_download_url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982667589/zip",
+      "expired": false,
+      "created_at": "2026-10-30T13:48:55Z",
+      "expires_at": "2027-01-28T13:47:23Z",
+      "updated_at": "2026-10-30T13:48:55Z",
+      "digest": "sha256:9e3d3927b40cff832a5e12ffc1d17e2d8cd685fc7bbd257799377503051eab9e",
+      "workflow_run": {
+        "id": 41066156741,
+        "repository_id": 1430481200,
+        "head_repository_id": 1430481200,
+        "head_branch": "phase0/owner-plan",
+        "head_sha": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618"
+      }
+    },
+    {
+      "id": 12982474048,
+      "name": "image-digest-mcp-amd64",
+      "size_in_bytes": 5434,
+      "url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982474048",
+      "archive_download_url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982474048/zip",
+      "expired": false,
+      "created_at": "2026-10-30T13:47:53Z",
+      "expires_at": "2027-01-28T13:47:23Z",
+      "updated_at": "2026-10-30T13:47:53Z",
+      "digest": "sha256:f9f4fc85b38efb6025261e799662f6b6494c47e3b034fea8818345238322acc1",
+      "workflow_run": {
+        "id": 41066156741,
+        "repository_id": 1430481200,
+        "head_repository_id": 1430481200,
+        "head_branch": "phase0/owner-plan",
+        "head_sha": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618"
+      }
+    },
+    {
+      "id": 12982453574,
+      "name": "image-digest-runtime-amd64",
+      "size_in_bytes": 5449,
+      "url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982453574",
+      "archive_download_url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982453574/zip",
+      "expired": false,
+      "created_at": "2026-10-30T13:47:50Z",
+      "expires_at": "2027-01-28T13:47:23Z",
+      "updated_at": "2026-10-30T13:47:50Z",
+      "digest": "sha256:7ef17846f609b48e1d0ddaad3386f10636ded9d5573c6a286e387ce6ea018d5a",
+      "workflow_run": {
+        "id": 41066156741,
+        "repository_id": 1430481200,
+        "head_repository_id": 1430481200,
+        "head_branch": "phase0/owner-plan",
+        "head_sha": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618"
+      }
+    },
+    {
+      "id": 12982278545,
+      "name": "phase0-schemas",
+      "size_in_bytes": 22902,
+      "url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982278545",
+      "archive_download_url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982278545/zip",
+      "expired": false,
+      "created_at": "2026-10-30T13:48:03Z",
+      "expires_at": "2027-01-28T13:47:23Z",
+      "updated_at": "2026-10-30T13:48:03Z",
+      "digest": "sha256:44cb542b2f24bb4b0455bd02d0efefe26a268d74b8847797a2d5ee81d02dbb95",
+      "workflow_run": {
+        "id": 41066156741,
+        "repository_id": 1430481200,
+        "head_repository_id": 1430481200,
+        "head_branch": "phase0/owner-plan",
+        "head_sha": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618"
+      }
+    },
+    {
+      "id": 12982138584,
+      "name": "image-digest-migrate-amd64",
+      "size_in_bytes": 5447,
+      "url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982138584",
+      "archive_download_url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12982138584/zip",
+      "expired": false,
+      "created_at": "2026-10-30T13:47:49Z",
+      "expires_at": "2027-01-28T13:47:23Z",
+      "updated_at": "2026-10-30T13:47:49Z",
+      "digest": "sha256:0f67693cfa4287caf6566aaa0b349fea09b98e536380e87e938153dbf8dacb9f",
+      "workflow_run": {
+        "id": 41066156741,
+        "repository_id": 1430481200,
+        "head_repository_id": 1430481200,
+        "head_branch": "phase0/owner-plan",
+        "head_sha": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618"
+      }
+    },
+    {
+      "id": 12980859877,
+      "name": "image-digest-postgres-amd64",
+      "size_in_bytes": 5369,
+      "url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12980859877",
+      "archive_download_url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12980859877/zip",
+      "expired": false,
+      "created_at": "2026-10-30T13:48:00Z",
+      "expires_at": "2027-01-28T13:47:23Z",
+      "updated_at": "2026-10-30T13:48:00Z",
+      "digest": "sha256:98ca996603c5b7f750c68ab5276895aa8f9f00f6feaf54292765aec40ece1d31",
+      "workflow_run": {
+        "id": 41066156741,
+        "repository_id": 1430481200,
+        "head_repository_id": 1430481200,
+        "head_branch": "phase0/owner-plan",
+        "head_sha": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618"
+      }
+    },
+    {
+      "id": 12980809977,
+      "name": "image-digest-runtime-arm64",
+      "size_in_bytes": 5447,
+      "url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12980809977",
+      "archive_download_url": "https://api.github.com/repos/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/actions/artifacts/12980809977/zip",
+      "expired": false,
+      "created_at": "2026-10-30T13:48:18Z",
+      "expires_at": "2027-01-28T13:47:23Z",
+      "updated_at": "2026-10-30T13:48:18Z",
+      "digest": "sha256:c448df4352aa4a17c86e7cbbb9047f129fad0a4843aa7282f250ab1c6f0aa6ca",
+      "workflow_run": {
+        "id": 41066156741,
+        "repository_id": 1430481200,
+        "head_repository_id": 1430481200,
+        "head_branch": "phase0/owner-plan",
+        "head_sha": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618"
+      }
+    }
+  ],
+  "limits": [
+    "Image CI verifies image construction for linux/arm64 and linux/amd64; it is not a full-stack runtime or performance test on both architectures.",
+    "The full suite ran on Linux AMD64; deployment, doctor and MCP host smoke were verified locally on native ARM64.",
+    "Live downstream MCP request-ID acceptance is deferred by the owner; domain placeholders exit cleanly.",
+    "Implementation and verification evidence are ready for owner audit; no owner acceptance or merge is asserted."
+  ],
+  "head_commit": "aa1841d8ca1ed67fc7b0de44f7d8184001fe8618",
+  "tested_merge_commit": "ad00b0875f3dcda5f8cf8bba72cc4a39bb2c8ca7"
+}

@@ -1,0 +1,116 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "approval_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Approval Id"
+    },
+    "approved_tier": {
+      "anyOf": [
+        {
+          "enum": [
+            "w1_pass",
+            "w2_pass",
+            "advanced",
+            "incubated"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Approved Tier"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "created_by": {
+      "title": "Created By",
+      "type": "string"
+    },
+    "entry_id": {
+      "format": "uuid7",
+      "title": "Entry Id",
+      "type": "string"
+    },
+    "pool": {
+      "enum": [
+        "factor",
+        "strategy"
+      ],
+      "title": "Pool",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "pool_entry/1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "setup_ref": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Setup Ref"
+    },
+    "status": {
+      "enum": [
+        "seed",
+        "approved",
+        "retired"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "title": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "version_id": {
+      "format": "uuid7",
+      "title": "Version Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "entry_id",
+    "pool",
+    "version_id",
+    "title",
+    "created_at",
+    "created_by",
+    "approval_id",
+    "setup_ref",
+    "status",
+    "approved_tier",
+    "tags"
+  ],
+  "title": "PoolEntry",
+  "type": "object"
+}

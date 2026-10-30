@@ -1,0 +1,87 @@
+##[group]Run just check
+2026-10-30T13:47:49.6328695Z [36;1mjust check[0m
+2026-10-30T13:47:49.6358074Z shell: /usr/bin/bash -e {0}
+2026-10-30T13:47:49.6358329Z env:
+2026-10-30T13:47:49.6358705Z   UV_PYTHON: 3.12
+2026-10-30T13:47:49.6358971Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+2026-10-30T13:47:49.6359296Z   QFR_REQUIRE_DB_TESTS: 1
+2026-10-30T13:47:49.6360382Z   QFR_TEST_REGISTRY_DB_URL: ***127.0.0.1:5432/registry_db
+2026-10-30T13:47:49.6361209Z   QFR_TEST_RESEARCH_DB_URL: ***127.0.0.1:5432/research_db
+2026-10-30T13:47:49.6361889Z   QFR_TEST_EVAL_DB_URL: ***127.0.0.1:5432/eval_db
+2026-10-30T13:47:49.6362568Z   QFR_TEST_FEEDBACK_DB_URL: ***127.0.0.1:5432/eval_db
+2026-10-30T13:47:49.6363260Z   QFR_TEST_CONTROL_DB_URL: ***127.0.0.1:5432/control_db
+2026-10-30T13:47:49.6363976Z   QFR_TEST_CONTROL_MIGRATION_URL: ***127.0.0.1:5432/control_db
+2026-10-30T13:47:49.6364370Z ##[endgroup]
+2026-10-30T13:47:49.6444991Z uv run --locked ruff check .
+2026-10-30T13:47:49.6753195Z All checks passed!
+2026-10-30T13:47:49.6774384Z uv run --locked ruff format --check .
+2026-10-30T13:47:49.7089321Z 48 files already formatted
+2026-10-30T13:47:49.7111727Z uv run --locked mypy
+2026-10-30T13:47:58.0399241Z Success: no issues found in 17 source files
+2026-10-30T13:47:58.0671997Z uv run --locked lint-imports
+2026-10-30T13:47:58.2822573Z 
+2026-10-30T13:47:58.2823728Z ╔══╗─────────▶╔╗ ╔╗      ╔╗◀───┐
+2026-10-30T13:47:58.2824471Z ╚╣╠╝◀─────┐  ╔╝╚╗║║────▶╔╝╚╗   │
+2026-10-30T13:47:58.2825173Z  ║║   ╔══╦══╦╩╗╔╝║║  ╔╦═╩╗╔╝╔═╦══╗
+2026-10-30T13:47:58.2826230Z  ║║╔══╣╔╗║╔╗║╔╣║ ║║ ╔╬╣╔╗║║ ║│║╔═╝
+2026-10-30T13:47:58.2827045Z ╔╣╠╣║║║╚╝║╚╝║║║╚╗║╚═╝║║║║║╚╗║═╣║
+2026-10-30T13:47:58.2827767Z ╚══╩╩╩╣╔═╩══╩╝╚═╝╚═══╩╩╝╚╩═╩╩═╩╝
+2026-10-30T13:47:58.2828384Z   └──▶║║                    ▲ 
+2026-10-30T13:47:58.2828851Z       ╚╝────────────────────┘
+2026-10-30T13:47:58.2829118Z 
+2026-10-30T13:47:58.3088308Z 
+2026-10-30T13:47:58.3090758Z ---------
+2026-10-30T13:47:58.3092100Z Contracts
+2026-10-30T13:47:58.3093362Z ---------
+2026-10-30T13:47:58.3094220Z 
+2026-10-30T13:47:58.3097161Z Analyzed 17 files, 24 dependencies.
+2026-10-30T13:47:58.3098165Z -----------------------------------
+2026-10-30T13:47:58.3099263Z 
+2026-10-30T13:47:58.3104640Z Core has no imports of another QFR package KEPT
+2026-10-30T13:47:58.3109641Z Research and evaluation are independent KEPT
+2026-10-30T13:47:58.3114110Z Registry does not import research or evaluation KEPT
+2026-10-30T13:47:58.3118831Z MCP imports only core among QFR packages KEPT
+2026-10-30T13:47:58.3119261Z 
+2026-10-30T13:47:58.3121072Z Contracts: 4 kept, 0 broken.
+2026-10-30T13:47:58.3314421Z uv run --locked python scripts/generate_schemas.py
+2026-10-30T13:47:58.5609862Z uv run --locked python scripts/build_public_cards.py
+2026-10-30T13:47:58.6244512Z git diff --exit-code -- schemas configs/public_cards.json
+2026-10-30T13:47:58.6374961Z ##[group]Run just test
+2026-10-30T13:47:58.6375245Z [36;1mjust test[0m
+2026-10-30T13:47:58.6403890Z shell: /usr/bin/bash -e {0}
+2026-10-30T13:47:58.6404137Z env:
+2026-10-30T13:47:58.6404322Z   UV_PYTHON: 3.12
+2026-10-30T13:47:58.6404592Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+2026-10-30T13:47:58.6404900Z   QFR_REQUIRE_DB_TESTS: 1
+2026-10-30T13:47:58.6405876Z   QFR_TEST_REGISTRY_DB_URL: ***127.0.0.1:5432/registry_db
+2026-10-30T13:47:58.6406616Z   QFR_TEST_RESEARCH_DB_URL: ***127.0.0.1:5432/research_db
+2026-10-30T13:47:58.6407255Z   QFR_TEST_EVAL_DB_URL: ***127.0.0.1:5432/eval_db
+2026-10-30T13:47:58.6407900Z   QFR_TEST_FEEDBACK_DB_URL: ***127.0.0.1:5432/eval_db
+2026-10-30T13:47:58.6408533Z   QFR_TEST_CONTROL_DB_URL: ***127.0.0.1:5432/control_db
+2026-10-30T13:47:58.6409247Z   QFR_TEST_CONTROL_MIGRATION_URL: ***127.0.0.1:5432/control_db
+2026-10-30T13:47:58.6409566Z ##[endgroup]
+2026-10-30T13:47:58.6484183Z uv run --locked pytest
+2026-10-30T13:48:00.8102209Z ============================= test session starts ==============================
+2026-10-30T13:48:00.8103076Z platform linux -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0
+2026-10-30T13:48:00.8104398Z rootdir: /home/runner/work/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team
+2026-10-30T13:48:00.8105695Z configfile: pyproject.toml
+2026-10-30T13:48:00.8106429Z testpaths: tests
+2026-10-30T13:48:00.8106756Z plugins: xdist-3.8.0, anyio-4.15.1, hypothesis-6.170.14
+2026-10-30T13:48:00.8107138Z collected 56 items
+2026-10-30T13:48:00.8107298Z 
+2026-10-30T13:48:00.9432894Z tests/boundary/test_compose.py ........                                  [ 14%]
+2026-10-30T13:48:01.0852865Z tests/boundary/test_database.py ...                                      [ 19%]
+2026-10-30T13:48:01.1215124Z tests/mcp/test_private_schema.py .                                       [ 21%]
+2026-10-30T13:48:01.3102022Z tests/mcp/test_server.py .....                                           [ 30%]
+2026-10-30T13:48:01.3590583Z tests/test_config.py ....                                                [ 37%]
+2026-10-30T13:48:02.2917571Z tests/test_contracts.py .................                                [ 67%]
+2026-10-30T13:48:02.4175916Z tests/test_logging.py ..................                                 [100%]
+2026-10-30T13:48:02.4176479Z 
+2026-10-30T13:48:02.4176766Z =============================== warnings summary ===============================
+2026-10-30T13:48:02.4177372Z tests/mcp/test_server.py:11
+2026-10-30T13:48:02.4179310Z   /home/runner/work/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/tests/mcp/test_server.py:11: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+2026-10-30T13:48:02.4181363Z     from starlette.testclient import TestClient
+2026-10-30T13:48:02.4181692Z 
+2026-10-30T13:48:02.4182035Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+2026-10-30T13:48:02.4182719Z ======================== 56 passed, 1 warning in 3.13s =========================
+2026-10-30T13:48:02.5973526Z 

@@ -1,0 +1,14 @@
+charter_id: default
+version: '1'
+cadence: {hours: 6, after_w1_batch: true, new_reports_trigger: 10}
+throughput: {publications: 12, candidate_slots_max: 36, concurrency: 4, review_rounds_max: 2, compose_strategy_tasks_max: 2}
+budget: {currency: CNY, generation: 20, daily: 200, job: 500, engineer_requests: 12, engineer_tool_calls: 20}
+context_tokens: 12000
+role_limits: {supervisor_requests: 8, hypothesis_requests: 6, critic_requests: 4, analyst_requests: 4, interpretation_review_fraction: 0.30}
+population: {islands: 6, members_per_island: 60, archive_shape: [4, 4, 4]}
+selection: {exploit_probability: 0.7, tournament_size: 3, tournament_top: 10}
+operator_mix: {explore: 0.25, llm_mutation: 0.35, crossover: 0.15, syntactic_mutation: 0.20, repair: 0.05}
+improve_mix: {explore: 0.15, llm_mutation: 0.45, crossover: 0.15, syntactic_mutation: 0.20, repair: 0.05}
+prescreen: {coverage_min: 0.85, rankic_min: 0.015, ir_min: 0.10, similarity_max: 0.90, originality_min: 0.2, strategy_net_sharpe_min: 0.8, strategy_components_max: 8}
+bandit: {forgetting: 0.95, floor_slots: 1, cap_fraction: 0.40, stagnation_generations: 8, migration_generations: 5, archive_coverage_min: 0.25, top_similarity_count: 20, top_similarity_max: 0.6, guardrail_exploration: 0.40}
+job: {tier: w1_pass, min_count: 1, max_candidates: 3, max_generations: 10, max_wall_clock_days: 14}
