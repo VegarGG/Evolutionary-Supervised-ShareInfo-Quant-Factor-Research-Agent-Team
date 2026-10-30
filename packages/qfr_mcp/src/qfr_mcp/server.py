@@ -1,4 +1,5 @@
-"""MCP front door: Phase 0 reads plus the Phase 2 setup, pool, DSL and artifact tools."""
+"""MCP front door: Phase 0 reads, the Phase 2 setup, pool, DSL and artifact tools, and the
+Phase 3 evidence, report and evaluator-configuration tools."""
 
 import asyncio
 import logging
@@ -28,13 +29,17 @@ from qfr_core.logging import JsonLogger, StdlibBridge
 from qfr_core.pool_import import NO_DEFAULTS_NOTICE
 from qfr_core.registry_api import RegistrySummary
 
+from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
 from qfr_mcp.audit import AuditStore, PostgresAudit
 from qfr_mcp.boundary import MCPBoundary, record_downstream_request
 from qfr_mcp.control_store import SETUP_STEPS, ControlStore, PostgresControlStore, SetupState
+from qfr_mcp.eval_client import EvalAdminClient, FeedbackClient
+from qfr_mcp.evidence_validation import validate_owner_evidence
+from qfr_mcp.imports import ImportPathError, read_import
 from qfr_mcp.pool_importer import PoolImporter, pool_counts
 from qfr_mcp.registry_client import RegistryClient, RegistryRefused, RegistryUnavailable
 
-PHASE = 2
+PHASE = 3
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
 WRITE = ToolAnnotations(
     readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
@@ -47,15 +52,13 @@ DEFERRED_STEPS: dict[str, dict[str, JsonValue]] = {
         "implementation_phase": 4,
         "next": "qfr llm probe arrives in Phase 4; setup cannot finish before it passes.",
     },
-    "data": {
-        "status": "deferred",
-        "implementation_phase": 3,
-        "next": (
-            "Build snapshots with `just data-build --source synthetic` for a dry run or "
-            "`--source cn`; eval-admin-api reports snapshot ids from Phase 3."
-        ),
-    },
 }
+DATA_NEXT = (
+    "Build snapshots with `just data-build --source synthetic` for a dry run or "
+    "`--source cn`; the evaluator registers the full snapshot and activates the epoch "
+    "on its next tick."
+)
+ConfigFile = Literal["protocol", "policy", "quotas"]
 
 
 class ToolResult(Contract):
@@ -110,6 +113,7 @@ def create_app(
     audit: AuditStore | None = None,
     control: ControlStore | None = None,
     registry_transport: httpx.AsyncBaseTransport | None = None,
+    eval_transports: dict[str, httpx.AsyncBaseTransport] | None = None,
 ) -> MCPBoundary:
     config = mcp_config(settings.config_dir)
     log_config = logging_config(settings.config_dir)
@@ -154,6 +158,28 @@ def create_app(
             logger,
             registry_transport,
         )
+    transports = eval_transports or {}
+    admin: EvalAdminClient | None = None
+    if os.environ.get("EVAL_ADMIN_API_URL"):
+        admin = EvalAdminClient(
+            os.environ["EVAL_ADMIN_API_URL"],
+            os.environ.get("EVAL_OWNER_TOKEN", ""),
+            config.downstream_timeout_seconds,
+            logger,
+            transports.get("eval-admin-api"),
+        )
+    feedback: FeedbackClient | None = None
+    if os.environ.get("FEEDBACK_API_URL"):
+        feedback = FeedbackClient(
+            os.environ["FEEDBACK_API_URL"],
+            os.environ.get("FEEDBACK_READER_TOKEN", ""),
+            config.downstream_timeout_seconds,
+            logger,
+            transports.get("feedback-api"),
+        )
+    evidence_schema = Path(
+        os.environ.get("QFR_OWNER_EVIDENCE_SCHEMA") or "schemas/private/owner_evidence.json"
+    )
     imports = os.environ.get("QFR_IMPORTS_DIR")
     importer = (
         PoolImporter(registry, store, limits, config, Path(imports) if imports else None, logger)
@@ -181,6 +207,67 @@ def create_app(
             return await registry.health()
         except (RegistryUnavailable, RegistryRefused):
             return {"status": "unavailable"}
+
+    def require_admin() -> EvalAdminClient:
+        if admin is None:
+            raise RuntimeError("EVAL_ADMIN_UNCONFIGURED: EVAL_ADMIN_API_URL is not set")
+        return admin
+
+    def require_feedback() -> FeedbackClient:
+        if feedback is None:
+            raise RuntimeError("FEEDBACK_UNCONFIGURED: FEEDBACK_API_URL is not set")
+        return feedback
+
+    async def eval_summary() -> dict[str, JsonValue] | None:
+        if admin is None:
+            return None
+        try:
+            return await admin.summary()
+        except (DownstreamUnavailable, DownstreamRefused):
+            return None
+
+    async def eval_health(client: EvalAdminClient | FeedbackClient | None) -> dict[str, JsonValue]:
+        if client is None:
+            return {"status": "not_configured"}
+        try:
+            return await client.health()
+        except (DownstreamUnavailable, DownstreamRefused):
+            return {"status": "unavailable"}
+
+    async def evidence_states(version_ids: list[UUID]) -> dict[str, dict[str, JsonValue]]:
+        """Evidence tier and latest released state per version, from the evaluator."""
+        if admin is None or not version_ids:
+            return {}
+        try:
+            page = await admin.version_states(version_ids)
+        except (DownstreamUnavailable, DownstreamRefused):
+            return {}
+        return {
+            str(item.version_id): {
+                "evidence_tier": item.evidence_tier,
+                "released_state": item.released_state,
+                "intake_state": item.intake_state,
+                "reason_code": item.reason_code,
+            }
+            for item in page.items
+        }
+
+    def data_step(summary: dict[str, JsonValue] | None) -> dict[str, JsonValue]:
+        if admin is None:
+            return {"status": "not_configured", "next": DATA_NEXT}
+        if summary is None:
+            return {"status": "unavailable", "next": "eval-admin-api did not answer."}
+        freshness, active = summary.get("data_freshness"), summary.get("active")
+        if not isinstance(freshness, dict) or not isinstance(active, dict):
+            return {"status": "not_started", "next": DATA_NEXT}
+        return {
+            "status": "ok",
+            "detail": "The evaluator has a full snapshot and an active epoch.",
+            "snapshot_ids": {
+                "latest_full": freshness.get("latest_full_snapshot_id"),
+                "epoch": active.get("epoch_snapshot_id"),
+            },
+        }
 
     def counts_view(summary: RegistrySummary | None) -> dict[str, JsonValue] | None:
         if summary is None:
@@ -213,15 +300,15 @@ def create_app(
             "qfr-mcp": {"status": "running"},
             "control_db": {"healthy": await asyncio.to_thread(store.healthy)},
         }
-        for service, url, auth in (
-            ("research-api", "RESEARCH_API_URL", "RESEARCH_CONTROL_TOKEN"),
-            ("eval-admin-api", "EVAL_ADMIN_API_URL", "EVAL_OWNER_TOKEN"),
-            ("feedback-api", "FEEDBACK_API_URL", "FEEDBACK_READER_TOKEN"),
-        ):
-            services[service] = await backend.get(url, "/healthz", auth)
+        services["research-api"] = await backend.get(
+            "RESEARCH_API_URL", "/healthz", "RESEARCH_CONTROL_TOKEN"
+        )
+        services["eval-admin-api"] = await eval_health(admin)
+        services["feedback-api"] = await eval_health(feedback)
         services["registry-api"] = await registry_health()
         states = await asyncio.to_thread(store.latest_setup_states)
         summary = await summary_or_none()
+        evaluation = await eval_summary()
         return result(
             {
                 "phase": PHASE,
@@ -240,8 +327,13 @@ def create_app(
                 },
                 "active_jobs": None,
                 "budgets": None,
-                "data_freshness": None,
-                "burn_meters": None,
+                "evaluation": None
+                if evaluation is None
+                else {
+                    k: evaluation.get(k) for k in ("ready", "active", "intake", "queue", "release")
+                },
+                "data_freshness": None if evaluation is None else evaluation.get("data_freshness"),
+                "burn_meters": None if evaluation is None else evaluation.get("burn_meters"),
                 "alerts": None,
                 "notice": notice_for(summary, states.get("pool")),
             },
@@ -251,18 +343,21 @@ def create_app(
     @server.tool(
         name="qfr.setup.status",
         description=(
-            "Setup state per step (pool, providers, data, token), pool counts and the "
-            "no-defaults notice. Provider probes arrive in Phase 4 and snapshot ids in "
-            "Phase 3; until then those steps read deferred."
+            "Setup state per step (pool, providers, data, token), the evaluator's snapshot "
+            "ids, pool counts and the no-defaults notice. Provider probes arrive in Phase 4; "
+            "until then that step reads deferred."
         ),
         annotations=READ,
     )
     async def setup_status() -> ToolResult:
         states = await asyncio.to_thread(store.latest_setup_states)
         summary = await summary_or_none()
+        data = data_step(await eval_summary())
         steps: dict[str, JsonValue] = {}
         for step in SETUP_STEPS:
-            if step in states:
+            if step == "data" and step not in states:
+                steps[step] = data
+            elif step in states:
                 steps[step] = _state_view(states[step])
             elif step == "pool":
                 steps[step] = {
@@ -290,7 +385,7 @@ def create_app(
                 "setup_complete": done,
                 "steps": steps,
                 "probe_results": None,
-                "snapshot_ids": None,
+                "snapshot_ids": data.get("snapshot_ids"),
                 "pool_counts": counts_view(summary),
                 "registry": "ok" if summary is not None else "unavailable",
                 "notice": notice_for(summary, states.get("pool")),
@@ -327,8 +422,9 @@ def create_app(
         description=(
             "List current entries of the factor or strategy pool with status, approved "
             "tier and tags. Optional status filter (seed, approved, retired), limit "
-            "(default 200, max 2000) and cursor from the previous page. Evidence tiers and "
-            "released state come from the evaluator from Phase 3 and are null until then."
+            "(default 200, max 2000) and cursor from the previous page. Each item carries "
+            "the evaluator's evidence tier and latest released state (null while the "
+            "evaluator has not pulled the version)."
         ),
         annotations=READ,
     )
@@ -342,8 +438,13 @@ def create_app(
         if not 1 <= size <= config.list_max:
             raise ValueError(f"LIMIT_INVALID: limit must be between 1 and {config.list_max}")
         page = await require_registry().pool_entries(pool, status, size, cursor)
+        known = await evidence_states([item.version_id for item in page.items])
         items: list[JsonValue] = [
-            item.model_dump(mode="json") | {"evidence_tier": None, "released_state": None}
+            item.model_dump(mode="json")
+            | {
+                "evidence_tier": known.get(str(item.version_id), {}).get("evidence_tier"),
+                "released_state": known.get(str(item.version_id), {}).get("released_state"),
+            }
             for item in page.items
         ]
         return result(
@@ -351,9 +452,9 @@ def create_app(
                 "pool": pool,
                 "items": items,
                 "next_cursor": page.next_cursor,
-                "evidence": "not_implemented_until_phase_3",
+                "evidence": "ok" if admin is not None else "evaluator_not_configured",
             },
-            "partial",
+            "ok" if admin is not None else "partial",
         )
 
     @server.tool(
@@ -368,16 +469,20 @@ def create_app(
         client = require_registry()
         detail = await client.pool_entry(pool, entry_id)
         version = await client.get_version(detail.entry.version_id)
+        known = (await evidence_states([detail.entry.version_id])).get(
+            str(detail.entry.version_id), {}
+        )
         return result(
             {
                 "entry": detail.entry.model_dump(mode="json"),
                 "events": [e.model_dump(mode="json") for e in detail.events],
                 "version": version.model_dump(mode="json"),
-                "evidence_tier": None,
-                "released_state": None,
-                "evidence": "not_implemented_until_phase_3",
+                "evidence_tier": known.get("evidence_tier"),
+                "released_state": known.get("released_state"),
+                "evaluation": known or None,
+                "evidence": "ok" if admin is not None else "evaluator_not_configured",
             },
-            "partial",
+            "ok" if admin is not None else "partial",
         )
 
     @server.tool(
@@ -424,19 +529,134 @@ def create_app(
     )
     async def config_get(owner_only: bool = False) -> ToolResult:
         if owner_only:
-            data = await backend.get("EVAL_ADMIN_API_URL", "/v1/config/private", "EVAL_OWNER_TOKEN")
-            return result({"visibility": "owner_only", "configuration": data}, "partial")
+            data = await require_admin().private_config()
+            return result({"visibility": "owner_only", "configuration": data})
         values: dict[str, JsonValue] = {"state": "preview_not_activated"}
+        if feedback is not None:
+            try:
+                cards = {kind: await feedback.card(kind) for kind in ("protocol", "policy")}
+                values = {
+                    "state": "active",
+                    "cards": {k: c.model_dump(mode="json") for k, c in cards.items()},
+                }
+            except (DownstreamUnavailable, DownstreamRefused):
+                values = {"state": "preview_not_activated"}
         for kind in ("charter", "providers", "roles"):
             # Provider key environment names are non-secret; values are never resolved here.
             doc = load_config(kind, settings.config_dir)
             values[kind] = doc.values
         card_path = settings.config_dir / "public_cards.json"
-        if card_path.exists():
+        if "cards" not in values and card_path.exists():
             import json
 
             values["cards"] = json.loads(card_path.read_text())
         return result(values)
+
+    @server.tool(
+        name="qfr.evidence.get",
+        description=(
+            "Owner-grade evidence for one version at full precision, labelled owner_only: "
+            "the evaluator's intake state, official records, gate values, series refs, "
+            "reference strategy stats and library correlation. Never copy these numbers "
+            "into briefs or steering notes. Argument: version_id."
+        ),
+        annotations=READ,
+    )
+    async def evidence_get(version_id: UUID) -> ToolResult:
+        data = await require_admin().evidence(version_id)
+        await asyncio.to_thread(validate_owner_evidence, data, evidence_schema)
+        return result(data)
+
+    @server.tool(
+        name="qfr.report.list",
+        description=(
+            "Released reports exactly as research sees them (rounded, batched, reason codes "
+            "only). Filters: version_id, family_id, program_id, type (intake, screening, w1, "
+            "library), since (ISO time), after_id (cursor) and limit (default 200, max "
+            "2000). Reports for a job arrive with the job tools in Phase 4."
+        ),
+        annotations=READ,
+    )
+    async def report_list(
+        version_id: UUID | None = None,
+        family_id: UUID | None = None,
+        program_id: UUID | None = None,
+        type: Literal["intake", "screening", "w1", "library"] | None = None,  # noqa: A002
+        since: str | None = None,
+        after_id: UUID | None = None,
+        limit: int | None = None,
+    ) -> ToolResult:
+        size = limit or config.list_default
+        if not 1 <= size <= config.list_max:
+            raise ValueError(f"LIMIT_INVALID: limit must be between 1 and {config.list_max}")
+        page = await require_feedback().reports(
+            version_id=version_id, family_id=family_id, program_id=program_id, type=type,
+            since=since, after_id=after_id, limit=size,
+        )  # fmt: skip
+        return result(page.model_dump(mode="json"))
+
+    async def activate(kind: ConfigFile, file: str, approval_id: UUID | None) -> ToolResult:
+        client = require_admin()
+        try:
+            data, source = await asyncio.to_thread(
+                read_import, Path(imports) if imports else None, file, config.import_max_bytes
+            )
+        except ImportPathError as error:
+            raise ValueError(f"{error.code}: {error.message}") from None
+        try:
+            text_value = data.decode("utf-8")
+        except UnicodeDecodeError:
+            raise ValueError("FILE_INVALID: the file is not UTF-8 YAML") from None
+        created = await client.create_version(kind, text_value)
+        active = await client.activate(kind, created.id, created.version, approval_id)
+        logger.logger.info(
+            "evaluator_config_activated",
+            outcome="ok",
+            payload={"kind": kind, "ref": f"{active.id}/{active.version}", "source": source},
+        )
+        return result(
+            {
+                "kind": kind,
+                "created": bool(created.created),
+                "version": active.model_dump(mode="json"),
+                "source": source,
+            }
+        )
+
+    @server.tool(
+        name="qfr.ops.activate_protocol",
+        description=(
+            "Activate a new protocol version from a YAML file under imports/ (argument "
+            "file; optional approval_id). The evaluator stores it immutably, retires the "
+            "previous version and publishes the new protocol card. Re-sending the same "
+            "file is idempotent; a changed file needs a new version string."
+        ),
+        annotations=WRITE,
+    )
+    async def activate_protocol(file: str, approval_id: UUID | None = None) -> ToolResult:
+        return await activate("protocol", file, approval_id)
+
+    @server.tool(
+        name="qfr.ops.activate_policy",
+        description=(
+            "Activate a new release-policy version from a YAML file under imports/ "
+            "(argument file; optional approval_id). Same rules as activate_protocol."
+        ),
+        annotations=WRITE,
+    )
+    async def activate_policy(file: str, approval_id: UUID | None = None) -> ToolResult:
+        return await activate("policy", file, approval_id)
+
+    @server.tool(
+        name="qfr.ops.activate_quotas",
+        description=(
+            "Activate a new quota version from a YAML file under imports/ (argument file; "
+            "optional approval_id). Same rules as activate_protocol."
+        ),
+        annotations=WRITE,
+    )
+    async def activate_quotas(file: str, approval_id: UUID | None = None) -> ToolResult:
+        return await activate("quotas", file, approval_id)
 
     @server.tool(
         name="qfr.logs.search",

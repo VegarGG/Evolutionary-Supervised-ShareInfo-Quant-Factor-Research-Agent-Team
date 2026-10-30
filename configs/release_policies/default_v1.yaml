@@ -5,3 +5,14 @@ rounding: {rankic: 0.005, ir: 0.02, sharpe: 0.25, shares: 0.05, correlations: 0.
 t_buckets: [1, 2, 3]
 ladder: {eta: 0.005}
 release_w3_metrics: false
+# Diagnostic flag rules (PLAN 9.2). SIGN_MISMATCH (realized sign opposite to the declared
+# sign), UNSTABLE_YEARLY (yearly RankIC means change sign) and LOW_COVERAGE (coverage
+# check failed) take no parameter; HIGH_DRAWDOWN applies to strategies (Phase 6).
+flags:
+  high_turnover_above: 0.60
+  low_monotonicity_below: 0.50
+  crowded_library_correlation_above: 0.70
+  decays_fast_h5_over_h1_below: 0.40
+  weak_signal_rankic_below: 0.02
+  weak_signal_nw_t_below: 2.5
+  cost_dominated_net_over_gross_below: 0.50

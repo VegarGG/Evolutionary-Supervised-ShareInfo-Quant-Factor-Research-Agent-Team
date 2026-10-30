@@ -113,8 +113,16 @@ class SetupRig:
         return {str(step): int(n) for step, n in rows}
 
 
+EVAL_TOKENS = {"eval-admin-api": "test-eval-owner-token", "feedback-api": "test-feedback-token"}
+
+
 @contextmanager
-def setup_rig(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[SetupRig]:
+def setup_rig(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    eval_transports: dict[str, httpx.AsyncBaseTransport] | None = None,
+) -> Iterator[SetupRig]:
+    """With eval_transports, the front door also reaches eval-admin-api and feedback-api."""
     with registry_rig(tmp_path) as registry:
         control_db = TransactionalControl(database_url("CONTROL"))
         store = PostgresControlStore(begin=control_db.begin)
@@ -125,12 +133,17 @@ def setup_rig(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Setup
         monkeypatch.setenv("QFR_IMPORTS_DIR", str(imports))
         for name in ("RESEARCH_API_URL", "EVAL_ADMIN_API_URL", "FEEDBACK_API_URL"):
             monkeypatch.delenv(name, raising=False)
+        if eval_transports is not None:
+            monkeypatch.setenv("EVAL_ADMIN_API_URL", "http://eval-admin-api:8000")
+            monkeypatch.setenv("EVAL_OWNER_TOKEN", EVAL_TOKENS["eval-admin-api"])
+            monkeypatch.setenv("FEEDBACK_API_URL", "http://feedback-api:8000")
+            monkeypatch.setenv("FEEDBACK_READER_TOKEN", EVAL_TOKENS["feedback-api"])
         audit = MemoryAudit()
         settings = RuntimeSettings(
             mcp_token="test-token", config_dir=Path("configs"), log_dir=tmp_path
         )
         transport = httpx.ASGITransport(app=registry.client.app)
-        app = create_app(settings, audit, store, transport)
+        app = create_app(settings, audit, store, transport, eval_transports)
         try:
             with TestClient(app, base_url="http://127.0.0.1:8765") as client:
                 yield SetupRig(client, registry, control_db, store, audit, imports, tmp_path)

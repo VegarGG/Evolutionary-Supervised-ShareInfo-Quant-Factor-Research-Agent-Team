@@ -7,11 +7,113 @@
       "w2_utc_time": "00:00",
       "w2_weekday": "monday"
     },
+    "diagnostic_flags": [
+      "HIGH_TURNOVER",
+      "LOW_MONOTONICITY",
+      "SIGN_MISMATCH",
+      "CROWDED_WITH_LIBRARY",
+      "UNSTABLE_YEARLY",
+      "DECAYS_FAST",
+      "LOW_COVERAGE",
+      "WEAK_SIGNAL",
+      "COST_DOMINATED",
+      "HIGH_DRAWDOWN"
+    ],
+    "flags": {
+      "cost_dominated_net_over_gross_below": 0.5,
+      "crowded_library_correlation_above": 0.7,
+      "decays_fast_h5_over_h1_below": 0.4,
+      "high_turnover_above": 0.6,
+      "low_monotonicity_below": 0.5,
+      "weak_signal_nw_t_below": 2.5,
+      "weak_signal_rankic_below": 0.02
+    },
     "ladder": {
       "eta": 0.005
     },
     "policy_id": "default",
+    "quotas": {
+      "deferral_expiry_days": 7,
+      "family": {
+        "w1_count": 3,
+        "w1_hours": 24,
+        "w2_count": 1,
+        "w2_days": 7
+      },
+      "global": {
+        "simulation_slots": 40,
+        "w1_daily": 200,
+        "w2_per_epoch": 400,
+        "w3_per_epoch": 100
+      },
+      "program": {
+        "w1_daily": 60,
+        "w2_weekly": 10
+      },
+      "quota_id": "default",
+      "version": "1"
+    },
+    "reason_codes": [
+      "SCHEMA_INVALID",
+      "KIND_UNSUPPORTED",
+      "PARSE_ERROR",
+      "TYPE_ERROR",
+      "COMPLEXITY_LIMIT",
+      "FORBIDDEN_CONSTRUCT",
+      "DECLARATION_MISMATCH",
+      "COMPONENT_INVALID",
+      "DUPLICATE_OF",
+      "NEAR_DUPLICATE_OF",
+      "QUOTA_DEFERRED",
+      "QUOTA_EXPIRED",
+      "LOW_COVERAGE",
+      "LOOKAHEAD_DETECTED",
+      "RUNTIME_LIMIT",
+      "DEGENERATE",
+      "INTERNAL_ERROR"
+    ],
     "release_w3_metrics": false,
+    "report_fields": {
+      "intake": [
+        "duplicate_of",
+        "reasons",
+        "status",
+        "type"
+      ],
+      "library": [
+        "status",
+        "type"
+      ],
+      "screening": [
+        "duplicate_of",
+        "reasons",
+        "status",
+        "type"
+      ],
+      "w1": [
+        "complexity",
+        "coverage_bucket",
+        "decay_profile",
+        "flags",
+        "hit_ratio",
+        "library_empty",
+        "library_version_id",
+        "ls_net_sharpe",
+        "max_library_correlation",
+        "monotonicity",
+        "nw_t_bucket",
+        "rank_autocorrelation",
+        "rankic_ir",
+        "rankic_mean",
+        "size_neutral_rankic",
+        "strategy_drawdown_bucket",
+        "strategy_ir",
+        "strategy_net_sharpe",
+        "top_turnover",
+        "type",
+        "yearly_rankic"
+      ]
+    },
     "rounding": {
       "correlations": 0.05,
       "ir": 0.02,

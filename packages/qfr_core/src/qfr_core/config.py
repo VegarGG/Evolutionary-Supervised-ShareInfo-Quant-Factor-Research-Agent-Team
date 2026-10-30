@@ -160,6 +160,29 @@ class PolicyConfig(BaseModel):
     t_buckets: list[float]
     ladder: dict[str, float]
     release_w3_metrics: Literal[False]
+    flags: dict[
+        Literal[
+            "high_turnover_above",
+            "low_monotonicity_below",
+            "crowded_library_correlation_above",
+            "decays_fast_h5_over_h1_below",
+            "weak_signal_rankic_below",
+            "weak_signal_nw_t_below",
+            "cost_dominated_net_over_gross_below",
+        ],
+        float,
+    ]
+
+    @model_validator(mode="after")
+    def complete(self) -> "PolicyConfig":
+        required = {"rankic", "ir", "sharpe", "shares", "correlations"}
+        if not required <= set(self.rounding) or any(v <= 0 for v in self.rounding.values()):
+            raise ValueError("rounding needs positive rankic, ir, sharpe, shares, correlations")
+        if len(self.flags) != 7:
+            raise ValueError("every diagnostic flag rule needs a threshold")
+        if list(self.t_buckets) != sorted(set(self.t_buckets)):
+            raise ValueError("t buckets must be strictly increasing")
+        return self
 
 
 class QuotaConfig(BaseModel):

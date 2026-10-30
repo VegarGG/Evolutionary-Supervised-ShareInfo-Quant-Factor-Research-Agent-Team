@@ -123,3 +123,20 @@ def test_failures_are_reported_and_logged(built, tmp_path):
     ]
     errors = [line for line in lines if line["event"] == "data_build_failed"]
     assert errors and errors[-1]["level"] == "ERROR" and errors[-1]["outcome"] == "failed"
+
+
+def test_serve_once_with_the_replay_source_builds_one_full_snapshot(built):
+    base, env, _ = built
+    out = base / "replay"
+    args = ["data", "serve", "--source", "replay", "--once", "--force", "--out", str(out),
+            "--replay-from", "2012-09-03"]  # fmt: skip
+    result = CliRunner().invoke(app, args, env=env)
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.output.strip().splitlines()[-1])
+    assert report["status"] == "built" and report["through"] == "2012-09-03"
+    assert (out / "full" / report["snapshot_id"] / "manifest.json").is_file()
+    assert not (out / "research").exists()
+    again = CliRunner().invoke(app, args, env=env)
+    assert json.loads(again.output.strip().splitlines()[-1])["through"] == "2012-09-04"
+    refused = CliRunner().invoke(app, ["data", "serve", "--source", "nope", "--once"], env=env)
+    assert refused.exit_code != 0

@@ -37,6 +37,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM python:3.12-slim AS runtime
 RUN groupadd --gid 10001 qfr && useradd --uid 10001 --gid qfr --create-home qfr \
     && mkdir -p /var/log/qfr /app/configs /app/schemas /data/full /data/research /data/raw \
+       /data/eval-store \
     && chown -R qfr:qfr /var/log/qfr /data
 COPY --from=build /app/.venv /app/.venv
 COPY LICENSE NOTICE ADDITIONAL-PERMISSION.md THIRD-PARTY-NOTICES.md /app/
@@ -55,9 +56,12 @@ FROM runtime AS registry
 FROM runtime AS mcp
 COPY schemas/private/owner_evidence.json /app/schemas/owner_evidence.json
 
-# Evaluation-side image (build with QFR_PACKAGE=qfr-eval): adds the `qfr data` commands.
-# Protocols, epochs and data configs are bind-mounted read-only by Compose, never baked in.
+# Evaluation-side image (build with QFR_PACKAGE=qfr-eval): data-ingest, eval-scheduler,
+# eval-worker, release-worker, feedback-api and eval-admin-api. Protocols, epochs, release
+# policies, quotas and data configs are bind-mounted read-only by Compose, never baked in;
+# only the services' own operating parameters and the deployment schedule are.
 FROM runtime AS eval
+COPY configs/eval.yaml configs/deployment.yaml /app/configs/
 
 FROM dependencies AS migration-build
 COPY packages ./packages

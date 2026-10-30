@@ -9,6 +9,7 @@ date in the window. Quantile ties are ordered by ascending instrument id.
 """
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
 from typing import Literal, Self
@@ -210,9 +211,17 @@ def _consecutive_spearman(values: Array, evaluated: Mask, minimum: int) -> Array
 
 
 def library_correlation(
-    preprocessed: Array, sample: Mask, library: dict[str, Array], window: tuple[int, int]
+    preprocessed: Array,
+    sample: Mask,
+    library: Mapping[str, Array],
+    window: tuple[int, int],
+    window_aligned: bool = False,
 ) -> LibraryCorrelation:
-    """Max over library factors of |mean over t of Spearman(f(t), g(t))|."""
+    """Max over library factors of |mean over t of Spearman(f(t), g(t))|.
+
+    Library values span the whole market, or only the window's rows when window_aligned
+    (the evaluator stores each version's W1 rows once and reads them back lazily).
+    """
     if not library:
         return LibraryCorrelation(
             vacuous=True, max_abs=None, argmax=None, note="the library is empty"
@@ -221,7 +230,10 @@ def library_correlation(
     best_name: str | None = None
     best: float | None = None
     for name in sorted(library):
-        other = np.where(sample, library[name][first : last + 1], np.nan)
+        values = library[name] if window_aligned else library[name][first : last + 1]
+        if values.shape != preprocessed.shape:
+            raise ValueError(f"library factor {name} is not aligned with the window")
+        other = np.where(sample, values, np.nan)
         value = _mean(row_spearman(preprocessed, other))
         if value is not None and (best is None or abs(value) > best):
             best, best_name = abs(value), name
@@ -235,7 +247,8 @@ def evaluate_factor(
     end: date,
     sign: Literal[1, -1],
     settings: MetricSettings,
-    library: dict[str, Array] | None = None,
+    library: Mapping[str, Array] | None = None,
+    library_window_aligned: bool = False,
 ) -> FactorEvaluation:
     """All Section 8.5 factor metrics on [start, end], labels confined to the window."""
     first, last = market.window(start, end)
@@ -331,7 +344,9 @@ def evaluate_factor(
         monotonicity=monotonicity,
         rank_autocorrelation=_mean(_consecutive_spearman(values, evaluated, minimum)),
         coverage=coverage,
-        library_correlation=library_correlation(values, sample, library or {}, (first, last)),
+        library_correlation=library_correlation(
+            values, sample, library or {}, (first, last), library_window_aligned
+        ),
         size_neutral_rankic=size_neutral,
         yearly_rankic=yearly,
     )

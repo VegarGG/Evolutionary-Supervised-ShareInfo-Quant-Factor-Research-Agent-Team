@@ -1422,6 +1422,14 @@
           "additionalProperties": {
             "type": "number"
           },
+          "propertyNames": {
+            "enum": [
+              "1",
+              "5",
+              "10",
+              "20"
+            ]
+          },
           "title": "Decay Profile",
           "type": "object"
         },

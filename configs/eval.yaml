@@ -1,0 +1,32 @@
+version: '1'
+# Evaluation-zone services (PLAN Sections 8.3, 9.2, 16.6 and 16.8). Measurement
+# thresholds live in the protocol; release rules in the release policy; quotas in the
+# quota version. This file holds only the services' own operating parameters.
+scheduler:
+  interval_seconds: 60
+  intake_batch: 100        # versions pulled per poll (Section 8.3)
+  pool_event_batch: 500
+  # The evaluator activates the shipped protocol, policy and quota versions on first
+  # start when none is active (bootstrap principal eval-scheduler, no approval id).
+  bootstrap_configs: true
+worker:
+  poll_seconds: 5
+  max_attempts: 3          # INTERNAL_ERROR is retried before it is released
+  retry_backoff_seconds: [60, 300]
+  lease_seconds: 3600      # a running job whose worker vanished is requeued after this
+runner:
+  mode: subprocess         # subprocess (production) or inline (tests only)
+  wall_clock_factor: 3     # wall-clock backstop = factor x CPU budget
+  load_cpu_seconds: 120    # CPU allowance for reading the snapshot before the budget starts
+release:
+  interval_seconds: 60
+  batch_limit: 1000
+apis:
+  feedback: {bind: 127.0.0.1, port: 8000, list_default: 200, list_max: 2000}
+  admin: {bind: 127.0.0.1, port: 8000, list_default: 200, list_max: 2000}
+ingest:
+  # Daily full-snapshot builds at deployment.yaml schedule.ingest_local. The replay
+  # source extends a synthetic world one trading day per build, for tests only.
+  check_seconds: 60         # how often the service looks at the clock
+  recheck_seconds: 3600     # after no new release or a failure, try again this much later
+  keep_raw_releases: 2      # raw archives kept; full snapshots are always retained

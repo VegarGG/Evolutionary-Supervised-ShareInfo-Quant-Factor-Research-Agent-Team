@@ -42,14 +42,26 @@ class GateResult(Contract):
     skipped_reason: str | None
 
 
+class EvaluationState(Contract):
+    """Where the version is in the evaluator's lifecycle (Section 7.9)."""
+
+    state: str
+    reason_code: str | None
+    duplicate_of: UUID7 | None
+    discovered_at: AwareDatetime
+    decided_at: AwareDatetime | None
+
+
 class OwnerEvidence(Contract):
     schema_version: Literal["owner_evidence/1"]
     visibility: Literal["owner_only"]
     version_id: UUID7
+    evaluation: EvaluationState | None
     official_records: list[OfficialRecord]
     gate_values: list[GateResult]
     series: list[SeriesReference]
     reference_strategy_stats: dict[str, FiniteFloat | None]
+    library_correlation: dict[str, JsonValue] | None
     simulation_state: dict[str, JsonValue] | None
     hygiene_warning: Literal[
         "Never copy owner-only evidence into research briefs or steering notes."

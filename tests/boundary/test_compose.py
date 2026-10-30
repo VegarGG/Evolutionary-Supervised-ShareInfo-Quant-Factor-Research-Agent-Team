@@ -135,3 +135,45 @@ def test_data_ingest_writes_each_zone_at_its_mount_point():
         "target": "eval",
         "args": {"QFR_PACKAGE": "qfr-eval"},
     }
+
+
+EVAL_SERVICES = {
+    "eval-scheduler": ["python", "-m", "qfr_eval.scheduler"],
+    "eval-worker": ["python", "-m", "qfr_eval.worker"],
+    "release-worker": ["python", "-m", "qfr_eval.release"],
+    "feedback-api": ["python", "-m", "qfr_eval.feedback_api"],
+    "eval-admin-api": ["python", "-m", "qfr_eval.admin_api"],
+}
+
+
+def test_phase_3_evaluation_services_run_the_eval_image():
+    for name, command in EVAL_SERVICES.items():
+        service = COMPOSE["services"][name]
+        assert service["command"] == command, name
+        assert service["build"]["target"] == "eval"
+        assert service["build"]["args"] == {"QFR_PACKAGE": "qfr-eval"}
+        assert service["environment"]["QFR_ZONE"] == "eval"
+    ingest = COMPOSE["services"]["data-ingest"]["command"]
+    assert ingest[:3] == ["qfr", "data", "serve"]
+    assert COMPOSE["services"]["eval-worker"]["deploy"]["replicas"] == 2
+
+
+def test_the_evaluation_store_is_written_only_by_the_worker():
+    assert _mounts("eval_store") == {
+        "eval-worker": True,
+        "eval-scheduler": False,
+        "eval-admin-api": False,
+    }
+
+
+def test_feedback_api_reads_released_views_only():
+    service = COMPOSE["services"]["feedback-api"]
+    assert "FEEDBACK_DB_URL" in service["environment"]
+    assert "EVAL_DB_URL" not in service["environment"]
+    assert {v["source"] for v in service["volumes"]} == {"qfr_logs"}
+    assert service["environment"]["FEEDBACK_READER_TOKEN"]
+
+
+def test_release_policies_and_quotas_are_mounted_only_into_the_scheduler():
+    for source in ("../configs/release_policies", "../configs/quotas"):
+        assert _mounts(source) == {"eval-scheduler": False}
