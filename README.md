@@ -2,7 +2,11 @@
 
 New, independent implementation of the owner's
 [authoritative plan](docs/QFR-Implementation-Plan-v2.1-EN.html).
+The canonical project is
+[Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team).
 Previous QFR code and PRs are outdated and are not dependencies of this repository.
+This Phase 0 proposal replaces the stale implementation and README while preserving
+their Git history for reference.
 
 Scope: foundation, contracts, logging, database boundaries and five MCP read tools.
 No factors, strategies, research jobs, evaluation runs, provider calls or promotion

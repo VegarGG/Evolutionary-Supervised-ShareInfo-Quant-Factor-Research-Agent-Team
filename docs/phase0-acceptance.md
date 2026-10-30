@@ -2,7 +2,12 @@
 
 Status: **local checks pass under the owner's clarified requirements; hosted CI
 and AMD64 acceptance remain unverified**.
-No later phase has begun. This is a new independent repository with no remote.
+No later phase has begun. The implementation has an independent local Git root;
+its canonical remote is
+[VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team).
+The owner instructed that the previous developments and files, including the
+README, are stale. The replacement PR uses the new Phase 0 file tree and preserves
+the old Git history without using it as implementation guidance.
 
 ## Authority and provenance
 
@@ -14,8 +19,8 @@ All 24 chapters were read before implementation. Root `AGENTS.md` is the text
 from Section 21.1. Ambiguities and environment adaptations are in `decisions.md`.
 
 No old application code was copied. Existing Python/uv tooling and identical,
-hash-verified public dependency wheels were reused. Old repositories, branches,
-remote histories and data were not changed by this implementation task. The parent
+hash-verified public dependency wheels were reused. Old branch histories and data
+are preserved. The canonical PR replaces the stale working-tree files. The parent
 task reports that PRs #1–8 are labelled outdated; that remote work is separate.
 
 The visible Codex host default is **gpt-6-astra, reasoning effort xhigh**. The
@@ -92,13 +97,16 @@ Git and from image build contexts. Docker settings were not changed.
 | DEP-01 memory | Resolved by owner clarification | Allocation unchanged; expectation retained; current OOM flags checked and no OOM observed |
 | Host MCP transport | Resolved and verified | Owner-approved qfr-mcp-only ingress network; host calls and audit checks pass; research/evaluation shared networks remain internal |
 | Live MCP-01 downstream trace | Explicitly deferred by owner | Keep clean-exit placeholders. Scripted propagation and real MCP audits pass; live downstream completion is not claimed |
-| CI / AMD64 | New repository has no remote and publishing was not authorized | Workflow ready; hosted checks and two-architecture CI acceptance have not run |
+| CI / AMD64 | Canonical-repository CI is pending | Publishing and opening the replacement PR are authorized; hosted checks and both image architectures must pass |
 | Model requirement | Host default is visible; this turn's actual model/effort is not | Owner/task configuration must establish the requested maximum effort if mandatory |
 
 The three owner decisions are quoted and recorded in `decisions.md`. No action
-above was denied by automatic approval review; hosted CI was not attempted. The failed setup experiments were
-confined to this new project's disposable resources. No broad Docker pruning,
-global restart, paid provider calls or code publication occurred.
+above was denied by automatic approval review. An initial CI attempt in a separate,
+noncanonical repository did not execute; it does not establish acceptance for this
+project. Canonical PR checks provide the current remote result. The failed setup
+experiments were confined to this new project's disposable resources. No broad
+Docker pruning, global restart or paid provider calls occurred. Code publication
+is authorized in the canonical project; the misplaced PR is superseded.
 
 ## Reproduction and evidence
 

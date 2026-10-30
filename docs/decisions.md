@@ -91,9 +91,22 @@ The root `AGENTS.md` is extracted verbatim from Section 21.1.
 These later owner instructions amend operational acceptance without changing the
 preserved original HTML plan or its verbatim AGENTS.md extract.
 
+20. The owner corrected the publication destination on 2026-10-30:
+
+    > I must correct you that this system belongs to this project: https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team. Here is where you suppose to upload.
+    > You should ignore the previous developments and files, including the readme. Those are stale.
+
+    The named repository is canonical. The separate qfr-v2 GitHub repository was
+    created in error and is not the project's home. The new PR replaces the stale
+    file tree with this Phase 0 implementation, including its new README and plan
+    instructions. The base history and Phase 0 implementation history are preserved.
+    No stale implementation files or instructions are carried into the new tree.
+    The misplaced PR is superseded; no repository history is deleted.
+
 Open owner question: confirm the requested maximum-effort task configuration.
-Full CI execution requires permission to publish this new repository; no remote is
-configured yet. The visible host default is gpt-6-astra/xhigh, not verified per turn.
+Publishing and opening a PR are authorized in the canonical project. Hosted CI is
+still required for acceptance. The visible host default is gpt-6-astra/xhigh, not
+verified per turn.
 
 Implementation references: [official MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk),
 [Compose services](https://docs.docker.com/reference/compose-file/services/),
