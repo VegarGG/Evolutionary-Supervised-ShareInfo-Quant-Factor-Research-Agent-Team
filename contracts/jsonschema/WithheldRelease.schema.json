@@ -1,0 +1,25 @@
+{
+  "additionalProperties": false,
+  "description": "No current score, flags, sample counts or other outcome-dependent payload.",
+  "properties": {
+    "reason": {
+      "enum": [
+        "budget",
+        "non_selectable"
+      ],
+      "title": "Reason",
+      "type": "string"
+    },
+    "type": {
+      "const": "withheld",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "reason"
+  ],
+  "title": "WithheldRelease",
+  "type": "object"
+}

@@ -1,0 +1,11 @@
+{
+  "artifact_version_id": "00000000-0000-0000-0000-000000000001",
+  "latest_released": null,
+  "schema_version": "1",
+  "timeline": {
+    "has_more": false,
+    "items": [],
+    "next_after_id": null,
+    "schema_version": "1"
+  }
+}

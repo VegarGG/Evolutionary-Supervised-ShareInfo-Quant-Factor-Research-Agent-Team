@@ -1,0 +1,6 @@
+{
+  "admission_effect": "none",
+  "assumption": "independent_mature_matched_decisions",
+  "critical_t": 2,
+  "period_source": "released_scalar_origin_period_count"
+}

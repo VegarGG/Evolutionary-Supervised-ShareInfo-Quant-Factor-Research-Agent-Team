@@ -1,0 +1,84 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "completed_at": {
+      "format": "date-time",
+      "title": "Completed At",
+      "type": "string"
+    },
+    "eligible_at": {
+      "format": "date-time",
+      "title": "Eligible At",
+      "type": "string"
+    },
+    "epoch_id": {
+      "minLength": 1,
+      "title": "Epoch Id",
+      "type": "string"
+    },
+    "family_id": {
+      "minLength": 1,
+      "title": "Family Id",
+      "type": "string"
+    },
+    "policy_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Policy Sha256",
+      "type": "string"
+    },
+    "program_id": {
+      "minLength": 1,
+      "title": "Program Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_id": {
+      "format": "uuid",
+      "title": "Source Id",
+      "type": "string"
+    },
+    "source_kind": {
+      "enum": [
+        "official_record",
+        "intake_transition"
+      ],
+      "title": "Source Kind",
+      "type": "string"
+    },
+    "source_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source Sha256",
+      "type": "string"
+    },
+    "stage": {
+      "enum": [
+        "intake",
+        "screening",
+        "pilot",
+        "w1",
+        "w2"
+      ],
+      "title": "Stage",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "source_kind",
+    "source_id",
+    "source_sha256",
+    "policy_sha256",
+    "program_id",
+    "family_id",
+    "epoch_id",
+    "stage",
+    "completed_at",
+    "eligible_at"
+  ],
+  "title": "ReleaseSource",
+  "type": "object"
+}

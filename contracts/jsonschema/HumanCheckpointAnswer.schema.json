@@ -1,0 +1,38 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "answer": {
+      "minLength": 1,
+      "title": "Answer",
+      "type": "string"
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "enum": [
+            "approve",
+            "reject"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Decision"
+    },
+    "operation_key": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Operation Key",
+      "type": "string"
+    }
+  },
+  "required": [
+    "operation_key",
+    "answer",
+    "decision"
+  ],
+  "title": "HumanCheckpointAnswer",
+  "type": "object"
+}

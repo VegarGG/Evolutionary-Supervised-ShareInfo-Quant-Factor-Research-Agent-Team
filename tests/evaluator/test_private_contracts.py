@@ -18,6 +18,19 @@ from qfr_eval.records import (
     StoredFile,
     TrialLedgerEntry,
 )
+from qfr_eval.release.models import (
+    BurnSummary,
+    LadderBest,
+    PilotReleasePolicy,
+    PreparedRelease,
+    QuotaDecision,
+    QuotaSubject,
+    ReleaseSource,
+    StockReleasePolicy,
+    StockReleaseQuotas,
+    StockReleaseRecord,
+    StockRounding,
+)
 from qfr_eval.runtime_contracts import (
     AccelerateImage,
     AppleAccelerateExecution,
@@ -59,6 +72,17 @@ from qfr_eval.statistics.hurdles import TurnoverResult
 from qfr_eval.statistics.incremental import IncrementalResult
 
 MODELS = (
+    BurnSummary,
+    StockReleaseRecord,
+    QuotaDecision,
+    QuotaSubject,
+    ReleaseSource,
+    LadderBest,
+    PilotReleasePolicy,
+    PreparedRelease,
+    StockReleasePolicy,
+    StockReleaseQuotas,
+    StockRounding,
     DockerControllerConfiguration,
     DockerControllerRequest,
     DockerNativeProfile,

@@ -1,0 +1,130 @@
+{
+  "$defs": {
+    "PilotConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmarks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Benchmarks",
+          "type": "array"
+        },
+        "exposure": {
+          "const": "previously_seen",
+          "title": "Exposure",
+          "type": "string"
+        },
+        "feature_parity_atol": {
+          "title": "Feature Parity Atol",
+          "type": "number"
+        },
+        "feature_parity_rtol": {
+          "title": "Feature Parity Rtol",
+          "type": "number"
+        },
+        "fundamental_availability": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Fundamental Availability",
+          "type": "object"
+        },
+        "industry_count": {
+          "exclusiveMinimum": 0,
+          "title": "Industry Count",
+          "type": "integer"
+        },
+        "membership_note": {
+          "title": "Membership Note",
+          "type": "string"
+        },
+        "new_supplier_requests": {
+          "const": false,
+          "title": "New Supplier Requests",
+          "type": "boolean"
+        },
+        "price_overlap_atol": {
+          "title": "Price Overlap Atol",
+          "type": "number"
+        },
+        "price_overlap_rtol": {
+          "title": "Price Overlap Rtol",
+          "type": "number"
+        },
+        "profile": {
+          "const": "pilot_industry_v1",
+          "title": "Profile",
+          "type": "string"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "scores_and_ranks": {
+          "const": "exact",
+          "title": "Scores And Ranks",
+          "type": "string"
+        },
+        "vintage_note": {
+          "title": "Vintage Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "profile",
+        "industry_count",
+        "benchmarks",
+        "fundamental_availability",
+        "price_overlap_atol",
+        "price_overlap_rtol",
+        "feature_parity_atol",
+        "feature_parity_rtol",
+        "scores_and_ranks",
+        "exposure",
+        "vintage_note",
+        "membership_note",
+        "new_supplier_requests"
+      ],
+      "title": "PilotConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "adapter": {
+      "$ref": "#/$defs/PilotConfig"
+    },
+    "fixture_manifests_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Fixture Manifests Sha256",
+      "type": "string"
+    },
+    "inventory_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Inventory Sha256",
+      "type": "string"
+    },
+    "kind": {
+      "const": "pilot",
+      "title": "Kind",
+      "type": "string"
+    },
+    "package": {
+      "minLength": 1,
+      "title": "Package",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "package",
+    "inventory_sha256",
+    "fixture_manifests_sha256",
+    "adapter"
+  ],
+  "title": "PilotLocalSource",
+  "type": "object"
+}

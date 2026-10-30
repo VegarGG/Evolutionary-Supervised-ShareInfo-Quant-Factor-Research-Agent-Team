@@ -99,3 +99,49 @@ def test_native_overlay_grants_only_controller_and_private_evaluator_channel():
     assert worker["environment"] == {
         "QFR_SANDBOX_CONTROLLER_SOCKET": "/run/qfr-sandbox/controller.sock"
     }
+
+
+def test_stage4_overlay_retains_database_and_source_separation():
+    base = yaml.safe_load((ROOT / "infra/docker-compose.yml").read_text())
+    overlay = yaml.safe_load((ROOT / "infra/docker-compose.stage4.yml").read_text())
+    assert set(overlay["services"]) == {
+        "mcp-api",
+        "research-api",
+        "registry-api",
+        "feedback-api",
+        "quarantine-api",
+    }
+    assert overlay["networks"] == {"quarantine-edge": {"internal": True}}
+    for name, changed in overlay["services"].items():
+        effective = {**base["services"].get(name, {}), **changed}
+        assert effective["user"] == "65532:65532"
+        assert effective["read_only"] and effective["cap_drop"] == ["ALL"]
+        assert effective["security_opt"] == ["no-new-privileges:true"]
+        assert not any(effective.get(k) for k in ["cap_add", "privileged", "devices", "group_add"])
+        assert effective["mem_limit"] == effective["memswap_limit"]
+        assert effective["pids_limit"] <= 64 and effective["cpus"] == 1
+        assert effective["logging"]["options"] == {"max-size": "10m", "max-file": "2"}
+        assert all(p.startswith("127.0.0.1:") for p in effective.get("ports", []))
+        # Overlay lists merge with base lists: examine both, not just the changed dict.
+        volumes = [*base["services"].get(name, {}).get("volumes", []), *changed.get("volumes", [])]
+        assert not any("sock" in str(v) for v in volumes)
+        if name in {"mcp-api", "research-api"}:
+            assert "eval-db" not in effective["networks"]
+            assert not any(
+                token in str(volumes)
+                for token in ["full-snapshot", "quarantine-sources", "/imports", "epochs"]
+            )
+            assert all(v.endswith(":ro") if isinstance(v, str) else v["read_only"] for v in volumes)
+        if name == "quarantine-api":
+            assert effective["networks"] == ["quarantine-edge"]
+            assert not effective.get("secrets") and not effective.get("environment")
+            assert not effective.get("ports")
+        for volume in changed.get("volumes", []):
+            if isinstance(volume, dict):
+                assert volume["read_only"] and volume["bind"]["create_host_path"] is False
+    assert overlay["services"]["mcp-api"]["command"][2] == "qfr_mcp.serve"
+    imports = yaml.safe_load((ROOT / "infra/docker-compose.stage4-import.yml").read_text())
+    assert set(imports["services"]) == {"quarantine-api"}
+    mount = imports["services"]["quarantine-api"]["volumes"][0]
+    assert mount["read_only"] and not mount["bind"]["create_host_path"]
+    assert mount["target"] == "/imports/originals"

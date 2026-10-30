@@ -1,0 +1,11 @@
+# Optional, declared read-only source mount; only quarantine sees original files.
+# Also declare its container path under the matching intake JSON mount_id.
+services:
+  quarantine-api:
+    volumes:
+      - type: bind
+        source: ${QFR_STAGE4_IMPORT_ROOT:?supply the authorized source directory}
+        target: /imports/originals
+        read_only: true
+        bind:
+          create_host_path: false

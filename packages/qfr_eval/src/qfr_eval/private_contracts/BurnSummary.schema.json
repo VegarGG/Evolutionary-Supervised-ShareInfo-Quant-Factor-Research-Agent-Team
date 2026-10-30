@@ -1,0 +1,74 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "epoch_id": {
+      "minLength": 1,
+      "title": "Epoch Id",
+      "type": "string"
+    },
+    "queries_used": {
+      "minimum": 0,
+      "title": "Queries Used",
+      "type": "integer"
+    },
+    "query_budget": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Query Budget"
+    },
+    "released_values": {
+      "minimum": 0,
+      "title": "Released Values",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "green",
+        "amber",
+        "red",
+        "unthresholded"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "trials": {
+      "minimum": 0,
+      "title": "Trials",
+      "type": "integer"
+    },
+    "window": {
+      "enum": [
+        "development",
+        "validation",
+        "W1",
+        "W2"
+      ],
+      "title": "Window",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "epoch_id",
+    "window",
+    "trials",
+    "released_values",
+    "queries_used",
+    "query_budget",
+    "status"
+  ],
+  "title": "BurnSummary",
+  "type": "object"
+}

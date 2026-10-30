@@ -1,0 +1,34 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "enum": [
+        "start",
+        "await_evaluation",
+        "pause",
+        "resume",
+        "cancel"
+      ],
+      "title": "Action",
+      "type": "string"
+    },
+    "expected_revision": {
+      "exclusiveMinimum": 0,
+      "title": "Expected Revision",
+      "type": "integer"
+    },
+    "operation_key": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Operation Key",
+      "type": "string"
+    }
+  },
+  "required": [
+    "operation_key",
+    "expected_revision",
+    "action"
+  ],
+  "title": "JobControl",
+  "type": "object"
+}

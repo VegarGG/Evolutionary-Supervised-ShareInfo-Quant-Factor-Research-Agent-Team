@@ -25,6 +25,7 @@ def build_zones(
     request_id: str,
     release_tag: str | None = None,
     archive_sha256: str | None = None,
+    audit_root: Path | None = None,
 ) -> tuple[Snapshot, Snapshot]:
     if cutoff > as_of:
         raise ValueError("research cutoff exceeds supplied snapshot as_of")
@@ -45,6 +46,7 @@ def build_zones(
             request_id=request_id,
             release_tag=release_tag,
             archive_sha256=archive_sha256,
+            audit_root=audit_root,
         )
 
     full = emit(tables, "full")

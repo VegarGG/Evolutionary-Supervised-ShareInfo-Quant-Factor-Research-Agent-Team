@@ -1,0 +1,42 @@
+{
+  "additionalProperties": false,
+  "description": "Role/database are selected by service code, never this public config.",
+  "properties": {
+    "connect_timeout_seconds": {
+      "exclusiveMinimum": 0,
+      "maximum": 30,
+      "title": "Connect Timeout Seconds",
+      "type": "integer"
+    },
+    "host": {
+      "minLength": 1,
+      "title": "Host",
+      "type": "string"
+    },
+    "password_ref": {
+      "pattern": "^env:[A-Z][A-Z0-9_]*$",
+      "title": "Password Ref",
+      "type": "string"
+    },
+    "port": {
+      "maximum": 65535,
+      "minimum": 1,
+      "title": "Port",
+      "type": "integer"
+    },
+    "revision": {
+      "const": 1,
+      "title": "Revision",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "revision",
+    "host",
+    "port",
+    "password_ref",
+    "connect_timeout_seconds"
+  ],
+  "title": "ServiceDatabaseConfiguration",
+  "type": "object"
+}

@@ -1,0 +1,18 @@
+{
+  "lock_timeout_ms": 5000,
+  "max_artifacts": 64,
+  "max_export_bytes": 104857600,
+  "max_export_files": 8192,
+  "max_export_metadata_bytes": 4194304,
+  "max_page_bytes": 4194304,
+  "max_page_size": 100,
+  "max_request_bytes": 262144,
+  "max_source_assets": 1024,
+  "polling_seconds": 5,
+  "request_body_timeout_seconds": 15,
+  "statement_timeout_ms": 30000,
+  "trusted_delivery_checkers": {
+    "pilot-research-delivery-v2": "0e4572fd3a7d531d3b6aabe052d3b3f7605ca71916b45c4ed7a430df0549ff53",
+    "pilot-research-delivery-v3": "3a53692c1dbc08edc35b8c7643854912841907cad7c138254545db75cebfc51d"
+  }
+}

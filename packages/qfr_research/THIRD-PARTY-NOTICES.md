@@ -22,8 +22,23 @@ The bounded review recorded in docs/LICENSING_REVIEW.md identified:
   bundle additional components. NumPy and SciPy include component-specific
   notices; SciPy's wheel also records OpenBLAS and GCC runtime-library terms
   with the GCC Runtime Library Exception.
-- Psycopg and psycopg-binary under LGPL-3.0-only. The evaluator and Stage 3
-  registry use them at runtime as well as in development/test environments.
+- The HTTP services use FastAPI (MIT), Uvicorn (BSD-3-Clause) and HTTPX
+  (BSD-3-Clause) from the existing dependency lock. HTTPX is a direct core client
+  dependency; the evaluator declares FastAPI/Uvicorn for its GET-only feedback
+  edge. Dependency versions and upstream notices remain unchanged.
+- The Stage 4 MCP adapter pins the official Python `mcp` 2.3.0 SDK and
+  `mcp-types` 2.3.0 (MIT). Its locked dependencies add `httpx2`/`httpcore2`
+  2.16.0 and `sse-starlette` 3.6.0 (BSD-3-Clause), PyJWT 2.15.1 and
+  Truststore 0.10.5 (MIT), and python-multipart 0.0.32 (Apache-2.0).
+  These are referenced/installed packages, not copied source. Retain their
+  complete installed notices; conditional packages for other platforms remain
+  governed by their own upstream terms. This is not binary redistribution clearance.
+- Ed25519 signing/verification uses cryptography 50.0.2 (Apache-2.0 OR
+  BSD-3-Clause); its locked CFFI dependency uses MIT-0 and Pycparser uses
+  BSD-3-Clause. Wheels may bundle OpenSSL and other components; retain their
+  complete upstream license files when distributing installed environments.
+- Psycopg and psycopg-binary under LGPL-3.0-only. The evaluator, registry and
+  Stage 4 research database service use them at runtime as well as in development/test environments.
   Their unmodified library files and
   notices must remain separable and replaceable. Any image distributor must
   satisfy the applicable LGPL source, notice, installation/relinking, and

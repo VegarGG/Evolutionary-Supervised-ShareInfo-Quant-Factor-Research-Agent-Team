@@ -1,0 +1,61 @@
+{
+  "authentication": {
+    "audience": "feedback",
+    "bindings": [
+      {
+        "principal": "schema-example",
+        "programs": [
+          "00000000-0000-0000-0000-00000000001e"
+        ],
+        "roles": [
+          "reader"
+        ],
+        "token_ref": "env:EXAMPLE_TOKEN"
+      }
+    ],
+    "maximum_token_bytes": 256,
+    "minimum_token_bytes": 32,
+    "revision": 1
+  },
+  "database": {
+    "connect_timeout_seconds": 5,
+    "host": "postgres",
+    "password_ref": "env:EXAMPLE_DB_PASSWORD",
+    "port": 5432,
+    "revision": 1
+  },
+  "policy": {
+    "max_page_bytes": 1048576,
+    "max_page_size": 100,
+    "revision": 1,
+    "statement_timeout_ms": 5000
+  },
+  "schema_version": "1",
+  "server": {
+    "access_log": false,
+    "host": "127.0.0.1",
+    "limit_concurrency": 4,
+    "log_level": "info",
+    "port": 8000,
+    "proxy_headers": false,
+    "revision": 1,
+    "timeout_graceful_shutdown": 30,
+    "timeout_keep_alive": 5
+  },
+  "verification": {
+    "canonicalization": "qfr-signed-json-v1",
+    "keys": [
+      {
+        "algorithm": "Ed25519",
+        "key_id": "ed25519:21fe31dfa154a261626bf854046fd2271b7bed4b6abe45aa58877ef47f9721b9",
+        "public_key_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+        "purposes": [
+          "released_report",
+          "delivery_receipt"
+        ]
+      }
+    ],
+    "maximum_document_bytes": 1048576,
+    "revision": 1
+  }
+}

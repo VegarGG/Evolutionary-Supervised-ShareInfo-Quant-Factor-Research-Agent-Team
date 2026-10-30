@@ -1,0 +1,33 @@
+{
+  "policy": {
+    "checker_id": "pilot-research-delivery-v3",
+    "maximum_artifacts": 64,
+    "maximum_payload_bytes": 104857600,
+    "maximum_reports": 64,
+    "negative_meaning": "declared_scope_does_not_meet_frozen_research_hurdle",
+    "release_policy_sha256": "6cb263a4834cc068fe22dcc27e8d857fab9b4419ab58feb4da86a5ca3cb8841b",
+    "reproduction": "immutable_evaluator_exact_match_event",
+    "required_execution": "registry",
+    "schema_version": "3",
+    "scope": "P0_P1_verification_only"
+  },
+  "program_id": "example-program",
+  "registry_client": {
+    "base_url": "http://registry-api:8000/",
+    "max_request_bytes": 8388608,
+    "max_response_bytes": 16777216,
+    "revision": 1,
+    "timeout_seconds": 10.0,
+    "token_ref": "env:REGISTRY_READER_TOKEN"
+  },
+  "research_client": {
+    "base_url": "http://research-api:8000/",
+    "max_request_bytes": 1048576,
+    "max_response_bytes": 4194304,
+    "revision": 1,
+    "timeout_seconds": 10.0,
+    "token_ref": "env:QFR_RESEARCH_READER_TOKEN"
+  },
+  "schema_version": "1",
+  "unapproved": true
+}

@@ -1,12 +1,16 @@
 {
   "content": {
     "hurdle_flags": {
+      "coverage": "insufficient_data",
       "fold_majority": "insufficient_data",
       "incremental_contribution": "insufficient_data",
       "net_result": "insufficient_data",
       "novelty": "insufficient_data",
+      "overall": "insufficient_data",
+      "paired_primary": "insufficient_data",
       "placebo": "insufficient_data",
-      "turnover": "insufficient_data"
+      "turnover": "insufficient_data",
+      "uncertainty_stability": "insufficient_data"
     },
     "minimum_detectable_effect": {
       "missing_reason": "not_measured",

@@ -19,6 +19,7 @@ from qfr_eval.backtest.scorers import ScorerSpec, built_in_history
 from qfr_eval.db import migrate
 from qfr_eval.protocols.models import FrozenProtocol
 from qfr_registry.storage.migrations import migrate as migrate_registry
+from qfr_research.db import migrate as migrate_research
 
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_TEST_POLICY = json.loads((ROOT / "configs/testing/postgres_v1.json").read_text())
@@ -48,7 +49,7 @@ def backend_runner(monkeypatch):
             pytest.fail("native acceptance requires explicit existing QFR_TEST_DOCKER_SOCKET")
         if not isinstance(profile, DockerNativeProfile):
             native = json.loads(
-                (ROOT / "configs/evaluation/sandbox_docker_native_v1.json").read_bytes()
+                (ROOT / "configs/evaluation/sandbox_docker_native_v5.json").read_bytes()
             )
             # Preserve each existing bounded negative fixture's distinct CPU/
             # memory/deadline budgets. The backend's security fields stay frozen.
@@ -59,7 +60,7 @@ def backend_runner(monkeypatch):
                     if key not in {"schema_version", "runtime", "process_limit", "pids_limit"}
                 }
             )
-            native["profile_id"] += "-docker-native-v1"
+            native["profile_id"] += "-docker-native-v2"
             profile = DockerNativeProfile.model_validate(native)
         with tempfile.TemporaryDirectory(prefix="qfr-ctl-", dir="/tmp") as directory:
             root = Path(directory)
@@ -167,11 +168,17 @@ def migrated_evaluator():
         try:
             migrate(database_dsn())
             migrate_registry(database_dsn(database="registry_db"))
+            migrate_research(database_dsn(database="research_db"))
         except Exception as error:
             # Never render a driver/SQLAlchemy frame with the credential-bearing DSN.
             raise pytest.fail.Exception(
                 f"Database migration failed ({type(error).__name__})", pytrace=False
             ) from None
+
+
+@pytest.fixture
+def evaluator_dsn():
+    return database_dsn("eval_rw")
 
 
 @pytest.fixture
@@ -190,6 +197,22 @@ def registry_connect():
     def factory(role="registry_app"):
         try:
             return psycopg.connect(database_dsn(role, "registry_db"), autocommit=True)
+        except psycopg.OperationalError as error:
+            raise psycopg.OperationalError(str(error)) from None
+
+    return factory
+
+
+@pytest.fixture
+def migration_dsn():
+    return lambda database: database_dsn(database=database)
+
+
+@pytest.fixture
+def research_connect():
+    def factory(role="research_rw"):
+        try:
+            return psycopg.connect(database_dsn(role, "research_db"), autocommit=True)
         except psycopg.OperationalError as error:
             raise psycopg.OperationalError(str(error)) from None
 

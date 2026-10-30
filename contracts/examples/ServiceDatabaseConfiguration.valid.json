@@ -1,0 +1,7 @@
+{
+  "connect_timeout_seconds": 5,
+  "host": "postgres",
+  "password_ref": "env:EXAMPLE_DB_PASSWORD",
+  "port": 5432,
+  "revision": 1
+}

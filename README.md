@@ -2,14 +2,14 @@
 
 Hybrid v1 multi-agent quantitative research and factor evolution: supervisor–worker coordination, a shared research blackboard, evolutionary candidate development and a strictly independent, deterministic evaluator. Deployment targets are **macOS on Apple Silicon (ARM64), first on the Mac Studio with its existing Docker Desktop**, and **Linux AMD64**. The Compose bundle uses `linux/arm64` containers on Apple and `linux/amd64` containers on Linux AMD64; a Linux container build or test is not Apple host acceptance. A standard MCP front door connects a host agent such as Codex, with online Kimi, GLM and DeepSeek as the mandatory research-side LLM providers.
 
-**Status:** foundation, data snapshots, DSL, metrics and the independent pilot evaluator are implemented. The evaluator supports frozen protocols, audited private records, deterministic replay and trial clustering; see [Stage 2 operations](docs/STAGE_2.md). Stage 3 implements the Registry and owner-approved Docker-native sandbox and has [passed its Apple-first exit gate](docs/STAGE_3_ACCEPTANCE.md), including actual sandbox, registered P0/P1, Compose recovery and deployed socket-boundary checks. Feedback release, MCP orchestration and autonomous research remain later stages. Neither deployment target is production-accepted. Docker application services remain idle stubs until their stages implement scheduling.
+**Status:** foundation, data snapshots, DSL, metrics and the independent pilot evaluator are implemented. The evaluator supports frozen protocols, audited private records, deterministic replay and trial clustering; see [Stage 2 operations](docs/STAGE_2.md). Stage 3 implements the Registry and owner-approved Docker-native sandbox and has [passed its Apple-first exit gate](docs/STAGE_3_ACCEPTANCE.md), including actual sandbox, registered P0/P1, Compose recovery and deployed socket-boundary checks. Stage 4 implements human-driven research persistence, signed release/feedback, delivery checking, bounded import/export and the standard MCP adapter; its real Mac end-to-end exit gate is still pending. Autonomous research remains a later stage. Neither deployment target is production-accepted. Base Compose is idle; API serving requires the explicit Stage 4 overlay and reviewed configuration.
 
-DeepSeek v4.1 Flash is the first model to integrate at the provider stage. Exact official endpoint/model identifiers and explicit live-call authorization are required there; no model integration or paid calls are part of Stage 2.
+DeepSeek v4.1 Flash is the first model to integrate at the provider stage. Use the highest officially supported reasoning setting, with exact endpoint/model identifiers verified before any explicitly authorized live call. No model integration or paid calls are part of Stage 4.
 
 The [Stage 3 acceptance record](docs/STAGE_3_ACCEPTANCE.md) records the 790-pass,
 zero-skip native Mac report and reconciled deployment evidence. The PR remains
 draft and unmerged; [earlier checkpoint reports](docs/STAGE_3_CHECKPOINT.md) retain
-their historical scope. Stage 4 is at entry review, not implemented.
+their historical scope. [Stage 4 progress](docs/STAGE_4.md) distinguishes tested components from pending acceptance.
 
 ## Start here
 
@@ -19,6 +19,8 @@ their historical scope. Stage 4 is at entry review, not implemented.
 4. [Local implementation reference](docs/LOCAL_IMPLEMENTATION_REFERENCE.md): detailed DSL, metrics, database, API, invariant, test and default specifications; its daily-stock values belong to the named `stock_daily_v1` profile.
 
 ## Supporting material
+
+- [Portable intake guide](docs/PORTABLE_INTAKE_GUIDE.md), [client connections](docs/MCP_CLIENTS.md) and [explicit service launch](docs/STAGE_4_SERVICES.md).
 
 - [Deployment targets and acceptance matrix](docs/DEPLOYMENT_TARGETS.md): Apple-first release scope, later native Linux AMD64 validation, and host/container evidence requirements.
 - [Pilot case: P0/P1 industry rotation](docs/appendix-a-pilot-case-industry-rotation.md), the first preservation and reproduction fixture, labelled previously inspected history.

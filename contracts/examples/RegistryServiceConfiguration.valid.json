@@ -1,0 +1,45 @@
+{
+  "authentication": {
+    "bindings": [
+      {
+        "principal": "fixture-publisher",
+        "programs": [
+          "program-example"
+        ],
+        "roles": [
+          "publisher"
+        ],
+        "token_ref": "env:REGISTRY_PUBLISHER_TOKEN"
+      }
+    ],
+    "enabled": true,
+    "maximum_token_bytes": 512,
+    "minimum_token_bytes": 32,
+    "revision": 1
+  },
+  "database": {
+    "connect_timeout_seconds": 5,
+    "host": "postgres",
+    "password_ref": "env:EXAMPLE_DB_PASSWORD",
+    "port": 5432,
+    "revision": 1
+  },
+  "dsl_policy_files": {
+    "pilot_industry_v1": "/etc/qfr/policies/dsl/pilot_industry_v1.json"
+  },
+  "payload_root": "/artifacts",
+  "publication_policy_file": "/etc/qfr/policies/registry/publication_v1.json",
+  "read_policy_file": "/etc/qfr/policies/registry/read_v1.json",
+  "schema_version": "1",
+  "server": {
+    "access_log": false,
+    "host": "127.0.0.1",
+    "limit_concurrency": 4,
+    "log_level": "info",
+    "port": 8000,
+    "proxy_headers": false,
+    "revision": 1,
+    "timeout_graceful_shutdown": 30,
+    "timeout_keep_alive": 5
+  }
+}

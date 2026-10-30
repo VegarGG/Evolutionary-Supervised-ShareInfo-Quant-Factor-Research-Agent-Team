@@ -1,0 +1,21 @@
+{
+  "allowed_hosts": [
+    "127.0.0.1:*",
+    "localhost:*",
+    "mcp-api:8000"
+  ],
+  "allowed_origins": [
+    "http://127.0.0.1:*",
+    "http://localhost:*"
+  ],
+  "default_page_size": 20,
+  "dns_rebinding_protection": true,
+  "max_inline_result_bytes": 32768,
+  "max_page_size": 100,
+  "max_request_bytes": 262144,
+  "request_body_timeout_seconds": 15,
+  "resource_page_characters": 6000,
+  "revision": 1,
+  "stateless_transport": true,
+  "upload_chunk_bytes": 4194304
+}

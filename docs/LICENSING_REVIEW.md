@@ -86,3 +86,17 @@ available (no skips). `uv build --all-packages` and the distribution check passe
 for all five wheels and five sdists. No provider calls, image publishing, or
 evaluator activation occurred. Hosted workflow results are reported separately
 on the licensing PR; local checks do not imply hosted CI is green.
+
+## Stage 4 maintained MCP SDK dependencies (2026-10-28)
+
+The adapter pins the official Python MCP SDK 2.3.0 and mcp-types 2.3.0, both MIT.
+Installed distribution metadata was checked for these and the new Linux/macOS
+runtime dependencies: httpx2/httpcore2 2.16.0 and sse-starlette 3.6.0 (BSD-3-Clause),
+PyJWT 2.15.1 and truststore 0.10.5 (MIT), python-multipart 0.0.32 (Apache-2.0).
+Existing locked versions are unchanged. The source repository references these
+packages; Docker environments install them with upstream distribution notices.
+No additional incompatible copyleft dependency was identified in this bounded
+runtime review. The lock also includes platform-conditional pywin32/httpx2-jsfetch
+entries, not installed on the supported Apple/Linux targets; no clearance is
+claimed for a hypothetical Windows/browser distribution. Existing Psycopg and
+base-image obligations remain unchanged. This is not a complete legal audit.

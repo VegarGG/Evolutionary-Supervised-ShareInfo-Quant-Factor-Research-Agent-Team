@@ -1,0 +1,33 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "max_page_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Max Page Bytes",
+      "type": "integer"
+    },
+    "max_page_size": {
+      "exclusiveMinimum": 0,
+      "title": "Max Page Size",
+      "type": "integer"
+    },
+    "revision": {
+      "exclusiveMinimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "statement_timeout_ms": {
+      "exclusiveMinimum": 0,
+      "title": "Statement Timeout Ms",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "revision",
+    "max_page_size",
+    "max_page_bytes",
+    "statement_timeout_ms"
+  ],
+  "title": "FeedbackReadPolicy",
+  "type": "object"
+}

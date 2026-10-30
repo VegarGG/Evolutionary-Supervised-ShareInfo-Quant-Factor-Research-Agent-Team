@@ -1,0 +1,14 @@
+{
+  "completed_at": "2026-10-25T18:00:00Z",
+  "eligible_at": "2026-10-25T18:00:00Z",
+  "epoch_id": "synthetic-epoch",
+  "family_id": "family-example",
+  "policy_sha256": "6dcea5ac73f23ebe453891dc6ada432445df42a9492a2182c44895e1338ebbc9",
+  "program_id": "program-example",
+  "schema_version": "1",
+  "source_id": "00000000-0000-0000-0000-000000000002",
+  "source_kind": "official_record",
+  "source_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "stage": "pilot",
+  "unapproved": true
+}

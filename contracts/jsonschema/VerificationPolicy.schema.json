@@ -1,0 +1,80 @@
+{
+  "$defs": {
+    "VerificationKey": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519",
+          "title": "Algorithm",
+          "type": "string"
+        },
+        "key_id": {
+          "minLength": 1,
+          "title": "Key Id",
+          "type": "string"
+        },
+        "public_key_hex": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Public Key Hex",
+          "type": "string"
+        },
+        "purposes": {
+          "items": {
+            "enum": [
+              "released_report",
+              "measurement_receipt",
+              "delivery_receipt"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Purposes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "key_id",
+        "public_key_hex",
+        "purposes"
+      ],
+      "title": "VerificationKey",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "canonicalization": {
+      "const": "qfr-signed-json-v1",
+      "title": "Canonicalization",
+      "type": "string"
+    },
+    "keys": {
+      "items": {
+        "$ref": "#/$defs/VerificationKey"
+      },
+      "minItems": 1,
+      "title": "Keys",
+      "type": "array"
+    },
+    "maximum_document_bytes": {
+      "exclusiveMinimum": 0,
+      "maximum": 16777216,
+      "title": "Maximum Document Bytes",
+      "type": "integer"
+    },
+    "revision": {
+      "const": 1,
+      "title": "Revision",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "revision",
+    "canonicalization",
+    "maximum_document_bytes",
+    "keys"
+  ],
+  "title": "VerificationPolicy",
+  "type": "object"
+}

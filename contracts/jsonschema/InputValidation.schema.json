@@ -1,0 +1,60 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "baseline_refs_verified": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Baseline Refs Verified",
+      "type": "array"
+    },
+    "data_refs_verified": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Data Refs Verified",
+      "type": "array"
+    },
+    "readiness": {
+      "enum": [
+        "needs_input",
+        "waiting_for_data",
+        "ready"
+      ],
+      "title": "Readiness",
+      "type": "string"
+    },
+    "runnable": {
+      "title": "Runnable",
+      "type": "boolean"
+    },
+    "source_assets_verified": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Source Assets Verified",
+      "type": "array"
+    },
+    "unresolved_requirements": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Unresolved Requirements",
+      "type": "array"
+    }
+  },
+  "required": [
+    "readiness",
+    "unresolved_requirements",
+    "data_refs_verified",
+    "baseline_refs_verified",
+    "source_assets_verified",
+    "runnable"
+  ],
+  "title": "InputValidation",
+  "type": "object"
+}

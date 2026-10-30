@@ -1,0 +1,91 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "chunk_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Chunk Bytes",
+      "type": "integer"
+    },
+    "max_archive_directory_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Max Archive Directory Bytes",
+      "type": "integer"
+    },
+    "max_archive_entries": {
+      "exclusiveMinimum": 0,
+      "title": "Max Archive Entries",
+      "type": "integer"
+    },
+    "max_expanded_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Max Expanded Bytes",
+      "type": "integer"
+    },
+    "max_member_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Max Member Bytes",
+      "type": "integer"
+    },
+    "max_metadata_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Max Metadata Bytes",
+      "type": "integer"
+    },
+    "max_reserved_bytes_per_program": {
+      "exclusiveMinimum": 0,
+      "title": "Max Reserved Bytes Per Program",
+      "type": "integer"
+    },
+    "max_upload_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Max Upload Bytes",
+      "type": "integer"
+    },
+    "max_uploads_per_program": {
+      "exclusiveMinimum": 0,
+      "title": "Max Uploads Per Program",
+      "type": "integer"
+    },
+    "media_types": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Media Types",
+      "type": "array"
+    },
+    "request_timeout_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Request Timeout Seconds",
+      "type": "integer"
+    },
+    "revision": {
+      "exclusiveMinimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "sqlite_timeout_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Sqlite Timeout Seconds",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "revision",
+    "max_metadata_bytes",
+    "chunk_bytes",
+    "max_upload_bytes",
+    "max_uploads_per_program",
+    "max_reserved_bytes_per_program",
+    "max_archive_entries",
+    "max_archive_directory_bytes",
+    "max_expanded_bytes",
+    "max_member_bytes",
+    "request_timeout_seconds",
+    "sqlite_timeout_seconds",
+    "media_types"
+  ],
+  "title": "IntakeTransportPolicy",
+  "type": "object"
+}

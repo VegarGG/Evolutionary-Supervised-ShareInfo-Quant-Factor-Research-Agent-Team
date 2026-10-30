@@ -1,5 +1,26 @@
 {
   "$defs": {
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_id": {
+          "minLength": 1,
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_version_id",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
     "Conclusion": {
       "enum": [
         "supported_positive",
@@ -40,6 +61,39 @@
       ],
       "title": "DeliverableRequirement",
       "type": "object"
+    },
+    "PilotDeliveryAssessment": {
+      "additionalProperties": false,
+      "description": "Exact artifact roles frozen before the human-driven pilot job is admitted.",
+      "properties": {
+        "assessed_artifact_refs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactReference"
+          },
+          "minItems": 1,
+          "title": "Assessed Artifact Refs",
+          "type": "array"
+        },
+        "reference_artifact_refs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactReference"
+          },
+          "title": "Reference Artifact Refs",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "assessed_artifact_refs",
+        "reference_artifact_refs"
+      ],
+      "title": "PilotDeliveryAssessment",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -51,6 +105,17 @@
       "minItems": 1,
       "title": "Allowed Conclusions",
       "type": "array"
+    },
+    "assessment_scope": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PilotDeliveryAssessment"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "evidence_release_requirements": {
       "items": {
@@ -127,7 +192,10 @@
       "type": "array"
     },
     "schema_version": {
-      "const": "1",
+      "enum": [
+        "1",
+        "2"
+      ],
       "title": "Schema Version",
       "type": "string"
     },

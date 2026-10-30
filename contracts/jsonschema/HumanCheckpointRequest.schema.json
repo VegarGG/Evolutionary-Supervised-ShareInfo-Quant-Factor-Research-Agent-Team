@@ -1,0 +1,43 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "checkpoint_id": {
+      "format": "uuid",
+      "title": "Checkpoint Id",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "clarification",
+        "delivery_approval"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "proposal_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Proposal Id"
+    },
+    "question": {
+      "minLength": 1,
+      "title": "Question",
+      "type": "string"
+    }
+  },
+  "required": [
+    "checkpoint_id",
+    "kind",
+    "question",
+    "proposal_id"
+  ],
+  "title": "HumanCheckpointRequest",
+  "type": "object"
+}

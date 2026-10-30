@@ -6,6 +6,7 @@ from typing import Literal, Self
 
 from pydantic import Field, NonNegativeInt, model_validator
 
+from qfr_core.contracts.access import ProgramId
 from qfr_core.contracts.base import Contract, Sha256, Text
 from qfr_core.contracts.enums import PITGrade
 
@@ -207,4 +208,22 @@ class SnapshotManifest(Contract):
         paths = [file.path for table in self.tables for file in table.files]
         if len(set(names)) != len(names) or len(set(paths)) != len(paths):
             raise ValueError("duplicate snapshot tables or files")
+        return self
+
+
+class ResearchDatasetRegistration(Contract):
+    """Trusted ingest catalog: opaque evaluator ID plus authorized research metadata."""
+
+    schema_version: Literal["1"]
+    registration_id: Sha256
+    program_id: ProgramId
+    dataset_version_id: Sha256
+    source_ref: Text
+    research_manifest: SnapshotManifest
+    research_manifest_sha256: Sha256
+
+    @model_validator(mode="after")
+    def research_only(self) -> Self:
+        if self.research_manifest.zone != "research":
+            raise ValueError("research catalog cannot contain a full snapshot manifest")
         return self

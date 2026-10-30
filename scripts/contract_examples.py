@@ -4,10 +4,12 @@ from pathlib import Path
 
 import yaml
 from qfr_core.configuration import ConfigDocument
+from qfr_core.contracts import access as access
 from qfr_core.contracts import artifacts as a
 from qfr_core.contracts import blackboard as b
 from qfr_core.contracts import data as d
 from qfr_core.contracts import delivery as x
+from qfr_core.contracts import feedback as feedback
 from qfr_core.contracts import intake as i
 from qfr_core.contracts import jobs as j
 from qfr_core.contracts import providers as p
@@ -328,12 +330,16 @@ def examples(root: Path):
         hurdle_flags={
             k: "insufficient_data"
             for k in [
+                "paired_primary",
                 "incremental_contribution",
                 "fold_majority",
                 "placebo",
                 "net_result",
                 "turnover",
                 "novelty",
+                "uncertainty_stability",
+                "coverage",
+                "overall",
             ]
         },
         rank_bucket="withheld",
@@ -408,6 +414,40 @@ def examples(root: Path):
         a.ArtifactManifest.model_validate(artifact),
         r.ReleasedReport.model_validate(report),
         x.DeliveryReceipt.model_validate(receipt),
+        x.AdmittedDeliveryContext(
+            schema_version="1",
+            job=job,
+            brief=brief,
+            input_bundle=bundle,
+            human_approval=None,
+        ),
+        x.HumanDeliveryApproval(
+            approval_id="approval-example",
+            gate_spec_hash=H,
+            proposal_sha256=H,
+            decision="approve",
+            principal="synthetic-human",
+            recorded_at=AT,
+        ),
+        x.DeliveryProposal(
+            schema_version="1",
+            proposal_id="proposal-example",
+            job_id="job-example",
+            conclusion="supported_negative",
+            artifact_refs=[
+                a.ArtifactReference(artifact_version_id="artifact-example", content_hash=H)
+            ],
+            released_report_refs=[version],
+            deliverables=[
+                x.DeliverableBinding(
+                    name="research note",
+                    artifact=a.ArtifactReference(
+                        artifact_version_id="artifact-example", content_hash=H
+                    ),
+                )
+            ],
+            shortlist=[],
+        ),
         x.ExportManifest.model_validate(export),
         p.EffectiveTaskConfiguration.model_validate(effective),
         p.ProviderProfiles.model_validate(
@@ -571,6 +611,27 @@ def examples(root: Path):
         size_neutral_rank_ic=missing,
         complexity=1,
     )
+    import hashlib
+
+    from qfr_core.contracts.signing import VerificationKey, VerificationPolicy
+
+    # RFC 8032 public test vector; never a deployment trust grant.
+    test_public = "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
+    roots.append(
+        VerificationPolicy(
+            revision=1,
+            canonicalization="qfr-signed-json-v1",
+            maximum_document_bytes=1048576,
+            keys=[
+                VerificationKey(
+                    algorithm="Ed25519",
+                    key_id="ed25519:" + hashlib.sha256(bytes.fromhex(test_public)).hexdigest(),
+                    public_key_hex=test_public,
+                    purposes=["released_report", "delivery_receipt"],
+                )
+            ],
+        )
+    )
     roots += [
         r.StockW1Release.model_validate(w1),
         r.StockW2Release(type="w2", decision="FAIL", ladder_status="withheld", scalar=None),
@@ -587,6 +648,13 @@ def examples(root: Path):
             type="decision", decision="REJECTED", category="gate_failed", gate="quality"
         ),
         r.LibraryRelease(type="library", membership="baseline"),
+        r.PlanningDetectability(
+            metric="extreme_macro_recall",
+            critical_t=2,
+            period_source="released_scalar_origin_period_count",
+            assumption="independent_mature_matched_decisions",
+            admission_effect="none",
+        ),
         r.PublicProtocolCard(
             schema_version="1",
             protocol_version="pilot/1",
@@ -795,4 +863,121 @@ def examples(root: Path):
             ],
         ),
     ]
+    roots += [
+        b.ResearchProgram(
+            schema_version="1",
+            program_id="program-example",
+            name="Synthetic research context",
+            status="inactive",
+            charter_revision=1,
+            charter={"new_data_fetch": False, "paid_run_authorized": False},
+            created_by="fixture-author",
+            created_at=AT,
+        ),
+        b.ResearchQueueLease(
+            schema_version="1",
+            queue_entry_id="queue-example",
+            program_id="program-example",
+            research_job_id="job-example",
+            queue="validation",
+            worker="fixture-worker",
+            fence=1,
+            attempt=1,
+            lease_until=AT,
+            payload={"input_ref": "bundle-example"},
+        ),
+        r.WithheldRelease(type="withheld", reason="budget"),
+        r.PublicReleasePolicyCard(
+            schema_version="1",
+            policy_ref="pilot-release-v1@1",
+            policy_sha256=H,
+            profile="pilot_industry_v1",
+            fitness_profile="pilot_single_scalar_flags_v1",
+            disclosure="scalar_plus_flags",
+            ladder_step=0.011239912200318261,
+            rounding={"primary": 0.011239912200318261},
+            batch_hours=6,
+            weekly_batch=None,
+            advancement_delay_days=None,
+            quotas={"lineage_versions_per_generation": 3},
+            raw_series_released=False,
+            confirmation_metrics_released=False,
+            diagnostics="enum_codes_only",
+            prior_best_origin_required=True,
+        ),
+    ]
+    roots.extend(
+        [
+            access.ServiceAuthentication(
+                revision=1,
+                audience="feedback",
+                minimum_token_bytes=32,
+                maximum_token_bytes=4096,
+                bindings=[
+                    access.ServiceTokenBinding(
+                        principal="example-reader",
+                        token_ref="env:QFR_FEEDBACK_READER_TOKEN",
+                        roles=["reader"],
+                        programs=["example-program"],
+                    )
+                ],
+            ),
+            feedback.FeedbackReadPolicy(
+                revision=1, max_page_size=100, max_page_bytes=1048576, statement_timeout_ms=5000
+            ),
+            feedback.ReportPage(schema_version="1", items=[], next_after_id=None, has_more=False),
+            feedback.ArtifactFeedback(
+                schema_version="1",
+                artifact_version_id="00000000-0000-0000-0000-000000000001",
+                latest_released=None,
+                timeline=feedback.ReportPage(
+                    schema_version="1", items=[], next_after_id=None, has_more=False
+                ),
+            ),
+            feedback.PublicCards(schema_version="1", policies=[], protocols=[]),
+        ]
+    )
+    roots.extend(
+        [
+            x.DeliveryCandidate(
+                schema_version="1",
+                context=next(
+                    value for value in roots if isinstance(value, x.AdmittedDeliveryContext)
+                ),
+                proposal=next(value for value in roots if isinstance(value, x.DeliveryProposal)),
+            ),
+            access.PublicServiceClientConfiguration(
+                revision=1,
+                base_url="http://research-api:8000",
+                token_ref="env:QFR_RESEARCH_READER_TOKEN",
+                timeout_seconds=10,
+                max_request_bytes=1048576,
+                max_response_bytes=4194304,
+            ),
+        ]
+    )
+    research_manifest = next(value for value in roots if isinstance(value, d.SnapshotManifest))
+    research_manifest = research_manifest.model_copy(
+        update={
+            "zone": "research",
+            "research_cutoff": research_manifest.as_of,
+        }
+    )
+    roots.append(
+        d.ResearchDatasetRegistration(
+            schema_version="1",
+            registration_id=H,
+            program_id="example-program",
+            dataset_version_id=H,
+            source_ref="example-source",
+            research_manifest=research_manifest,
+            research_manifest_sha256=H,
+        )
+    )
+    from scripts.research_contract_examples import examples as research_examples
+
+    roots.extend(research_examples(root, roots))
+    from scripts.service_contract_examples import examples as service_examples
+
+    roots.extend(service_examples(root, roots))
     return roots

@@ -8,6 +8,10 @@ def main() -> None:
         from qfr_eval.admin.cli import main as admin
 
         admin(sys.argv[2:])
+    elif len(sys.argv) > 1 and sys.argv[1] == "ingest":
+        from qfr_eval.ingest.command import main as authorized_ingest
+
+        authorized_ingest(sys.argv[2:])
     elif len(sys.argv) > 1 and sys.argv[1] == "eval":
         from qfr_eval.runtime_bootstrap import bootstrap_cli
         from qfr_eval.runtime_contracts import RuntimeCompatibilityError

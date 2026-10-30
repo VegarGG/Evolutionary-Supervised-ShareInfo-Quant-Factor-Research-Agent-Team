@@ -1,8 +1,17 @@
 """Strict released-only projection; there is no private holdout metric field."""
 
-from typing import Annotated, Literal, Self
+from typing import Annotated, Any, Literal, Self
 
-from pydantic import AwareDatetime, Field, NonNegativeInt, model_validator
+from pydantic import (
+    AwareDatetime,
+    Field,
+    NonNegativeInt,
+    PositiveFloat,
+    PositiveInt,
+    SerializerFunctionWrapHandler,
+    model_serializer,
+    model_validator,
+)
 
 from qfr_core.contracts.base import Contract, Sha256, Text
 from qfr_core.contracts.enums import DiagnosticFlag, ReasonCode
@@ -41,12 +50,16 @@ class ReleasedScalar(Contract):
 
 
 class PilotHurdleFlags(Contract):
+    paired_primary: Literal["pass", "fail", "insufficient_data", "not_applicable"]
     incremental_contribution: Literal["pass", "fail", "insufficient_data", "not_applicable"]
     fold_majority: Literal["pass", "fail", "insufficient_data", "not_applicable"]
     placebo: Literal["pass", "fail", "insufficient_data", "not_applicable"]
     net_result: Literal["pass", "fail", "insufficient_data", "not_applicable"]
     turnover: Literal["pass", "fail", "insufficient_data", "not_applicable"]
     novelty: Literal["pass", "fail", "insufficient_data", "not_applicable"]
+    uncertainty_stability: Literal["pass", "fail", "insufficient_data", "not_applicable"]
+    coverage: Literal["pass", "fail", "insufficient_data", "not_applicable"]
+    overall: Literal["pass", "fail", "insufficient_data", "not_applicable"]
 
 
 class PilotRelease(Contract):
@@ -115,6 +128,13 @@ class LibraryRelease(Contract):
     membership: Literal["baseline", "active", "retired"]
 
 
+class WithheldRelease(Contract):
+    """No current score, flags, sample counts or other outcome-dependent payload."""
+
+    type: Literal["withheld"]
+    reason: Literal["budget", "non_selectable"]
+
+
 ReleasedContent = Annotated[
     PilotRelease
     | StockW1Release
@@ -123,7 +143,8 @@ ReleasedContent = Annotated[
     | AdvancementRelease
     | SimulationRelease
     | DecisionRelease
-    | LibraryRelease,
+    | LibraryRelease
+    | WithheldRelease,
     Field(discriminator="type"),
 ]
 
@@ -177,8 +198,19 @@ class ReleasedReport(Contract):
         return self
 
 
+class PlanningDetectability(Contract):
+    """A null-model planning calculation, never a candidate performance or gate."""
+
+    metric: Literal["extreme_macro_recall"]
+    critical_t: Literal[2]
+    period_source: Literal["released_scalar_origin_period_count"]
+    assumption: Literal["independent_mature_matched_decisions"]
+    admission_effect: Literal["none"]
+
+
 class PublicProtocolCard(Contract):
     schema_version: Literal["1"]
+    card_ref: Text | None = None
     protocol_version: Text
     profile: Literal["pilot_industry_v1", "stock_daily_v1"]
     universe: Text
@@ -188,3 +220,51 @@ class PublicProtocolCard(Contract):
     public_gate_descriptions: list[Text]
     release_policy_ref: Text
     exposure: Literal["previously_seen", "unknown", "prospective"]
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_card(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        if self.card_ref is None:
+            value.pop("card_ref", None)
+        return value
+
+
+class PublicReleasePolicyCard(Contract):
+    schema_version: Literal["1"]
+    policy_ref: Text
+    policy_sha256: Sha256
+    profile: Literal["pilot_industry_v1", "stock_daily_v1"]
+    fitness_profile: Literal["pilot_single_scalar_flags_v1", "stock_multi_metric_v1"]
+    disclosure: Literal["scalar_plus_flags", "coarsened_stock_reports"]
+    ladder_step: PositiveFloat
+    rounding: dict[
+        Literal["primary", "rank_ic", "ir", "sharpe", "shares", "correlations", "w2_best_rank_ic"],
+        PositiveFloat,
+    ]
+    batch_hours: PositiveInt
+    weekly_batch: Literal["Monday 00:00 UTC"] | None
+    advancement_delay_days: NonNegativeInt | None
+    quotas: dict[
+        Literal[
+            "lineage_versions_per_generation",
+            "family_w1_per_24h",
+            "family_w2_per_7d",
+            "program_w1_per_day",
+            "program_w2_per_week",
+            "global_w1_per_day",
+            "global_w2_per_epoch",
+        ],
+        PositiveInt,
+    ]
+    raw_series_released: Literal[False]
+    confirmation_metrics_released: Literal[False]
+    diagnostics: Literal["enum_codes_only"]
+    prior_best_origin_required: Literal[True]
+    planning_detectability: PlanningDetectability | None = None
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_card(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        if self.planning_detectability is None:
+            value.pop("planning_detectability", None)
+        return value

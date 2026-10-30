@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "JsonValue": {}
+  },
+  "additionalProperties": false,
+  "description": "One fenced task lease, separate from a research job's delivery state.",
+  "properties": {
+    "attempt": {
+      "exclusiveMinimum": 0,
+      "title": "Attempt",
+      "type": "integer"
+    },
+    "fence": {
+      "exclusiveMinimum": 0,
+      "title": "Fence",
+      "type": "integer"
+    },
+    "lease_until": {
+      "format": "date-time",
+      "title": "Lease Until",
+      "type": "string"
+    },
+    "payload": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Payload",
+      "type": "object"
+    },
+    "program_id": {
+      "minLength": 1,
+      "title": "Program Id",
+      "type": "string"
+    },
+    "queue": {
+      "minLength": 1,
+      "title": "Queue",
+      "type": "string"
+    },
+    "queue_entry_id": {
+      "minLength": 1,
+      "title": "Queue Entry Id",
+      "type": "string"
+    },
+    "research_job_id": {
+      "minLength": 1,
+      "title": "Research Job Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "worker": {
+      "minLength": 1,
+      "title": "Worker",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "queue_entry_id",
+    "program_id",
+    "research_job_id",
+    "queue",
+    "worker",
+    "fence",
+    "attempt",
+    "lease_until",
+    "payload"
+  ],
+  "title": "ResearchQueueLease",
+  "type": "object"
+}

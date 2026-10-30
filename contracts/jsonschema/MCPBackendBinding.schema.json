@@ -1,0 +1,147 @@
+{
+  "$defs": {
+    "PublicServiceClientConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "base_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Base Url",
+          "type": "string"
+        },
+        "max_request_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Request Bytes",
+          "type": "integer"
+        },
+        "max_response_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Response Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "number"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "base_url",
+        "token_ref",
+        "timeout_seconds",
+        "max_request_bytes",
+        "max_response_bytes"
+      ],
+      "title": "PublicServiceClientConfiguration",
+      "type": "object"
+    },
+    "RegistryClientConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "base_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Base Url",
+          "type": "string"
+        },
+        "max_request_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Request Bytes",
+          "type": "integer"
+        },
+        "max_response_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Response Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "number"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "base_url",
+        "token_ref",
+        "timeout_seconds",
+        "max_request_bytes",
+        "max_response_bytes"
+      ],
+      "title": "RegistryClientConfiguration",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "feedback": {
+      "$ref": "#/$defs/PublicServiceClientConfiguration"
+    },
+    "intake": {
+      "$ref": "#/$defs/PublicServiceClientConfiguration"
+    },
+    "principal": {
+      "minLength": 1,
+      "title": "Principal",
+      "type": "string"
+    },
+    "program_id": {
+      "format": "uuid",
+      "title": "Program Id",
+      "type": "string"
+    },
+    "registry": {
+      "$ref": "#/$defs/RegistryClientConfiguration"
+    },
+    "research": {
+      "$ref": "#/$defs/PublicServiceClientConfiguration"
+    },
+    "roles": {
+      "items": {
+        "enum": [
+          "reader",
+          "research_lead",
+          "human_reviewer"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Roles",
+      "type": "array"
+    }
+  },
+  "required": [
+    "principal",
+    "program_id",
+    "roles",
+    "research",
+    "registry",
+    "feedback",
+    "intake"
+  ],
+  "title": "MCPBackendBinding",
+  "type": "object"
+}

@@ -58,6 +58,7 @@ from qfr_eval.screening.records import (
     ScreeningRequest,
     ScreeningTrial,
 )
+from qfr_eval.signed_receipts import SignedMeasurementReceipt
 from qfr_eval.statistics.bootstrap import Interval
 from qfr_eval.statistics.clustering import BehavioralFingerprint, ClusterSnapshot
 from qfr_eval.statistics.family import FamilyInterval, FamilyStatistics, TrialObservation
@@ -485,7 +486,7 @@ def generate(check=False):
         }
     )
     sandbox = SandboxProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_pilot_v2.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_pilot_v6.json").read_bytes()
     )
     readiness = SandboxReadiness(
         schema_version="1",
@@ -499,7 +500,7 @@ def generate(check=False):
         reason_code="failed:backend_unavailable",
     )
     native = DockerNativeProfile.model_validate_json(
-        (ROOT / "configs/evaluation/sandbox_docker_native_v1.json").read_bytes()
+        (ROOT / "configs/evaluation/sandbox_docker_native_v5.json").read_bytes()
     )
     controller_config = DockerControllerConfiguration(
         schema_version="1",
@@ -740,6 +741,60 @@ def generate(check=False):
                 model.__name__ + ".invalid.json": {**sample, "unapproved": True},
             }
         )
+    from qfr_core.contracts.access import PublicServiceClientConfiguration
+    from qfr_eval.delivery.models import DeliveryWorkerConfiguration, PilotDeliveryPolicy
+
+    from scripts.ingest_contract_examples import examples as ingest_examples
+    from scripts.release_contract_examples import examples as release_examples
+
+    delivery_policy = PilotDeliveryPolicy.model_validate_json(
+        (ROOT / "configs/delivery/pilot_research_delivery_v3.json").read_bytes()
+    )
+    for value in [
+        *release_examples(ROOT),
+        *ingest_examples(ROOT),
+        delivery_policy,
+        DeliveryWorkerConfiguration(
+            schema_version="1",
+            program_id="example-program",
+            research_client=PublicServiceClientConfiguration.model_validate_json(
+                (
+                    ROOT / "contracts/examples/PublicServiceClientConfiguration.valid.json"
+                ).read_bytes()
+            ),
+            registry_client=session.registry_client,
+            policy=delivery_policy,
+        ),
+    ]:
+        model = type(value)
+        sample = value.model_dump(mode="json")
+        outputs.update(
+            {
+                model.__name__ + ".schema.json": model.model_json_schema(),
+                model.__name__ + ".valid.json": sample,
+                model.__name__ + ".invalid.json": {**sample, "unapproved": True},
+            }
+        )
+    from qfr_core.contracts.reports import Signature
+
+    signed_receipt = SignedMeasurementReceipt(
+        schema_version="1",
+        kind="private_signed_measurement_receipt",
+        authenticity="signed_wrapper",
+        receipt=receipt,
+        signed_at=record.created_at,
+        signature=Signature(
+            algorithm="Ed25519", key_id="structural-example-not-trusted", signature_hex="0" * 128
+        ),
+    )
+    sample = signed_receipt.model_dump(mode="json")
+    outputs.update(
+        {
+            "SignedMeasurementReceipt.schema.json": SignedMeasurementReceipt.model_json_schema(),
+            "SignedMeasurementReceipt.valid.json": sample,
+            "SignedMeasurementReceipt.invalid.json": {**sample, "unapproved": True},
+        }
+    )
     for name, value in outputs.items():
         path = ROOT / "packages/qfr_eval/src/qfr_eval/private_contracts" / name
         content = json.dumps(value, sort_keys=True, ensure_ascii=False, indent=2) + "\n"

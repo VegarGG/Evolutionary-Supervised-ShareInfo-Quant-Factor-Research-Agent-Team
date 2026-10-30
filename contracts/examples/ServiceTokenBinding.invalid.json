@@ -1,0 +1,9 @@
+{
+  "programs": [
+    "example-program"
+  ],
+  "roles": [
+    "reader"
+  ],
+  "token_ref": "env:QFR_FEEDBACK_READER_TOKEN"
+}

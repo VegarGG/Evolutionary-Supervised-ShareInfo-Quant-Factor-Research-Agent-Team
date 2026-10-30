@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "HumanCheckpointAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "answer": {
+          "minLength": 1,
+          "title": "Answer",
+          "type": "string"
+        },
+        "decision": {
+          "anyOf": [
+            {
+              "enum": [
+                "approve",
+                "reject"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Decision"
+        },
+        "operation_key": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Operation Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation_key",
+        "answer",
+        "decision"
+      ],
+      "title": "HumanCheckpointAnswer",
+      "type": "object"
+    },
+    "HumanCheckpointRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint_id": {
+          "format": "uuid",
+          "title": "Checkpoint Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "clarification",
+            "delivery_approval"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "proposal_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Proposal Id"
+        },
+        "question": {
+          "minLength": 1,
+          "title": "Question",
+          "type": "string"
+        }
+      },
+      "required": [
+        "checkpoint_id",
+        "kind",
+        "question",
+        "proposal_id"
+      ],
+      "title": "HumanCheckpointRequest",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "answer": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/HumanCheckpointAnswer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "answered_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Answered At"
+    },
+    "answered_by": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Answered By"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "created_by": {
+      "minLength": 1,
+      "title": "Created By",
+      "type": "string"
+    },
+    "job_id": {
+      "format": "uuid",
+      "title": "Job Id",
+      "type": "string"
+    },
+    "request": {
+      "$ref": "#/$defs/HumanCheckpointRequest"
+    },
+    "state": {
+      "enum": [
+        "open",
+        "answered"
+      ],
+      "title": "State",
+      "type": "string"
+    }
+  },
+  "required": [
+    "request",
+    "job_id",
+    "state",
+    "created_by",
+    "created_at",
+    "answer",
+    "answered_by",
+    "answered_at"
+  ],
+  "title": "HumanCheckpointRecord",
+  "type": "object"
+}

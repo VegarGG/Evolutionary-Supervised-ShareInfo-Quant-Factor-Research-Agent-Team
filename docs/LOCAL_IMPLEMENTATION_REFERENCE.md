@@ -383,7 +383,9 @@ access; no research, MCP, Registry or artifact receives that socket or controlle
 channel. The opt-in overlay adds no host/runtime setting or new VM. New profiles,
 actual engine/guest controls and Mac Registry P0/P1 tests are required; historical
 runsc evidence is preserved without becoming an Apple gate substitute. See
-[SANDBOX.md](SANDBOX.md) and its explicitly UNRUN acceptance matrix.
+[SANDBOX.md](SANDBOX.md) and the completed Apple-scope evidence in
+[STAGE_3_ACCEPTANCE.md](STAGE_3_ACCEPTANCE.md). Historical runsc results do not
+replace target-specific acceptance for a changed source or deployment.
 
 Database roles and grants:
 

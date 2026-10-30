@@ -1,0 +1,47 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "base_url": {
+      "format": "uri",
+      "maxLength": 2083,
+      "minLength": 1,
+      "title": "Base Url",
+      "type": "string"
+    },
+    "max_request_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Max Request Bytes",
+      "type": "integer"
+    },
+    "max_response_bytes": {
+      "exclusiveMinimum": 0,
+      "title": "Max Response Bytes",
+      "type": "integer"
+    },
+    "revision": {
+      "exclusiveMinimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "timeout_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Timeout Seconds",
+      "type": "number"
+    },
+    "token_ref": {
+      "pattern": "^env:[A-Z][A-Z0-9_]*$",
+      "title": "Token Ref",
+      "type": "string"
+    }
+  },
+  "required": [
+    "revision",
+    "base_url",
+    "token_ref",
+    "timeout_seconds",
+    "max_request_bytes",
+    "max_response_bytes"
+  ],
+  "title": "PublicServiceClientConfiguration",
+  "type": "object"
+}

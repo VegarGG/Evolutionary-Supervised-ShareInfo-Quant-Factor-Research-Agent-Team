@@ -1,0 +1,10 @@
+{
+  "asset_id": "schema-asset",
+  "bytes": 1,
+  "intended_use": "documentation",
+  "licence": "Synthetic",
+  "media_type": "text/plain",
+  "provenance": "Schema example",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "source_is_untrusted_data": true
+}

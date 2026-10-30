@@ -1,0 +1,221 @@
+{
+  "$defs": {
+    "AssetReference": {
+      "additionalProperties": false,
+      "properties": {
+        "reference_id": {
+          "minLength": 1,
+          "title": "Reference Id",
+          "type": "string"
+        },
+        "relative_path": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Relative Path"
+        },
+        "transport": {
+          "enum": [
+            "finalized_upload",
+            "mounted_import"
+          ],
+          "title": "Transport",
+          "type": "string"
+        }
+      },
+      "required": [
+        "transport",
+        "reference_id"
+      ],
+      "title": "AssetReference",
+      "type": "object"
+    },
+    "SourceAsset": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_id": {
+          "minLength": 1,
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "bytes": {
+          "minimum": 0,
+          "title": "Bytes",
+          "type": "integer"
+        },
+        "intended_use": {
+          "enum": [
+            "primary_data",
+            "auxiliary_data",
+            "code",
+            "config",
+            "documentation",
+            "evidence",
+            "operations_precedent"
+          ],
+          "title": "Intended Use",
+          "type": "string"
+        },
+        "licence": {
+          "minLength": 1,
+          "title": "Licence",
+          "type": "string"
+        },
+        "media_type": {
+          "minLength": 1,
+          "title": "Media Type",
+          "type": "string"
+        },
+        "provenance": {
+          "minLength": 1,
+          "title": "Provenance",
+          "type": "string"
+        },
+        "reference": {
+          "$ref": "#/$defs/AssetReference"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "source_is_untrusted_data": {
+          "const": true,
+          "title": "Source Is Untrusted Data",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "asset_id",
+        "reference",
+        "sha256",
+        "bytes",
+        "media_type",
+        "provenance",
+        "intended_use",
+        "licence",
+        "source_is_untrusted_data"
+      ],
+      "title": "SourceAsset",
+      "type": "object"
+    },
+    "UploadStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes_received": {
+          "minimum": 0,
+          "title": "Bytes Received",
+          "type": "integer"
+        },
+        "chunk_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Chunk Bytes",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "execution_authorized": {
+          "const": false,
+          "title": "Execution Authorized",
+          "type": "boolean"
+        },
+        "expected_bytes": {
+          "minimum": 0,
+          "title": "Expected Bytes",
+          "type": "integer"
+        },
+        "program_id": {
+          "format": "uuid",
+          "title": "Program Id",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceAsset"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "staging",
+            "validated",
+            "rejected"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "upload_id": {
+          "format": "uuid",
+          "title": "Upload Id",
+          "type": "string"
+        },
+        "validation": {
+          "const": "transport_only",
+          "title": "Validation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "upload_id",
+        "program_id",
+        "state",
+        "bytes_received",
+        "expected_bytes",
+        "chunk_bytes",
+        "source",
+        "validation",
+        "execution_authorized",
+        "created_at"
+      ],
+      "title": "UploadStatus",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "has_more": {
+      "title": "Has More",
+      "type": "boolean"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/UploadStatus"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "next_after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Next After Id"
+    }
+  },
+  "required": [
+    "items",
+    "next_after_id",
+    "has_more"
+  ],
+  "title": "AssetPage",
+  "type": "object"
+}

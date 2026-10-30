@@ -1,0 +1,261 @@
+{
+  "$defs": {
+    "HTTPServerConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "access_log": {
+          "const": false,
+          "title": "Access Log",
+          "type": "boolean"
+        },
+        "host": {
+          "enum": [
+            "127.0.0.1",
+            "::1",
+            "0.0.0.0",
+            "::"
+          ],
+          "title": "Host",
+          "type": "string"
+        },
+        "limit_concurrency": {
+          "exclusiveMinimum": 0,
+          "title": "Limit Concurrency",
+          "type": "integer"
+        },
+        "log_level": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Log Level",
+          "type": "string"
+        },
+        "port": {
+          "maximum": 65535,
+          "minimum": 1,
+          "title": "Port",
+          "type": "integer"
+        },
+        "proxy_headers": {
+          "const": false,
+          "title": "Proxy Headers",
+          "type": "boolean"
+        },
+        "revision": {
+          "const": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "timeout_graceful_shutdown": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Graceful Shutdown",
+          "type": "integer"
+        },
+        "timeout_keep_alive": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Keep Alive",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "host",
+        "port",
+        "limit_concurrency",
+        "timeout_keep_alive",
+        "timeout_graceful_shutdown",
+        "access_log",
+        "proxy_headers",
+        "log_level"
+      ],
+      "title": "HTTPServerConfiguration",
+      "type": "object"
+    },
+    "RegistryAuthenticationConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/RegistryTokenBinding"
+          },
+          "title": "Bindings",
+          "type": "array"
+        },
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "maximum_token_bytes": {
+          "maximum": 8192,
+          "minimum": 32,
+          "title": "Maximum Token Bytes",
+          "type": "integer"
+        },
+        "minimum_token_bytes": {
+          "maximum": 8192,
+          "minimum": 32,
+          "title": "Minimum Token Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "enabled",
+        "minimum_token_bytes",
+        "maximum_token_bytes",
+        "bindings"
+      ],
+      "title": "RegistryAuthenticationConfiguration",
+      "type": "object"
+    },
+    "RegistryTokenBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "principal": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+          "title": "Principal",
+          "type": "string"
+        },
+        "programs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Programs",
+          "type": "array"
+        },
+        "roles": {
+          "items": {
+            "enum": [
+              "publisher",
+              "reader",
+              "evaluator"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Roles",
+          "type": "array"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "principal",
+        "token_ref",
+        "roles",
+        "programs"
+      ],
+      "title": "RegistryTokenBinding",
+      "type": "object"
+    },
+    "ServiceDatabaseConfiguration": {
+      "additionalProperties": false,
+      "description": "Role/database are selected by service code, never this public config.",
+      "properties": {
+        "connect_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "maximum": 30,
+          "title": "Connect Timeout Seconds",
+          "type": "integer"
+        },
+        "host": {
+          "minLength": 1,
+          "title": "Host",
+          "type": "string"
+        },
+        "password_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Password Ref",
+          "type": "string"
+        },
+        "port": {
+          "maximum": 65535,
+          "minimum": 1,
+          "title": "Port",
+          "type": "integer"
+        },
+        "revision": {
+          "const": 1,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "host",
+        "port",
+        "password_ref",
+        "connect_timeout_seconds"
+      ],
+      "title": "ServiceDatabaseConfiguration",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "authentication": {
+      "$ref": "#/$defs/RegistryAuthenticationConfiguration"
+    },
+    "database": {
+      "$ref": "#/$defs/ServiceDatabaseConfiguration"
+    },
+    "dsl_policy_files": {
+      "additionalProperties": {
+        "format": "path",
+        "type": "string"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Dsl Policy Files",
+      "type": "object"
+    },
+    "payload_root": {
+      "format": "path",
+      "title": "Payload Root",
+      "type": "string"
+    },
+    "publication_policy_file": {
+      "format": "path",
+      "title": "Publication Policy File",
+      "type": "string"
+    },
+    "read_policy_file": {
+      "format": "path",
+      "title": "Read Policy File",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "server": {
+      "$ref": "#/$defs/HTTPServerConfiguration"
+    }
+  },
+  "required": [
+    "schema_version",
+    "server",
+    "database",
+    "authentication",
+    "publication_policy_file",
+    "read_policy_file",
+    "dsl_policy_files",
+    "payload_root"
+  ],
+  "title": "RegistryServiceConfiguration",
+  "type": "object"
+}

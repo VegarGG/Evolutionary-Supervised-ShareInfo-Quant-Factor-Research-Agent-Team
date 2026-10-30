@@ -1,0 +1,102 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "ResearchProgram": {
+      "additionalProperties": false,
+      "description": "Research context; an active program alone does not admit work.",
+      "properties": {
+        "charter": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Charter",
+          "type": "object"
+        },
+        "charter_revision": {
+          "exclusiveMinimum": 0,
+          "title": "Charter Revision",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "minLength": 1,
+          "title": "Created By",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "program_id": {
+          "minLength": 1,
+          "title": "Program Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "inactive",
+            "active",
+            "paused"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "program_id",
+        "name",
+        "status",
+        "charter_revision",
+        "charter",
+        "created_by",
+        "created_at"
+      ],
+      "title": "ResearchProgram",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "has_more": {
+      "title": "Has More",
+      "type": "boolean"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/ResearchProgram"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "next_after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Next After Id"
+    }
+  },
+  "required": [
+    "items",
+    "next_after_id",
+    "has_more"
+  ],
+  "title": "ProgramPage",
+  "type": "object"
+}

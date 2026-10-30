@@ -1,0 +1,324 @@
+{
+  "$defs": {
+    "DiagnosticFlag": {
+      "enum": [
+        "HIGH_TURNOVER",
+        "LOW_MONOTONICITY",
+        "SIGN_MISMATCH",
+        "CROWDED_WITH_LIBRARY",
+        "UNSTABLE_YEARLY",
+        "DECAYS_FAST",
+        "LOW_COVERAGE",
+        "WEAK_SIGNAL",
+        "COST_DOMINATED"
+      ],
+      "title": "DiagnosticFlag",
+      "type": "string"
+    },
+    "EvidenceIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_id": {
+          "minLength": 1,
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "dataset_version_id": {
+          "minLength": 1,
+          "title": "Dataset Version Id",
+          "type": "string"
+        },
+        "evaluator_version": {
+          "minLength": 1,
+          "title": "Evaluator Version",
+          "type": "string"
+        },
+        "protocol_version": {
+          "minLength": 1,
+          "title": "Protocol Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_version_id",
+        "content_hash",
+        "protocol_version",
+        "dataset_version_id",
+        "evaluator_version"
+      ],
+      "title": "EvidenceIdentity",
+      "type": "object"
+    },
+    "MetricValue": {
+      "additionalProperties": false,
+      "properties": {
+        "missing_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "not_applicable",
+                "insufficient_data",
+                "withheld",
+                "failed",
+                "not_measured"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Missing Reason"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "missing_reason"
+      ],
+      "title": "MetricValue",
+      "type": "object"
+    },
+    "ReasonCode": {
+      "enum": [
+        "SCHEMA_INVALID",
+        "KIND_UNSUPPORTED",
+        "PARSE_ERROR",
+        "TYPE_ERROR",
+        "COMPLEXITY_LIMIT",
+        "FORBIDDEN_CONSTRUCT",
+        "DECLARATION_MISMATCH",
+        "DUPLICATE_OF",
+        "NEAR_DUPLICATE_OF",
+        "QUOTA_DEFERRED",
+        "QUOTA_EXPIRED",
+        "LOW_COVERAGE",
+        "LOOKAHEAD_DETECTED",
+        "RUNTIME_LIMIT",
+        "DEGENERATE",
+        "INTERNAL_ERROR"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Stock release adapter input; this does not perform stock measurement.\n\nStored only by an evaluator producer with its paired trial. The pilot's\nhistorical OfficialRecord and trading-unit semantics are not reinterpreted.",
+  "properties": {
+    "baseline_version_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Baseline Version Id"
+    },
+    "complexity": {
+      "minimum": 0,
+      "title": "Complexity",
+      "type": "integer"
+    },
+    "cost_basis_ref": {
+      "minLength": 1,
+      "title": "Cost Basis Ref",
+      "type": "string"
+    },
+    "coverage_bucket": {
+      "enum": [
+        "low",
+        "adequate",
+        "high",
+        "unavailable"
+      ],
+      "title": "Coverage Bucket",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "decay_profile": {
+      "additionalProperties": {
+        "$ref": "#/$defs/MetricValue"
+      },
+      "propertyNames": {
+        "enum": [
+          "1",
+          "5",
+          "10",
+          "20"
+        ]
+      },
+      "title": "Decay Profile",
+      "type": "object"
+    },
+    "economic_lineage_id": {
+      "minLength": 1,
+      "title": "Economic Lineage Id",
+      "type": "string"
+    },
+    "epoch_id": {
+      "minLength": 1,
+      "title": "Epoch Id",
+      "type": "string"
+    },
+    "family_id": {
+      "minLength": 1,
+      "title": "Family Id",
+      "type": "string"
+    },
+    "flags": {
+      "items": {
+        "$ref": "#/$defs/DiagnosticFlag"
+      },
+      "title": "Flags",
+      "type": "array"
+    },
+    "gate_passed": {
+      "title": "Gate Passed",
+      "type": "boolean"
+    },
+    "generation_id": {
+      "minLength": 1,
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "identity": {
+      "$ref": "#/$defs/EvidenceIdentity"
+    },
+    "library_artifact_version_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Library Artifact Version Id"
+    },
+    "metrics": {
+      "additionalProperties": {
+        "$ref": "#/$defs/MetricValue"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Metrics",
+      "type": "object"
+    },
+    "period_count": {
+      "minimum": 0,
+      "title": "Period Count",
+      "type": "integer"
+    },
+    "program_id": {
+      "minLength": 1,
+      "title": "Program Id",
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "record_id": {
+      "format": "uuid",
+      "title": "Record Id",
+      "type": "string"
+    },
+    "sampling_unit": {
+      "const": "trading_date",
+      "title": "Sampling Unit",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stage": {
+      "const": "stock_measurement",
+      "title": "Stage",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "failed",
+        "withheld"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "window": {
+      "enum": [
+        "W1",
+        "W2"
+      ],
+      "title": "Window",
+      "type": "string"
+    },
+    "yearly_rank_ic": {
+      "patternProperties": {
+        "^[0-9]{4}$": {
+          "$ref": "#/$defs/MetricValue"
+        }
+      },
+      "title": "Yearly Rank Ic",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "stage",
+    "record_id",
+    "identity",
+    "program_id",
+    "family_id",
+    "economic_lineage_id",
+    "generation_id",
+    "epoch_id",
+    "window",
+    "sampling_unit",
+    "period_count",
+    "status",
+    "metrics",
+    "yearly_rank_ic",
+    "decay_profile",
+    "library_artifact_version_id",
+    "coverage_bucket",
+    "complexity",
+    "cost_basis_ref",
+    "baseline_version_id",
+    "gate_passed",
+    "reason_codes",
+    "flags",
+    "created_at"
+  ],
+  "title": "StockReleaseRecord",
+  "type": "object"
+}

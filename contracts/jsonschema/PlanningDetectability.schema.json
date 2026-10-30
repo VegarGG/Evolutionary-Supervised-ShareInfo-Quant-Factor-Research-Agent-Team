@@ -1,0 +1,40 @@
+{
+  "additionalProperties": false,
+  "description": "A null-model planning calculation, never a candidate performance or gate.",
+  "properties": {
+    "admission_effect": {
+      "const": "none",
+      "title": "Admission Effect",
+      "type": "string"
+    },
+    "assumption": {
+      "const": "independent_mature_matched_decisions",
+      "title": "Assumption",
+      "type": "string"
+    },
+    "critical_t": {
+      "const": 2,
+      "title": "Critical T",
+      "type": "integer"
+    },
+    "metric": {
+      "const": "extreme_macro_recall",
+      "title": "Metric",
+      "type": "string"
+    },
+    "period_source": {
+      "const": "released_scalar_origin_period_count",
+      "title": "Period Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "metric",
+    "critical_t",
+    "period_source",
+    "assumption",
+    "admission_effect"
+  ],
+  "title": "PlanningDetectability",
+  "type": "object"
+}

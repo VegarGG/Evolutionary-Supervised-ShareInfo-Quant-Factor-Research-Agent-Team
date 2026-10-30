@@ -1,0 +1,5 @@
+{
+  "next_action": "supply_new_intent",
+  "polling_seconds": 5,
+  "revision": 1
+}

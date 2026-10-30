@@ -1,0 +1,72 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "asset_id": {
+      "minLength": 1,
+      "title": "Asset Id",
+      "type": "string"
+    },
+    "bytes": {
+      "minimum": 0,
+      "title": "Bytes",
+      "type": "integer"
+    },
+    "intended_use": {
+      "enum": [
+        "primary_data",
+        "auxiliary_data",
+        "code",
+        "config",
+        "documentation",
+        "evidence",
+        "operations_precedent"
+      ],
+      "title": "Intended Use",
+      "type": "string"
+    },
+    "licence": {
+      "minLength": 1,
+      "title": "Licence",
+      "type": "string"
+    },
+    "media_type": {
+      "minLength": 1,
+      "title": "Media Type",
+      "type": "string"
+    },
+    "operation_key": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Operation Key",
+      "type": "string"
+    },
+    "provenance": {
+      "minLength": 1,
+      "title": "Provenance",
+      "type": "string"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    },
+    "source_is_untrusted_data": {
+      "const": true,
+      "title": "Source Is Untrusted Data",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "operation_key",
+    "asset_id",
+    "sha256",
+    "bytes",
+    "media_type",
+    "provenance",
+    "intended_use",
+    "licence",
+    "source_is_untrusted_data"
+  ],
+  "title": "UploadDeclaration",
+  "type": "object"
+}

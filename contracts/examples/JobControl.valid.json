@@ -1,0 +1,5 @@
+{
+  "action": "pause",
+  "expected_revision": 1,
+  "operation_key": "schema-pause"
+}

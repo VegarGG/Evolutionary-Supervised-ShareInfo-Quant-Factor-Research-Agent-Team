@@ -1,0 +1,21 @@
+{
+  "advancement_delay_days": null,
+  "batch_hours": 6,
+  "confirmation_metrics_released": false,
+  "diagnostics": "enum_codes_only",
+  "disclosure": "scalar_plus_flags",
+  "fitness_profile": "pilot_single_scalar_flags_v1",
+  "ladder_step": 0.011239912200318261,
+  "policy_ref": "pilot-release-v1@1",
+  "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "prior_best_origin_required": true,
+  "profile": "pilot_industry_v1",
+  "quotas": {
+    "lineage_versions_per_generation": 3
+  },
+  "raw_series_released": false,
+  "rounding": {
+    "primary": 0.011239912200318261
+  },
+  "weekly_batch": null
+}

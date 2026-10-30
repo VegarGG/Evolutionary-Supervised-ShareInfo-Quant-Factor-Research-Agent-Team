@@ -1,0 +1,139 @@
+{
+  "$defs": {
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_id": {
+          "minLength": 1,
+          "title": "Artifact Version Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_version_id",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "Conclusion": {
+      "enum": [
+        "supported_positive",
+        "supported_negative",
+        "empty_shortlist",
+        "data_blocked"
+      ],
+      "title": "Conclusion",
+      "type": "string"
+    },
+    "DeliverableBinding": {
+      "additionalProperties": false,
+      "description": "A requested output names an immutable Registry artifact, not local bytes.",
+      "properties": {
+        "artifact": {
+          "$ref": "#/$defs/ArtifactReference"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "artifact"
+      ],
+      "title": "DeliverableBinding",
+      "type": "object"
+    },
+    "VersionReference": {
+      "additionalProperties": false,
+      "properties": {
+        "reference_id": {
+          "minLength": 1,
+          "title": "Reference Id",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference_id",
+        "sha256"
+      ],
+      "title": "VersionReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "artifact_refs": {
+      "items": {
+        "$ref": "#/$defs/ArtifactReference"
+      },
+      "minItems": 1,
+      "title": "Artifact Refs",
+      "type": "array"
+    },
+    "conclusion": {
+      "$ref": "#/$defs/Conclusion"
+    },
+    "deliverables": {
+      "items": {
+        "$ref": "#/$defs/DeliverableBinding"
+      },
+      "minItems": 1,
+      "title": "Deliverables",
+      "type": "array"
+    },
+    "job_id": {
+      "minLength": 1,
+      "title": "Job Id",
+      "type": "string"
+    },
+    "proposal_id": {
+      "minLength": 1,
+      "title": "Proposal Id",
+      "type": "string"
+    },
+    "released_report_refs": {
+      "items": {
+        "$ref": "#/$defs/VersionReference"
+      },
+      "title": "Released Report Refs",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "shortlist": {
+      "items": {
+        "$ref": "#/$defs/ArtifactReference"
+      },
+      "title": "Shortlist",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "proposal_id",
+    "job_id",
+    "conclusion",
+    "artifact_refs",
+    "released_report_refs",
+    "deliverables",
+    "shortlist"
+  ],
+  "title": "DeliveryProposal",
+  "type": "object"
+}

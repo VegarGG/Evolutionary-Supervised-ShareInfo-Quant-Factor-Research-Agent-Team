@@ -1,0 +1,55 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "authoritative": {
+      "const": false,
+      "title": "Authoritative",
+      "type": "boolean"
+    },
+    "constraints": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Constraints",
+      "type": "array"
+    },
+    "objective": {
+      "minLength": 1,
+      "title": "Objective",
+      "type": "string"
+    },
+    "program_id": {
+      "format": "uuid",
+      "title": "Program Id",
+      "type": "string"
+    },
+    "proposal_id": {
+      "format": "uuid",
+      "title": "Proposal Id",
+      "type": "string"
+    },
+    "proposed_public_card_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Proposed Public Card Ref"
+    }
+  },
+  "required": [
+    "proposal_id",
+    "program_id",
+    "objective",
+    "constraints",
+    "proposed_public_card_ref",
+    "authoritative"
+  ],
+  "title": "ProtocolProposal",
+  "type": "object"
+}

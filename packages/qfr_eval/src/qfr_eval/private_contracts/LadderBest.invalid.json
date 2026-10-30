@@ -1,0 +1,19 @@
+{
+  "scalar": {
+    "attribution": "current_version",
+    "baseline_version_id": null,
+    "cost_basis_ref": "pilot/costs",
+    "measurement": {
+      "missing_reason": null,
+      "value": 0.5
+    },
+    "metric": "extreme_macro_recall",
+    "origin_artifact_version_id": "artifact-example",
+    "period_count": 0,
+    "sampling_unit": "mature_matched_decision"
+  },
+  "schema_version": "1",
+  "scope_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "unapproved": true,
+  "unrounded_score": 0.5
+}

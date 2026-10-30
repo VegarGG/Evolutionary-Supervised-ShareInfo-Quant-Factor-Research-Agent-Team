@@ -1,0 +1,358 @@
+{
+  "$defs": {
+    "FeedbackReadPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "max_page_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Max Page Bytes",
+          "type": "integer"
+        },
+        "max_page_size": {
+          "exclusiveMinimum": 0,
+          "title": "Max Page Size",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "statement_timeout_ms": {
+          "exclusiveMinimum": 0,
+          "title": "Statement Timeout Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "max_page_size",
+        "max_page_bytes",
+        "statement_timeout_ms"
+      ],
+      "title": "FeedbackReadPolicy",
+      "type": "object"
+    },
+    "HTTPServerConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "access_log": {
+          "const": false,
+          "title": "Access Log",
+          "type": "boolean"
+        },
+        "host": {
+          "enum": [
+            "127.0.0.1",
+            "::1",
+            "0.0.0.0",
+            "::"
+          ],
+          "title": "Host",
+          "type": "string"
+        },
+        "limit_concurrency": {
+          "exclusiveMinimum": 0,
+          "title": "Limit Concurrency",
+          "type": "integer"
+        },
+        "log_level": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Log Level",
+          "type": "string"
+        },
+        "port": {
+          "maximum": 65535,
+          "minimum": 1,
+          "title": "Port",
+          "type": "integer"
+        },
+        "proxy_headers": {
+          "const": false,
+          "title": "Proxy Headers",
+          "type": "boolean"
+        },
+        "revision": {
+          "const": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "timeout_graceful_shutdown": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Graceful Shutdown",
+          "type": "integer"
+        },
+        "timeout_keep_alive": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Keep Alive",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "host",
+        "port",
+        "limit_concurrency",
+        "timeout_keep_alive",
+        "timeout_graceful_shutdown",
+        "access_log",
+        "proxy_headers",
+        "log_level"
+      ],
+      "title": "HTTPServerConfiguration",
+      "type": "object"
+    },
+    "ServiceAuthentication": {
+      "additionalProperties": false,
+      "properties": {
+        "audience": {
+          "enum": [
+            "feedback",
+            "research",
+            "mcp",
+            "intake"
+          ],
+          "title": "Audience",
+          "type": "string"
+        },
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/ServiceTokenBinding"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Bindings",
+          "type": "array"
+        },
+        "maximum_token_bytes": {
+          "exclusiveMinimum": 0,
+          "maximum": 4096,
+          "title": "Maximum Token Bytes",
+          "type": "integer"
+        },
+        "minimum_token_bytes": {
+          "exclusiveMinimum": 0,
+          "minimum": 32,
+          "title": "Minimum Token Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "exclusiveMinimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "audience",
+        "minimum_token_bytes",
+        "maximum_token_bytes",
+        "bindings"
+      ],
+      "title": "ServiceAuthentication",
+      "type": "object"
+    },
+    "ServiceDatabaseConfiguration": {
+      "additionalProperties": false,
+      "description": "Role/database are selected by service code, never this public config.",
+      "properties": {
+        "connect_timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "maximum": 30,
+          "title": "Connect Timeout Seconds",
+          "type": "integer"
+        },
+        "host": {
+          "minLength": 1,
+          "title": "Host",
+          "type": "string"
+        },
+        "password_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Password Ref",
+          "type": "string"
+        },
+        "port": {
+          "maximum": 65535,
+          "minimum": 1,
+          "title": "Port",
+          "type": "integer"
+        },
+        "revision": {
+          "const": 1,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "host",
+        "port",
+        "password_ref",
+        "connect_timeout_seconds"
+      ],
+      "title": "ServiceDatabaseConfiguration",
+      "type": "object"
+    },
+    "ServiceTokenBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "principal": {
+          "minLength": 1,
+          "title": "Principal",
+          "type": "string"
+        },
+        "programs": {
+          "items": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Programs",
+          "type": "array"
+        },
+        "roles": {
+          "items": {
+            "enum": [
+              "reader",
+              "research_lead",
+              "human_reviewer"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Roles",
+          "type": "array"
+        },
+        "token_ref": {
+          "pattern": "^env:[A-Z][A-Z0-9_]*$",
+          "title": "Token Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "principal",
+        "token_ref",
+        "roles",
+        "programs"
+      ],
+      "title": "ServiceTokenBinding",
+      "type": "object"
+    },
+    "VerificationKey": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519",
+          "title": "Algorithm",
+          "type": "string"
+        },
+        "key_id": {
+          "minLength": 1,
+          "title": "Key Id",
+          "type": "string"
+        },
+        "public_key_hex": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Public Key Hex",
+          "type": "string"
+        },
+        "purposes": {
+          "items": {
+            "enum": [
+              "released_report",
+              "measurement_receipt",
+              "delivery_receipt"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Purposes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "key_id",
+        "public_key_hex",
+        "purposes"
+      ],
+      "title": "VerificationKey",
+      "type": "object"
+    },
+    "VerificationPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "canonicalization": {
+          "const": "qfr-signed-json-v1",
+          "title": "Canonicalization",
+          "type": "string"
+        },
+        "keys": {
+          "items": {
+            "$ref": "#/$defs/VerificationKey"
+          },
+          "minItems": 1,
+          "title": "Keys",
+          "type": "array"
+        },
+        "maximum_document_bytes": {
+          "exclusiveMinimum": 0,
+          "maximum": 16777216,
+          "title": "Maximum Document Bytes",
+          "type": "integer"
+        },
+        "revision": {
+          "const": 1,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "canonicalization",
+        "maximum_document_bytes",
+        "keys"
+      ],
+      "title": "VerificationPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "authentication": {
+      "$ref": "#/$defs/ServiceAuthentication"
+    },
+    "database": {
+      "$ref": "#/$defs/ServiceDatabaseConfiguration"
+    },
+    "policy": {
+      "$ref": "#/$defs/FeedbackReadPolicy"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "server": {
+      "$ref": "#/$defs/HTTPServerConfiguration"
+    },
+    "verification": {
+      "$ref": "#/$defs/VerificationPolicy"
+    }
+  },
+  "required": [
+    "schema_version",
+    "server",
+    "database",
+    "authentication",
+    "policy",
+    "verification"
+  ],
+  "title": "FeedbackServiceConfiguration",
+  "type": "object"
+}

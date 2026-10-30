@@ -1,0 +1,36 @@
+{
+  "schema_version": "1",
+  "policy_id": "stock-release-v1",
+  "version": 1,
+  "profile": "stock_daily_v1",
+  "fitness_profile": "stock_multi_metric_v1",
+  "w1_batch_hours": 6,
+  "w2_batch": "Monday 00:00 UTC",
+  "advancement_delay_days": 7,
+  "rounding": {
+    "rank_ic": 0.005,
+    "ir": 0.02,
+    "sharpe": 0.25,
+    "shares": 0.05,
+    "correlations": 0.05,
+    "w2_best_rank_ic": 0.01
+  },
+  "rounding_rule": "nearest_half_away_from_zero",
+  "ladder_eta": 0.005,
+  "ladder_reference": "last_accepted_unrounded_score",
+  "quotas": {
+    "family_w1_per_24h": 3,
+    "family_w2_per_7d": 1,
+    "program_w1_per_day": 60,
+    "program_w2_per_week": 10,
+    "global_w1_per_day": 200,
+    "global_w2_per_epoch": 400,
+    "deferral_expiry_days": 7,
+    "burn_w1_amber": 3000,
+    "burn_w1_red": 6000
+  },
+  "w3_metrics_released": false,
+  "raw_series_released": false,
+  "diagnostics": "enum_codes_only",
+  "automatic_campaign": false
+}

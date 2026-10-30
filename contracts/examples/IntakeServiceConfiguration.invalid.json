@@ -1,0 +1,57 @@
+{
+  "authentication": {
+    "audience": "intake",
+    "bindings": [
+      {
+        "principal": "schema-example",
+        "programs": [
+          "00000000-0000-0000-0000-00000000001e"
+        ],
+        "roles": [
+          "reader"
+        ],
+        "token_ref": "env:EXAMPLE_TOKEN"
+      }
+    ],
+    "maximum_token_bytes": 256,
+    "minimum_token_bytes": 32,
+    "revision": 1
+  },
+  "policy": {
+    "chunk_bytes": 4194304,
+    "max_archive_directory_bytes": 4194304,
+    "max_archive_entries": 10000,
+    "max_expanded_bytes": 1073741824,
+    "max_member_bytes": 268435456,
+    "max_metadata_bytes": 1048576,
+    "max_reserved_bytes_per_program": 2147483648,
+    "max_upload_bytes": 536870912,
+    "max_uploads_per_program": 128,
+    "media_types": [
+      "application/zip",
+      "application/json",
+      "text/csv",
+      "text/plain",
+      "text/markdown",
+      "text/x-python",
+      "application/vnd.apache.parquet",
+      "application/octet-stream"
+    ],
+    "request_timeout_seconds": 30,
+    "revision": 1,
+    "sqlite_timeout_seconds": 5
+  },
+  "quarantine_root": "/data/quarantine",
+  "readonly_import_mounts": {},
+  "server": {
+    "access_log": false,
+    "host": "127.0.0.1",
+    "limit_concurrency": 4,
+    "log_level": "info",
+    "port": 8000,
+    "proxy_headers": false,
+    "revision": 1,
+    "timeout_graceful_shutdown": 30,
+    "timeout_keep_alive": 5
+  }
+}

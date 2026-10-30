@@ -1,0 +1,45 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "correlations": {
+      "exclusiveMinimum": 0,
+      "title": "Correlations",
+      "type": "number"
+    },
+    "ir": {
+      "exclusiveMinimum": 0,
+      "title": "Ir",
+      "type": "number"
+    },
+    "rank_ic": {
+      "exclusiveMinimum": 0,
+      "title": "Rank Ic",
+      "type": "number"
+    },
+    "shares": {
+      "exclusiveMinimum": 0,
+      "title": "Shares",
+      "type": "number"
+    },
+    "sharpe": {
+      "exclusiveMinimum": 0,
+      "title": "Sharpe",
+      "type": "number"
+    },
+    "w2_best_rank_ic": {
+      "exclusiveMinimum": 0,
+      "title": "W2 Best Rank Ic",
+      "type": "number"
+    }
+  },
+  "required": [
+    "rank_ic",
+    "ir",
+    "sharpe",
+    "shares",
+    "correlations",
+    "w2_best_rank_ic"
+  ],
+  "title": "StockRounding",
+  "type": "object"
+}

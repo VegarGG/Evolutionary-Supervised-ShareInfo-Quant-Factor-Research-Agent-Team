@@ -1,0 +1,15 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "sha256"
+  ],
+  "title": "FinalizeUpload",
+  "type": "object"
+}

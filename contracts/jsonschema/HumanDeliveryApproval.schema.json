@@ -1,0 +1,48 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "approval_id": {
+      "minLength": 1,
+      "title": "Approval Id",
+      "type": "string"
+    },
+    "decision": {
+      "enum": [
+        "approve",
+        "reject"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "gate_spec_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Gate Spec Hash",
+      "type": "string"
+    },
+    "principal": {
+      "minLength": 1,
+      "title": "Principal",
+      "type": "string"
+    },
+    "proposal_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Proposal Sha256",
+      "type": "string"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "title": "Recorded At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "approval_id",
+    "gate_spec_hash",
+    "proposal_sha256",
+    "decision",
+    "principal",
+    "recorded_at"
+  ],
+  "title": "HumanDeliveryApproval",
+  "type": "object"
+}

@@ -1,0 +1,149 @@
+{
+  "$defs": {
+    "BlackboardRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_version_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Artifact Version Refs",
+          "type": "array"
+        },
+        "author_role": {
+          "minLength": 1,
+          "title": "Author Role",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "hypothesis",
+            "task",
+            "note",
+            "population_member",
+            "lineage_edge",
+            "rejected_idea",
+            "plan"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "parent_record_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Parent Record Refs",
+          "type": "array"
+        },
+        "project_id": {
+          "minLength": 1,
+          "title": "Project Id",
+          "type": "string"
+        },
+        "record_id": {
+          "minLength": 1,
+          "title": "Record Id",
+          "type": "string"
+        },
+        "released_report_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Released Report Refs",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "open",
+            "in_progress",
+            "published",
+            "rejected",
+            "blocked_on_data",
+            "closed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Task Id"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_id",
+        "project_id",
+        "kind",
+        "author_role",
+        "task_id",
+        "text",
+        "artifact_version_refs",
+        "released_report_refs",
+        "parent_record_refs",
+        "status",
+        "created_at"
+      ],
+      "title": "BlackboardRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "has_more": {
+      "title": "Has More",
+      "type": "boolean"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/BlackboardRecord"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "next_after_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Next After Id"
+    }
+  },
+  "required": [
+    "items",
+    "next_after_id",
+    "has_more"
+  ],
+  "title": "BlackboardPage",
+  "type": "object"
+}

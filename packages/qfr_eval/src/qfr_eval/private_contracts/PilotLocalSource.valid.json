@@ -1,0 +1,29 @@
+{
+  "adapter": {
+    "benchmarks": [
+      "000300.SH",
+      "000905.SH",
+      "000852.SH"
+    ],
+    "exposure": "previously_seen",
+    "feature_parity_atol": 1e-12,
+    "feature_parity_rtol": 1e-12,
+    "fundamental_availability": {
+      "0630": "09-01",
+      "1231": "next-year-05-01"
+    },
+    "industry_count": 31,
+    "membership_note": "Current industry membership mapped backward; not point-in-time",
+    "new_supplier_requests": false,
+    "price_overlap_atol": 1e-10,
+    "price_overlap_rtol": 1e-12,
+    "profile": "pilot_industry_v1",
+    "revision": 1,
+    "scores_and_ranks": "exact",
+    "vintage_note": "Historical revisions unverified; pre-December-2021 index history may be reconstructed"
+  },
+  "fixture_manifests_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "inventory_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "kind": "pilot",
+  "package": "original-package"
+}

@@ -1,0 +1,73 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "admission_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Admission Id"
+    },
+    "next_eligible_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Next Eligible At"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "enum": [
+            "QUOTA_DEFERRED",
+            "QUOTA_EXPIRED"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Reason"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "state": {
+      "enum": [
+        "admitted",
+        "deferred",
+        "expired"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "subject_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Subject Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "subject_sha256",
+    "state",
+    "reason",
+    "admission_id",
+    "next_eligible_at"
+  ],
+  "title": "QuotaDecision",
+  "type": "object"
+}
