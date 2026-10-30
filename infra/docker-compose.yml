@@ -1,310 +1,1244 @@
-services:
-  postgres:
-    image: postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
-    entrypoint: [bash, /opt/qfr/postgres/entrypoint.sh]
-    command: [postgres]
-    tmpfs:
-    - /run/qfr-postgres-secrets:rw,noexec,nosuid,nodev,size=64k,mode=0700
-    environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
-    secrets:
-    - postgres_password
-    - registry_app_password
-    - research_rw_password
-    - eval_rw_password
-    - feedback_ro_password
-    volumes:
-    - postgres-data:/var/lib/postgresql/data
-    - ./postgres:/opt/qfr/postgres:ro
-    ports:
-    - 127.0.0.1:${QFR_POSTGRES_PORT}:5432
-    networks:
-    - research-db
-    - registry-db
-    - eval-db
-    - feedback-db
-    - ingest-db
-    - db-loopback
-    healthcheck:
-      test:
-      - CMD-SHELL
-      - pg_isready -h 127.0.0.1 -U postgres -d postgres
-      interval: 2s
-      timeout: 5s
-      retries: 30
-  mcp-api:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_mcp
-    read_only: true
-    user: 65532:65532
-    cap_drop: &id001
-    - ALL
-    security_opt: &id002
-    - no-new-privileges:true
-    restart: 'no'
-    image: qfr/qfr_mcp:stage0
-    networks:
-    - research-edge
-    - registry-public
-    - feedback-public
-  research-api:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_research
-    read_only: true
-    user: 65532:65532
-    cap_drop: *id001
-    security_opt: *id002
-    restart: 'no'
-    image: qfr/qfr_research:stage0
-    networks:
-    - research-edge
-    - research-db
-    - registry-public
-    - feedback-public
-    secrets:
-    - research_rw_password
-    environment:
-      QFR_DB_PASSWORD_FILE: /run/secrets/research_rw_password
-      QFR_DB_ROLE: research_rw
-      QFR_DB_NAME: research_db
-      QFR_DB_HOST: postgres
-    volumes:
-    - research-snapshot:/data/research:ro
-  research-worker:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_research
-    read_only: true
-    user: 65532:65532
-    cap_drop: *id001
-    security_opt: *id002
-    restart: 'no'
-    image: qfr/qfr_research:stage0
-    networks:
-    - research-db
-    - registry-public
-    - feedback-public
-    - research-egress
-    secrets:
-    - research_rw_password
-    environment:
-      QFR_DB_PASSWORD_FILE: /run/secrets/research_rw_password
-      QFR_DB_ROLE: research_rw
-      QFR_DB_NAME: research_db
-      QFR_DB_HOST: postgres
-    volumes:
-    - research-snapshot:/data/research:ro
-  registry-api:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_registry
-    read_only: true
-    user: 65532:65532
-    cap_drop: *id001
-    security_opt: *id002
-    restart: 'no'
-    image: qfr/qfr_registry:stage0
-    networks:
-    - registry-db
-    - registry-public
-    - registry-eval
-    secrets:
-    - registry_app_password
-    environment:
-      QFR_DB_PASSWORD_FILE: /run/secrets/registry_app_password
-      QFR_DB_ROLE: registry_app
-      QFR_DB_NAME: registry_db
-      QFR_DB_HOST: postgres
-    volumes:
-    - registry-artifacts:/artifacts
-  eval-scheduler:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_eval
-    read_only: true
-    user: 65532:65532
-    cap_drop: *id001
-    security_opt: *id002
-    restart: 'no'
-    image: qfr/qfr_eval:stage0
-    networks:
-    - eval-db
-    - registry-eval
-    secrets:
-    - eval_rw_password
-    environment:
-      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
-      QFR_DB_ROLE: eval_rw
-      QFR_DB_NAME: eval_db
-      QFR_DB_HOST: postgres
-    volumes:
-    - ../configs/epochs:/etc/qfr/epochs:ro
-    - full-snapshot:/data/full:ro
-  eval-worker:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_eval
-    read_only: true
-    user: 65532:65532
-    cap_drop: *id001
-    security_opt: *id002
-    restart: 'no'
-    image: qfr/qfr_eval:stage0
-    networks:
-    - eval-db
-    secrets:
-    - eval_rw_password
-    environment:
-      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
-      QFR_DB_ROLE: eval_rw
-      QFR_DB_NAME: eval_db
-      QFR_DB_HOST: postgres
-    volumes:
-    - ../configs/epochs:/etc/qfr/epochs:ro
-    - full-snapshot:/data/full:ro
-  release-worker:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_eval
-    read_only: true
-    user: 65532:65532
-    cap_drop: *id001
-    security_opt: *id002
-    restart: 'no'
-    image: qfr/qfr_eval:stage0
-    networks:
-    - eval-db
-    secrets:
-    - eval_rw_password
-    environment:
-      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
-      QFR_DB_ROLE: eval_rw
-      QFR_DB_NAME: eval_db
-      QFR_DB_HOST: postgres
-  feedback-api:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_eval
-    read_only: true
-    user: 65532:65532
-    cap_drop: *id001
-    security_opt: *id002
-    restart: 'no'
-    image: qfr/qfr_eval:stage0
-    networks:
-    - feedback-db
-    - feedback-public
-    secrets:
-    - feedback_ro_password
-    environment:
-      QFR_DB_PASSWORD_FILE: /run/secrets/feedback_ro_password
-      QFR_DB_ROLE: feedback_ro
-      QFR_DB_NAME: eval_db
-      QFR_DB_HOST: postgres
-  eval-admin-api:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_eval
-    read_only: true
-    user: 65532:65532
-    cap_drop: *id001
-    security_opt: *id002
-    restart: 'no'
-    image: qfr/qfr_eval:stage0
-    networks:
-    - eval-db
-    - admin
-    secrets:
-    - eval_rw_password
-    environment:
-      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
-      QFR_DB_ROLE: eval_rw
-      QFR_DB_NAME: eval_db
-      QFR_DB_HOST: postgres
-    volumes:
-    - ../configs/epochs:/etc/qfr/epochs:ro
-  data-ingest:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile
-      args:
-        QFR_PACKAGE: qfr_eval
-    read_only: true
-    user: 65532:65532
-    cap_drop: *id001
-    security_opt: *id002
-    restart: 'no'
-    image: qfr/qfr_eval:stage0
-    networks:
-    - ingest-db
-    - data-egress
-    secrets:
-    - eval_rw_password
-    environment:
-      QFR_DB_PASSWORD_FILE: /run/secrets/eval_rw_password
-      QFR_DB_ROLE: eval_rw
-      QFR_DB_NAME: eval_db
-      QFR_DB_HOST: postgres
-    volumes:
-    - full-snapshot:/data/full
-    - research-snapshot:/data/research
-networks:
-  research-edge:
-    internal: true
-  registry-public:
-    internal: true
-  registry-eval:
-    internal: true
-  feedback-public:
-    internal: true
-  research-db:
-    internal: true
-  registry-db:
-    internal: true
-  eval-db:
-    internal: true
-  feedback-db:
-    internal: true
-  ingest-db:
-    internal: true
-  admin:
-    internal: true
-  research-egress: {}
-  data-egress: {}
-  db-loopback: {}
-volumes:
-  postgres-data: {}
-  registry-artifacts: {}
-  research-snapshot: {}
-  full-snapshot: {}
-secrets:
-  postgres_password:
-    file: ../.secrets/postgres_password
-  registry_app_password:
-    file: ../.secrets/registry_app_password
-  research_rw_password:
-    file: ../.secrets/research_rw_password
-  eval_rw_password:
-    file: ../.secrets/eval_rw_password
-  feedback_ro_password:
-    file: ../.secrets/feedback_ro_password
+{
+  "name": "qfr-v2",
+  "services": {
+    "postgres": {
+      "image": "qfr-v2-postgres:phase0",
+      "user": "999:999",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=999,gid=999",
+        "/var/run/postgresql:rw,nosuid,size=16m,uid=999,gid=999"
+      ],
+      "environment": {
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_PASSWORD": "${POSTGRES_PASSWORD:?run just init-secrets}",
+        "POSTGRES_INITDB_ARGS": "--auth-host=scram-sha-256",
+        "TZ": "Asia/Shanghai",
+        "REGISTRY_PASSWORD": "${REGISTRY_PASSWORD:?run just init-secrets}",
+        "RESEARCH_PASSWORD": "${RESEARCH_PASSWORD:?run just init-secrets}",
+        "EVAL_PASSWORD": "${EVAL_PASSWORD:?run just init-secrets}",
+        "FEEDBACK_PASSWORD": "${FEEDBACK_PASSWORD:?run just init-secrets}",
+        "CONTROL_PASSWORD": "${CONTROL_PASSWORD:?run just init-secrets}",
+        "REGISTRY_MIGRATION_PASSWORD": "${REGISTRY_MIGRATION_PASSWORD:?run just init-secrets}",
+        "RESEARCH_MIGRATION_PASSWORD": "${RESEARCH_MIGRATION_PASSWORD:?run just init-secrets}",
+        "EVAL_MIGRATION_PASSWORD": "${EVAL_MIGRATION_PASSWORD:?run just init-secrets}",
+        "CONTROL_MIGRATION_PASSWORD": "${CONTROL_MIGRATION_PASSWORD:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "pg_data",
+          "target": "/var/lib/postgresql/data",
+          "read_only": false
+        }
+      ],
+      "networks": [
+        "control_net",
+        "research_net",
+        "registry_net",
+        "eval_net"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d postgres"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "4",
+            "memory": "8G"
+          }
+        }
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "postgres"
+      },
+      "platform": "${QFR_PLATFORM:-linux/arm64}"
+    },
+    "qfr-mcp": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import os,urllib.request; r=urllib.request.Request('http://127.0.0.1:8765/mcp',data=b'{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\"}',headers={'Authorization':'Bearer '+os.environ['QFR_MCP_TOKEN'],'Content-Type':'application/json','Accept':'application/json, text/event-stream'}); urllib.request.urlopen(r).read()"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "mcp",
+        "args": {
+          "QFR_PACKAGE": "qfr-mcp"
+        }
+      },
+      "image": "qfr-v2-mcp:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "qfr-mcp",
+        "QFR_ZONE": "control",
+        "TZ": "Asia/Shanghai",
+        "QFR_MCP_BIND": "0.0.0.0",
+        "QFR_MCP_TOKEN": "${QFR_MCP_TOKEN:?run just init-secrets}",
+        "CONTROL_DB_URL": "${CONTROL_DB_URL:?run just init-secrets}",
+        "REGISTRY_CONTROL_TOKEN": "${REGISTRY_CONTROL_TOKEN:?run just init-secrets}",
+        "RESEARCH_CONTROL_TOKEN": "${RESEARCH_CONTROL_TOKEN:?run just init-secrets}",
+        "EVAL_OWNER_TOKEN": "${EVAL_OWNER_TOKEN:?run just init-secrets}",
+        "FEEDBACK_READER_TOKEN": "${FEEDBACK_READER_TOKEN:?run just init-secrets}",
+        "REGISTRY_API_URL": "http://registry-api:8000",
+        "RESEARCH_API_URL": "http://research-api:8000",
+        "EVAL_ADMIN_API_URL": "http://eval-admin-api:8000",
+        "FEEDBACK_API_URL": "http://feedback-api:8000"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr",
+          "read_only": true
+        },
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/qfr-mcp",
+          "read_only": false,
+          "volume": {
+            "subpath": "qfr-mcp"
+          }
+        },
+        {
+          "type": "bind",
+          "source": "../imports",
+          "target": "/imports",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "../exports",
+          "target": "/exports",
+          "read_only": false
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "control_net",
+        "mcp_ingress_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_mcp.server"
+      ],
+      "ports": [
+        "127.0.0.1:8765:8765"
+      ]
+    },
+    "research-api": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "research-api",
+        "QFR_ZONE": "research",
+        "TZ": "Asia/Shanghai",
+        "RESEARCH_DB_URL": "${RESEARCH_DB_URL:?run just init-secrets}",
+        "QFR_RESEARCH_SNAPSHOT_DIR": "/data/research",
+        "REGISTRY_API_URL": "http://registry-api:8000",
+        "FEEDBACK_API_URL": "http://feedback-api:8000",
+        "FEEDBACK_READER_TOKEN": "${FEEDBACK_READER_TOKEN:?run just init-secrets}",
+        "RESEARCH_CONTROL_TOKEN": "${RESEARCH_CONTROL_TOKEN:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/research-api",
+          "read_only": false,
+          "volume": {
+            "subpath": "research-api"
+          }
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_research",
+          "target": "/data/research",
+          "read_only": true
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "research_net",
+        "control_net"
+      ]
+    },
+    "research-worker": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "2",
+            "memory": "4G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "research-worker",
+        "QFR_ZONE": "research",
+        "TZ": "Asia/Shanghai",
+        "RESEARCH_DB_URL": "${RESEARCH_DB_URL:?run just init-secrets}",
+        "QFR_RESEARCH_SNAPSHOT_DIR": "/data/research",
+        "REGISTRY_API_URL": "http://registry-api:8000",
+        "FEEDBACK_API_URL": "http://feedback-api:8000",
+        "FEEDBACK_READER_TOKEN": "${FEEDBACK_READER_TOKEN:?run just init-secrets}",
+        "DEEPSEEK_API_KEY": "${DEEPSEEK_API_KEY-}",
+        "MOONSHOT_API_KEY": "${MOONSHOT_API_KEY-}",
+        "ZHIPU_API_KEY": "${ZHIPU_API_KEY-}",
+        "REGISTRY_PUBLISHER_TOKEN": "${REGISTRY_PUBLISHER_TOKEN:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/research-worker",
+          "read_only": false,
+          "volume": {
+            "subpath": "research-worker"
+          }
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_research",
+          "target": "/data/research",
+          "read_only": true
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "research_net",
+        "research_egress_net"
+      ]
+    },
+    "registry-api": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "registry-api",
+        "QFR_ZONE": "registry",
+        "TZ": "Asia/Shanghai",
+        "REGISTRY_DB_URL": "${REGISTRY_DB_URL:?run just init-secrets}",
+        "REGISTRY_PUBLISHER_TOKEN": "${REGISTRY_PUBLISHER_TOKEN:?run just init-secrets}",
+        "REGISTRY_READER_TOKEN": "${REGISTRY_READER_TOKEN:?run just init-secrets}",
+        "REGISTRY_EVALUATOR_TOKEN": "${REGISTRY_EVALUATOR_TOKEN:?run just init-secrets}",
+        "REGISTRY_CONTROL_TOKEN": "${REGISTRY_CONTROL_TOKEN:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/registry-api",
+          "read_only": false,
+          "volume": {
+            "subpath": "registry-api"
+          }
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "registry_net",
+        "control_net",
+        "research_net"
+      ]
+    },
+    "eval-scheduler": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "eval-scheduler",
+        "QFR_ZONE": "eval",
+        "TZ": "Asia/Shanghai",
+        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
+        "REGISTRY_EVALUATOR_TOKEN": "${REGISTRY_EVALUATOR_TOKEN:?run just init-secrets}",
+        "REGISTRY_API_URL": "http://registry-api:8000",
+        "QFR_FULL_SNAPSHOT_DIR": "/data/full",
+        "QFR_EPOCH_CONFIG": "/app/configs/epochs/epoch_001.yaml"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/eval-scheduler",
+          "read_only": false,
+          "volume": {
+            "subpath": "eval-scheduler"
+          }
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_full",
+          "target": "/data/full",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "../configs/epochs",
+          "target": "/app/configs/epochs",
+          "read_only": true
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "eval_net",
+        "registry_net"
+      ]
+    },
+    "eval-worker": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "replicas": 2,
+        "resources": {
+          "limits": {
+            "cpus": "4",
+            "memory": "6G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "eval-worker",
+        "QFR_ZONE": "eval",
+        "TZ": "Asia/Shanghai",
+        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
+        "QFR_FULL_SNAPSHOT_DIR": "/data/full",
+        "QFR_EPOCH_CONFIG": "/app/configs/epochs/epoch_001.yaml"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/eval-worker",
+          "read_only": false,
+          "volume": {
+            "subpath": "eval-worker"
+          }
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_full",
+          "target": "/data/full",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "../configs/epochs",
+          "target": "/app/configs/epochs",
+          "read_only": true
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "eval_net"
+      ]
+    },
+    "release-worker": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "release-worker",
+        "QFR_ZONE": "eval",
+        "TZ": "Asia/Shanghai",
+        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/release-worker",
+          "read_only": false,
+          "volume": {
+            "subpath": "release-worker"
+          }
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "eval_net"
+      ]
+    },
+    "sim-engine": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "sim-engine",
+        "QFR_ZONE": "eval",
+        "TZ": "Asia/Shanghai",
+        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
+        "QFR_FULL_SNAPSHOT_DIR": "/data/full"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/sim-engine",
+          "read_only": false,
+          "volume": {
+            "subpath": "sim-engine"
+          }
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_full",
+          "target": "/data/full",
+          "read_only": true
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "eval_net"
+      ]
+    },
+    "feedback-api": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "feedback-api",
+        "QFR_ZONE": "eval",
+        "TZ": "Asia/Shanghai",
+        "FEEDBACK_DB_URL": "${FEEDBACK_DB_URL:?run just init-secrets}",
+        "FEEDBACK_READER_TOKEN": "${FEEDBACK_READER_TOKEN:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/feedback-api",
+          "read_only": false,
+          "volume": {
+            "subpath": "feedback-api"
+          }
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "eval_net",
+        "control_net",
+        "research_net"
+      ]
+    },
+    "eval-admin-api": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "eval-admin-api",
+        "QFR_ZONE": "eval",
+        "TZ": "Asia/Shanghai",
+        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
+        "EVAL_OWNER_TOKEN": "${EVAL_OWNER_TOKEN:?run just init-secrets}",
+        "QFR_EPOCH_CONFIG": "/app/configs/epochs/epoch_001.yaml"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/eval-admin-api",
+          "read_only": false,
+          "volume": {
+            "subpath": "eval-admin-api"
+          }
+        },
+        {
+          "type": "bind",
+          "source": "../configs/epochs",
+          "target": "/app/configs/epochs",
+          "read_only": true
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "eval_net",
+        "control_net"
+      ]
+    },
+    "data-ingest": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "data-ingest",
+        "QFR_ZONE": "eval",
+        "TZ": "Asia/Shanghai",
+        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/data-ingest",
+          "read_only": false,
+          "volume": {
+            "subpath": "data-ingest"
+          }
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_full",
+          "target": "/data/full",
+          "read_only": false
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_research",
+          "target": "/data/research",
+          "read_only": false
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "eval_net",
+        "ingest_egress_net"
+      ]
+    },
+    "migrate": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "migrate",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "image": "qfr-v2-migrate:phase0",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "migrate",
+        "QFR_ZONE": "control",
+        "TZ": "Asia/Shanghai",
+        "REGISTRY_MIGRATION_URL": "${REGISTRY_MIGRATION_URL:?run just init-secrets}",
+        "RESEARCH_MIGRATION_URL": "${RESEARCH_MIGRATION_URL:?run just init-secrets}",
+        "EVAL_MIGRATION_URL": "${EVAL_MIGRATION_URL:?run just init-secrets}",
+        "CONTROL_MIGRATION_URL": "${CONTROL_MIGRATION_URL:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/migrate",
+          "read_only": false,
+          "volume": {
+            "subpath": "migrate"
+          }
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "registry_net",
+        "research_net",
+        "eval_net",
+        "control_net"
+      ]
+    },
+    "init-volumes": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import qfr_core"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "image": "qfr-v2-placeholder:phase0",
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "runtime",
+        "args": {
+          "QFR_PACKAGE": "qfr-core"
+        }
+      },
+      "network_mode": "none",
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr",
+          "read_only": false
+        }
+      ],
+      "environment": {
+        "TZ": "Asia/Shanghai"
+      },
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; Path('/var/log/qfr/qfr-mcp').mkdir(exist_ok=True); Path('/var/log/qfr/research-api').mkdir(exist_ok=True); Path('/var/log/qfr/research-worker').mkdir(exist_ok=True); Path('/var/log/qfr/registry-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-scheduler').mkdir(exist_ok=True); Path('/var/log/qfr/eval-worker').mkdir(exist_ok=True); Path('/var/log/qfr/release-worker').mkdir(exist_ok=True); Path('/var/log/qfr/sim-engine').mkdir(exist_ok=True); Path('/var/log/qfr/feedback-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-admin-api').mkdir(exist_ok=True); Path('/var/log/qfr/data-ingest').mkdir(exist_ok=True); Path('/var/log/qfr/migrate').mkdir(exist_ok=True)"
+      ]
+    }
+  },
+  "volumes": {
+    "pg_data": {},
+    "snapshots_full": {},
+    "snapshots_research": {},
+    "qfr_logs": {}
+  },
+  "networks": {
+    "control_net": {
+      "internal": true,
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${QFR_CONTROL_NET_SUBNET:-10.233.40.0/24}"
+          }
+        ]
+      }
+    },
+    "research_net": {
+      "internal": true,
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${QFR_RESEARCH_NET_SUBNET:-10.233.41.0/24}"
+          }
+        ]
+      }
+    },
+    "registry_net": {
+      "internal": true,
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${QFR_REGISTRY_NET_SUBNET:-10.233.42.0/24}"
+          }
+        ]
+      }
+    },
+    "eval_net": {
+      "internal": true,
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${QFR_EVAL_NET_SUBNET:-10.233.43.0/24}"
+          }
+        ]
+      }
+    },
+    "research_egress_net": {
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${QFR_RESEARCH_EGRESS_NET_SUBNET:-10.233.44.0/24}"
+          }
+        ]
+      }
+    },
+    "ingest_egress_net": {
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${QFR_INGEST_EGRESS_NET_SUBNET:-10.233.45.0/24}"
+          }
+        ]
+      }
+    },
+    "mcp_ingress_net": {
+      "internal": false,
+      "ipam": {
+        "config": [
+          {
+            "subnet": "${QFR_MCP_INGRESS_NET_SUBNET:-10.233.47.0/24}"
+          }
+        ]
+      }
+    }
+  }
+}

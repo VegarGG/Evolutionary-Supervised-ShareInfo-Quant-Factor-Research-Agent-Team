@@ -1,0 +1,26 @@
+protocol_id: cn_csi300_daily
+version: '1'
+epoch_ref: epoch_001
+supported_kinds: [factor, strategy]
+universe: {name: csi300, membership: point_in_time}
+eligibility: {listed_days_min: 60, exclude_suspended: true, cross_section_min: 30}
+label: {decision: close_t, execution: close_t_plus_1, end: close_t_plus_1_plus_h, horizons: [1, 5, 10, 20], primary: 1}
+preprocessing: {winsor_lower: 0.01, winsor_upper: 0.99, normalization: zscore, size_neutral_diagnostic: true}
+quantiles: 5
+costs: {long_short_bps_per_side: 10, buy_bps: 5, sell_bps: 15}
+reference_strategy: {type: topk_dropout, top_k: 50, dropout: 5, rebalance: daily, long_only: true}
+strategy_bounds: {top_k: [20, 100], dropout: [1, 20], max_components: 8}
+fingerprint: {dates: 40, window: W0, seed: 20261030}
+dsl: {max_nodes: 30, max_depth: 7, max_fields: 4, max_constants: 3, max_lookback_days: 250, max_corr_cov_nesting: 2, windows: [1, 2, 3, 5, 10, 20, 40, 60, 120, 250]}
+screening: {coverage_min: 0.80, prefix_probe_dates: 5, prefix_tolerance: 1.0e-9, cpu_seconds: 120, memory_gb: 4, degenerate_date_fraction_max: 0.10}
+dedup: {behavioral_similarity_min: 0.95}
+gates:
+  w1_factor: {sign: 1, rankic_min: 0.02, ir_min: 0.12, nw_t_min: 2.5, library_correlation_max: 0.70, turnover_max: 0.60}
+  w1_strategy: {rankic_min: 0.02, nw_t_min: 2.5, net_sharpe_min: 0.8, ir_min: 0.5, drawdown_max: 0.25, strategy_correlation_max: 0.80}
+  w2_factor: {rankic_min: 0.015, ir_min: 0.08, ls_net_sharpe_min: 0.5}
+  w2_strategy: {net_sharpe_min: 0.5, ir_min: 0.3}
+  holdout_factor: {rankic_min: 0.01, ls_net_sharpe_min: 0.3, reference_ir_min: 0.3}
+  holdout_strategy: {net_sharpe_min: 0.3, ir_min: 0.3}
+  acceptance: {dsr_min: 0.90, cluster_similarity: 0.7, pbo_max: 0.30, pbo_blocks: 16, hlz_t_min: 3.0, incubation_days_min: 60, consistency_z_min: -1.645, forward_drawdown_max: 0.15, library_correlation_max: 0.60, complete_data_min: 0.98}
+simulation: {trading_days: 60, checkpoint_days: 20, capital_cny: 100000000, lot_size: 100, staleness_days: 2}
+monitoring: {rolling_days: 60, rankic_mean_below: 0, consecutive_days: 20}

@@ -1,1 +1,0 @@
-Fresh CI databases bootstrapped; host authentication now requires SCRAM passwords.

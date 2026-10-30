@@ -1,7 +1,0 @@
-{
-  "execution_rule": "next trading close",
-  "name": "weekly",
-  "publication_rule": "same snapshot",
-  "review_rule": null,
-  "signal_date_rule": "weekly snapshot"
-}

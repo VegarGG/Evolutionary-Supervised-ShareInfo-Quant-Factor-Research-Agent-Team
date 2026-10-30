@@ -1,1 +1,1 @@
-"""QFR Stage 0 foundation; no runtime business logic."""
+"""QFR research package; Phase 0."""

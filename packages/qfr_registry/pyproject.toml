@@ -1,14 +1,12 @@
 [project]
 name = "qfr-registry"
-version = "0.1.0"
-license = "PolyForm-Noncommercial-1.0.0"
-license-files = ["LICENSE", "NOTICE", "ADDITIONAL-PERMISSION.md", "THIRD-PARTY-NOTICES.md"]
+version = "0.0.1"
 requires-python = ">=3.12,<3.13"
-dependencies = ["qfr-core"]
+dependencies = ["qfr-core", "fastapi>=0.115,<1", "SQLAlchemy>=2,<3", "psycopg[binary]>=3.2,<4", "alembic>=1.15,<2"]
 
 [build-system]
-requires = ["hatchling==1.27.0"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/qfr_registry"]
+[tool.uv.sources]
+qfr-core = {workspace = true}

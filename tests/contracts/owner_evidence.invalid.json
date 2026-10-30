@@ -1,0 +1,38 @@
+{
+  "visibility": "owner_only",
+  "version_id": "019a35e0-0000-7000-8000-000000000001",
+  "official_records": [
+    {
+      "version_id": "019a35e0-0000-7000-8000-000000000001",
+      "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "protocol_id": "cn_csi300_daily",
+      "protocol_version": "1",
+      "data_snapshot_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evaluator_code_version": "contract-test",
+      "schema_version": "official_record/1",
+      "record_id": "019a35e0-0000-7000-8000-000000000001",
+      "epoch_id": "epoch_001",
+      "family_id": "019a35e0-0000-7000-8000-000000000001",
+      "program_id": null,
+      "job_id": null,
+      "stage": "w1",
+      "window": "W1",
+      "run_ids": [
+        "019a35e0-0000-7000-8000-000000000001"
+      ],
+      "container_image_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "seed": 1,
+      "summary": {},
+      "metrics": {},
+      "results_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "created_at": "2026-10-30T00:00:00.000000Z",
+      "principal": "test",
+      "request_id": "test-request"
+    }
+  ],
+  "gate_values": [],
+  "series": [],
+  "reference_strategy_stats": {},
+  "simulation_state": null,
+  "hygiene_warning": "Never copy owner-only evidence into research briefs or steering notes."
+}

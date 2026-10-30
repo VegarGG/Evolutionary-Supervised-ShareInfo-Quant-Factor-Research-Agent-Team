@@ -1,26 +1,21 @@
 [project]
-name = "qfr-foundation"
-version = "0.1.0"
-license = "PolyForm-Noncommercial-1.0.0"
-license-files = ["LICENSE", "NOTICE", "ADDITIONAL-PERMISSION.md", "THIRD-PARTY-NOTICES.md"]
+name = "qfr-workspace"
+version = "0.0.1"
 requires-python = ">=3.12,<3.13"
-dependencies = []
-
-[tool.uv]
-package = false
+dependencies = ["qfr-core", "qfr-registry", "qfr-research", "qfr-eval", "qfr-mcp"]
 
 [tool.uv.workspace]
 members = ["packages/*"]
 
 [tool.uv.sources]
-qfr-core = { workspace = true }
-qfr-registry = { workspace = true }
-qfr-research = { workspace = true }
-qfr-eval = { workspace = true }
-qfr-mcp = { workspace = true }
+qfr-core = {workspace = true}
+qfr-registry = {workspace = true}
+qfr-research = {workspace = true}
+qfr-eval = {workspace = true}
+qfr-mcp = {workspace = true}
 
 [dependency-groups]
-dev = ["ruff", "mypy", "pytest", "hypothesis", "import-linter", "types-PyYAML", "psycopg[binary]", "jsonschema", "rust-just"]
+dev = ["ruff>=0.11,<1", "mypy>=1.15,<2", "pytest>=8,<10", "hypothesis>=6,<7", "pytest-xdist>=3,<4", "import-linter>=2,<3", "types-PyYAML", "jsonschema>=4,<5", "types-jsonschema"]
 
 [tool.ruff]
 target-version = "py312"
@@ -33,16 +28,13 @@ select = ["E", "F", "I", "UP", "B"]
 python_version = "3.12"
 files = ["packages"]
 check_untyped_defs = true
+warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = ["qfr_core", "qfr_core.*"]
+module = ["qfr_core.*", "qfr_mcp.*"]
 strict = true
-
-[[tool.mypy.overrides]]
-module = ["scipy", "scipy.*"]
-ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --tb=short"
-markers = ["database: requires QFR_TEST_POSTGRES_DSN", "pilot: requires QFR_PILOT_ROOT"]
+addopts = "-ra --strict-markers"
+markers = ["postgres: requires the Phase 0 PostgreSQL roles and migrations", "deployment: requires the running Compose stack"]

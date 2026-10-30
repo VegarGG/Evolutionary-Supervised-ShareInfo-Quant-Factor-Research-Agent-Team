@@ -1,0 +1,21 @@
+version: '1'
+timezone: Asia/Shanghai
+docker_minimum: {cpus: 8, disk_gb: 200}
+docker_memory: {expected_gib: 24, policy: performance_based}
+service_limits:
+  eval-worker: {cpus: 4, memory_gb: 6, replicas: 2}
+  research-worker: {cpus: 2, memory_gb: 4}
+  postgres: {cpus: 4, memory_gb: 8}
+  default: {cpus: 1, memory_gb: 1}
+schedule: {ingest_local: '18:30', nightly_local: '02:30'}
+backup: {daily_retention: 30, monthly_retention: 12}
+healthcheck: {interval_seconds: 5, timeout_seconds: 3, retries: 30}
+network_subnets:
+  control_net: 10.233.40.0/24
+  research_net: 10.233.41.0/24
+  registry_net: 10.233.42.0/24
+  eval_net: 10.233.43.0/24
+  research_egress_net: 10.233.44.0/24
+  ingest_egress_net: 10.233.45.0/24
+  ci_net: 10.233.46.0/24
+  mcp_ingress_net: 10.233.47.0/24

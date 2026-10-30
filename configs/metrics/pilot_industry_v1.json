@@ -1,9 +1,0 @@
-{
-  "revision": 1,
-  "profile": "pilot_industry_v1",
-  "industry_count": 31,
-  "selection_fraction": 0.2,
-  "costs_bps": [0, 10, 30],
-  "weight_tolerance": 1e-9,
-  "zero_epsilon": 1e-12
-}

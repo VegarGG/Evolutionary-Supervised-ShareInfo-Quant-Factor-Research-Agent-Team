@@ -1,6 +1,0 @@
-{
-  "ambiguous_outcome": "persist_before_retry",
-  "backoff": "exponential_with_jitter",
-  "backoff_seconds": null,
-  "max_attempts": 3
-}

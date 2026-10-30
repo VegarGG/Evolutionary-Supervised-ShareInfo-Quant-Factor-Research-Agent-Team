@@ -1,0 +1,490 @@
+{
+  "$defs": {
+    "AgentRunRef": {
+      "additionalProperties": false,
+      "properties": {
+        "model_id": {
+          "title": "Model Id",
+          "type": "string"
+        },
+        "prompt_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Prompt Sha256",
+          "type": "string"
+        },
+        "prompt_template_id": {
+          "title": "Prompt Template Id",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "deepseek",
+            "kimi",
+            "glm"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "run_id": {
+          "format": "uuid7",
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "provider",
+        "model_id",
+        "prompt_template_id",
+        "prompt_sha256",
+        "run_id"
+      ],
+      "title": "AgentRunRef",
+      "type": "object"
+    },
+    "Component": {
+      "additionalProperties": false,
+      "properties": {
+        "sign": {
+          "enum": [
+            -1,
+            1
+          ],
+          "title": "Sign",
+          "type": "integer"
+        },
+        "version_id": {
+          "format": "uuid7",
+          "title": "Version Id",
+          "type": "string"
+        },
+        "weight": {
+          "exclusiveMinimum": 0,
+          "multipleOf": 0.01,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "version_id",
+        "sign",
+        "weight"
+      ],
+      "title": "Component",
+      "type": "object"
+    },
+    "Portfolio": {
+      "additionalProperties": false,
+      "properties": {
+        "dropout": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Dropout",
+          "type": "integer"
+        },
+        "long_only": {
+          "const": true,
+          "title": "Long Only",
+          "type": "boolean"
+        },
+        "rebalance": {
+          "const": "daily",
+          "title": "Rebalance",
+          "type": "string"
+        },
+        "top_k": {
+          "maximum": 100,
+          "minimum": 20,
+          "title": "Top K",
+          "type": "integer"
+        },
+        "type": {
+          "const": "topk_dropout",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "top_k",
+        "dropout",
+        "rebalance",
+        "long_only"
+      ],
+      "title": "Portfolio",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_runs": {
+          "items": {
+            "$ref": "#/$defs/AgentRunRef"
+          },
+          "title": "Agent Runs",
+          "type": "array"
+        },
+        "generation_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Generation Id"
+        },
+        "island_id": {
+          "anyOf": [
+            {
+              "enum": [
+                "I1",
+                "I2",
+                "I3",
+                "I4",
+                "I5",
+                "I6"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Island Id"
+        },
+        "job_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Job Id"
+        },
+        "operator": {
+          "enum": [
+            "explore",
+            "llm_mutation",
+            "syntactic_mutation",
+            "crossover",
+            "repair",
+            "human_seed"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "parent_version_ids": {
+          "items": {
+            "format": "uuid7",
+            "type": "string"
+          },
+          "title": "Parent Version Ids",
+          "type": "array"
+        },
+        "program_id": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Program Id"
+        },
+        "qfr_core_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Qfr Core Version",
+          "type": "string"
+        },
+        "research_snapshot_id": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Research Snapshot Id",
+          "type": "string"
+        },
+        "trace_ref": {
+          "format": "uuid7",
+          "title": "Trace Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "program_id",
+        "generation_id",
+        "island_id",
+        "operator",
+        "parent_version_ids",
+        "agent_runs",
+        "trace_ref",
+        "research_snapshot_id",
+        "qfr_core_version"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "ResearchAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Metrics",
+          "type": "object"
+        },
+        "visibility": {
+          "const": "research_non_official",
+          "title": "Visibility",
+          "type": "string"
+        },
+        "window": {
+          "const": "W0",
+          "title": "Window",
+          "type": "string"
+        }
+      },
+      "required": [
+        "visibility",
+        "window",
+        "metrics"
+      ],
+      "title": "ResearchAssessment",
+      "type": "object"
+    },
+    "Review": {
+      "additionalProperties": false,
+      "properties": {
+        "rounds": {
+          "minimum": 0,
+          "title": "Rounds",
+          "type": "integer"
+        },
+        "verdict_id": {
+          "format": "uuid7",
+          "title": "Verdict Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "verdict_id",
+        "rounds"
+      ],
+      "title": "Review",
+      "type": "object"
+    },
+    "StrategyDeclaration": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_sign": {
+          "const": 1,
+          "title": "Expected Sign",
+          "type": "integer"
+        },
+        "horizon_days": {
+          "enum": [
+            1,
+            5,
+            10,
+            20
+          ],
+          "title": "Horizon Days",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "expected_sign",
+        "horizon_days"
+      ],
+      "title": "StrategyDeclaration",
+      "type": "object"
+    },
+    "StrategyImplementation": {
+      "additionalProperties": false,
+      "properties": {
+        "combination": {
+          "const": "zscore_weighted_sum",
+          "title": "Combination",
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/Component"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Components",
+          "type": "array"
+        },
+        "language": {
+          "const": "qfr-strategy/1",
+          "title": "Language",
+          "type": "string"
+        },
+        "portfolio": {
+          "$ref": "#/$defs/Portfolio"
+        }
+      },
+      "required": [
+        "language",
+        "components",
+        "combination",
+        "portfolio"
+      ],
+      "title": "StrategyImplementation",
+      "type": "object"
+    },
+    "StrategyRationale": {
+      "additionalProperties": false,
+      "properties": {
+        "change_summary": {
+          "anyOf": [
+            {
+              "maxLength": 600,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Change Summary"
+        },
+        "composition_rationale": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Composition Rationale",
+          "type": "string"
+        },
+        "falsification": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Falsification",
+          "type": "string"
+        },
+        "hypothesis_id": {
+          "format": "uuid7",
+          "title": "Hypothesis Id",
+          "type": "string"
+        },
+        "mechanism": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Mechanism",
+          "type": "string"
+        },
+        "summary": {
+          "maxLength": 1500,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "hypothesis_id",
+        "summary",
+        "mechanism",
+        "falsification",
+        "composition_rationale"
+      ],
+      "title": "StrategyRationale",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "declared": {
+      "$ref": "#/$defs/StrategyDeclaration"
+    },
+    "family_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Family Id"
+    },
+    "implementation": {
+      "$ref": "#/$defs/StrategyImplementation"
+    },
+    "kind": {
+      "const": "strategy",
+      "title": "Kind",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "title": "Name",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "rationale": {
+      "$ref": "#/$defs/StrategyRationale"
+    },
+    "review": {
+      "$ref": "#/$defs/Review"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "self_assessment": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ResearchAssessment"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "title": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "family_id",
+    "name",
+    "title",
+    "implementation",
+    "declared",
+    "rationale",
+    "provenance",
+    "review"
+  ],
+  "title": "StrategyManifest",
+  "type": "object"
+}

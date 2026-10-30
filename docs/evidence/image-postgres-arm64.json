@@ -1,0 +1,67 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/docker/dockerfile@1",
+        "digest": {
+          "sha256": "4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e"
+        }
+      },
+      {
+        "uri": "pkg:docker/postgres@16?platform=linux%2Farm64",
+        "digest": {
+          "sha256": "1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Dockerfile"
+      },
+      "parameters": {
+        "frontend": "gateway.v0",
+        "args": {
+          "cmdline": "docker/dockerfile:1",
+          "source": "docker/dockerfile:1",
+          "target": "postgres"
+        },
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Dockerfile"
+          },
+          "request": {
+            "args": {
+              "target": "postgres",
+              "vcs:localdir:context": ".",
+              "vcs:localdir:dockerfile": "infra"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "platform": "linux/arm64"
+      }
+    }
+  },
+  "buildx.build.ref": "desktop-linux/desktop-linux/0kxt4nvwadsqzczw5z3rkdvsf",
+  "containerimage.descriptor": {
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "digest": "sha256:c121b1d48c7c4af2c61c218a5ff7b5a18b8aad5f0ec525e81784ac20314561b9",
+    "size": 856
+  },
+  "containerimage.digest": "sha256:c121b1d48c7c4af2c61c218a5ff7b5a18b8aad5f0ec525e81784ac20314561b9",
+  "image.name": "docker.io/library/qfr-v2-postgres:phase0"
+}

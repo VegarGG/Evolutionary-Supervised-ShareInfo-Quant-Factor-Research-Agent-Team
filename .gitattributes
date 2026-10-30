@@ -1,0 +1,2 @@
+# Preserve raw tool receipts exactly, including terminal whitespace.
+docs/evidence/*.log -whitespace

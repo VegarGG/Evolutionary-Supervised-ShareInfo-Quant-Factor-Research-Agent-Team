@@ -1,0 +1,208 @@
+{
+  "$defs": {
+    "ImportComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 64,
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "sign": {
+          "enum": [
+            -1,
+            1
+          ],
+          "title": "Sign",
+          "type": "integer"
+        },
+        "weight": {
+          "exclusiveMinimum": 0,
+          "multipleOf": 0.01,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "sign",
+        "weight"
+      ],
+      "title": "ImportComponent",
+      "type": "object"
+    },
+    "ImportStrategy": {
+      "additionalProperties": false,
+      "properties": {
+        "combination": {
+          "const": "zscore_weighted_sum",
+          "title": "Combination",
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/ImportComponent"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Components",
+          "type": "array"
+        },
+        "portfolio": {
+          "$ref": "#/$defs/Portfolio"
+        }
+      },
+      "required": [
+        "components",
+        "combination",
+        "portfolio"
+      ],
+      "title": "ImportStrategy",
+      "type": "object"
+    },
+    "PoolImportEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_sign": {
+          "enum": [
+            -1,
+            1
+          ],
+          "title": "Expected Sign",
+          "type": "integer"
+        },
+        "expression": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Expression",
+          "type": "string"
+        },
+        "horizon_days": {
+          "enum": [
+            1,
+            5,
+            10,
+            20
+          ],
+          "title": "Horizon Days",
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 64,
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "strategy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImportStrategy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "title",
+        "expression",
+        "expected_sign",
+        "horizon_days",
+        "tags"
+      ],
+      "title": "PoolImportEntry",
+      "type": "object"
+    },
+    "Portfolio": {
+      "additionalProperties": false,
+      "properties": {
+        "dropout": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Dropout",
+          "type": "integer"
+        },
+        "long_only": {
+          "const": true,
+          "title": "Long Only",
+          "type": "boolean"
+        },
+        "rebalance": {
+          "const": "daily",
+          "title": "Rebalance",
+          "type": "string"
+        },
+        "top_k": {
+          "maximum": 100,
+          "minimum": 20,
+          "title": "Top K",
+          "type": "integer"
+        },
+        "type": {
+          "const": "topk_dropout",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "top_k",
+        "dropout",
+        "rebalance",
+        "long_only"
+      ],
+      "title": "Portfolio",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/PoolImportEntry"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "pool_import/1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "entries"
+  ],
+  "title": "PoolImport",
+  "type": "object"
+}

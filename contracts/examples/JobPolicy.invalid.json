@@ -1,8 +1,0 @@
-{
-  "authorized_spend_ref": null,
-  "completion_requires_independent_receipt": true,
-  "exit_gate_spec_ref": null,
-  "fallback_allowlist": [],
-  "max_generations": null,
-  "on_budget_exhaustion": "budget_paused"
-}
