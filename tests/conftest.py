@@ -35,27 +35,6 @@ def forbid_external_network(monkeypatch):
 @pytest.fixture(scope="session")
 def small_zones(tmp_path_factory):
     """The small planted world written as full and research snapshots."""
-    from qfr_core.data.panel import sanity_checks
-    from qfr_core.data.snapshot import SnapshotData, SnapshotSource, ZoneDirs
-    from qfr_eval.ingest.zones import build_zones
+    from tests.synthetic_fixtures import build_small_zones
 
-    from tests.synthetic_fixtures import BuiltZones, small_epoch, small_world
-
-    world = small_world()
-    root = tmp_path_factory.mktemp("snapshots")
-    data = SnapshotData(
-        world.panel, world.membership, world.calendar, {"ground_truth.json": b"{}\n"}
-    )
-    source = SnapshotSource(
-        "synthetic", None, None, {"world": "planted"}, {}, sanity_checks(world.panel)
-    )
-    research = SnapshotSource("synthetic", None, None, {}, {}, {})
-    built = build_zones(
-        ZoneDirs.under(root),
-        data,
-        source,
-        small_epoch(),
-        ["full", "research"],
-        research_source=research,
-    )
-    return BuiltZones(root, world, built.snapshots["full"], built.snapshots["research"])
+    return build_small_zones(tmp_path_factory.mktemp("snapshots"), "planted")

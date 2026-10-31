@@ -258,7 +258,8 @@ def workbench_evaluate(deps: ToolDeps, expression: str, expected_sign: int) -> d
     if not check_.ok:
         return {"ok": False, "errors": [dict(e) for e in check_.errors]}
     sign: Literal[1, -1] = 1 if expected_sign >= 0 else -1
-    report = deps.env.workbench.factor(expression, sign)
+    assert check_.analysis is not None
+    report = factor_report(deps.env, check_.analysis.canonical, sign)
     metrics = report.metrics.model_dump(mode="json")
     return {
         "ok": True,
@@ -273,6 +274,21 @@ def workbench_evaluate(deps: ToolDeps, expression: str, expected_sign: int) -> d
     }
 
 
+FACTOR_REPORTS_MAX = 2048
+
+
+def factor_report(env: ResearchEnv, canonical: str, sign: Literal[1, -1]) -> Any:
+    """The W0 workbench report of a validated expression, computed once per env."""
+    key = (canonical, sign)
+    report = env.factor_reports.get(key)
+    if report is None:
+        report = env.workbench.factor(canonical, sign)
+        if len(env.factor_reports) >= FACTOR_REPORTS_MAX:
+            env.factor_reports.pop(next(iter(env.factor_reports)))
+        env.factor_reports[key] = report
+    return report
+
+
 def _fingerprint(env: ResearchEnv, canonical: str) -> Any:
     if canonical not in env.fingerprints:
         env.fingerprints[canonical] = env.workbench.fingerprint(canonical)
@@ -280,8 +296,9 @@ def _fingerprint(env: ResearchEnv, canonical: str) -> Any:
 
 
 def comparison_set(deps: ToolDeps) -> list[dict[str, str]]:
-    """Factors a new draft is compared with: the factor pool and this program's
-    approved, selected and published candidates."""
+    """Factors a new draft is compared with: the factor pool, this program's approved,
+    selected and published candidates, and the population's other members (seeds, a
+    parent job's members and migrants; Section 12.5)."""
     others: list[dict[str, str]] = []
     try:
         page = deps.env.registry.pool("factor")
@@ -305,6 +322,17 @@ def comparison_set(deps: ToolDeps) -> list[dict[str, str]]:
         others.append(
             {"source": "program", "ref": row["candidate_id"], "expression": row["expression"]}
         )
+    known = {o["expression"] for o in others}
+    for row in _program_rows(
+        deps,
+        "SELECT DISTINCT version_id, expression FROM population_members WHERE program_id = :p "
+        "AND expression IS NOT NULL AND source <> 'program' ORDER BY version_id",
+    ):
+        if row["expression"] not in known:
+            known.add(row["expression"])
+            others.append(
+                {"source": "population", "ref": row["version_id"], "expression": row["expression"]}
+            )
     return others
 
 
@@ -335,12 +363,21 @@ def similarity_search(
     behaviors = [
         float(r["behavioral_similarity"]) for r in rows if r["behavioral_similarity"] is not None
     ]
+    # The pool is research's view of the library: provisional fitness uses the maximum
+    # behavioral similarity to it as the library-correlation term (Section 12.2).
+    pool = [
+        float(r["behavioral_similarity"])
+        for r in rows
+        if r["source"] == "pool" and r["behavioral_similarity"] is not None
+    ]
     return {
         "ok": True,
         "compared": len(rows),
         "max_ast_similarity": max_ast,
         "originality": round(1.0 - max_ast, 6),
         "max_behavioral_similarity": max(behaviors, default=None),
+        "max_pool_behavioral_similarity": max(pool, default=None),
+        "pool_compared": len(pool),
         "nearest": rows[: max(1, min(limit, 20))],
         "vacuous": not rows,
     }

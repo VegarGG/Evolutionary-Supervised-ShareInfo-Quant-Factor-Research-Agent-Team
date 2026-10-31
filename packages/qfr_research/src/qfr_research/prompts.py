@@ -53,6 +53,7 @@ class PromptLibrary:
         "engineer",
         "mutation",
         "crossover",
+        "repair",
         "strategy",
         "critic",
         "analyst",

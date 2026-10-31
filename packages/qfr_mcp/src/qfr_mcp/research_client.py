@@ -22,6 +22,7 @@ from qfr_core.research_api import (
     SteerRequest,
     SubmitJobRequest,
     SubmitJobResponse,
+    TraceExportBundle,
     TraceView,
 )
 
@@ -87,6 +88,9 @@ class ResearchClient(ApiClient):
             else f"/v1/trace/candidates/{candidate_id}"
         )
         return await self._model(TraceView, "GET", path)
+
+    async def trace_export(self, version_id: UUID) -> TraceExportBundle:
+        return await self._model(TraceExportBundle, "GET", f"/v1/trace/{version_id}/export")
 
     async def lineage(self, version_id: UUID) -> ResearchLineage:
         return await self._model(ResearchLineage, "GET", f"/v1/lineage/{version_id}")

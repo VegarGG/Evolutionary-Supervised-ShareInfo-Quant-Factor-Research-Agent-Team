@@ -13,6 +13,7 @@ from qfr_core.contracts import (
     Contract,
     Deliverable,
     DeliverableCriteria,
+    IterationHistory,
     JobBudget,
     ResearchBrief,
     Tier,
@@ -175,6 +176,17 @@ class TraceView(Contract):
 
     export: TraceExport
     trace_hash: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+
+
+class TraceExportBundle(Contract):
+    """qfr.trace.export (Section 14.5): a published version's trace/1 export with its
+    trace_hash, its iteration history and the history's Markdown rendering. Research
+    never holds owner-grade records; the front door adds them to its copy."""
+
+    export: TraceExport
+    trace_hash: Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+    iteration_history: IterationHistory
+    markdown: str
 
 
 class TraceStepPage(Contract):

@@ -723,6 +723,7 @@ def create_app(
         evidence_schema=evidence_schema,
         logger=logger,
         result=result,
+        exports_dir=Path(exports) if (exports := os.environ.get("QFR_EXPORTS_DIR")) else None,
     )
     register_job_tools(server, deps)
     register_resources(server, deps, pool_page)

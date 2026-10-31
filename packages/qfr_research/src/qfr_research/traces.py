@@ -5,6 +5,11 @@ released reports; no LLM writes any part of them. A trace export (trace/1) holds
 step for a version or candidate and its ancestors, ordered by (at, step_id), with the
 agent runs inlined; its SHA-256 over canonical JSON is the trace_hash a deliverable
 stores. Owner-grade records are never stored here: the front door joins them.
+
+Lineages are DAGs (Phase 5): a crossover child has two parents, so the iteration history
+walks every ancestor in topological order, records each operator application with the
+AST diff the workflow wrote at the time, the flags a mutation targeted, and the sibling
+candidates of each hop's task that were discarded, with their reasons.
 """
 
 import hashlib
@@ -14,6 +19,7 @@ from uuid import UUID
 from qfr_core.config import canonical_json
 from qfr_core.contracts import (
     AgentRunRef,
+    DiagnosticFlag,
     HistoryHop,
     IterationHistory,
     ReleasedReport,
@@ -74,17 +80,65 @@ def version_candidate(conn: Connection, version_id: UUID) -> UUID | None:
     ).scalar()
 
 
-def ancestors(conn: Connection, version_id: UUID, depth: int = 20) -> list[UUID]:
+def ancestors(conn: Connection, version_id: UUID, depth: int = 64) -> list[UUID]:
+    """Every ancestor version through the lineage edges (a DAG: a crossover child has two
+    parents), breadth first, each once, at most `depth` of them."""
     found: list[UUID] = []
     frontier = [version_id]
     while frontier and len(found) < depth:
         rows = conn.execute(
-            text("SELECT parent_version_id FROM lineage_edges WHERE child_version_id = ANY(:v)"),
+            text(
+                "SELECT parent_version_id FROM lineage_edges WHERE child_version_id = ANY(:v) "
+                "ORDER BY parent_version_id"
+            ),
             {"v": frontier},
         ).all()
-        frontier = [r.parent_version_id for r in rows if r.parent_version_id not in found]
+        frontier = list(
+            dict.fromkeys(
+                r.parent_version_id
+                for r in rows
+                if r.parent_version_id not in found and r.parent_version_id != version_id
+            )
+        )[: max(0, depth - len(found))]
         found += frontier
     return found
+
+
+def lineage_order(conn: Connection, version_id: UUID) -> tuple[list[UUID], dict[UUID, list[UUID]]]:
+    """The version and its ancestors in topological order (every parent before its
+    children), ties broken by publication time then id; and each node's parents."""
+    nodes = [version_id, *ancestors(conn, version_id)]
+    edges = conn.execute(
+        text(
+            "SELECT child_version_id, parent_version_id FROM lineage_edges WHERE "
+            "child_version_id = ANY(:v) ORDER BY created_at, parent_version_id"
+        ),
+        {"v": nodes},
+    ).all()
+    member = set(nodes)
+    parents: dict[UUID, list[UUID]] = {n: [] for n in nodes}
+    for edge in edges:
+        if edge.parent_version_id in member:
+            parents[edge.child_version_id].append(edge.parent_version_id)
+    published = {
+        r.version_id: r.published_at
+        for r in conn.execute(
+            text(
+                "SELECT version_id, published_at FROM candidate_versions WHERE version_id = ANY(:v)"
+            ),
+            {"v": nodes},
+        ).all()
+    }
+    order: list[UUID] = []
+    done: set[UUID] = set()
+    while len(order) < len(nodes):
+        ready = [n for n in nodes if n not in done and all(p in done for p in parents[n])]
+        if not ready:  # pragma: no cover - lineage edges never form a cycle
+            ready = [n for n in nodes if n not in done]
+        ready.sort(key=lambda n: (published.get(n) is not None, published.get(n) or 0, str(n)))
+        order.append(ready[0])
+        done.add(ready[0])
+    return order, parents
 
 
 def export(
@@ -178,23 +232,72 @@ def export(
     )
 
 
+def _applied_step(conn: Connection, candidate_id: UUID) -> dict[str, Any]:
+    payload: dict[str, Any] | None = conn.execute(
+        text(
+            "SELECT payload FROM trace_steps WHERE candidate_id = :c AND step_type IN "
+            "('MUTATION_APPLIED', 'CROSSOVER_APPLIED', 'REPAIR_APPLIED', "
+            "'SYNTACTIC_MUTATION_APPLIED') ORDER BY at DESC LIMIT 1"
+        ),
+        {"c": candidate_id},
+    ).scalar()
+    return payload or {}
+
+
+def _published_expression(conn: Connection, version_id: UUID) -> str | None:
+    expression: str | None = conn.execute(
+        text(
+            "SELECT payload -> 'manifest' -> 'implementation' ->> 'expression' AS e "
+            "FROM trace_steps WHERE step_type = 'PUBLISHED' AND outcome = 'ok' AND version_id = :v "
+            "ORDER BY at LIMIT 1"
+        ),
+        {"v": version_id},
+    ).scalar()
+    if expression is None:
+        expression = conn.execute(
+            text(
+                "SELECT expression FROM population_members WHERE version_id = :v AND "
+                "expression IS NOT NULL LIMIT 1"
+            ),
+            {"v": version_id},
+        ).scalar()
+    return expression
+
+
+def _outcome(reports: list[ReleasedReport]) -> str:
+    latest = {r.content.type: r.content for r in reports}
+    screening = latest.get("screening")
+    if screening is not None and getattr(screening, "status", None) == "FAIL":
+        return "screen_failed"
+    w2 = latest.get("w2")
+    if w2 is not None:
+        status = getattr(w2, "status", None)
+        return "advanced" if status == "PASS" else "gate_failed"
+    return "published"
+
+
 def iteration_history(
     conn: Connection, version_id: UUID, generated_at: Any, trace: TraceExport
 ) -> IterationHistory:
-    """One hop per published version on the path from the root to this version."""
-    path = list(reversed(ancestors(conn, version_id))) + [version_id]
+    """One hop per published version of the lineage DAG, parents before children; a
+    crossover hop has two from_version_ids (Section 14.4)."""
+    order, _ = lineage_order(conn, version_id)
     hops: list[HistoryHop] = []
     roots: list[UUID] = []
     discarded: list[dict[str, Any]] = []
     calls = tokens = 0
     cost = 0.0
-    for current in path:
+    tasks_counted: set[UUID] = set()
+    for current in order:
         candidate_id = version_candidate(conn, current)
         if candidate_id is None:
-            roots.append(current)  # a seed or pool version the lineage starts from
+            roots.append(current)  # a pool or parent-job version the lineage starts from
             continue
         chain = candidate_chain(conn, candidate_id)
         final = chain[-1]
+        if final.operator == "human_seed":
+            roots.append(current)
+            continue
         hypothesis = (
             conn.execute(
                 text("SELECT payload FROM hypotheses WHERE hypothesis_id = :h"),
@@ -202,23 +305,21 @@ def iteration_history(
             ).scalar()
             or {}
         )
-        if not final.payload.get("parent_version_ids") and final.hypothesis_id is not None:
-            roots.append(final.hypothesis_id)
         parents = [UUID(p) for p in final.payload.get("parent_version_ids", [])]
-        before = []
-        for parent in parents:
-            manifest = conn.execute(
-                text(
-                    "SELECT payload -> 'manifest' -> 'implementation' ->> 'expression' AS e "
-                    "FROM trace_steps WHERE step_type = 'PUBLISHED' AND version_id = :v"
-                ),
-                {"v": parent},
-            ).scalar()
-            if manifest:
-                before.append(manifest)
+        if not parents and final.hypothesis_id is not None:
+            roots.append(final.hypothesis_id)
+        applied = _applied_step(conn, final.candidate_id)
+        # The parents as published (like expression_after); the AST diff below is the
+        # operator step's, computed on canonical trees.
+        before = [e for p in parents if (e := _published_expression(conn, p))]
+        if len(before) != len(parents):
+            before = list(applied.get("expressions_before") or before)
         after = final.expression or canonical_json(final.payload.get("components", []))
         diff: list[dict[str, Any]] = []
-        if final.expression and len(before) == 1:
+        recorded = applied.get("ast_diffs") or []
+        if recorded:
+            diff = [dict(e) for e in recorded[0]]
+        elif final.expression and before:
             diff = [
                 dict(e)
                 for e in ast_diff(canonicalize(parse(before[0])), canonicalize(parse(after)))
@@ -267,13 +368,14 @@ def iteration_history(
                 {"v": current},
             ).all()
         ]
-        flags = (
-            sorted(
-                {f for r in reports for f in getattr(r.content, "flags", [])}, key=lambda f: f.value
-            )
-            if parents
-            else []
+        known = {f.value for f in DiagnosticFlag}
+        flags = [DiagnosticFlag(f) for f in applied.get("targeted_flags") or [] if f in known]
+        title = hypothesis.get("title") or final.payload.get("title") or ""
+        change = final.payload.get("change_summary") or (
+            "New expression implementing the hypothesis (as written by the engineer)."
         )
+        if final.payload.get("auto_change_summary"):
+            change = f"{change} (auto-generated)"
         hops.append(
             HistoryHop(
                 from_version_ids=parents,
@@ -282,11 +384,8 @@ def iteration_history(
                 generation_seq=seq,
                 operator=final.operator,
                 targeted_flags=flags,
-                hypothesis_title=str(hypothesis.get("title", "")),
-                change_summary=str(
-                    final.payload.get("change_summary")
-                    or "New expression implementing the hypothesis (as written by the engineer)."
-                ),
+                hypothesis_title=str(title),
+                change_summary=str(change),
                 expression_before=before,
                 expression_after=after,
                 ast_diff=diff,
@@ -307,25 +406,39 @@ def iteration_history(
                 else None,
                 evaluation=reports,
                 owner_grade=None,
-                outcome="published",
+                outcome=_outcome(reports),
             )
         )
         for sibling in conn.execute(
             text(
-                "SELECT candidate_id, state, reason, expression FROM candidates WHERE "
-                "task_id = :t AND candidate_id <> ALL(:c) AND state IN ('not_selected', "
-                "'rejected', 'invalid', 'approved') ORDER BY created_at"
+                "SELECT candidate_id, operator, state, reason, expression, provisional_fitness, "
+                "prescreen FROM candidates WHERE task_id = :t AND candidate_id <> ALL(:c) AND "
+                "state IN ('not_selected', 'rejected', 'invalid', 'approved', 'publish_failed') "
+                "ORDER BY created_at, candidate_id"
             ),
             {"t": final.task_id, "c": [c.candidate_id for c in chain]},
         ).all():
+            failed = sorted(
+                k
+                for k, v in ((sibling.prescreen or {}).get("checks") or {}).items()
+                if not v.get("passed")
+            )
             discarded.append(
                 {
                     "candidate_id": str(sibling.candidate_id),
+                    "sibling_of": str(current),
+                    "generation_seq": seq,
+                    "operator": sibling.operator,
                     "state": sibling.state,
                     "reason": sibling.reason,
                     "expression": sibling.expression,
+                    "provisional_fitness": sibling.provisional_fitness,
+                    "prescreen_failed": failed,
                 }
             )
+        if final.task_id in tasks_counted:
+            continue
+        tasks_counted.add(final.task_id)
         usage = conn.execute(
             text(
                 "SELECT count(*) AS n, coalesce(sum(tokens_in + tokens_out), 0) AS tokens, "
@@ -370,18 +483,30 @@ def iteration_history(
 
 
 def history_markdown(history: IterationHistory) -> str:
-    """The owner-facing rendering: one section per hop (Section 14.4)."""
+    """The owner-facing rendering: one section per hop in lineage order (Section 14.4)."""
     lines = [f"# Iteration history of {history.version_id}", ""]
+    if history.roots:
+        lines += [f"Roots: {', '.join(str(r) for r in history.roots)}", ""]
     for i, hop in enumerate(history.hops, 1):
+        source = ", ".join(str(p) for p in hop.from_version_ids) or "a new hypothesis"
         lines += [
             f"## Hop {i}: {hop.operator} (generation {hop.generation_seq})",
+            f"- From: {source}",
+            f"- To: {hop.to_version_id}",
             f"- Hypothesis: {hop.hypothesis_title}",
             f"- Change (as written by the engineer): {hop.change_summary}",
             f"- Before: {', '.join(hop.expression_before) or 'none (new expression)'}",
             f"- After: {hop.expression_after}",
         ]
+        if hop.targeted_flags:
+            lines.append(f"- Targeted flags: {', '.join(f.value for f in hop.targeted_flags)}")
+        if hop.ast_diff:
+            diff = canonical_json(list(hop.ast_diff))
+            lines.append(f"- AST diff (from the first parent): {diff}")
         if hop.engineer is not None:
             lines.append(f"- Engineer: {hop.engineer.provider}/{hop.engineer.model_id}")
+        else:
+            lines.append("- Engineer: none (deterministic research code)")
         if hop.critic is not None:
             lines.append(
                 f"- Critic: {hop.critic['provider']}/{hop.critic['model_id']}, "
@@ -394,6 +519,15 @@ def history_markdown(history: IterationHistory) -> str:
         for report in hop.evaluation:
             values = canonical_json(report.content.model_dump(mode="json"))
             lines.append(f"- Released {report.content.type}: {values}")
+        lines.append(f"- Outcome: {hop.outcome}")
+        lines.append("")
+    if history.discarded:
+        lines += ["## Discarded siblings", ""]
+        for item in history.discarded:
+            lines.append(
+                f"- {item.get('candidate_id')} ({item.get('operator')}, generation "
+                f"{item.get('generation_seq')}): {item.get('state')}, {item.get('reason')}"
+            )
         lines.append("")
     lines.append(f"Totals: {canonical_json(history.totals)}")
     return "\n".join(lines) + "\n"

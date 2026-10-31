@@ -45,6 +45,7 @@ from qfr_core.research_api import (
     SteerRequest,
     SubmitJobRequest,
     SubmitJobResponse,
+    TraceExportBundle,
     TraceView,
 )
 from sqlalchemy import text
@@ -59,7 +60,14 @@ from qfr_research.feedback import reports_for
 from qfr_research.jobs import JobConflict, JobNotFound, JobService
 from qfr_research.monitor import JobMonitor
 from qfr_research.store import audit
-from qfr_research.traces import TraceNotFound, ancestors, export, trace_hash
+from qfr_research.traces import (
+    TraceNotFound,
+    ancestors,
+    export,
+    history_markdown,
+    iteration_history,
+    trace_hash,
+)
 
 SERVICE = "research-api"
 PRINCIPAL = "control"
@@ -432,9 +440,20 @@ def create_app(env: ResearchEnv, token: str) -> FastAPI:
     async def version_trace(version_id: UUID) -> TraceView:
         return await run(trace_view, version_id, None)
 
-    @app.get("/v1/trace/{version_id}/export", response_model=TraceView, responses=ERRORS)
-    async def version_export(version_id: UUID) -> TraceView:
-        return await run(trace_view, version_id, None)
+    def export_bundle(version_id: UUID) -> TraceExportBundle:
+        with env.db.read() as conn:
+            exported = export(conn, version_id=version_id)
+            history = iteration_history(conn, version_id, env.clock.now(), exported)
+        return TraceExportBundle(
+            export=exported,
+            trace_hash=trace_hash(exported),
+            iteration_history=history,
+            markdown=history_markdown(history),
+        )
+
+    @app.get("/v1/trace/{version_id}/export", response_model=TraceExportBundle, responses=ERRORS)
+    async def version_export(version_id: UUID) -> TraceExportBundle:
+        return await run(export_bundle, version_id)
 
     @app.get("/v1/lineage/{version_id}", response_model=ResearchLineage, responses=ERRORS)
     async def lineage(version_id: UUID) -> ResearchLineage:

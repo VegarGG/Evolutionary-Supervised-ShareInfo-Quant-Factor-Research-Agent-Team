@@ -5,6 +5,13 @@ Deterministic code: for a selected candidate it runs the trace completeness chec
 registry-api with the publisher token. A candidate whose trace lacks a required step for
 its operator is refused: the refusal is a failed TRACE_CHECKED step and a WARNING line,
 and the candidate becomes not_selected with reason TRACE_INCOMPLETE (TRC-01).
+
+Phase 5: a child of a version this program published joins its parent's family (the
+first parent's for a crossover) under the family's name, so its trials count in that
+family; a child of a version published elsewhere starts a new family. A child without a
+program hypothesis carries the rationale it inherited from its parent's manifest. A
+syntactic mutant (and a deterministic crossover) has no critic review: its review
+record names the deterministic APPLIED step, with 0 rounds.
 """
 
 import re
@@ -40,7 +47,17 @@ APPLIED = {
     "crossover": "CROSSOVER_APPLIED",
     "repair": "REPAIR_APPLIED",
 }
-# Section 14.5: the steps each operator needs before PUBLISHED.
+DETERMINISTIC_DEVELOPMENT = (
+    ("candidate", "DSL_VALIDATED"),
+    ("candidate", "WORKBENCH_EVALUATED"),
+    ("candidate", "SIMILARITY_CHECKED"),
+    ("candidate", "PRESCREEN_EVALUATED"),
+    ("candidate", "SELECTED"),
+)
+# Section 14.5: the steps each operator needs before PUBLISHED. "lineage" is the
+# candidate or its task: an LLM operator's parents are selected for the task, before the
+# engineer drafts. A deterministic crossover (subtree exchange on a low LLM budget) has
+# the syntactic set with its own APPLIED step.
 REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
     "explore": (
         ("job", "BRIEF_RECEIVED"),
@@ -52,7 +69,7 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         operator: (
             ("job", "BRIEF_RECEIVED"),
             ("generation", "PLAN_WRITTEN"),
-            ("candidate", "PARENT_SELECTED"),
+            ("lineage", "PARENT_SELECTED"),
             ("candidate", step),
             *LLM_DEVELOPMENT,
         )
@@ -61,11 +78,12 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
     "syntactic_mutation": (
         ("candidate", "PARENT_SELECTED"),
         ("candidate", "SYNTACTIC_MUTATION_APPLIED"),
-        ("candidate", "DSL_VALIDATED"),
-        ("candidate", "WORKBENCH_EVALUATED"),
-        ("candidate", "SIMILARITY_CHECKED"),
-        ("candidate", "PRESCREEN_EVALUATED"),
-        ("candidate", "SELECTED"),
+        *DETERMINISTIC_DEVELOPMENT,
+    ),
+    "deterministic_crossover": (
+        ("candidate", "PARENT_SELECTED"),
+        ("candidate", "CROSSOVER_APPLIED"),
+        *DETERMINISTIC_DEVELOPMENT,
     ),
     "compose_strategy": (
         ("candidate", "STRATEGY_COMPOSED"),
@@ -82,8 +100,16 @@ class TraceCheck:
     missing: list[str]
 
 
+def required_key(candidate: Any) -> str:
+    if candidate.kind == "strategy":
+        return "compose_strategy"
+    if candidate.operator == "crossover" and (candidate.payload or {}).get("deterministic"):
+        return "deterministic_crossover"
+    return str(candidate.operator)
+
+
 def check_trace(conn: Connection, candidate: Any) -> TraceCheck:
-    operator = "compose_strategy" if candidate.kind == "strategy" else candidate.operator
+    operator = required_key(candidate)
     required = REQUIRED.get(operator, REQUIRED["explore"])
     present: list[str] = []
     missing: list[str] = []
@@ -102,6 +128,10 @@ def _has_step(conn: Connection, candidate: Any, scope: str, step: str) -> bool:
         "job": ("job_id = :id", candidate.job_id),
         "generation": ("generation_id = :id", candidate.generation_id),
         "candidate": ("candidate_id = :id", candidate.candidate_id),
+        "lineage": (
+            "(candidate_id = :id OR (candidate_id IS NULL AND task_id = :task))",
+            candidate.candidate_id,
+        ),
         "engineer_run": ("run_id = :id AND actor = 'engineer'", candidate.engineer_run_id),
         "hypothesis": ("payload ->> 'hypothesis_id' = CAST(:id AS text)", candidate.hypothesis_id),
     }
@@ -114,7 +144,7 @@ def _has_step(conn: Connection, candidate: Any, scope: str, step: str) -> bool:
                 f"SELECT 1 FROM trace_steps WHERE step_type = :t AND outcome = 'ok' AND {clause} "
                 "LIMIT 1"
             ),
-            {"t": step, "id": value},
+            {"t": step, "id": value, "task": candidate.task_id},
         ).first()
         is not None
     )
@@ -253,10 +283,20 @@ class Packager:
         relation = {
             "crossover": "crossover",
             "compose_strategy": "composition",
+            "repair": "revision",
         }.get(row.operator, "mutation" if row.kind == "factor" else "composition")
-        for parent in parents:
-            diff = None
-            if row.kind == "factor":
+        applied: dict[str, Any] | None = conn.execute(
+            text(
+                "SELECT payload FROM trace_steps WHERE candidate_id = :c AND step_type IN "
+                "('MUTATION_APPLIED', 'CROSSOVER_APPLIED', 'REPAIR_APPLIED', "
+                "'SYNTACTIC_MUTATION_APPLIED') ORDER BY at DESC LIMIT 1"
+            ),
+            {"c": row.candidate_id},
+        ).scalar()
+        recorded = list((applied or {}).get("ast_diffs") or [])
+        for index, parent in enumerate(parents):
+            diff = recorded[index] if index < len(recorded) else None
+            if row.kind == "factor" and diff is None:
                 try:
                     parent_expression = self.env.registry.version(parent).manifest
                     before = getattr(parent_expression.implementation, "expression", None)
@@ -283,6 +323,25 @@ class Packager:
                     "now": self.env.clock.now(),
                 },
             )
+
+    def _family(self, conn: Connection, row: Any) -> tuple[str | None, str | None]:
+        """The first parent's family and name when this program published the parent
+        (the registry keeps a family within one program and one name)."""
+        parents = list((row.payload or {}).get("parent_version_ids") or [])
+        if row.kind != "factor" or not parents:
+            return None, None
+        found = conn.execute(
+            text(
+                "SELECT v.family_id, s.payload -> 'manifest' ->> 'name' AS name FROM "
+                "candidate_versions v JOIN candidates c ON c.candidate_id = v.candidate_id "
+                "JOIN trace_steps s ON s.step_id = v.step_id WHERE v.version_id = :v AND "
+                "c.program_id = :p AND c.kind = 'factor'"
+            ),
+            {"v": parents[0], "p": row.program_id},
+        ).first()
+        if found is None or not found.name:
+            return None, None
+        return str(found.family_id), str(found.name)
 
     def manifest(self, conn: Connection, row: Any) -> FactorManifest | StrategyManifest:
         payload, hypothesis = row.payload, row.hypothesis or {}
@@ -320,6 +379,7 @@ class Packager:
             {"g": row.generation_id},
         ).one()
         title = str(hypothesis.get("title") or payload.get("title") or "Research candidate")
+        inherited = payload.get("inherited_rationale") or {}
         provenance = {
             "job_id": str(generation.job_id),
             "program_id": str(row.program_id),
@@ -333,14 +393,31 @@ class Packager:
             "qfr_core_version": QFR_CORE_VERSION,
         }
         rationale = {
-            "hypothesis_id": str(row.hypothesis_id),
+            "hypothesis_id": str(row.hypothesis_id or inherited.get("hypothesis_id")),
             "summary": str(payload.get("description", title))[:1500],
-            "mechanism": str(hypothesis.get("mechanism", payload.get("description", "")))[:1500]
+            "mechanism": str(
+                hypothesis.get("mechanism")
+                or inherited.get("mechanism")
+                or payload.get("description", "")
+            )[:1500]
             or "Not stated.",
-            "falsification": str(hypothesis.get("falsification", "Not stated."))[:600],
+            "falsification": str(
+                hypothesis.get("falsification") or inherited.get("falsification") or "Not stated."
+            )[:600],
             "change_summary": payload.get("change_summary"),
         }
-        review = {"verdict_id": str(reviews[-1].review_id), "rounds": len(reviews)}
+        if reviews:
+            review = {"verdict_id": str(reviews[-1].review_id), "rounds": len(reviews)}
+        else:
+            # A deterministic variant: no critic; the record names its APPLIED step.
+            step_id: UUID = conn.execute(
+                text(
+                    "SELECT step_id FROM trace_steps WHERE candidate_id = :c AND step_type IN "
+                    "('SYNTACTIC_MUTATION_APPLIED', 'CROSSOVER_APPLIED') ORDER BY at LIMIT 1"
+                ),
+                {"c": row.candidate_id},
+            ).scalar_one()
+            review = {"verdict_id": str(step_id), "rounds": 0}
         workbench = row.workbench or {}
         assessment = {
             "visibility": "research_non_official",
@@ -348,13 +425,16 @@ class Packager:
             "metrics": {k: v for k, v in (workbench.get("metrics") or {}).items()},
         }
         name = _slug(f"{row.island_key}-{title}", str(row.candidate_id))
+        family_id, family_name = self._family(conn, row)
+        if family_name is not None:
+            name = family_name
         if row.kind == "factor":
             analysis = row.analysis or {}
             return FactorManifest.model_validate(
                 {
                     "schema_version": "1",
                     "kind": "factor",
-                    "family_id": None,
+                    "family_id": family_id,
                     "name": name,
                     "title": title[:120],
                     "implementation": {"language": "qfr-dsl/1", "expression": row.expression},

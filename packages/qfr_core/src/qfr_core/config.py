@@ -246,6 +246,10 @@ class CharterConfig(BaseModel):
     improve_mix: dict[str, float]
     prescreen: dict[str, JsonValue]
     bandit: dict[str, JsonValue]
+    fitness: dict[str, JsonValue]
+    archive: dict[str, JsonValue]
+    variation: dict[str, JsonValue]
+    context: dict[str, JsonValue]
     job: dict[str, JsonValue]
 
 

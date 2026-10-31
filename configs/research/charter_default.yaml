@@ -1,14 +1,61 @@
 charter_id: default
-version: '1'
+version: '2'
 cadence: {hours: 6, after_w1_batch: true, new_reports_trigger: 10}
 throughput: {publications: 12, candidate_slots_max: 36, concurrency: 4, review_rounds_max: 2, compose_strategy_tasks_max: 2}
 budget: {currency: CNY, generation: 20, daily: 200, job: 500, engineer_requests: 12, engineer_tool_calls: 20}
 context_tokens: 12000
 role_limits: {supervisor_requests: 8, hypothesis_requests: 6, critic_requests: 4, analyst_requests: 4, interpretation_review_fraction: 0.30}
-population: {islands: 6, members_per_island: 60, archive_shape: [4, 4, 4]}
-selection: {exploit_probability: 0.7, tournament_size: 3, tournament_top: 10}
+# Section 12.1: islands, members per island, the 4 x 4 x 4 archive; a provisional member
+# (published, no released W1 report yet; it does not expire) parents at most 1 child per
+# generation; islands with fewer official members than island_percentile_min use global
+# percentiles (Section 12.2).
+population: {islands: 6, members_per_island: 60, archive_shape: [4, 4, 4], provisional_children_max: 1, island_percentile_min: 5}
+# Section 12.3. crossover_similarity_max is the behavioral similarity limit between the
+# two parents of a crossover.
+selection: {exploit_probability: 0.7, tournament_size: 3, tournament_top: 10, crossover_similarity_max: 0.5}
 operator_mix: {explore: 0.25, llm_mutation: 0.35, crossover: 0.15, syntactic_mutation: 0.20, repair: 0.05}
 improve_mix: {explore: 0.15, llm_mutation: 0.45, crossover: 0.15, syntactic_mutation: 0.20, repair: 0.05}
 prescreen: {coverage_min: 0.85, rankic_min: 0.015, ir_min: 0.10, similarity_max: 0.90, originality_min: 0.2, strategy_net_sharpe_min: 0.8, strategy_components_max: 8}
-bandit: {forgetting: 0.95, floor_slots: 1, cap_fraction: 0.40, stagnation_generations: 8, migration_generations: 5, archive_coverage_min: 0.25, top_similarity_count: 20, top_similarity_max: 0.6, guardrail_exploration: 0.40}
+# Section 12.6. success_percentile: a child succeeds when its official fitness is at or
+# above this percentile of its island; a stagnant island is reseeded with at least
+# stagnation_explore_tasks explore tasks or paused.
+bandit: {forgetting: 0.95, floor_slots: 1, cap_fraction: 0.40, stagnation_generations: 8, migration_generations: 5, archive_coverage_min: 0.25, top_similarity_count: 20, top_similarity_max: 0.6, guardrail_exploration: 0.40, success_percentile: 0.75, stagnation_explore_tasks: 2}
+# Section 12.2: F = 0.40 pct(s RankIC_IR) + 0.25 pct(LS net Sharpe) + 0.15 pct(1 - max
+# library corr) + 0.10 pct(monotonicity) + 0.10 pct(1 - top turnover)
+# - 0.01 max(0, nodes - 15), with the multipliers below; provisional fitness is the same
+# formula on W0 workbench metrics times provisional_factor; an empty library gives the
+# library term empty_library_pct for every member.
+fitness:
+  weights: {rankic_ir: 0.40, ls_net_sharpe: 0.25, library: 0.15, monotonicity: 0.10, turnover: 0.10}
+  complexity_penalty: 0.01
+  complexity_free_nodes: 15
+  multipliers: {screening_failed: 0.0, sign_mismatch: 0.0, w2_pass: 1.1, w2_fail: 0.5}
+  provisional_factor: 0.5
+  empty_library_pct: 0.5
+# Section 12.1: the MAP-Elites cell descriptors. Horizon bucket: the best decay horizon;
+# turnover bucket edges; field group of the expression.
+archive:
+  horizons: [1, 5, 10, 20]
+  turnover_edges: [0.2, 0.4, 0.6]
+  field_groups: [price_only, volume_only, price_volume, range_volatility]
+  volume_fields: [volume, amount, adv20]
+  volatility_operators: [Std, Var, Skew, Kurt]
+  range_fields: [high, low]
+# Section 12.4: deterministic syntactic mutation rules and the flag-targeted instructions
+# given to the engineer in llm_mutation tasks.
+variation:
+  syntactic_rules: [window_jitter, operator_swap, wrap, subtree_replace, field_substitution]
+  operator_classes: [[Mean, EMA, WMA, Med], [Std, Var, MaxMinusMin]]
+  wrappers: [Rank, TsZ, EMA]
+  field_substitution: [[close, vwap]]
+  attempts: 12
+  repair_reasons: [LOW_COVERAGE, DEGENERATE]
+  targeted_instructions:
+    HIGH_TURNOVER: 'Turnover is high: smooth the signal, or lengthen its windows.'
+    CROWDED_WITH_LIBRARY: 'The factor is crowded with the library: orthogonalize it, or add novel conditioning.'
+    DECAYS_FAST: 'The signal decays fast: change the horizon.'
+    SIGN_MISMATCH: 'The realised sign disagrees with the declared sign: revisit the mechanism; never just flip the sign.'
+  generic_instruction: 'Revise the weakest decision of the parent (a window, a normalization or a conditioning term) while keeping its mechanism.'
+# Section 11.5: the context assembler's sampler.
+context: {island_elites: 3, archive_members: 2, lineage_items: 12}
 job: {tier: w1_pass, min_count: 1, max_candidates: 3, max_generations: 10, max_wall_clock_days: 14}

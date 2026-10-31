@@ -3,7 +3,8 @@
 Pulls the reports released since the program's cursor from the GET-only Feedback API,
 stores read-only copies in report_cache and links them to the program, the job, the
 version and the candidate and hypothesis that produced it. Seed versions published by
-setup carry no program id, so their reports are fetched by version id. Every new report
+setup carry no program id, so their reports are fetched by version id, like the
+population members published outside the program (Phase 5). Every new report
 is a REPORT_RECEIVED trace step. The cursor moves forward only.
 """
 
@@ -33,7 +34,7 @@ class FeedbackSync:
         self.env = env
         self.page_limit = env.config.service.feedback.page_limit
 
-    def sync(self, ctx: Ctx) -> SyncResult:
+    def sync(self, ctx: Ctx, extra_versions: list[UUID] | None = None) -> SyncResult:
         env = self.env
         if env.feedback is None:
             raise RuntimeError("FEEDBACK_UNCONFIGURED: FEEDBACK_API_URL is not set")
@@ -57,7 +58,12 @@ class FeedbackSync:
                 cursor = page.items[-1].report_id
             if page.next_after_id is None:
                 break
-        for version_id in seeds or []:
+        # Seed versions, and population members published outside the program (pool
+        # entries, a parent job's members), are fetched by version id.
+        by_version = list(
+            dict.fromkeys([str(v) for v in seeds or []] + [str(v) for v in extra_versions or []])
+        )
+        for version_id in by_version:
             fetched += env.feedback.reports(version_id=version_id, limit=self.page_limit).items
         new: list[ReleasedReport] = []
         with env.db.transaction() as conn:
