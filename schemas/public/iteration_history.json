@@ -101,7 +101,8 @@
             "gate_failed",
             "owner_rejected",
             "incubation_failed",
-            "gates_passed"
+            "gates_passed",
+            "owner_override"
           ],
           "title": "Reason",
           "type": "string"

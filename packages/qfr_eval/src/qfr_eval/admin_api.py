@@ -6,7 +6,9 @@ evidence, series files, burn meters, quota usage, the library, private configura
 simulations, acceptance cases with their gate values, the owner's case decisions (each
 with a rationale and an approval id) and alerts. Phase 8 adds the epochs and the epoch
 rollover (Section 10.6): a dry run any time, the rollover itself only with a
-rollover_epoch approval whose scope names the epoch.
+rollover_epoch approval whose scope names the epoch; and the owner override of a case
+with a failed gate (Section 10.3): a request with a written rationale, then 24 hours
+later a confirmation with a second approval.
 """
 
 import importlib.metadata
@@ -27,6 +29,7 @@ from qfr_core.eval_api import (
     AlertPage,
     AlertView,
     CaseDecisionRequest,
+    CaseOverrideRequest,
     CasePage,
     ConfigKind,
     ConfigVersionView,
@@ -375,6 +378,41 @@ def create_app(
                 "case_id": str(case_id),
                 "decision": result.decision,
                 "reason": result.reason,
+                "approval_id": str(body.approval.approval_id),
+            },
+        )
+        return result
+
+    @app.post(
+        "/v1/acceptance/cases/{case_id}/override",
+        response_model=AcceptanceCase,
+        responses=ERROR_RESPONSES,
+    )
+    async def override(case_id: UUID, body: CaseOverrideRequest) -> AcceptanceCase:
+        """The owner override (Phase 8): step request, then step confirm 24 hours later
+        with a second approval."""
+
+        def write() -> AcceptanceCase:
+            with db.transaction() as conn:
+                state = active_state(conn)
+                if state is None:
+                    raise EvalError(409, "NOT_READY", "no active configuration")
+                view = acceptance.override_case(
+                    conn, state, case_id, body, PRINCIPAL, clock.now(),
+                    current()["request_id"], code_version,
+                )  # fmt: skip
+            return AcceptanceCase.model_validate(view)
+
+        result = await run_in_threadpool(write)
+        log.info(
+            "case_override_requested" if body.step == "request" else "case_override_confirmed",
+            outcome="ok",
+            payload={
+                "case_id": str(case_id),
+                "decision": result.decision,
+                "eligible_at": None
+                if result.override is None
+                else result.override.eligible_at.isoformat(),
                 "approval_id": str(body.approval.approval_id),
             },
         )

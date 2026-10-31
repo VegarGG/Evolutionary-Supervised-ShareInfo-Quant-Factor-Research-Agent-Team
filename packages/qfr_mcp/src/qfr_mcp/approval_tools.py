@@ -23,6 +23,8 @@ from qfr_core.correlation import bind, current
 from qfr_core.eval_api import (
     CaseApprovalRef,
     CaseDecisionRequest,
+    CaseOverrideRequest,
+    OverrideApprovalRef,
     RolloverApprovalRef,
     RolloverRequest,
 )
@@ -31,7 +33,14 @@ from qfr_core.registry_api import AddEntryRequest, AppendEventRequest, ApprovalR
 from qfr_core.research_api import CloseRequest
 
 from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
-from qfr_mcp.approvals import ApprovalRefused, Decision, Resolver, entry_code, match
+from qfr_mcp.approvals import (
+    ApprovalRefused,
+    Decision,
+    Resolver,
+    entry_code,
+    match,
+    missing_words,
+)
 from qfr_mcp.control_store import ControlStore
 from qfr_mcp.job_tools import JobToolDeps
 from qfr_mcp.results import ToolResult, owner_grade
@@ -120,14 +129,16 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
         description=(
             "Record the owner's decision from their own words (read the qfr.approval prompt "
             "when available). Arguments: decision (approve, reject, retire, accept_case, "
-            "reject_case, rollover_epoch), owner_confirmation (the owner's words exactly as "
+            "reject_case, override_case, confirm_override, rollover_epoch), "
+            "owner_confirmation (the owner's words exactly as "
             "received, at most 2,000 characters), rationale (your one-paragraph summary of "
             "why, as discussed with the owner) and the scope: job_id and deliverable_id for a "
             "deliverable, version_ids (default: every item of the deliverable), pool, tier "
             "(default: the tier the evaluator confirms), case_id for a case decision, "
             "entry_ids with pool for pool entries, and epoch_id alone for a rollover. The "
             "confirmation must contain the short code of every item in scope (for example "
-            "APPROVE J-0042 F-1 F-2, ACCEPT C-0003, RETIRE E-3fa9c1, ROLLOVER R-epoch_002). "
+            "APPROVE J-0042 F-1 F-2, ACCEPT C-0003, OVERRIDE C-0004, RETIRE E-3fa9c1, ROLLOVER "
+            "R-epoch_002). "
             "Never record an approval the owner did not state. Returns the approval id that "
             "the approval-gated tools require."
         ),
@@ -169,6 +180,14 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
                     f"in scope; missing: {', '.join(missing)}. Ask the owner to confirm with "
                     "the codes.",
                     missing=list(missing),
+                )
+            words = missing_words(decision, owner_confirmation)
+            if words:
+                raise refused(
+                    "OVERRIDE_WORDS_MISSING",
+                    f"an override is confirmed in so many words; missing: {', '.join(words)} "
+                    "(for example OVERRIDE C-0003, then CONFIRM OVERRIDE C-0003)",
+                    missing=list(words),
                 )
             context = current()
             try:
@@ -428,9 +447,10 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
         description=(
             "Accept or reject an acceptance case. Arguments: case_id, decision (accept or "
             "reject), approval_id (an accept_case or reject_case approval naming the case) "
-            "and an optional rationale (default: the approval's). In v1 a case with a "
-            "failed gate cannot be accepted. Accepting releases the decision report; add "
-            "the version to its pool with qfr.pool.add and an approve approval."
+            "and an optional rationale (default: the approval's). A case with a failed gate "
+            "is accepted only through qfr.acceptance.override. Accepting releases the "
+            "decision report; add the version to its pool with qfr.pool.add and an approve "
+            "approval."
         ),
         annotations=GATED,
     )
@@ -471,6 +491,69 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
                 version_id=str(case.version_id),
                 payload={
                     "case_id": str(case_id),
+                    "decision": case.decision,
+                    "approval_id": str(approval_id),
+                },
+            )
+            return result(owner_grade(case.model_dump(mode="json")))
+
+    @server.tool(
+        name="qfr.acceptance.override",
+        description=(
+            "The owner override of an acceptance case with a failed gate (Phase 8), in two "
+            "steps. step=request: an override_case approval (the owner writes OVERRIDE "
+            "C-nnnn) and rationale, the owner's own written reason of at least 200 "
+            "characters; this starts a 24-hour cooling period. step=confirm, after the "
+            "period: a second, separate confirm_override approval (CONFIRM OVERRIDE C-nnnn) "
+            "accepts the case with the reason owner_override. Rejecting the case meanwhile "
+            "withdraws the request. Never suggest an override; present it only when the "
+            "owner asks."
+        ),
+        annotations=GATED,
+    )
+    async def acceptance_override(
+        case_id: UUID,
+        step: Literal["request", "confirm"],
+        approval_id: UUID,
+        rationale: str | None = None,
+    ) -> ToolResult:
+        admin = deps.admin
+        if admin is None:
+            raise RuntimeError("EVAL_ADMIN_UNCONFIGURED: EVAL_ADMIN_API_URL is not set")
+        async with lock:
+            wanted: Literal["override_case", "confirm_override"] = (
+                "override_case" if step == "request" else "confirm_override"
+            )
+            record = await approval_for(approval_id, (wanted,))
+            if record.scope.case_id != case_id:
+                raise refused(
+                    "APPROVAL_SCOPE_MISMATCH",
+                    "the approval does not name this case",
+                    approval_id=str(approval_id),
+                )
+            if step == "request" and rationale is None:
+                raise refused(
+                    "RATIONALE_REQUIRED",
+                    "an override needs the owner's written rationale (at least 200 characters)",
+                )
+            try:
+                request = CaseOverrideRequest(
+                    step=step,
+                    rationale=rationale if step == "request" else None,
+                    approval=OverrideApprovalRef(
+                        approval_id=approval_id, decision=wanted, scope=record.scope
+                    ),
+                )
+            except ValidationError as error:
+                raise ValueError(f"ARGUMENT_INVALID: {error.errors(include_url=False)}") from None
+            case = await downstream(lambda: admin.override(case_id, request))
+            logger.info(
+                "case_override_sent",
+                outcome="ok",
+                version_id=str(case.version_id),
+                payload={
+                    "case_id": str(case_id),
+                    "step": step,
                     "decision": case.decision,
                     "approval_id": str(approval_id),
                 },

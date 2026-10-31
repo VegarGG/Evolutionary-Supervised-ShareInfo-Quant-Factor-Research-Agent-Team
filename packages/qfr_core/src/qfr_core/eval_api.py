@@ -127,6 +127,21 @@ class CaseGate(Contract):
     detail: dict[str, JsonValue]
 
 
+class CaseOverride(Contract):
+    """The owner override of a case with a failed gate (Phase 8): requested with a
+    written rationale, eligible for confirmation 24 hours later."""
+
+    state: Literal["pending", "confirmed", "withdrawn"]
+    requested_at: AwareDatetime
+    eligible_at: AwareDatetime
+    rationale: str
+    failing_gates: list[GateName]
+    request_approval_id: UUID7
+    confirm_approval_id: UUID7 | None
+    confirmed_at: AwareDatetime | None
+    withdrawn_at: AwareDatetime | None
+
+
 class AcceptanceCase(Contract):
     """One acceptance case with its gate values (owner only)."""
 
@@ -143,11 +158,39 @@ class AcceptanceCase(Contract):
     gates: list[CaseGate]
     state: Literal["open", "decided"]
     decision: Literal["accepted", "rejected"] | None
-    reason: Literal["gate_failed", "owner_rejected", "incubation_failed", "gates_passed"] | None
+    reason: (
+        Literal[
+            "gate_failed", "owner_rejected", "incubation_failed", "gates_passed",
+            "owner_override",
+        ]
+        | None
+    )  # fmt: skip
     reason_gate: GateName | None
     rationale: str | None
     approval_id: UUID7 | None
     decided_at: AwareDatetime | None
+    override: CaseOverride | None = None
+
+
+OverrideRationale = Annotated[str, StringConstraints(min_length=200, max_length=4000)]
+
+
+class OverrideApprovalRef(Contract):
+    """The approval for one step of an override: override_case to request it,
+    confirm_override (a separate approval, recorded after the cooling period) to confirm."""
+
+    approval_id: UUID7
+    decision: Literal["override_case", "confirm_override"]
+    scope: ApprovalScope
+
+
+class CaseOverrideRequest(Contract):
+    """POST /v1/acceptance/cases/{case_id}/override. The request carries the owner's
+    written rationale; the confirmation carries none."""
+
+    step: Literal["request", "confirm"]
+    rationale: OverrideRationale | None = None
+    approval: OverrideApprovalRef
 
 
 class CasePage(Contract):

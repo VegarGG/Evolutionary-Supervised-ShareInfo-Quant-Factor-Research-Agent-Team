@@ -298,7 +298,11 @@ class SimulationContent(Contract):
 class DecisionContent(Contract):
     type: Literal["decision"]
     status: Literal["ACCEPTED", "REJECTED"]
-    reason: Literal["gate_failed", "owner_rejected", "incubation_failed", "gates_passed"]
+    # owner_override (Phase 8): accepted by the owner over the named failed gate, after a
+    # written rationale, a 24-hour cooling period and a second confirmation.
+    reason: Literal[
+        "gate_failed", "owner_rejected", "incubation_failed", "gates_passed", "owner_override"
+    ]
     gate: (
         Literal[
             "G-W1", "G-W2", "G-HOLDOUT", "G-DSR", "G-PBO", "G-HLZ", "G-FWD", "G-NOVELTY", "G-OPS"
@@ -627,7 +631,10 @@ class ApprovalRecord(Contract):
     schema_version: Literal["approval/1"]
     approval_id: UUID7
     created_at: AwareDatetime
-    decision: Literal["approve", "reject", "retire", "accept_case", "reject_case", "rollover_epoch"]
+    decision: Literal[
+        "approve", "reject", "retire", "accept_case", "reject_case", "rollover_epoch",
+        "override_case", "confirm_override",
+    ]  # fmt: skip
     scope: ApprovalScope
     owner_confirmation: Annotated[str, StringConstraints(min_length=1, max_length=2000)]
     rationale: Annotated[str, StringConstraints(min_length=1)]

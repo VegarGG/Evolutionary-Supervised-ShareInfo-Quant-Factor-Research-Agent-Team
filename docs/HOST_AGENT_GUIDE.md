@@ -102,6 +102,11 @@ iteration history are in-sample; say so whenever you mention one.
   (`qfr.acceptance.list_cases`, `qfr.acceptance.decide`) follow the same rule: an
   approval record quoting the entry's (E-xxxxxx) or case's (C-nnnn) short code first. A
   case decision cannot contradict a failed gate.
+- The owner override (only when the owner asks to accept a case with a failed gate;
+  never suggest it): the owner's own written rationale of at least 200 characters and
+  `OVERRIDE C-nnnn` (`override_case`, then `qfr.acceptance.override` step `request`);
+  24 hours later a second, separate `CONFIRM OVERRIDE C-nnnn` (`confirm_override`, then
+  step `confirm`). Tell the owner when the cooling period ends.
 - An epoch rollover (`qfr.ops.rollover_epoch`) needs the owner's `ROLLOVER R-<epoch_id>`
   recorded as a `rollover_epoch` approval with that `epoch_id`. Show the dry run
   (`dry_run=true`) first.

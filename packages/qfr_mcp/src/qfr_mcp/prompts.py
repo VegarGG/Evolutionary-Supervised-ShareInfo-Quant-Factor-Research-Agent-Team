@@ -131,6 +131,11 @@ QFR's pools change only on the owner's stated decision. You record it; you never
    case's gate values (owner_only), ask for a quoted decision with the case's short
    code ("ACCEPT C-0003"), record it (decision accept_case or reject_case with case_id),
    then qfr.acceptance.decide. A decision cannot contradict a failed gate.
+   Only if the owner asks to accept a case with a failed gate (never suggest it): the
+   owner override takes the owner's own written rationale (at least 200 characters) and
+   "OVERRIDE C-0003" (decision override_case, then qfr.acceptance.override step
+   request); after 24 hours, a second, separate "CONFIRM OVERRIDE C-0003" (decision
+   confirm_override, then step confirm). Tell the owner when the cooling period ends.
 9. An epoch rollover (usually when a burn meter is red, or once a year): show the
    owner qfr.ops.rollover_epoch with dry_run=true first (new windows, research cutoff,
    versions that restart), ask for "ROLLOVER R-<epoch_id>", record it (decision

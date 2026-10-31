@@ -28,7 +28,9 @@ recorded state and logs DATA_REVISION.
 Incubation lasts 60 trading days with a checkpoint every 20, visible to the owner at
 once. When it ends the engine releases the sim report and opens the acceptance case.
 Monitoring simulations run for library entries and accepted versions; the v1 decay rule
-raises an alert when the rolling 60-day s x RankIC_mean stays below 0 for 20 days.
+raises an alert when the rolling 60-day s x RankIC_mean stays below 0 for 20 days, and the
+Phase 8 one-sided CUSUM (qfr_eval.monitoring) when the daily forward s x RankIC drifts
+below the level the evaluation measured.
 """
 
 import math
@@ -61,6 +63,7 @@ from qfr_eval.acceptance import compute_gates, open_case, refs
 from qfr_eval.alerts import raise_alert
 from qfr_eval.configs import ActiveState, active_state
 from qfr_eval.ingest.config import load_yaml
+from qfr_eval.monitoring import CusumReference, lower_cusum, reference_from_metrics
 from qfr_eval.plugins import plugin_for
 from qfr_eval.reports import queue_report
 from qfr_eval.runtime import (
@@ -150,7 +153,16 @@ def sim_settings(protocol: dict[str, Any], manifest: Any) -> dict[str, JsonValue
         "rolling_days": int(monitoring["rolling_days"]),
         "rankic_mean_below": float(monitoring["rankic_mean_below"]),
         "consecutive_days": int(monitoring["consecutive_days"]),
-    }
+    } | _cusum_settings(monitoring)
+
+
+def _cusum_settings(monitoring: dict[str, Any]) -> dict[str, JsonValue]:
+    """The CUSUM detector's parameters (Phase 8); a protocol without them keeps the v1
+    rule alone."""
+    cusum = monitoring.get("cusum")
+    if not isinstance(cusum, dict):
+        return {}
+    return {"cusum_k_fraction": float(cusum["k_fraction"]), "cusum_h": float(cusum["h"])}
 
 
 def stale_trading_days(last_date: date, now: datetime, tz: ZoneInfo, ingest_at: Any) -> int:
@@ -376,9 +388,7 @@ class SimEngine:
             if account.status != "running":
                 break
         if account.purpose == "monitoring":
-            alert = self._decay_check(account, state)
-            if alert is not None:
-                report.alerts.append(alert)
+            report.alerts.extend(self._decay_check(account, state))
         if (
             account.purpose == "incubation"
             and account.status == "running"
@@ -792,12 +802,13 @@ class SimEngine:
 
     # Monitoring -------------------------------------------------------------------------
 
-    def _decay_check(self, sim: Any, state: ActiveState) -> str | None:
-        """v1 alarm: the rolling s x RankIC_mean stays below the threshold for the
-        configured number of consecutive days (Section 10.4)."""
+    def _decay_check(self, sim: Any, state: ActiveState) -> list[str]:
+        """Both decay detectors on the monitoring simulation's daily forward RankIC: the
+        v1 rule (the rolling s x RankIC_mean stays below the threshold for the configured
+        number of consecutive days, Section 10.4) and, when the simulation's settings
+        carry it, the one-sided CUSUM of qfr_eval.monitoring (Phase 8)."""
         s = dict(sim.settings)
-        window, run = int(s["rolling_days"]), int(s["consecutive_days"])
-        below, sign = float(s["rankic_mean_below"]), int(s["sign"])
+        sign = int(s["sign"])
         with self.db.read() as conn:
             rows = conn.execute(
                 text(
@@ -807,6 +818,19 @@ class SimEngine:
                 {"s": sim.sim_id},
             ).all()
         values = np.array([np.nan if r.value is None else sign * r.value for r in rows])
+        raised = []
+        rolling = self._rolling_rule(sim, s, rows, values)
+        if rolling is not None:
+            raised.append(rolling)
+        if "cusum_h" in s:
+            cusum = self._cusum_rule(sim, s, rows, values)
+            if cusum is not None:
+                raised.append(cusum)
+        return raised
+
+    def _rolling_rule(self, sim: Any, s: dict[str, Any], rows: Any, values: Any) -> str | None:
+        window, run = int(s["rolling_days"]), int(s["consecutive_days"])
+        below = float(s["rankic_mean_below"])
         if values.size < window:
             return None
         streak = 0
@@ -829,6 +853,45 @@ class SimEngine:
                     )  # fmt: skip
                 return None if alert is None else str(alert)
         return None
+
+    def cusum_reference(self, sim: Any, sign: int) -> CusumReference | None:
+        """The version's W1 measurement (its re-measurement after a rollover) made before
+        monitoring began: the level it was admitted on (qfr_eval.monitoring)."""
+        with self.db.read() as conn:
+            row = conn.execute(
+                text(
+                    "SELECT record_id, stage, metrics FROM eval.official_records "
+                    "WHERE version_id = :v AND stage IN ('w1', 'remeasure') "
+                    "AND created_at <= :created ORDER BY created_at DESC, record_id DESC LIMIT 1"
+                ),
+                {"v": sim.version_id, "created": sim.created_at},
+            ).first()
+        if row is None:
+            return None
+        return reference_from_metrics(str(row.record_id), row.stage, dict(row.metrics), sign)
+
+    def _cusum_rule(self, sim: Any, s: dict[str, Any], rows: Any, values: Any) -> str | None:
+        reference = self.cusum_reference(sim, int(s["sign"]))
+        if reference is None:
+            return None
+        k_fraction, h = float(s["cusum_k_fraction"]), float(s["cusum_h"])
+        result = lower_cusum([float(v) for v in values], reference, k_fraction, h)
+        if result.alarm_index is None:
+            return None
+        at = self.clock.now()
+        with self.db.transaction(lock=False) as conn:
+            alert = raise_alert(
+                conn, "decay", f"decay:cusum:{sim.sim_id}",
+                {"rule": "cusum", "k_fraction": k_fraction, "h": h,
+                 "reference_record_id": reference.record_id,
+                 "reference_stage": reference.stage, "mu0": reference.mu0,
+                 "sigma": reference.sigma, "statistic": result.statistic,
+                 "decision_day": rows[result.alarm_index].decision_day.isoformat(),
+                 "days_monitored": result.days, "forward_days": int(sim.days_done)},
+                at, SERVICE, current()["request_id"], version_id=sim.version_id,
+                sim_id=sim.sim_id, logger=self.logger,
+            )  # fmt: skip
+        return None if alert is None else str(alert)
 
     # Completion -------------------------------------------------------------------------
 

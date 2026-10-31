@@ -27,9 +27,11 @@ from datetime import date
 from pathlib import Path
 from uuid import UUID
 
+import numpy as np
 import pytest
 import yaml
 from qfr_eval.ingest.synthetic import w2_midpoint
+from qfr_eval.monitoring import lower_cusum
 
 from tests.benchmarks.harness import (
     BenchmarkModels,
@@ -143,37 +145,70 @@ def test_bm_decay_raises_an_alert_after_the_switch_off(tmp_path, monkeypatch, de
         version = UUID(entry["version_id"])
         dates = decay_world.world.calendar.get_column("date").to_list()
         switch_off = w2_midpoint(small_epoch(), dates)
-        alerts = []
+        # Both detectors run (Phase 8): the v1 rule and the one-sided CUSUM. The bound
+        # applies to the v1 rule; the CUSUM's delay is recorded next to it.
+        first: dict[str, dict] = {}
         for _ in range(80):
             full.eval.run_days(1)
-            alerts = mcp.ok("qfr.ops.alerts", kind="decay")["data"]["items"]
-            if alerts:
+            for alert in mcp.ok("qfr.ops.alerts", kind="decay")["data"]["items"]:
+                first.setdefault(alert["details"]["rule"], alert)
+            if "rolling_mean_below" in first and "cusum" in first:
                 break
         sim = full.eval.db.rows(
-            "SELECT mode, days_done FROM eval.sim_accounts WHERE version_id = :v AND purpose "
-            "= 'monitoring'",
+            "SELECT mode, days_done, settings FROM eval.sim_accounts WHERE version_id = :v "
+            "AND purpose = 'monitoring'",
             v=version,
         )
-        delay = None
-        if alerts:
-            decided = alerts[0]["details"]["decision_day"]
-            delay = dates.index(date.fromisoformat(decided)) - dates.index(switch_off)
+
+        # The CUSUM's reference and its statistic over the whole run, for the record.
+        (monitor,) = full.eval.db.rows(
+            "SELECT * FROM eval.sim_accounts WHERE version_id = :v AND purpose = 'monitoring'",
+            v=version,
+        )
+        series = [
+            float("nan") if r.value is None else float(r.value)
+            for r in full.eval.db.rows(
+                "SELECT value FROM eval.sim_rankic WHERE sim_id = :s ORDER BY decision_day",
+                s=monitor.sim_id,
+            )
+        ]
+        ref = full.eval.sim.cusum_reference(monitor, 1)
+        cusum = None
+        if ref is not None:
+            run = lower_cusum(series, ref, 0.5, 12.0)
+            cusum = {"reference_stage": ref.stage, "mu0": ref.mu0, "sigma": ref.sigma,
+                     "peak": run.peak, "alarm_index": run.alarm_index}  # fmt: skip
+
+        def delay_of(alert):
+            decided = date.fromisoformat(alert["details"]["decision_day"])
+            return dates.index(decided) - dates.index(switch_off)
+
+        delays = {rule: delay_of(alert) for rule, alert in first.items()}
+        alert = first.get("rolling_mean_below")
+        delay = delays.get("rolling_mean_below")
         path = write_results(
             "bm_decay",
             {
                 "benchmark": "bm_decay",
                 "switch_off": switch_off.isoformat(),
-                "alert": alerts[0] if alerts else None,
+                "alert": alert,
                 "trading_days_after_switch_off": delay,
                 "bound": DECAY_ALERT_DAYS,
+                "detectors": {
+                    rule: {"trading_days_after_switch_off": delays[rule],
+                           "details": a["details"]}
+                    for rule, a in first.items()
+                },
+                "cusum": cusum,
+                "forward_rankic_mean": float(np.nanmean(series)) if series else None,
                 "monitoring": [dict(r._mapping) for r in sim],
                 "rule": yaml.safe_load(PROTOCOL.read_text())["monitoring"],
             },
             tmp_path,
         )  # fmt: skip
         assert sim and sim[0].mode == "replay"
-        assert alerts, f"no decay alert; results in {path}"
-        assert alerts[0]["version_id"] == str(version)
+        assert alert is not None, f"no decay alert from the v1 rule; results in {path}"
+        assert alert["version_id"] == str(version)
         assert delay is not None and 0 <= delay <= DECAY_ALERT_DAYS, (delay, path)
 
 

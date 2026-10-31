@@ -17,6 +17,7 @@ from qfr_core.eval_api import (
     ArtifactStatus,
     Card,
     CaseDecisionRequest,
+    CaseOverrideRequest,
     CasePage,
     ConfigKind,
     ConfigVersionView,
@@ -77,6 +78,10 @@ class EvalAdminClient(ApiClient):
 
     async def decide(self, case_id: UUID, request: CaseDecisionRequest) -> AcceptanceCase:
         path = f"/v1/acceptance/cases/{case_id}/decision"
+        return await self._model(AcceptanceCase, "POST", path, body=request.model_dump(mode="json"))
+
+    async def override(self, case_id: UUID, request: CaseOverrideRequest) -> AcceptanceCase:
+        path = f"/v1/acceptance/cases/{case_id}/override"
         return await self._model(AcceptanceCase, "POST", path, body=request.model_dump(mode="json"))
 
     async def simulation(self, sim_id: UUID) -> SimulationView:
