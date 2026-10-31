@@ -56,7 +56,7 @@ eval-reproduce record_id:
 # rollover itself is qfr.ops.rollover_epoch with the owner's ROLLOVER R-<epoch_id>.
 epoch-propose epoch_id *args:
     test ! -e configs/epochs/{{epoch_id}}.yaml || { echo "configs/epochs/{{epoch_id}}.yaml exists"; exit 1; }
-    docker compose --env-file .env -f infra/docker-compose.yml run --rm --no-deps -T eval-scheduler qfr eval epoch propose --epoch-id {{epoch_id}} {{args}} > configs/epochs/.{{epoch_id}}.draft
+    docker compose --env-file .env -f infra/docker-compose.yml run --rm --no-deps -T eval-scheduler qfr eval epoch propose --epoch-id {{epoch_id}} {{args}} > configs/epochs/.{{epoch_id}}.draft || { cat configs/epochs/.{{epoch_id}}.draft; rm -f configs/epochs/.{{epoch_id}}.draft; exit 1; }
     mv configs/epochs/.{{epoch_id}}.draft configs/epochs/{{epoch_id}}.yaml
     cat configs/epochs/{{epoch_id}}.yaml
 

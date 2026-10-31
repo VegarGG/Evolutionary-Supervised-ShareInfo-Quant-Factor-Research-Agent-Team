@@ -248,3 +248,19 @@ def test_phase_8_sandbox_runs_python_factors_with_nothing_else():
         assert COMPOSE["services"][name]["environment"]["QFR_SANDBOX_DIR"] == "/sandbox"
     created = COMPOSE["services"]["init-volumes"]["command"][2]
     assert "Path('/var/log/qfr/eval-sandbox').mkdir" in created
+
+
+def test_the_doctor_expects_every_long_running_service_to_stay_up():
+    """`just doctor` checks long-running services for a healthy running container and the
+    rest for a clean exit, so its list must follow Compose (eval-sandbox, Phase 8)."""
+    import ast
+
+    tree = ast.parse(Path("scripts/doctor.py").read_text(encoding="utf-8"))
+    (listed,) = [
+        ast.literal_eval(node.value)
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == "RUNNING_SERVICES" for t in node.targets)
+    ]
+    one_shot = {"migrate", "init-volumes"}
+    assert listed == set(COMPOSE["services"]) - one_shot

@@ -22,8 +22,9 @@ compose = [
 ]
 checks = []
 observations = []
-# Long-running services by Phase 7; the rest are one-shot jobs that exit 0.
+# Long-running services by Phase 8; the rest are one-shot jobs that exit 0.
 RUNNING_SERVICES = {
+    "eval-sandbox",
     "ops-nightly",
     "backup",
     "postgres",
@@ -149,6 +150,16 @@ try:
                 all(m["Destination"] not in {"/data/full", "/data/raw"} for m in mounts)
                 and all(not m["RW"] for m in mounts if m["Destination"] == "/data/research"),
                 "research snapshot read-only; no full snapshot or raw data",
+            )
+        if service == "eval-sandbox":
+            # P8.1: no network at all, and nothing mounted but its exchange folder and logs.
+            network_mode = container["HostConfig"].get("NetworkMode")
+            destinations = sorted(m["Destination"] for m in mounts)
+            record(
+                "sandbox_isolation",
+                network_mode == "none"
+                and set(destinations) <= {"/sandbox", "/var/log/qfr/eval-sandbox"},
+                {"network_mode": network_mode, "mounts": destinations},
             )
         if service == "data-ingest":
             writable = {m["Destination"] for m in mounts if m["RW"]}
