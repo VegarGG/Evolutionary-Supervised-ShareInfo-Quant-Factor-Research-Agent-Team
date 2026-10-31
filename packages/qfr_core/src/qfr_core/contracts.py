@@ -565,7 +565,8 @@ class DeliverableItem(Contract):
     version_id: UUID7
     kind: Literal["factor", "strategy"]
     manifest: Manifest
-    tier_reached: Tier
+    # None only in a best_effort deliverable: the version reached no tier (Section 13.3).
+    tier_reached: Tier | None
     iteration_history: IterationHistory
     trace_ref: UUID7
     trace_hash: Hash
@@ -585,6 +586,12 @@ class Deliverable(Contract):
     summary: str
     costs: dict[str, JsonValue]
     short_codes: list[str]
+
+    @model_validator(mode="after")
+    def tiers(self) -> Self:
+        if self.status == "complete" and any(i.tier_reached is None for i in self.items):
+            raise ValueError("every item of a complete deliverable has reached a tier")
+        return self
 
 
 class ApprovalScope(Contract):

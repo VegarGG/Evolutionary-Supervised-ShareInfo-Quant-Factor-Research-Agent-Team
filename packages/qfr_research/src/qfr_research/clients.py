@@ -63,17 +63,17 @@ class _Client:
         if response.status_code >= 500:
             raise ServiceUnavailable(f"{self.backend} failed with {response.status_code}")
         if response.status_code >= 400:
-            error = data if isinstance(data, dict) else {}
+            refusal = data if isinstance(data, dict) else {}
             self.logger.logger.warning(
                 "downstream_refused",
                 outcome="failed",
-                error_code=str(error.get("error", "HTTP_ERROR")),
+                error_code=str(refusal.get("error", "HTTP_ERROR")),
                 payload=fields | {"status": response.status_code},
             )
             raise ServiceRefused(
                 response.status_code,
-                str(error.get("error", "HTTP_ERROR")),
-                str(error.get("message", "")),
+                str(refusal.get("error", "HTTP_ERROR")),
+                str(refusal.get("message", "")),
             )
         return data
 
@@ -81,7 +81,9 @@ class _Client:
         try:
             return model.model_validate(self._call(method, path, **kw))
         except ValidationError as error:
-            raise ServiceUnavailable(f"{self.backend} returned an invalid {model.__name__}") from error
+            raise ServiceUnavailable(
+                f"{self.backend} returned an invalid {model.__name__}"
+            ) from error
 
     def healthy(self) -> bool:
         try:

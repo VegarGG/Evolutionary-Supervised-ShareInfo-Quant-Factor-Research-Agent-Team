@@ -65,10 +65,11 @@ class ApiClient:
         *,
         body: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        timeout: float | None = None,
     ) -> tuple[int, Any]:
         headers = to_headers() | {"Authorization": f"Bearer {self.token}"}
         record_downstream_request(headers["X-Request-Id"])
-        options: dict[str, Any] = {"timeout": self.timeout, "trust_env": False}
+        options: dict[str, Any] = {"timeout": timeout or self.timeout, "trust_env": False}
         if self.transport is not None:
             options["transport"] = self.transport
         query: list[tuple[str, str | int | float | bool | None]] = []

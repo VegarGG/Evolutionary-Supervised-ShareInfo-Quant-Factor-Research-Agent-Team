@@ -13,9 +13,11 @@ from uuid import UUID
 
 from qfr_core.config import canonical_json
 from qfr_core.contracts import (
+    AgentRunRef,
     HistoryHop,
     IterationHistory,
     ReleasedReport,
+    ResearchAssessment,
     TraceAgentRun,
     TraceExport,
     TraceLineageEdge,
@@ -193,10 +195,13 @@ def iteration_history(
             continue
         chain = candidate_chain(conn, candidate_id)
         final = chain[-1]
-        hypothesis = conn.execute(
-            text("SELECT payload FROM hypotheses WHERE hypothesis_id = :h"),
-            {"h": final.hypothesis_id},
-        ).scalar() or {}
+        hypothesis = (
+            conn.execute(
+                text("SELECT payload FROM hypotheses WHERE hypothesis_id = :h"),
+                {"h": final.hypothesis_id},
+            ).scalar()
+            or {}
+        )
         if not final.payload.get("parent_version_ids") and final.hypothesis_id is not None:
             roots.append(final.hypothesis_id)
         parents = [UUID(p) for p in final.payload.get("parent_version_ids", [])]
@@ -214,7 +219,10 @@ def iteration_history(
         after = final.expression or canonical_json(final.payload.get("components", []))
         diff: list[dict[str, Any]] = []
         if final.expression and len(before) == 1:
-            diff = [dict(e) for e in ast_diff(canonicalize(parse(before[0])), canonicalize(parse(after)))]
+            diff = [
+                dict(e)
+                for e in ast_diff(canonicalize(parse(before[0])), canonicalize(parse(after)))
+            ]
         engineer = conn.execute(
             text(
                 "SELECT role, provider, model_id, prompt_template_id, prompt_sha256, run_id "
@@ -233,12 +241,19 @@ def iteration_history(
         last = reviews[-1] if reviews else None
         critic = None
         if last is not None:
-            scores = {k: last.payload.get(k) for k in
-                      ("c1", "c2", "plausibility", "parsimony", "originality", "lookahead_risk")}  # fmt: skip
-            critic = {"provider": last.provider, "model_id": last.model_id,
-                      "verdict": last.verdict, "scores": scores, "rounds": len(reviews)}  # fmt: skip
+            scores = {
+                k: last.payload.get(k)
+                for k in ("c1", "c2", "plausibility", "parsimony", "originality", "lookahead_risk")
+            }
+            critic = {
+                "provider": last.provider,
+                "model_id": last.model_id,
+                "verdict": last.verdict,
+                "scores": scores,
+                "rounds": len(reviews),
+            }
         workbench = final.workbench or {}
-        seq = conn.execute(
+        seq: int = conn.execute(
             text("SELECT seq FROM generations WHERE generation_id = :g"),
             {"g": final.generation_id},
         ).scalar_one()
@@ -252,9 +267,13 @@ def iteration_history(
                 {"v": current},
             ).all()
         ]
-        flags = sorted(
-            {f for r in reports for f in getattr(r.content, "flags", [])}, key=lambda f: f.value
-        ) if parents else []  # fmt: skip
+        flags = (
+            sorted(
+                {f for r in reports for f in getattr(r.content, "flags", [])}, key=lambda f: f.value
+            )
+            if parents
+            else []
+        )
         hops.append(
             HistoryHop(
                 from_version_ids=parents,
@@ -273,13 +292,17 @@ def iteration_history(
                 ast_diff=diff,
                 engineer=None
                 if engineer is None
-                else {k: getattr(engineer, k) for k in engineer._fields},
+                else AgentRunRef.model_validate(
+                    {k: getattr(engineer, k) for k in engineer._fields}
+                ),
                 critic=critic,
-                workbench={
-                    "visibility": "research_non_official",
-                    "window": "W0",
-                    "metrics": dict(workbench.get("metrics") or {}),
-                }
+                workbench=ResearchAssessment.model_validate(
+                    {
+                        "visibility": "research_non_official",
+                        "window": "W0",
+                        "metrics": dict(workbench.get("metrics") or {}),
+                    }
+                )
                 if workbench.get("metrics")
                 else None,
                 evaluation=reports,
@@ -320,7 +343,7 @@ def iteration_history(
         ),
         {"v": version_id},
     ).scalar()
-    trials = conn.execute(
+    trials: int = conn.execute(
         text(
             "SELECT count(*) FROM trace_steps WHERE step_type = 'PUBLISHED' AND outcome = 'ok' "
             "AND payload ->> 'family_id' = :f"
@@ -365,9 +388,12 @@ def history_markdown(history: IterationHistory) -> str:
                 f"{hop.critic['verdict']} after {hop.critic['rounds']} round(s)"
             )
         if hop.workbench is not None:
-            lines.append(f"- Workbench (W0, in-sample): {canonical_json(hop.workbench.metrics)}")
+            lines.append(
+                f"- Workbench (W0, in-sample): {canonical_json(dict(hop.workbench.metrics))}"
+            )
         for report in hop.evaluation:
-            lines.append(f"- Released {report.content.type}: {canonical_json(report.content.model_dump(mode='json'))}")
+            values = canonical_json(report.content.model_dump(mode="json"))
+            lines.append(f"- Released {report.content.type}: {values}")
         lines.append("")
     lines.append(f"Totals: {canonical_json(history.totals)}")
     return "\n".join(lines) + "\n"

@@ -85,31 +85,55 @@ def _roles(*names: str) -> frozenset[str]:
 
 
 SPECS: tuple[ToolSpec, ...] = (
-    ToolSpec("blackboard.read", ALL_ROLES, "Read research entities by id or recency.",
-             "blackboard_read"),
+    ToolSpec(
+        "blackboard.read", ALL_ROLES, "Read research entities by id or recency.", "blackboard_read"
+    ),
     ToolSpec("blackboard.write", ALL_ROLES, "Write the role's own entity types only.", None),
-    ToolSpec("kb.search", _roles("supervisor", "hypothesis", "engineer", "critic", "analyst"),
-             "Search failure modes and insights.", "kb_search"),
-    ToolSpec("dsl.validate", _roles("engineer", "critic", "evolution", "packager"),
-             "Parse, type-check and constrain an expression; canonical form and hash.",
-             "dsl_validate"),
-    ToolSpec("dsl.explain", _roles("engineer", "critic", "evolution", "packager"),
-             "Deterministic plain-language explanation of an expression.", "dsl_explain"),
-    ToolSpec("workbench.evaluate", _roles("engineer", "critic", "evolution"),
-             "W0-only metrics with the evaluator's definitions (in-sample).",
-             "workbench_evaluate"),
-    ToolSpec("similarity.search",
-             _roles("hypothesis", "engineer", "critic", "evolution", "packager"),
-             "AST and behavioral similarity against the pools and the program.",
-             "similarity_search"),
-    ToolSpec("feedback.read", _roles("supervisor", "engineer", "analyst", "evolution"),
-             "Released reports research has synced, and the public cards.", "feedback_read"),
-    ToolSpec("registry.read", ALL_ROLES, "Manifests of published versions, and the pools.",
-             "registry_read"),
+    ToolSpec(
+        "kb.search",
+        _roles("supervisor", "hypothesis", "engineer", "critic", "analyst"),
+        "Search failure modes and insights.",
+        "kb_search",
+    ),
+    ToolSpec(
+        "dsl.validate",
+        _roles("engineer", "critic", "evolution", "packager"),
+        "Parse, type-check and constrain an expression; canonical form and hash.",
+        "dsl_validate",
+    ),
+    ToolSpec(
+        "dsl.explain",
+        _roles("engineer", "critic", "evolution", "packager"),
+        "Deterministic plain-language explanation of an expression.",
+        "dsl_explain",
+    ),
+    ToolSpec(
+        "workbench.evaluate",
+        _roles("engineer", "critic", "evolution"),
+        "W0-only metrics with the evaluator's definitions (in-sample).",
+        "workbench_evaluate",
+    ),
+    ToolSpec(
+        "similarity.search",
+        _roles("hypothesis", "engineer", "critic", "evolution", "packager"),
+        "AST and behavioral similarity against the pools and the program.",
+        "similarity_search",
+    ),
+    ToolSpec(
+        "feedback.read",
+        _roles("supervisor", "engineer", "analyst", "evolution"),
+        "Released reports research has synced, and the public cards.",
+        "feedback_read",
+    ),
+    ToolSpec(
+        "registry.read",
+        ALL_ROLES,
+        "Manifests of published versions, and the pools.",
+        "registry_read",
+    ),
     ToolSpec("registry.publish", _roles("packager"), "Publish an artifact version.", None),
-    ToolSpec("budget.read", _roles("supervisor", "evolution"), "Remaining budgets.",
-             "budget_read"),
-)  # fmt: skip
+    ToolSpec("budget.read", _roles("supervisor", "evolution"), "Remaining budgets.", "budget_read"),
+)
 TOOLS: dict[str, ToolSpec] = {spec.name: spec for spec in SPECS}
 
 
@@ -194,9 +218,7 @@ def blackboard_read(
 ) -> dict[str, Any]:
     if entity not in BLACKBOARD_QUERIES:
         return {"error": f"entity must be one of {sorted(BLACKBOARD_QUERIES)}"}
-    items = _program_rows(
-        deps, BLACKBOARD_QUERIES[entity], id=entity_id, n=max(1, min(limit, 50))
-    )
+    items = _program_rows(deps, BLACKBOARD_QUERIES[entity], id=entity_id, n=max(1, min(limit, 50)))
     return {"entity": entity, "items": items}
 
 
@@ -235,7 +257,7 @@ def workbench_evaluate(deps: ToolDeps, expression: str, expected_sign: int) -> d
     check_ = validate(expression, deps.env.limits)
     if not check_.ok:
         return {"ok": False, "errors": [dict(e) for e in check_.errors]}
-    sign = 1 if expected_sign >= 0 else -1
+    sign: Literal[1, -1] = 1 if expected_sign >= 0 else -1
     report = deps.env.workbench.factor(expression, sign)
     metrics = report.metrics.model_dump(mode="json")
     return {
@@ -294,7 +316,7 @@ def similarity_search(
         return {"ok": False, "errors": [dict(e) for e in check_.errors]}
     tree = canonicalize(parse(expression))
     mine = _fingerprint(deps.env, check_.analysis.canonical) if behavioral else None
-    rows = []
+    rows: list[dict[str, Any]] = []
     for other in comparison_set(deps):
         other_check = validate(other["expression"], deps.env.limits)
         if other_check.analysis is None:
@@ -302,11 +324,17 @@ def similarity_search(
         ast = ast_similarity(tree, canonicalize(parse(other["expression"])))
         beh = None
         if mine is not None:
-            beh = behavioral_similarity(mine, _fingerprint(deps.env, other_check.analysis.canonical))
+            beh = behavioral_similarity(
+                mine, _fingerprint(deps.env, other_check.analysis.canonical)
+            )
         rows.append(other | {"ast_similarity": round(ast, 6), "behavioral_similarity": beh})
-    rows.sort(key=lambda r: (-(r["behavioral_similarity"] or 0.0), -r["ast_similarity"]))
-    max_ast = max((r["ast_similarity"] for r in rows), default=0.0)
-    behaviors = [r["behavioral_similarity"] for r in rows if r["behavioral_similarity"] is not None]
+    rows.sort(
+        key=lambda r: (-float(r["behavioral_similarity"] or 0.0), -float(r["ast_similarity"]))
+    )
+    max_ast = max((float(r["ast_similarity"]) for r in rows), default=0.0)
+    behaviors = [
+        float(r["behavioral_similarity"]) for r in rows if r["behavioral_similarity"] is not None
+    ]
     return {
         "ok": True,
         "compared": len(rows),
@@ -475,7 +503,9 @@ async def _workbench_evaluate(
         expression: The factor expression.
         expected_sign: 1 if larger values should predict higher returns, else -1.
     """
-    return invoke(ctx.deps, "workbench.evaluate", expression=expression, expected_sign=expected_sign)
+    return invoke(
+        ctx.deps, "workbench.evaluate", expression=expression, expected_sign=expected_sign
+    )
 
 
 async def _similarity_search(

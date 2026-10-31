@@ -10,6 +10,9 @@ worker:
   retry_backoff_seconds: [60, 300, 900]
   probe_daily_utc: '00:30'
   heartbeat_seconds: 30
+  # With cadence.after_w1_batch, a generation starts this long after a W1 release batch
+  # boundary, so the release worker has released the batch before feedback sync runs.
+  after_batch_margin_seconds: 300
 feedback: {page_limit: 200, report_types_interpreted: [w1, w2, sim, decision]}
 analyst: {reports_per_run: 4, interpretation_review_seed: 20261031}
 islands:

@@ -34,8 +34,14 @@ from qfr_research.db import RESEARCH_LOCK, dumps
 from qfr_research.env import QFR_CORE_VERSION, ResearchEnv
 from qfr_research.store import Ctx, audit, job_event
 
-OPEN_STATES = ("SUBMITTED", "VALIDATED", "RUNNING", "WAITING_FOR_EVALUATION",
-               "DELIVERABLE_READY", "DELIVERED")  # fmt: skip
+OPEN_STATES = (
+    "SUBMITTED",
+    "VALIDATED",
+    "RUNNING",
+    "WAITING_FOR_EVALUATION",
+    "DELIVERABLE_READY",
+    "DELIVERED",
+)
 
 
 class JobNotFound(LookupError):
@@ -99,7 +105,7 @@ class JobService:
             raise JobNotFound(f"no job {job_id}")
         return job_view(row)
 
-    def list(
+    def list_jobs(
         self, conn: Connection, state: str | None, limit: int, cursor: UUID | None
     ) -> list[JobView]:
         rows = conn.execute(
@@ -154,12 +160,23 @@ class JobService:
         )
         if state == "CLOSED" and previous.program_id is not None:
             conn.execute(
-                text("UPDATE programs SET status = 'closed', updated_at = :now WHERE program_id = :p"),
+                text(
+                    "UPDATE programs SET status = 'closed', updated_at = :now WHERE program_id = :p"
+                ),
                 {"now": now, "p": previous.program_id},
             )
-        job_event(conn, env.clock, job_id, "state_changed",
-                  {"from": previous.state, "to": state, "reason": reason,
-                   "close_decision": close_decision})  # fmt: skip
+        job_event(
+            conn,
+            env.clock,
+            job_id,
+            "state_changed",
+            {
+                "from": previous.state,
+                "to": state,
+                "reason": reason,
+                "close_decision": close_decision,
+            },
+        )
         env.trace.step(
             conn,
             "JOB_STATE_CHANGED",
@@ -198,22 +215,27 @@ class JobService:
         seed_versions = self._resolve_seeds(brief)
         if brief.parent_job_id is not None:
             with env.db.read() as conn:
-                if conn.execute(
-                    text("SELECT 1 FROM research_jobs WHERE job_id = :j"),
-                    {"j": brief.parent_job_id},
-                ).first() is None:
+                if (
+                    conn.execute(
+                        text("SELECT 1 FROM research_jobs WHERE job_id = :j"),
+                        {"j": brief.parent_job_id},
+                    ).first()
+                    is None
+                ):
                     raise BriefRejected("PARENT_JOB_UNKNOWN", "parent_job_id names no job")
         job_id, program_id, generation_id = uuid7(), uuid7(), uuid7()
         islands = select_islands(brief, env.config.service)
         now = env.clock.now()
-        ctx = Ctx(job_id=job_id, program_id=program_id)
         with bind(job_id=str(job_id), program_id=str(program_id)):
             env.logger.logger.info(
-                "job_submit_received", outcome="ok",
+                "job_submit_received",
+                outcome="ok",
                 payload={"mode": brief.mode, "seeds": len(brief.seeds.expressions)},
-            )  # fmt: skip
+            )
             with env.db.transaction(lock=True) as conn:
-                seq = conn.execute(text("SELECT nextval('research_job_short_code_seq')")).scalar_one()
+                seq: int = conn.execute(
+                    text("SELECT nextval('research_job_short_code_seq')")
+                ).scalar_one()
                 conn.execute(
                     text(
                         "INSERT INTO research_jobs (job_id, short_code, submit_key, brief, scan, "
@@ -242,33 +264,57 @@ class JobService:
                 )
                 job_event(conn, env.clock, job_id, "submitted", {"title": brief.title})
                 env.trace.step(
-                    conn, "BRIEF_RECEIVED", Ctx(job_id=job_id), actor_kind="host_agent",
-                    actor=principal, inputs={"submit_key": submit_key},
+                    conn,
+                    "BRIEF_RECEIVED",
+                    Ctx(job_id=job_id),
+                    actor_kind="host_agent",
+                    actor=principal,
+                    inputs={"submit_key": submit_key},
                     payload={"brief": body, "scan": scan.model_dump(mode="json")},
-                )  # fmt: skip
+                )
                 audit(conn, env.clock, principal, "job.submit", "job", job_id, {"mode": brief.mode})
             # Seeds are published outside the database transaction (an HTTP call), then
             # recorded; a retried submission republishes idempotently by publish key.
             published = self._publish_seeds(brief, job_id, program_id, generation_id, islands)
             seed_ids = [str(v) for v in seed_versions] + [str(p["version_id"]) for p in published]
-            charter = derive_charter(brief, env.charter_defaults, env.config.service, islands,
-                                     seed_ids)  # fmt: skip
+            charter = derive_charter(
+                brief, env.charter_defaults, env.config.service, islands, seed_ids
+            )
             with env.db.transaction(lock=True) as conn:
-                self._start_program(conn, brief, job_id, program_id, generation_id, charter,
-                                    islands, published, seed_ids, principal)  # fmt: skip
-                self.set_state(conn, job_id, "VALIDATED", reason="brief, scan and seeds accepted",
-                               principal=principal)  # fmt: skip
-                self.set_state(conn, job_id, "RUNNING", reason="program started",
-                               principal=principal)  # fmt: skip
+                self._start_program(
+                    conn,
+                    brief,
+                    job_id,
+                    program_id,
+                    generation_id,
+                    charter,
+                    islands,
+                    published,
+                    seed_ids,
+                    principal,
+                )
+                self.set_state(
+                    conn,
+                    job_id,
+                    "VALIDATED",
+                    reason="brief, scan and seeds accepted",
+                    principal=principal,
+                )
+                self.set_state(
+                    conn, job_id, "RUNNING", reason="program started", principal=principal
+                )
             with env.db.read() as conn:
                 return self._response(conn, job_id, created=True)
 
     def _response(self, conn: Connection, job_id: UUID, created: bool) -> SubmitJobResponse:
         job = self.get(conn, job_id)
-        charter = conn.execute(
-            text("SELECT charter FROM programs WHERE job_id = :j"), {"j": job_id}
-        ).scalar() or {}
-        timeline = conn.execute(
+        charter = (
+            conn.execute(
+                text("SELECT charter FROM programs WHERE job_id = :j"), {"j": job_id}
+            ).scalar()
+            or {}
+        )
+        timeline: dict[str, Any] = conn.execute(
             text("SELECT timeline FROM research_jobs WHERE job_id = :j"), {"j": job_id}
         ).scalar_one()
         return SubmitJobResponse(
@@ -305,7 +351,9 @@ class JobService:
                 try:
                     registry.version(version_id)
                 except ServiceRefused:
-                    raise BriefRejected("VERSION_UNKNOWN", f"no published version {version_id}") from None
+                    raise BriefRejected(
+                        "VERSION_UNKNOWN", f"no published version {version_id}"
+                    ) from None
                 found.append(version_id)
         except ServiceUnavailable as error:
             raise BriefRejected("REGISTRY_UNAVAILABLE", str(error)) from error
@@ -325,9 +373,17 @@ class JobService:
         for seed in brief.seeds.expressions:
             hypothesis_id, candidate_id = uuid7(), uuid7()
             island = islands[0] if len(islands) == 1 else "I6" if "I6" in islands else islands[0]
-            manifest = seed_manifest(seed, job_id, program_id, generation_id, island,
-                                     hypothesis_id, candidate_id, snapshot or "",
-                                     env.limits)  # fmt: skip
+            manifest = seed_manifest(
+                seed,
+                job_id,
+                program_id,
+                generation_id,
+                island,
+                hypothesis_id,
+                candidate_id,
+                snapshot or "",
+                env.limits,
+            )
             try:
                 response = env.registry.publish(manifest, f"seed:{job_id}:{seed.name}")
             except ServiceRefused as error:
@@ -368,9 +424,16 @@ class JobService:
                 "research_snapshot_id, created_at, updated_at, created_by) VALUES (:p, :j, :n, "
                 "'active', CAST(:c AS jsonb), 1, :snap, :now, :now, :by)"
             ),
-            {"p": program_id, "j": job_id, "n": brief.title, "c": dumps(charter),
-             "snap": snapshot, "now": now, "by": principal},
-        )  # fmt: skip
+            {
+                "p": program_id,
+                "j": job_id,
+                "n": brief.title,
+                "c": dumps(charter),
+                "snap": snapshot,
+                "now": now,
+                "by": principal,
+            },
+        )
         sha = hashlib.sha256(canonical_json(charter).encode()).hexdigest()
         conn.execute(
             text(
@@ -378,9 +441,15 @@ class JobService:
                 "created_at, principal, request_id) VALUES (:p, 1, CAST(:c AS jsonb), :s, "
                 "'derived from the brief', :now, :by, :r)"
             ),
-            {"p": program_id, "c": dumps(charter), "s": sha, "now": now, "by": principal,
-             "r": current().get("request_id", "")},
-        )  # fmt: skip
+            {
+                "p": program_id,
+                "c": dumps(charter),
+                "s": sha,
+                "now": now,
+                "by": principal,
+                "r": current().get("request_id", ""),
+            },
+        )
         for key in islands:
             conn.execute(
                 text(
@@ -395,9 +464,13 @@ class JobService:
                 "plan_source, created_at, started_at, ended_at, updated_at, summary) VALUES (:g, "
                 ":p, 0, 'CLOSED', 1, 'seeds', :now, :now, :now, :now, CAST(:s AS jsonb))"
             ),
-            {"g": generation_id, "p": program_id, "now": now,
-             "s": dumps({"seeds_published": [str(p["version_id"]) for p in published]})},
-        )  # fmt: skip
+            {
+                "g": generation_id,
+                "p": program_id,
+                "now": now,
+                "s": dumps({"seeds_published": [str(p["version_id"]) for p in published]}),
+            },
+        )
         conn.execute(
             text(
                 "UPDATE research_jobs SET program_id = :p, seed_version_ids = CAST(:s AS jsonb), "
@@ -408,21 +481,38 @@ class JobService:
         ctx = Ctx(job_id=job_id, program_id=program_id, generation_id=generation_id)
         self._record_seeds(conn, ctx, published, now)
         env.trace.step(
-            conn, "SEEDS_PUBLISHED", Ctx(job_id=job_id, program_id=program_id),
+            conn,
+            "SEEDS_PUBLISHED",
+            Ctx(job_id=job_id, program_id=program_id),
             actor="research-api",
-            inputs={"pool_entry_ids": [str(i) for i in brief.seeds.pool_entry_ids],
-                    "version_ids": [str(i) for i in brief.seeds.version_ids]},
-            payload={"seed_version_ids": seed_ids,
-                     "published": [str(p["version_id"]) for p in published]},
-        )  # fmt: skip
+            inputs={
+                "pool_entry_ids": [str(i) for i in brief.seeds.pool_entry_ids],
+                "version_ids": [str(i) for i in brief.seeds.version_ids],
+            },
+            payload={
+                "seed_version_ids": seed_ids,
+                "published": [str(p["version_id"]) for p in published],
+            },
+        )
         env.trace.step(
-            conn, "CHARTER_DERIVED", Ctx(job_id=job_id, program_id=program_id),
-            actor="research-api", inputs={"brief_sha256": hashlib.sha256(
-                canonical_json(brief.model_dump(mode="json")).encode()).hexdigest()},
+            conn,
+            "CHARTER_DERIVED",
+            Ctx(job_id=job_id, program_id=program_id),
+            actor="research-api",
+            inputs={
+                "brief_sha256": hashlib.sha256(
+                    canonical_json(brief.model_dump(mode="json")).encode()
+                ).hexdigest()
+            },
             payload={"charter_version": 1, "charter": charter, "sha256": sha},
-        )  # fmt: skip
-        job_event(conn, env.clock, job_id, "program_started",
-                  {"program_id": str(program_id), "islands": islands, "seeds": seed_ids})  # fmt: skip
+        )
+        job_event(
+            conn,
+            env.clock,
+            job_id,
+            "program_started",
+            {"program_id": str(program_id), "islands": islands, "seeds": seed_ids},
+        )
 
     def _record_seeds(
         self, conn: Connection, ctx: Ctx, published: list[dict[str, Any]], now: datetime
@@ -452,11 +542,21 @@ class JobService:
                     "payload, status, source, created_at, updated_at) VALUES (:h, :p, :i, :t, "
                     "CAST(:pl AS jsonb), 'open', 'seed', :now, :now)"
                 ),
-                {"h": item["hypothesis_id"], "p": ctx.program_id, "i": item["island"],
-                 "t": task_id, "pl": dumps({"title": seed.name, "mechanism": seed.rationale,
-                                            "falsification": manifest.rationale.falsification}),
-                 "now": now},
-            )  # fmt: skip
+                {
+                    "h": item["hypothesis_id"],
+                    "p": ctx.program_id,
+                    "i": item["island"],
+                    "t": task_id,
+                    "pl": dumps(
+                        {
+                            "title": seed.name,
+                            "mechanism": seed.rationale,
+                            "falsification": manifest.rationale.falsification,
+                        }
+                    ),
+                    "now": now,
+                },
+            )
             analysis = validate(seed.expression, env.limits).analysis
             assert analysis is not None
             conn.execute(
@@ -467,33 +567,59 @@ class JobService:
                     ":i, 'factor', 'human_seed', :e, :ch, CAST(:pl AS jsonb), CAST(:a AS jsonb), "
                     "'published', :now, :now)"
                 ),
-                {"c": item["candidate_id"], "p": ctx.program_id, "g": ctx.generation_id,
-                 "t": task_id, "h": item["hypothesis_id"], "i": item["island"],
-                 "e": seed.expression, "ch": analysis.canonical_hash,
-                 "pl": dumps(seed.model_dump(mode="json") | {"parent_version_ids": []}),
-                 "a": dumps(analysis.model_dump(mode="json")), "now": now},
-            )  # fmt: skip
-            env.trace.step(conn, "DSL_VALIDATED", cctx, actor="research-api",
-                           inputs={"expression": seed.expression},
-                           payload={"ok": True, "analysis": analysis.model_dump(mode="json")})  # fmt: skip
+                {
+                    "c": item["candidate_id"],
+                    "p": ctx.program_id,
+                    "g": ctx.generation_id,
+                    "t": task_id,
+                    "h": item["hypothesis_id"],
+                    "i": item["island"],
+                    "e": seed.expression,
+                    "ch": analysis.canonical_hash,
+                    "pl": dumps(seed.model_dump(mode="json") | {"parent_version_ids": []}),
+                    "a": dumps(analysis.model_dump(mode="json")),
+                    "now": now,
+                },
+            )
+            env.trace.step(
+                conn,
+                "DSL_VALIDATED",
+                cctx,
+                actor="research-api",
+                inputs={"expression": seed.expression},
+                payload={"ok": True, "analysis": analysis.model_dump(mode="json")},
+            )
             version = item["version"]
             step_id = env.trace.step(
-                conn, "PUBLISHED", cctx, actor="research-api", version_id=version.version_id,
+                conn,
+                "PUBLISHED",
+                cctx,
+                actor="research-api",
+                version_id=version.version_id,
                 inputs={"publish_key": f"seed:{ctx.job_id}:{seed.name}", "operator": "human_seed"},
-                payload={"version_id": str(version.version_id),
-                         "family_id": str(version.family_id), "version_no": version.version_no,
-                         "content_hash": version.content_hash,
-                         "canonical_hash": version.canonical_hash,
-                         "manifest": manifest.model_dump(mode="json")},
-            )  # fmt: skip
+                payload={
+                    "version_id": str(version.version_id),
+                    "family_id": str(version.family_id),
+                    "version_no": version.version_no,
+                    "content_hash": version.content_hash,
+                    "canonical_hash": version.canonical_hash,
+                    "manifest": manifest.model_dump(mode="json"),
+                },
+            )
             conn.execute(
                 text(
                     "INSERT INTO candidate_versions (candidate_id, version_id, family_id, "
                     "content_hash, published_at, step_id) VALUES (:c, :v, :f, :h, :at, :s)"
                 ),
-                {"c": item["candidate_id"], "v": version.version_id, "f": version.family_id,
-                 "h": version.content_hash, "at": version.published_at, "s": step_id},
-            )  # fmt: skip
+                {
+                    "c": item["candidate_id"],
+                    "v": version.version_id,
+                    "f": version.family_id,
+                    "h": version.content_hash,
+                    "at": version.published_at,
+                    "s": step_id,
+                },
+            )
 
     # Owner controls ----------------------------------------------------------------------
 
@@ -503,7 +629,7 @@ class JobService:
             job = self.get(conn, job_id)
             if job.state == "CLOSED" or job.program_id is None:
                 raise JobConflict("JOB_CLOSED", "a closed job cannot be steered")
-            charter = conn.execute(
+            charter: dict[str, Any] = conn.execute(
                 text("SELECT charter FROM programs WHERE program_id = :p FOR UPDATE"),
                 {"p": job.program_id},
             ).scalar_one()
@@ -525,14 +651,26 @@ class JobService:
                     "created_at, principal, request_id) VALUES (:p, :v, CAST(:c AS jsonb), :s, "
                     "'steering note', :now, :by, :r)"
                 ),
-                {"p": job.program_id, "v": version, "c": dumps(charter), "s": sha,
-                 "now": env.clock.now(), "by": principal, "r": current().get("request_id", "")},
-            )  # fmt: skip
+                {
+                    "p": job.program_id,
+                    "v": version,
+                    "c": dumps(charter),
+                    "s": sha,
+                    "now": env.clock.now(),
+                    "by": principal,
+                    "r": current().get("request_id", ""),
+                },
+            )
             job_event(conn, env.clock, job_id, "steered", {"charter_version": version})
-            env.trace.step(conn, "STEERING_ADDED", Ctx(job_id=job_id, program_id=job.program_id),
-                           actor_kind="host_agent", actor=principal,
-                           inputs={"scan": scan.model_dump(mode="json")},
-                           payload={"note": note, "charter_version": version})  # fmt: skip
+            env.trace.step(
+                conn,
+                "STEERING_ADDED",
+                Ctx(job_id=job_id, program_id=job.program_id),
+                actor_kind="host_agent",
+                actor=principal,
+                inputs={"scan": scan.model_dump(mode="json")},
+                payload={"note": note, "charter_version": version},
+            )
             audit(conn, env.clock, principal, "job.steer", "job", job_id, {"version": version})
             return self.get(conn, job_id)
 
@@ -543,23 +681,32 @@ class JobService:
             if job.state == "CLOSED" or job.program_id is None:
                 raise JobConflict("JOB_CLOSED", "a closed job cannot be paused or resumed")
             conn.execute(
-                text(
-                    "UPDATE programs SET status = :s, updated_at = :now WHERE program_id = :p"
-                ),
-                {"s": "paused" if paused else "active", "now": env.clock.now(), "p": job.program_id},
+                text("UPDATE programs SET status = :s, updated_at = :now WHERE program_id = :p"),
+                {
+                    "s": "paused" if paused else "active",
+                    "now": env.clock.now(),
+                    "p": job.program_id,
+                },
             )
             if not paused:
                 conn.execute(
                     text(
-                        "UPDATE research_jobs SET next_generation_at = coalesce(next_generation_at, "
-                        ":now), updated_at = :now WHERE job_id = :j"
+                        "UPDATE research_jobs SET next_generation_at = "
+                        "coalesce(next_generation_at, :now), updated_at = :now WHERE job_id = :j"
                     ),
                     {"now": env.clock.now(), "j": job_id},
                 )
             kind = "paused" if paused else "resumed"
             job_event(conn, env.clock, job_id, kind, {})
-            audit(conn, env.clock, principal, f"job.{'pause' if paused else 'resume'}", "job",
-                  job_id, {})  # fmt: skip
+            audit(
+                conn,
+                env.clock,
+                principal,
+                f"job.{'pause' if paused else 'resume'}",
+                "job",
+                job_id,
+                {},
+            )
             env.logger.logger.info(f"job_{kind}", outcome="ok", job_id=str(job_id))
             return self.get(conn, job_id)
 
@@ -569,8 +716,14 @@ class JobService:
             job = self.get(conn, job_id)
             if job.state == "CLOSED":
                 return job
-            self.set_state(conn, job_id, "CLOSED", reason="cancelled by the owner",
-                           close_decision="cancelled", principal=principal)  # fmt: skip
+            self.set_state(
+                conn,
+                job_id,
+                "CLOSED",
+                reason="cancelled by the owner",
+                close_decision="cancelled",
+                principal=principal,
+            )
             audit(conn, env.clock, principal, "job.cancel", "job", job_id, {})
             return self.get(conn, job_id)
 

@@ -8,6 +8,7 @@ from qfr_core.registry_api import (
     AddEntryRequest,
     AddEntryResponse,
     AppendEventRequest,
+    LineageView,
     PoolEntryDetail,
     PoolEvent,
     PoolPage,
@@ -61,6 +62,10 @@ class RegistryClient(ApiClient):
     ) -> PoolPage:
         params = {"status": status, "limit": limit, "cursor": cursor}
         return await self._model(PoolPage, "GET", f"/v1/pools/{pool}", params=params)
+
+    async def lineage(self, version_id: UUID, depth: int) -> LineageView:
+        path = f"/v1/artifacts/{version_id}/lineage"
+        return await self._model(LineageView, "GET", path, params={"depth": depth})
 
     async def pool_entry(self, pool: Pool, entry_id: UUID) -> PoolEntryDetail:
         return await self._model(PoolEntryDetail, "GET", f"/v1/pools/{pool}/entries/{entry_id}")

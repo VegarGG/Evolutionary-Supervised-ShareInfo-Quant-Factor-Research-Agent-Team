@@ -467,7 +467,7 @@ def upgrade():
         ordinal integer NOT NULL CHECK (ordinal >= 1),
         version_id uuid NOT NULL,
         kind text NOT NULL CHECK (kind IN ('factor', 'strategy')),
-        tier_reached text NOT NULL,
+        tier_reached text,
         iteration_history jsonb NOT NULL,
         trace_hash text NOT NULL CHECK (trace_hash ~ {HEX64}),
         short_code text NOT NULL,

@@ -26,7 +26,9 @@ Scope = Literal["generation", "daily", "job"]
 
 class BudgetExceeded(RuntimeError):
     def __init__(self, scope: Scope, spent: Decimal, cap: Decimal, needed: Decimal) -> None:
-        super().__init__(f"{scope} budget: spent {spent} of {cap} CNY, the next call needs {needed}")
+        super().__init__(
+            f"{scope} budget: spent {spent} of {cap} CNY, the next call needs {needed}"
+        )
         self.scope, self.spent, self.cap, self.needed = scope, spent, cap, needed
 
 
@@ -190,9 +192,7 @@ class BudgetLedger:
             )
         if ctx.generation_id is not None:
             conn.execute(
-                text(
-                    "UPDATE generations SET cost_cny = cost_cny + :c WHERE generation_id = :g"
-                ),
+                text("UPDATE generations SET cost_cny = cost_cny + :c WHERE generation_id = :g"),
                 {"c": cost, "g": ctx.generation_id},
             )
         return cost

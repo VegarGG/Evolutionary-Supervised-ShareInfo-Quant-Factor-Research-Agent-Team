@@ -61,7 +61,7 @@ class ModelRef:
         provider, _, model_id = ref.partition("/")
         if provider not in PROVIDER_KEYS or not model_id:
             raise ValueError(f"model references are provider/model_id, got {ref!r}")
-        return cls(provider, model_id)  # type: ignore[arg-type]
+        return cls(provider, model_id)
 
     def __str__(self) -> str:
         return f"{self.provider}/{self.model_id}"
@@ -125,7 +125,7 @@ class PriceTable:
         except NoPrice:
             return ["model"]
         prices = model.price_cny_per_mtok or model.price_usd_per_mtok or {}
-        missing = [k for k, v in prices.items() if v is None]
+        missing: list[str] = [k for k, v in prices.items() if v is None]
         for required in ("in_miss", "out"):
             if required not in prices:
                 missing.append(required)
@@ -185,7 +185,8 @@ class CallPlan:
     timeout_s: float
 
     def model_settings(self) -> ModelSettings:
-        return ModelSettings(**self.settings)  # type: ignore[typeddict-item]
+        settings: ModelSettings = ModelSettings(**self.settings)  # type: ignore[typeddict-item]
+        return settings
 
 
 class Planner:
@@ -225,9 +226,14 @@ class Planner:
 
 
 class ModelSource(Protocol):
-    """Builds the PydanticAI model for one role and model reference."""
+    """Builds the PydanticAI model for one role and model reference; the probe also lists
+    a provider's models and reads an account balance where the provider offers one."""
 
     def model(self, role: str, ref: ModelRef) -> Model: ...
+
+    async def list_models(self, provider: ProviderKey) -> list[str]: ...
+
+    async def balance(self, provider: ProviderKey) -> dict[str, Any]: ...
 
 
 class ProviderModels:
@@ -249,6 +255,40 @@ class ProviderModels:
                 self.providers.providers[ref.provider], ref, self.environ, self.http_client
             )
         return self.cache[ref]
+
+    def _key(self, provider: ProviderKey) -> tuple[ProviderProfile, str]:
+        profile = self.providers.providers[provider]
+        key = self.environ.get(profile.api_key_env)
+        if not key:
+            raise ProviderUnavailable(f"{profile.api_key_env} is not set in this service")
+        return profile, key
+
+    async def list_models(self, provider: ProviderKey) -> list[str]:
+        """The provider's model list (GET /models, OpenAI-compatible on all three)."""
+        from openai import AsyncOpenAI
+
+        profile, key = self._key(provider)
+        client = AsyncOpenAI(
+            base_url=profile.base_url, api_key=key, max_retries=0, http_client=self.http_client
+        )
+        page = await client.models.list()
+        return [m.id for m in page.data]
+
+    async def balance(self, provider: ProviderKey) -> dict[str, Any]:
+        """Moonshot's account balance (GET /users/me/balance); other providers: empty."""
+        import httpx
+
+        if provider != "kimi":
+            return {}
+        profile, key = self._key(provider)
+        async with httpx.AsyncClient(timeout=30, trust_env=False) as client:
+            response = await client.get(
+                profile.base_url.rstrip("/") + "/users/me/balance",
+                headers={"Authorization": f"Bearer {key}"},
+            )
+        response.raise_for_status()
+        data = response.json()
+        return dict(data.get("data") or {}) if isinstance(data, dict) else {}
 
 
 def build_model(

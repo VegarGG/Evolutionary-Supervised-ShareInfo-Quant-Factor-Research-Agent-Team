@@ -55,6 +55,7 @@ class WorkerSection(BaseModel):
     retry_backoff_seconds: list[int]
     probe_daily_utc: str
     heartbeat_seconds: float = Field(gt=0)
+    after_batch_margin_seconds: int = Field(ge=0)
 
 
 class FeedbackSection(BaseModel):
@@ -107,7 +108,12 @@ class ResearchConfig:
 
     @classmethod
     def load(cls, root: Path) -> "ResearchConfig":
-        docs = {kind: load_config(kind, root) for kind in ("charter", "providers", "roles")}
+        kinds: tuple[Literal["charter", "providers", "roles"], ...] = (
+            "charter",
+            "providers",
+            "roles",
+        )
+        docs = {kind: load_config(kind, root) for kind in kinds}
         service_doc = load_config("research", root)
         return cls(
             root=root,

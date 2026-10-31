@@ -18,7 +18,7 @@ import math
 import time
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -74,7 +74,7 @@ class _Permanent(Exception):
 
 
 @dataclass(frozen=True)
-class RoleResult(Generic[T]):
+class RoleResult[T]:
     output: T
     run_id: UUID
     ref: ModelRef
@@ -109,8 +109,10 @@ class RoleRunner:
     def __init__(self, env: ResearchEnv) -> None:
         self.env = env
         request = env.config.providers.request
-        self.retries = int(request["retries"])  # type: ignore[arg-type]
-        self.backoff = [float(b) for b in request["backoff_s"]]  # type: ignore[union-attr]
+        self.retries = int(str(request["retries"]))
+        backoff = request["backoff_s"]
+        assert isinstance(backoff, list)
+        self.backoff = [float(str(b)) for b in backoff]
         structured = request["structured_output"]
         assert isinstance(structured, dict)
         self.validation_failures = int(structured["fallback_after_failures"])  # type: ignore[arg-type]
@@ -165,8 +167,9 @@ class RoleRunner:
         plan = self.env.planner.plan(role, ref)
         for attempt in range(self.retries + 1):
             try:
-                return await self._attempt(role, ref, model, plan, prompt, output_type, ctx,
-                                           charter, inputs)  # fmt: skip
+                return await self._attempt(
+                    role, ref, model, plan, prompt, output_type, ctx, charter, inputs
+                )
             except BudgetExceeded:
                 raise
             except _Transient as error:
@@ -232,15 +235,17 @@ class RoleRunner:
         mode, output, failure = "tool", None, None
         with bind(run_id=str(run_id), **ctx.log_ids()):
             try:
-                output, messages = await self._run(model, output_type, role, prompt, deps,
-                                                   limits, plan, "tool")  # fmt: skip
+                output, messages = await self._run(
+                    model, output_type, role, prompt, deps, limits, plan, "tool"
+                )
             except UnexpectedModelBehavior as error:
                 # Two validation failures inside the tool-mode run: retry once prompted.
                 messages = list(getattr(error, "_qfr_messages", []))
                 mode = "prompted"
                 try:
-                    output, more = await self._run(model, output_type, role, prompt, deps,
-                                                   limits, plan, "prompted")  # fmt: skip
+                    output, more = await self._run(
+                        model, output_type, role, prompt, deps, limits, plan, "prompted"
+                    )
                     messages += more
                 except Exception as second:  # noqa: BLE001 - classified below
                     messages += list(getattr(second, "_qfr_messages", []))
@@ -358,7 +363,10 @@ class RoleRunner:
         with capture_run_messages() as captured:
             try:
                 result = await agent.run(
-                    prompt.text, deps=deps, usage_limits=limits, model_settings=plan.model_settings()
+                    prompt.text,
+                    deps=deps,
+                    usage_limits=limits,
+                    model_settings=plan.model_settings(),
                 )
             except Exception as error:
                 error._qfr_messages = list(captured)  # type: ignore[attr-defined]
@@ -390,9 +398,12 @@ def _transient(error: BaseException) -> bool:
         return False
     if isinstance(
         error,
-        ModelRateLimitError | ModelUnavailableError | ModelServerError | ModelConnectionError
+        ModelRateLimitError
+        | ModelUnavailableError
+        | ModelServerError
+        | ModelConnectionError
         | ModelRequestTimeout,
-    ):  # fmt: skip
+    ):
         return True
     if isinstance(error, ModelHTTPError):
         return error.status_code == 429 or error.status_code >= 500
@@ -450,9 +461,8 @@ def _response_text(messages: list[ModelMessage]) -> str:
             elif isinstance(part, TextPart):
                 chunks.append(part.content)
             elif isinstance(part, ToolCallPart):
-                chunks.append(
-                    f"[tool_call {part.tool_name}] {json.dumps(part.args_as_dict(), sort_keys=True)}"
-                )
+                args = json.dumps(part.args_as_dict(), sort_keys=True)
+                chunks.append(f"[tool_call {part.tool_name}] {args}")
     return "\n".join(chunks)
 
 
@@ -472,4 +482,5 @@ def _request_ids(messages: list[ModelMessage]) -> list[str]:
 
 
 def _jsonable(value: dict[str, Any]) -> dict[str, Any]:
-    return json.loads(json.dumps(value, default=str))
+    loaded: dict[str, Any] = json.loads(json.dumps(value, default=str))
+    return loaded

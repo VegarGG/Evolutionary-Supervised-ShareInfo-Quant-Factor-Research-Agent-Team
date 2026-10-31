@@ -42,7 +42,7 @@ class FeedbackSync:
                 text("SELECT last_report_id FROM feedback_cursor WHERE program_id = :p"),
                 {"p": ctx.program_id},
             ).first()
-            seeds = conn.execute(
+            seeds: list[str] | None = conn.execute(
                 text("SELECT seed_version_ids FROM research_jobs WHERE job_id = :j"),
                 {"j": ctx.job_id},
             ).scalar_one()
@@ -68,8 +68,10 @@ class FeedbackSync:
                 text(
                     "INSERT INTO feedback_cursor (program_id, last_released_at, last_report_id, "
                     "updated_at) VALUES (:p, :at, :r, :now) ON CONFLICT (program_id) DO UPDATE "
-                    "SET last_released_at = EXCLUDED.last_released_at, "
-                    "last_report_id = EXCLUDED.last_report_id, updated_at = EXCLUDED.updated_at"
+                    "SET last_released_at = coalesce(EXCLUDED.last_released_at, "
+                    "feedback_cursor.last_released_at), last_report_id = "
+                    "coalesce(EXCLUDED.last_report_id, feedback_cursor.last_report_id), "
+                    "updated_at = EXCLUDED.updated_at"
                 ),
                 {
                     "p": ctx.program_id,
@@ -153,8 +155,7 @@ class FeedbackSync:
 def reports_for(conn: Connection, version_id: UUID) -> list[ReleasedReport]:
     rows = conn.execute(
         text(
-            "SELECT content FROM report_cache WHERE version_id = :v ORDER BY released_at, "
-            "report_id"
+            "SELECT content FROM report_cache WHERE version_id = :v ORDER BY released_at, report_id"
         ),
         {"v": version_id},
     ).all()

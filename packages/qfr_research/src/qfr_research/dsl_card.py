@@ -27,7 +27,10 @@ KIND_TITLES = {
     "elementwise": "Element-wise operators",
 }
 # Two examples that exercise the grammar; they are syntax illustrations, not suggestions.
-EXAMPLES = ("Rank(Mean($close, 5) / Mean($close, 20) - 1)", "TsZ($volume, 10) * Sign(Delta($close, 5))")
+EXAMPLES = (
+    "Rank(Mean($close, 5) / Mean($close, 20) - 1)",
+    "TsZ($volume, 10) * Sign(Delta($close, 5))",
+)
 
 
 @dataclass(frozen=True)

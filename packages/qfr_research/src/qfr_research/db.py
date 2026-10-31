@@ -63,7 +63,9 @@ class Database:
     def healthy(self) -> bool:
         try:
             with self.read() as conn:
-                return conn.execute(text("SELECT to_regclass('research_jobs')")).scalar() is not None
+                return (
+                    conn.execute(text("SELECT to_regclass('research_jobs')")).scalar() is not None
+                )
         except Exception:
             return False
 

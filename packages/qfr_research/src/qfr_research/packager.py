@@ -150,8 +150,8 @@ class Packager:
             if not check.complete:
                 conn.execute(
                     text(
-                        "UPDATE candidates SET state = 'not_selected', reason = 'TRACE_INCOMPLETE', "
-                        "updated_at = :now WHERE candidate_id = :c"
+                        "UPDATE candidates SET state = 'not_selected', "
+                        "reason = 'TRACE_INCOMPLETE', updated_at = :now WHERE candidate_id = :c"
                     ),
                     {"now": env.clock.now(), "c": candidate_id},
                 )
@@ -187,9 +187,11 @@ class Packager:
                     outcome="failed",
                 )
             env.logger.logger.error(
-                "publication_failed", outcome="failed", payload={"error": str(error)[:300]},
+                "publication_failed",
+                outcome="failed",
+                payload={"error": str(error)[:300]},
                 **cctx.log_ids(),
-            )  # fmt: skip
+            )
             return None
         version = response.version
         with env.db.transaction() as conn:
@@ -259,7 +261,9 @@ class Packager:
                     parent_expression = self.env.registry.version(parent).manifest
                     before = getattr(parent_expression.implementation, "expression", None)
                     if before:
-                        diff = ast_diff(canonicalize(parse(before)), canonicalize(parse(row.expression)))
+                        diff = ast_diff(
+                            canonicalize(parse(before)), canonicalize(parse(row.expression))
+                        )
                 except Exception:  # noqa: BLE001 - lineage diff is best effort; parents stay
                     diff = None
             conn.execute(

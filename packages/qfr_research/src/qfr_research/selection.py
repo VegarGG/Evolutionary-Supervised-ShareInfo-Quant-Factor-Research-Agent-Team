@@ -59,7 +59,9 @@ def prescreen(candidate: Any, thresholds: dict[str, Any]) -> Screened:
         add("components", float(components), float(thresholds["strategy_components_max"]), False)
         score = float(sharpe) if sharpe is not None else float("-inf")
     passed = all(c["passed"] for c in checks.values())
-    return Screened(candidate.candidate_id, candidate.island_key, passed, checks, score, originality)
+    return Screened(
+        candidate.candidate_id, candidate.island_key, passed, checks, score, originality
+    )
 
 
 def select(survivors: list[Screened], quota: int) -> tuple[list[Screened], dict[Any, int]]:

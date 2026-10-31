@@ -101,9 +101,15 @@ class GenerationRunner:
                 {"g": generation_id},
             ).one()
         return Generation(
-            row.generation_id, row.program_id, row.job_id, row.seq, row.state, row.charter,
-            row.charter_version, row.budget_stop,
-        )  # fmt: skip
+            row.generation_id,
+            row.program_id,
+            row.job_id,
+            row.seq,
+            row.state,
+            row.charter,
+            row.charter_version,
+            row.budget_stop,
+        )
 
     def transition(self, gen: Generation, to: str, payload: dict[str, Any] | None = None) -> None:
         env, now = self.env, self.env.clock.now()
@@ -187,6 +193,20 @@ class GenerationRunner:
             self.monitor.after_generation(gen.job_id, gen.generation_id)
         return gen.state
 
+    def fail(self, generation_id: UUID, error_code: str) -> None:
+        """Mark a generation FAILED after its last attempt; the job schedules the next."""
+        gen = self.load(generation_id)
+        if gen.state in TERMINAL:
+            return
+        with self.env.db.transaction() as conn:
+            conn.execute(
+                text("UPDATE generations SET error_code = :e WHERE generation_id = :g"),
+                {"e": error_code[:200], "g": generation_id},
+            )
+        self.transition(gen, "FAILED", {"error_code": error_code[:200]})
+        if self.monitor is not None:
+            self.monitor.after_generation(gen.job_id, gen.generation_id)
+
     async def _pending(self, gen: Generation) -> None:
         return None
 
@@ -225,8 +245,14 @@ class GenerationRunner:
             budget_chars=self._budget_chars(gen),
             trimmable=("reports",),
         )
-        result = await self._call(gen, "analyst", prompt, AnalystOutput, ctx,
-                                  inputs={"report_ids": [str(r.report_id) for r in reports]})  # fmt: skip
+        result = await self._call(
+            gen,
+            "analyst",
+            prompt,
+            AnalystOutput,
+            ctx,
+            inputs={"report_ids": [str(r.report_id) for r in reports]},
+        )
         if result is None:
             return
         out = result.output
@@ -238,8 +264,9 @@ class GenerationRunner:
             )
         interpretation_id = uuid7()
         fraction = float(gen.charter["role_limits"]["interpretation_review_fraction"])
-        sampled = _sampled(env.config.service.analyst.interpretation_review_seed,
-                           interpretation_id, fraction)  # fmt: skip
+        sampled = _sampled(
+            env.config.service.analyst.interpretation_review_seed, interpretation_id, fraction
+        )
         with env.db.transaction() as conn:
             require_write(env, "analyst", "interpretation", ctx)
             now = env.clock.now()
@@ -327,9 +354,15 @@ class GenerationRunner:
             budget_chars=self._budget_chars(gen),
             trimmable=("reports",),
         )
-        result = await self._call(gen, "interp_review", prompt, InterpretationChallenge, ctx,
-                                  inputs={"interpretation_id": str(interpretation_id)})  # fmt: skip
-        status, final = "final", payload
+        result = await self._call(
+            gen,
+            "interp_review",
+            prompt,
+            InterpretationChallenge,
+            ctx,
+            inputs={"interpretation_id": str(interpretation_id)},
+        )
+        status, final = "final", dict(payload)
         if result is not None and result.output.verdict == "amend":
             status = "amended"
             final = payload | {"amended_text": result.output.amended_text}
@@ -413,7 +446,7 @@ class GenerationRunner:
                 ),
                 {"p": gen.program_id},
             ).all()
-            seeds = conn.execute(
+            seeds: list[str] = conn.execute(
                 text("SELECT seed_version_ids FROM research_jobs WHERE job_id = :j"),
                 {"j": gen.job_id},
             ).scalar_one()
@@ -427,7 +460,9 @@ class GenerationRunner:
         proposal = self._proposal(gen)
         with self.env.db.transaction() as conn:
             conn.execute(
-                text("UPDATE generations SET proposal = CAST(:p AS jsonb) WHERE generation_id = :g"),
+                text(
+                    "UPDATE generations SET proposal = CAST(:p AS jsonb) WHERE generation_id = :g"
+                ),
                 {"p": dumps(proposal.as_json()), "g": gen.generation_id},
             )
             self.env.trace.step(
@@ -472,10 +507,15 @@ class GenerationRunner:
                 trimmable=("report_digests", "hypotheses", "knowledge"),
             )
             try:
-                result = await self._call(gen, "supervisor", prompt, GenerationPlan, gen.ctx,
-                                          raise_failures=True,
-                                          inputs={"proposal": "generations.proposal",
-                                                  "attempt": attempt})  # fmt: skip
+                result = await self._call(
+                    gen,
+                    "supervisor",
+                    prompt,
+                    GenerationPlan,
+                    gen.ctx,
+                    raise_failures=True,
+                    inputs={"proposal": "generations.proposal", "attempt": attempt},
+                )
             except RoleFailed:
                 break
             assert result is not None
@@ -526,9 +566,13 @@ class GenerationRunner:
                     "UPDATE generations SET plan = CAST(:p AS jsonb), plan_source = :s, "
                     "updated_at = :now WHERE generation_id = :g"
                 ),
-                {"p": dumps(plan.model_dump(mode="json")), "s": source, "now": now,
-                 "g": gen.generation_id},
-            )  # fmt: skip
+                {
+                    "p": dumps(plan.model_dump(mode="json")),
+                    "s": source,
+                    "now": now,
+                    "g": gen.generation_id,
+                },
+            )
             for pause in plan.islands_to_pause:
                 conn.execute(
                     text(
@@ -640,9 +684,13 @@ class GenerationRunner:
             raise Stop(stop[0])
 
     def _task_state(
-        self, task_id: UUID, state: str, result: dict[str, Any] | None = None,
-        error: str | None = None, attempt: bool = False,
-    ) -> None:  # fmt: skip
+        self,
+        task_id: UUID,
+        state: str,
+        result: dict[str, Any] | None = None,
+        error: str | None = None,
+        attempt: bool = False,
+    ) -> None:
         with self.env.db.transaction() as conn:
             conn.execute(
                 text(
@@ -681,8 +729,9 @@ class GenerationRunner:
                 payload={"message": str(error)[:500], "type": task.type},
                 **ctx.log_ids(),
             )
-            self._task_state(task.task_id, "failed", {"error": str(error)[:500]},
-                             type(error).__name__.upper())  # fmt: skip
+            self._task_state(
+                task.task_id, "failed", {"error": str(error)[:500]}, type(error).__name__.upper()
+            )
             return
         self._task_state(task.task_id, "done", result)
 
@@ -703,9 +752,15 @@ class GenerationRunner:
             budget_chars=self._budget_chars(gen),
             trimmable=("similar", "knowledge"),
         )
-        result = await self._call(gen, "hypothesis", prompt, HypothesisBatch, ctx,
-                                  raise_failures=True,
-                                  inputs={"similar_hypothesis_ids": similar["ids"]})  # fmt: skip
+        result = await self._call(
+            gen,
+            "hypothesis",
+            prompt,
+            HypothesisBatch,
+            ctx,
+            raise_failures=True,
+            inputs={"similar_hypothesis_ids": similar["ids"]},
+        )
         assert result is not None
         hypotheses: list[tuple[UUID, Any]] = []
         with env.db.transaction() as conn:
@@ -743,13 +798,15 @@ class GenerationRunner:
         drafts_result = await self._engineer(gen, task, ctx, hypotheses, None, None)
         candidates: list[UUID] = []
         for draft in drafts_result.output.drafts[: task.max_candidates]:
-            hypothesis_id = draft.hypothesis_id
             known = {h for h, _ in hypotheses}
-            corrected = hypothesis_id not in known
-            if corrected:
-                hypothesis_id = hypotheses[0][0]
+            corrected = draft.hypothesis_id not in known
+            chosen: UUID = (
+                hypotheses[0][0]
+                if corrected or draft.hypothesis_id is None
+                else draft.hypothesis_id
+            )
             candidate_id = self._create_candidate(
-                gen, task, ctx, draft, hypothesis_id, drafts_result, None, 1, corrected
+                gen, task, ctx, draft, chosen, drafts_result, None, 1, corrected
             )
             candidates.append(candidate_id)
         outcomes = []
@@ -819,10 +876,18 @@ class GenerationRunner:
             budget_chars=self._budget_chars(gen),
             trimmable=("hypothesis",),
         )
-        result = await self._call(gen, "engineer", prompt, EngineerOutput, ctx,
-                                  raise_failures=True,
-                                  inputs={"dsl_card_version": env.card.version,
-                                          "hypothesis_ids": [str(h) for h, _ in hypotheses]})  # fmt: skip
+        result = await self._call(
+            gen,
+            "engineer",
+            prompt,
+            EngineerOutput,
+            ctx,
+            raise_failures=True,
+            inputs={
+                "dsl_card_version": env.card.version,
+                "hypothesis_ids": [str(h) for h, _ in hypotheses],
+            },
+        )
         assert result is not None
         return result
 
@@ -878,7 +943,9 @@ class GenerationRunner:
                 inputs={
                     "dsl_card_version": env.card.version,
                     "hypothesis_id": str(hypothesis_id),
-                    "parent_candidate_id": None if parent_candidate is None else str(parent_candidate),
+                    "parent_candidate_id": None
+                    if parent_candidate is None
+                    else str(parent_candidate),
                 },
                 payload={
                     "draft": payload,
@@ -909,16 +976,24 @@ class GenerationRunner:
                 {"c": candidate_id},
             ).one()
         deps = ToolDeps(env, "evolution", cctx)
-        validation = invoke(deps, "dsl.validate", step_type="DSL_VALIDATED", expression=row.expression)
+        validation = invoke(
+            deps, "dsl.validate", step_type="DSL_VALIDATED", expression=row.expression
+        )
         if not validation.get("ok"):
             self._candidate(candidate_id, state="invalid", reason="DSL_INVALID")
             return None
         analysis = validation["analysis"]
         sign = int(row.payload.get("expected_sign", 1))
-        workbench = invoke(deps, "workbench.evaluate", step_type="WORKBENCH_EVALUATED",
-                           expression=row.expression, expected_sign=sign)  # fmt: skip
-        similarity = invoke(deps, "similarity.search", step_type="SIMILARITY_CHECKED",
-                            expression=row.expression)  # fmt: skip
+        workbench = invoke(
+            deps,
+            "workbench.evaluate",
+            step_type="WORKBENCH_EVALUATED",
+            expression=row.expression,
+            expected_sign=sign,
+        )
+        similarity = invoke(
+            deps, "similarity.search", step_type="SIMILARITY_CHECKED", expression=row.expression
+        )
         self._candidate(
             candidate_id,
             analysis=analysis,
@@ -977,9 +1052,17 @@ class GenerationRunner:
             {
                 "hypothesis": _compact(row.hypothesis or {}),
                 "candidate": _compact(
-                    {"expression": row.expression} | {k: row.payload.get(k) for k in
-                     ("description", "expected_sign", "horizon_days", "parameter_rationale")}
-                ),  # fmt: skip
+                    {"expression": row.expression}
+                    | {
+                        k: row.payload.get(k)
+                        for k in (
+                            "description",
+                            "expected_sign",
+                            "horizon_days",
+                            "parameter_rationale",
+                        )
+                    }
+                ),
                 "checks": _compact(
                     {
                         "analysis": checks["analysis"],
@@ -994,10 +1077,16 @@ class GenerationRunner:
             budget_chars=self._budget_chars(gen),
             trimmable=("similar",),
         )
-        review = await self._call(gen, "critic", prompt, ReviewVerdict, cctx,
-                                  exclude_provider=row.engineer_provider, raise_failures=True,
-                                  inputs={"engineer_provider": row.engineer_provider,
-                                          "round": round_no})  # fmt: skip
+        review = await self._call(
+            gen,
+            "critic",
+            prompt,
+            ReviewVerdict,
+            cctx,
+            exclude_provider=row.engineer_provider,
+            raise_failures=True,
+            inputs={"engineer_provider": row.engineer_provider, "round": round_no},
+        )
         assert review is not None
         verdict = review.output
         review_id = uuid7()
@@ -1005,9 +1094,9 @@ class GenerationRunner:
             require_write(env, "critic", "review", cctx)
             conn.execute(
                 text(
-                    "INSERT INTO reviews (review_id, candidate_id, round, verdict, payload, run_id, "
-                    "provider, created_at) VALUES (:r, :c, :n, :v, CAST(:p AS jsonb), :run, :prov, "
-                    ":now)"
+                    "INSERT INTO reviews (review_id, candidate_id, round, verdict, payload, "
+                    "run_id, provider, created_at) VALUES (:r, :c, :n, :v, CAST(:p AS jsonb), "
+                    ":run, :prov, :now)"
                 ),
                 {
                     "r": review_id,
@@ -1032,12 +1121,20 @@ class GenerationRunner:
             )
         state = {"approve": "approved", "reject": "rejected"}.get(verdict.verdict)
         if state is not None:
-            self._candidate(candidate_id, state=state, review_rounds=round_no,
-                            reason=None if state == "approved" else "CRITIC_REJECTED")  # fmt: skip
+            self._candidate(
+                candidate_id,
+                state=state,
+                review_rounds=round_no,
+                reason=None if state == "approved" else "CRITIC_REJECTED",
+            )
             return {"candidate_id": str(candidate_id), "state": state, "rounds": round_no}
         if round_no >= max_rounds:
-            self._candidate(candidate_id, state="rejected", review_rounds=round_no,
-                            reason="REVIEW_ROUNDS_EXHAUSTED")  # fmt: skip
+            self._candidate(
+                candidate_id,
+                state="rejected",
+                review_rounds=round_no,
+                reason="REVIEW_ROUNDS_EXHAUSTED",
+            )
             return {"candidate_id": str(candidate_id), "state": "rejected", "rounds": round_no}
         with env.db.transaction() as conn:
             env.trace.step(
@@ -1052,9 +1149,16 @@ class GenerationRunner:
         revision = await self._engineer(gen, task, ctx, hypotheses, row, verdict)
         draft = revision.output.drafts[0]
         new_id = self._create_candidate(
-            gen, task, ctx, draft, row.hypothesis_id, revision, candidate_id, round_no + 1,
+            gen,
+            task,
+            ctx,
+            draft,
+            row.hypothesis_id,
+            revision,
+            candidate_id,
+            round_no + 1,
             draft.hypothesis_id != row.hypothesis_id,
-        )  # fmt: skip
+        )
         return await self._develop(gen, task, ctx, new_id, hypotheses, round_no + 1)
 
     async def _compose(self, gen: Generation, task: Any, ctx: Ctx) -> dict[str, Any]:
@@ -1071,9 +1175,13 @@ class GenerationRunner:
             expression = getattr(manifest.implementation, "expression", None)
             if expression:
                 components.append(
-                    {"version_id": version_id, "expression": expression,
-                     "expected_sign": manifest.declared.expected_sign, "title": manifest.title}
-                )  # fmt: skip
+                    {
+                        "version_id": version_id,
+                        "expression": expression,
+                        "expected_sign": manifest.declared.expected_sign,
+                        "title": manifest.title,
+                    }
+                )
         with env.db.transaction() as conn:
             env.trace.step(
                 conn,
@@ -1098,8 +1206,15 @@ class GenerationRunner:
             budget_chars=self._budget_chars(gen),
             trimmable=("components",),
         )
-        result = await self._call(gen, "engineer", prompt, StrategyDraft, ctx, raise_failures=True,
-                                  inputs={"candidate_set": [c["version_id"] for c in components]})  # fmt: skip
+        result = await self._call(
+            gen,
+            "engineer",
+            prompt,
+            StrategyDraft,
+            ctx,
+            raise_failures=True,
+            inputs={"candidate_set": [c["version_id"] for c in components]},
+        )
         assert result is not None
         draft = result.output
         known = {c["version_id"]: c for c in components}
@@ -1109,7 +1224,8 @@ class GenerationRunner:
         cctx = ctx.with_(candidate_id=candidate_id)
         payload = draft.model_dump(mode="json")
         payload["parent_version_ids"] = sorted(
-            {str(c.version_id) for c in draft.components} | {str(p) for p in draft.parent_version_ids}
+            {str(c.version_id) for c in draft.components}
+            | {str(p) for p in draft.parent_version_ids}
         )
         with env.db.transaction() as conn:
             require_write(env, "engineer", "strategy_draft", cctx)
@@ -1118,8 +1234,8 @@ class GenerationRunner:
                     "INSERT INTO candidates (candidate_id, program_id, generation_id, task_id, "
                     "island_key, kind, operator, components, payload, state, engineer_run_id, "
                     "created_at, updated_at) VALUES (:c, :p, :g, :t, :i, 'strategy', "
-                    "'compose_strategy', CAST(:comp AS jsonb), CAST(:pl AS jsonb), 'drafted', :run, "
-                    ":now, :now)"
+                    "'compose_strategy', CAST(:comp AS jsonb), CAST(:pl AS jsonb), 'drafted', "
+                    ":run, :now, :now)"
                 ),
                 {
                     "c": candidate_id,
@@ -1133,13 +1249,24 @@ class GenerationRunner:
                     "now": env.clock.now(),
                 },
             )
-            env.trace.step(conn, "DRAFT_CREATED", cctx, actor_kind="llm", actor="engineer",
-                           llm=result.attribution, inputs={"mode": "strategy"},
-                           payload={"draft": payload, "tool_calls": result.tool_calls})  # fmt: skip
+            env.trace.step(
+                conn,
+                "DRAFT_CREATED",
+                cctx,
+                actor_kind="llm",
+                actor="engineer",
+                llm=result.attribution,
+                inputs={"mode": "strategy"},
+                payload={"draft": payload, "tool_calls": result.tool_calls},
+            )
         deps = ToolDeps(env, "evolution", cctx)
         for component in draft.components:
-            invoke(deps, "dsl.validate", step_type="DSL_VALIDATED",
-                   expression=known[str(component.version_id)]["expression"])  # fmt: skip
+            invoke(
+                deps,
+                "dsl.validate",
+                step_type="DSL_VALIDATED",
+                expression=known[str(component.version_id)]["expression"],
+            )
         from qfr_core.workbench import ComponentInput
 
         report = env.workbench.composite(
@@ -1160,8 +1287,14 @@ class GenerationRunner:
             "reference_sharpe": report.reference_strategy.sharpe,
         }
         with env.db.transaction() as conn:
-            env.trace.step(conn, "WORKBENCH_EVALUATED", cctx, actor="tool:workbench.evaluate",
-                           inputs={"composite": True}, payload=workbench)  # fmt: skip
+            env.trace.step(
+                conn,
+                "WORKBENCH_EVALUATED",
+                cctx,
+                actor="tool:workbench.evaluate",
+                inputs={"composite": True},
+                payload=workbench,
+            )
         self._candidate(candidate_id, workbench=workbench, similarity={"originality": 1.0})
         prompt = env.prompts.render(
             "critic",
@@ -1175,25 +1308,44 @@ class GenerationRunner:
             },
             budget_chars=self._budget_chars(gen),
         )
-        review = await self._call(gen, "critic", prompt, ReviewVerdict, cctx,
-                                  exclude_provider=result.ref.provider, raise_failures=True)  # fmt: skip
+        review = await self._call(
+            gen,
+            "critic",
+            prompt,
+            ReviewVerdict,
+            cctx,
+            exclude_provider=result.ref.provider,
+            raise_failures=True,
+        )
         assert review is not None
         review_id = uuid7()
         with env.db.transaction() as conn:
             conn.execute(
                 text(
-                    "INSERT INTO reviews (review_id, candidate_id, round, verdict, payload, run_id, "
-                    "provider, created_at) VALUES (:r, :c, 1, :v, CAST(:p AS jsonb), :run, :prov, "
-                    ":now)"
+                    "INSERT INTO reviews (review_id, candidate_id, round, verdict, payload, "
+                    "run_id, provider, created_at) VALUES (:r, :c, 1, :v, CAST(:p AS jsonb), "
+                    ":run, :prov, :now)"
                 ),
-                {"r": review_id, "c": candidate_id, "v": review.output.verdict,
-                 "p": dumps(review.output.model_dump(mode="json")), "run": review.run_id,
-                 "prov": review.ref.provider, "now": env.clock.now()},
-            )  # fmt: skip
-            env.trace.step(conn, "CRITIC_REVIEWED", cctx, actor_kind="llm", actor="critic",
-                           llm=review.attribution, inputs={"round": 1},
-                           payload={"review_id": str(review_id)}
-                           | review.output.model_dump(mode="json"))  # fmt: skip
+                {
+                    "r": review_id,
+                    "c": candidate_id,
+                    "v": review.output.verdict,
+                    "p": dumps(review.output.model_dump(mode="json")),
+                    "run": review.run_id,
+                    "prov": review.ref.provider,
+                    "now": env.clock.now(),
+                },
+            )
+            env.trace.step(
+                conn,
+                "CRITIC_REVIEWED",
+                cctx,
+                actor_kind="llm",
+                actor="critic",
+                llm=review.attribution,
+                inputs={"round": 1},
+                payload={"review_id": str(review_id)} | review.output.model_dump(mode="json"),
+            )
         state = "approved" if review.output.verdict == "approve" else "rejected"
         self._candidate(candidate_id, state=state, review_rounds=1)
         return {"candidate_id": str(candidate_id), "state": state}
@@ -1236,11 +1388,16 @@ class GenerationRunner:
                     ctx,
                     actor="evolution-engine",
                     inputs={"thresholds": thresholds},
-                    payload={"checks": screened.checks, "passed": screened.passed,
-                             "duplicate": duplicate, "score": _finite(screened.score)},
-                )  # fmt: skip
-            self._candidate(row.candidate_id, prescreen={"checks": screened.checks,
-                                                         "passed": screened.passed})  # fmt: skip
+                    payload={
+                        "checks": screened.checks,
+                        "passed": screened.passed,
+                        "duplicate": duplicate,
+                        "score": _finite(screened.score),
+                    },
+                )
+            self._candidate(
+                row.candidate_id, prescreen={"checks": screened.checks, "passed": screened.passed}
+            )
             if duplicate:
                 reasons[row.candidate_id] = "DUPLICATE"
             elif not screened.passed:
@@ -1265,9 +1422,13 @@ class GenerationRunner:
                     ctx,
                     actor="evolution-engine",
                     inputs={"quota": quota, "survivors": len(survivors)},
-                    payload={"rank": ranks.get(row.candidate_id), "score": _finite(score),
-                             "reason": reason, "rule": "w0_ir_then_originality_round_robin"},
-                )  # fmt: skip
+                    payload={
+                        "rank": ranks.get(row.candidate_id),
+                        "score": _finite(score),
+                        "reason": reason,
+                        "rule": "w0_ir_then_originality_round_robin",
+                    },
+                )
             self._candidate(
                 row.candidate_id,
                 state="selected" if selected else "not_selected",
@@ -1332,7 +1493,7 @@ class GenerationRunner:
                     {"g": gen.generation_id},
                 ).all()
             ]
-            hypotheses = conn.execute(
+            hypotheses: int = conn.execute(
                 text(
                     "SELECT count(*) FROM hypotheses h JOIN tasks t ON t.task_id = h.task_id "
                     "WHERE t.generation_id = :g"
@@ -1372,24 +1533,36 @@ class GenerationRunner:
             raise Stop("paused")
         try:
             return await self.roles.run(
-                role, prompt, output, ctx, gen.charter,
-                exclude_provider=exclude_provider, inputs=inputs,
-            )  # fmt: skip
+                role,
+                prompt,
+                output,
+                ctx,
+                gen.charter,
+                exclude_provider=exclude_provider,
+                inputs=inputs,
+            )
         except BudgetExceeded as error:
             self.env.logger.logger.warning(
                 "budget_stop",
                 outcome="failed",
                 error_code=f"BUDGET_{error.scope.upper()}",
-                payload={"spent": float(error.spent), "cap": float(error.cap),
-                         "needed": float(error.needed), "role": role},
+                payload={
+                    "spent": float(error.spent),
+                    "cap": float(error.cap),
+                    "needed": float(error.needed),
+                    "role": role,
+                },
                 **ctx.log_ids(),
-            )  # fmt: skip
+            )
             raise Stop(f"budget_{error.scope}") from error
         except RoleFailed as error:
             self.env.logger.logger.error(
-                "role_failed", outcome="failed", error_code="ROLE_FAILED",
-                payload={"role": role, "errors": error.errors[:6]}, **ctx.log_ids(),
-            )  # fmt: skip
+                "role_failed",
+                outcome="failed",
+                error_code="ROLE_FAILED",
+                payload={"role": role, "errors": error.errors[:6]},
+                **ctx.log_ids(),
+            )
             if raise_failures:
                 raise
             return None
