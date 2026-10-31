@@ -69,8 +69,9 @@ Run the synthetic dry run first, on a throwaway Compose project, so the real sta
 evaluator never pins the synthetic epoch (one epoch can be active until Phase 8). Keep
 Docker Desktop memory as it is; the point is to see real RAM use.
 
-1. **Update and build.** `git fetch origin && git checkout claude/project-thread-e4uzhe`,
-   then `uv sync --locked`, `just check`, `just build`.
+1. **Update and build.** `git fetch origin`, then
+   `git checkout -B claude/project-thread-e4uzhe origin/claude/project-thread-e4uzhe`
+   (the branch was rebased onto main), `uv sync --locked`, `just check`, `just build`.
 2. **Throwaway stack.** `just down` (the real stack keeps its volumes), then in the
    same shell:
    `export COMPOSE_PROJECT_NAME=qfr-dry QFR_EPOCH=synthetic_001 QFR_INGEST_SOURCE=off`.
