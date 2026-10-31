@@ -1,5 +1,5 @@
-"""Phase 6 MCP tools: approvals, pool curation, job close, acceptance and alerts (PLAN
-Sections 10.4, 10.5, 13.5 and 13.7).
+"""Phase 6 MCP tools: approvals, pool curation, job close and acceptance (PLAN Sections
+10.4, 10.5, 13.5 and 13.7). The alert tools moved to ops_tools in Phase 7.
 
 qfr.approval.record turns the owner's verbatim confirmation into an insert-only approval
 record in control_db. The approval-gated tools (qfr.pool.add, qfr.pool.set_status,
@@ -29,7 +29,7 @@ from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
 from qfr_mcp.approvals import ApprovalRefused, Decision, Resolver, entry_code, match
 from qfr_mcp.control_store import ControlStore
 from qfr_mcp.job_tools import JobToolDeps
-from qfr_mcp.results import ToolResult
+from qfr_mcp.results import ToolResult, owner_grade
 
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
 WRITE = ToolAnnotations(
@@ -413,13 +413,7 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
             raise RuntimeError("EVAL_ADMIN_UNCONFIGURED: EVAL_ADMIN_API_URL is not set")
         page = await downstream(lambda: admin.cases(state, version_id, case_id))
         items: list[JsonValue] = [c.model_dump(mode="json") for c in page.items]
-        return result(
-            {
-                "visibility": "owner_only",
-                "items": items,
-                "hygiene": "Never copy owner-grade numbers into briefs or steering notes.",
-            }
-        )
+        return result(owner_grade({"items": items}))
 
     @server.tool(
         name="qfr.acceptance.decide",
@@ -473,28 +467,4 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
                     "approval_id": str(approval_id),
                 },
             )
-            return result(case.model_dump(mode="json"))
-
-    # ---------------------------------------------------------------- alerts
-
-    @server.tool(
-        name="qfr.ops.alerts",
-        description=(
-            "Evaluator alerts: decay of monitored pool entries, data staleness, burn meters "
-            "and operations failures, with the open count. Optional filters: state (open or "
-            "acknowledged), kind (decay, staleness, burn, ops) and limit (default 200, max "
-            "2000). Provider alerts and acknowledgement arrive with Phase 7."
-        ),
-        annotations=READ,
-    )
-    async def ops_alerts(
-        state: Literal["open", "acknowledged"] | None = None,
-        kind: Literal["decay", "staleness", "burn", "ops"] | None = None,
-        limit: int | None = None,
-    ) -> ToolResult:
-        admin = deps.admin
-        if admin is None:
-            raise RuntimeError("EVAL_ADMIN_UNCONFIGURED: EVAL_ADMIN_API_URL is not set")
-        size = deps.size(limit)
-        page = await downstream(lambda: admin.alerts(state, kind, size))
-        return result(page.model_dump(mode="json"))
+            return result(owner_grade(case.model_dump(mode="json")))

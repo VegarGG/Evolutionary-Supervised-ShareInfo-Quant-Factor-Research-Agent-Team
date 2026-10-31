@@ -1,12 +1,14 @@
-"""MCP resources and prompts of Phase 4 (PLAN Section 13.8).
+"""MCP resources and prompts (PLAN Section 13.8).
 
-Resources are read-only JSON documents a host agent can cache: the active cards, the
-pools, a job, a deliverable (read without marking it fetched), a trace and the public
-schemas. The host-agent guide resource arrives with the guide in Phase 7 (P7.5).
+Resources are read-only documents a host agent can cache: the active cards, the pools, a
+job, a deliverable (read without marking it fetched), a trace, the public schemas and
+the host-agent guide (docs/HOST_AGENT_GUIDE.md, Phase 7).
 """
 
 import json
+import os
 from collections.abc import Awaitable, Callable
+from pathlib import Path
 from typing import Any, Literal
 from uuid import UUID
 
@@ -16,9 +18,10 @@ from qfr_core.contracts import PUBLIC_CONTRACTS
 
 from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
 from qfr_mcp.job_tools import JobToolDeps
-from qfr_mcp.prompts import BRIEF, REPORT_DELIVERABLE
+from qfr_mcp.prompts import APPROVAL, BRIEF, INVESTIGATE, REPORT_DELIVERABLE
 
 JSON = "application/json"
+MARKDOWN = "text/markdown"
 # Resource names (Section 13.8) mapped to the public contracts they publish.
 SCHEMAS = {
     "brief": "research_brief",
@@ -145,6 +148,25 @@ def register(server: FastMCP, deps: JobToolDeps, pool_page: PoolPage) -> None:
             raise ValueError(f"SCHEMA_UNKNOWN: one of {', '.join(sorted(SCHEMAS))}")
         return _dump(PUBLIC_CONTRACTS[SCHEMAS[name]].model_json_schema())
 
+    @server.resource(
+        "qfr://docs/host-agent-guide",
+        name="host-agent-guide",
+        description=(
+            "How to drive QFR as a host agent: the four rules, owner-only hygiene, briefs, "
+            "following jobs, reporting deliverables, recording decisions, investigating and "
+            "operations. Read it before the first call."
+        ),
+        mime_type=MARKDOWN,
+    )
+    def host_agent_guide() -> str:
+        configured = os.environ.get("QFR_HOST_AGENT_GUIDE")
+        path = (
+            Path(configured)
+            if configured
+            else deps.config_dir.parent / "docs" / "HOST_AGENT_GUIDE.md"
+        )
+        return path.read_text()
+
     @server.prompt(
         name="qfr.brief",
         description=(
@@ -164,3 +186,23 @@ def register(server: FastMCP, deps: JobToolDeps, pool_page: PoolPage) -> None:
     )
     def report_prompt() -> str:
         return REPORT_DELIVERABLE
+
+    @server.prompt(
+        name="qfr.approval",
+        description=(
+            "How to ask for the owner's decision with the short codes and record it "
+            "verbatim: qfr.approval.record, then qfr.pool.add or qfr.job.close."
+        ),
+    )
+    def approval_prompt() -> str:
+        return APPROVAL
+
+    @server.prompt(
+        name="qfr.investigate",
+        description=(
+            "How to answer 'how did this factor come about', 'what happened to job X', "
+            "'why did version Y fail' and 'is the system healthy' from traces and logs."
+        ),
+    )
+    def investigate_prompt() -> str:
+        return INVESTIGATE

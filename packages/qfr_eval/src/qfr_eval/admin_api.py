@@ -17,11 +17,13 @@ from uuid import UUID
 from fastapi import FastAPI, Query, Response
 from pydantic import JsonValue
 from qfr_core.config import RuntimeSettings
+from qfr_core.contracts import AlertAckRequest
 from qfr_core.correlation import current
 from qfr_core.eval_api import (
     AcceptanceCase,
     ActivateRequest,
     AlertPage,
+    AlertView,
     CaseDecisionRequest,
     CasePage,
     ConfigKind,
@@ -373,11 +375,29 @@ def create_app(
 
         return await run_in_threadpool(read)
 
+    @app.post(
+        "/v1/alerts/{alert_id}/acknowledge", response_model=AlertView, responses=ERROR_RESPONSES
+    )
+    async def alert_acknowledge(alert_id: UUID, body: AlertAckRequest) -> AlertView:
+        def write() -> AlertView:
+            with db.transaction() as conn:
+                view = alerts.acknowledge(
+                    conn, alert_id, body.by, body.note, clock.now(), PRINCIPAL,
+                    current()["request_id"],
+                )  # fmt: skip
+            if view is None:
+                raise EvalError(404, "ALERT_NOT_FOUND", "no alert with this id")
+            return AlertView.model_validate(view)
+
+        result = await run_in_threadpool(write)
+        log.info("alert_acknowledged", outcome="ok", payload={"alert_id": str(alert_id)})
+        return result
+
     @app.get("/v1/summary", responses=ERROR_RESPONSES)
     async def summary() -> dict[str, JsonValue]:
         def read() -> dict[str, JsonValue]:
             with db.read() as conn:
-                return evidence.summary(conn)
+                return evidence.summary(conn, clock.now())
 
         return await run_in_threadpool(read)
 

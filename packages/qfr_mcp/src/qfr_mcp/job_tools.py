@@ -28,6 +28,7 @@ from qfr_core.research_api import (
     JobState,
     SteerRequest,
     SubmitJobRequest,
+    TraceExportBundle,
 )
 
 from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
@@ -35,7 +36,7 @@ from qfr_mcp.eval_client import EvalAdminClient, FeedbackClient
 from qfr_mcp.evidence_validation import validate_owner_evidence
 from qfr_mcp.registry_client import RegistryClient
 from qfr_mcp.research_client import ResearchClient
-from qfr_mcp.results import ToolResult
+from qfr_mcp.results import ToolResult, owner_grade
 from qfr_mcp.scan import OwnerValueInText, text_of_brief, verdict
 
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
@@ -64,6 +65,20 @@ def contribution_tables(evidence: dict[str, Any] | None) -> JsonValue:
 
 
 @dataclass
+class OwnerTrace:
+    """A version's trace/1 export joined with owner-grade evidence for the version and
+    its ancestors: the trace.json body, the iteration history with each hop's evidence,
+    its Markdown rendering with the evidence appended, and the join's status."""
+
+    bundle: TraceExportBundle
+    body: dict[str, JsonValue]
+    history: dict[str, JsonValue]
+    markdown: str
+    status: str
+    evidence: dict[str, JsonValue]
+
+
+@dataclass
 class JobToolDeps:
     research: ResearchClient | None
     admin: EvalAdminClient | None
@@ -80,6 +95,47 @@ class JobToolDeps:
         if self.research is None:
             raise RuntimeError("RESEARCH_UNCONFIGURED: RESEARCH_API_URL is not set")
         return self.research
+
+    async def owner_trace(self, version_id: UUID) -> OwnerTrace:
+        """The owner export of a version's trace (Section 14.5): research's trace/1 with
+        the evaluator's records under owner_records. A version the evaluator never
+        recorded (a seed, an ancestor from the pool) is left out."""
+        bundle = await self.require_research().trace_export(version_id)
+        owner: dict[str, JsonValue] = {}
+        status = "ok"
+        if self.admin is None:
+            status = "evaluator_not_configured"
+        else:
+            for vid in [version_id, *bundle.export.ancestors]:
+                try:
+                    document = await self.admin.evidence(vid)
+                except DownstreamRefused as error:
+                    if error.status != 404:
+                        raise
+                    continue
+                except DownstreamUnavailable:
+                    status = "evaluator_unavailable"
+                    break
+                await asyncio.to_thread(validate_owner_evidence, document, self.evidence_schema)
+                owner[str(vid)] = document
+        owner_records: dict[str, JsonValue] = {
+            "visibility": "owner_only",
+            "status": status,
+            "versions": owner,
+        }
+        body = bundle.export.model_dump(mode="json") | {"owner_records": owner_records}
+        history = bundle.iteration_history.model_dump(mode="json")
+        hops: list[Any] = list(history["hops"])
+        for hop in hops:
+            hop["owner_grade"] = owner.get(str(hop.get("to_version_id")))
+        history["hops"] = hops
+        lines = [bundle.markdown.rstrip("\n"), "", "## Owner-grade evidence (owner_only)", ""]
+        if not owner:
+            lines.append(f"No official records joined ({status}).")
+        for key, value in owner.items():
+            lines.append(f"- {key}: {json.dumps(value, sort_keys=True)}")
+        markdown = "\n".join(lines) + "\n"
+        return OwnerTrace(bundle, body, history, markdown, status, owner)
 
     def size(self, limit: int | None) -> int:
         value = limit or self.config.list_default
@@ -165,15 +221,15 @@ class JobToolDeps:
             if item.kind == "strategy":
                 contributions[key] = contribution_tables(evidence.get(key))
         composed = deliverable.model_copy(update={"items": items})
-        return {
-            "visibility": "owner_only",
-            "deliverable": composed.model_dump(mode="json"),
-            "fetched_at": None if view.fetched_at is None else view.fetched_at.isoformat(),
-            "tier_confirmation": confirmation,
-            "contribution_tables": contributions,
-            "evidence": status,
-            "hygiene": "Never copy owner-grade numbers into briefs or steering notes.",
-        }
+        return owner_grade(
+            {
+                "deliverable": composed.model_dump(mode="json"),
+                "fetched_at": None if view.fetched_at is None else view.fetched_at.isoformat(),
+                "tier_confirmation": confirmation,
+                "contribution_tables": contributions,
+                "evidence": status,
+            }
+        )
 
 
 def register(server: FastMCP, deps: JobToolDeps) -> None:
@@ -428,35 +484,8 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
     async def trace_export(version_id: UUID) -> ToolResult:
         if deps.exports_dir is None:
             raise RuntimeError("EXPORTS_UNCONFIGURED: QFR_EXPORTS_DIR is not set")
-        bundle = await call(lambda: deps.require_research().trace_export(version_id))
-        versions = [version_id, *bundle.export.ancestors]
-        owner: dict[str, JsonValue] = {}
-        status = "ok"
-        if deps.admin is None:
-            status = "evaluator_not_configured"
-        else:
-            for vid in versions:
-                try:
-                    document = await deps.admin.evidence(vid)
-                except DownstreamRefused as error:
-                    if error.status != 404:
-                        raise ValueError(f"{error.error}: {error.message}") from None
-                    continue  # a pool or seed version the evaluator has not recorded
-                except DownstreamUnavailable:
-                    status = "evaluator_unavailable"
-                    break
-                await asyncio.to_thread(validate_owner_evidence, document, deps.evidence_schema)
-                owner[str(vid)] = document
-        owner_records: dict[str, JsonValue] = {
-            "visibility": "owner_only",
-            "status": status,
-            "versions": owner,
-        }
-        body = bundle.export.model_dump(mode="json") | {"owner_records": owner_records}
-        history = bundle.iteration_history.model_dump(mode="json")
-        hops: list[Any] = list(history["hops"])
-        for hop in hops:
-            hop["owner_grade"] = owner.get(str(hop.get("to_version_id")))
+        owned = await call(lambda: deps.owner_trace(version_id))
+        bundle, body, history, status = owned.bundle, owned.body, owned.history, owned.status
         target = deps.exports_dir / "traces" / str(version_id)
 
         def write() -> list[str]:
@@ -464,12 +493,7 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
             trace_path = target / "trace.json"
             history_path = target / "iteration_history.md"
             trace_path.write_text(json.dumps(body, indent=2, sort_keys=True) + "\n")
-            lines = [bundle.markdown.rstrip("\n"), "", "## Owner-grade evidence (owner_only)", ""]
-            if not owner:
-                lines.append(f"No official records joined ({status}).")
-            for vid, document in owner.items():
-                lines.append(f"- {vid}: {json.dumps(document, sort_keys=True)}")
-            history_path.write_text("\n".join(lines) + "\n")
+            history_path.write_text(owned.markdown)
             return [str(trace_path), str(history_path)]
 
         paths = await asyncio.to_thread(write)
@@ -479,15 +503,16 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
             version_id=str(version_id),
             payload={"paths": paths, "trace_hash": bundle.trace_hash, "owner_records": status},
         )
-        history["hops"] = hops
         return result(
-            {
-                "version_id": str(version_id),
-                "paths": paths,
-                "trace_hash": bundle.trace_hash,
-                "owner_records": status,
-                "iteration_history": history,
-            }
+            owner_grade(
+                {
+                    "version_id": str(version_id),
+                    "paths": [p for p in paths],
+                    "trace_hash": bundle.trace_hash,
+                    "owner_records": status,
+                    "iteration_history": history,
+                }
+            )
         )
 
     @server.tool(

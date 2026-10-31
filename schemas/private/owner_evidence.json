@@ -81,6 +81,24 @@
           ],
           "title": "Skipped Reason"
         },
+        "stage": {
+          "anyOf": [
+            {
+              "enum": [
+                "w1",
+                "w2",
+                "holdout",
+                "acceptance"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stage"
+        },
         "threshold": {
           "anyOf": [
             {
@@ -102,6 +120,24 @@
             }
           ],
           "title": "Value"
+        },
+        "window": {
+          "anyOf": [
+            {
+              "enum": [
+                "W1",
+                "W2",
+                "W3",
+                "W4"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Window"
         }
       },
       "required": [
@@ -340,10 +376,218 @@
       ],
       "title": "SeriesReference",
       "type": "object"
+    },
+    "SimulationEvidence": {
+      "additionalProperties": false,
+      "description": "One simulation account of the version (incubation or monitoring) without its\nday-by-day rows; qfr.deliverable.export writes its NAV.",
+      "properties": {
+        "days_done": {
+          "title": "Days Done",
+          "type": "integer"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Error Code"
+        },
+        "last_checkpoint": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Checkpoint"
+        },
+        "last_day": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Day"
+        },
+        "metrics": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Metrics",
+          "type": "object"
+        },
+        "mode": {
+          "enum": [
+            "forward",
+            "replay"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "incubation",
+            "monitoring"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "required_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Required Days"
+        },
+        "sim_id": {
+          "format": "uuid7",
+          "title": "Sim Id",
+          "type": "string"
+        },
+        "start_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Start Date"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sim_id",
+        "purpose",
+        "mode",
+        "status",
+        "start_date",
+        "last_day",
+        "days_done",
+        "required_days",
+        "error_code",
+        "metrics",
+        "last_checkpoint"
+      ],
+      "title": "SimulationEvidence",
+      "type": "object"
+    },
+    "WindowEvidence": {
+      "additionalProperties": false,
+      "description": "One evaluated window of the version: the index the owner reads first.",
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "record_id": {
+          "format": "uuid7",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "results_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Results Hash",
+          "type": "string"
+        },
+        "series_kinds": {
+          "items": {
+            "enum": [
+              "nav",
+              "rankic",
+              "ls_returns"
+            ],
+            "type": "string"
+          },
+          "title": "Series Kinds",
+          "type": "array"
+        },
+        "stage": {
+          "enum": [
+            "screening",
+            "w1",
+            "w2",
+            "holdout",
+            "simulation"
+          ],
+          "title": "Stage",
+          "type": "string"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Status"
+        },
+        "window": {
+          "enum": [
+            "W1",
+            "W2",
+            "W3",
+            "W4"
+          ],
+          "title": "Window",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stage",
+        "window",
+        "record_id",
+        "status",
+        "created_at",
+        "results_hash",
+        "series_kinds"
+      ],
+      "title": "WindowEvidence",
+      "type": "object"
     }
   },
   "additionalProperties": false,
   "properties": {
+    "acceptance_cases": {
+      "items": {
+        "additionalProperties": {
+          "$ref": "#/$defs/JsonValue"
+        },
+        "type": "object"
+      },
+      "title": "Acceptance Cases",
+      "type": "array"
+    },
     "evaluation": {
       "anyOf": [
         {
@@ -414,18 +658,11 @@
       "type": "array"
     },
     "simulation_state": {
-      "anyOf": [
-        {
-          "additionalProperties": {
-            "$ref": "#/$defs/JsonValue"
-          },
-          "type": "object"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "title": "Simulation State"
+      "items": {
+        "$ref": "#/$defs/SimulationEvidence"
+      },
+      "title": "Simulation State",
+      "type": "array"
     },
     "version_id": {
       "format": "uuid7",
@@ -436,6 +673,13 @@
       "const": "owner_only",
       "title": "Visibility",
       "type": "string"
+    },
+    "windows": {
+      "items": {
+        "$ref": "#/$defs/WindowEvidence"
+      },
+      "title": "Windows",
+      "type": "array"
     }
   },
   "required": [
@@ -444,11 +688,13 @@
     "version_id",
     "evaluation",
     "official_records",
+    "windows",
     "gate_values",
     "series",
     "reference_strategy_stats",
     "library_correlation",
     "simulation_state",
+    "acceptance_cases",
     "hygiene_warning"
   ],
   "title": "OwnerEvidence",

@@ -1,11 +1,14 @@
 """MCP front door: Phase 0 reads, the Phase 2 setup, pool, DSL and artifact tools, the
 Phase 3 evidence, report and evaluator-configuration tools, the Phase 4 job,
-deliverable, trace, lineage and cost tools with their resources and prompts, and the
-Phase 6 approval, pool-curation, job-close, acceptance and alert tools."""
+deliverable, trace, lineage and cost tools with their resources and prompts, the
+Phase 6 approval, pool-curation, job-close and acceptance tools, and the Phase 7
+operations, export and evidence views."""
 
 import asyncio
 import logging
 import os
+import shutil
+from datetime import UTC, datetime, time
 from pathlib import Path
 from typing import Any, Literal
 from uuid import UUID
@@ -27,6 +30,7 @@ from qfr_core.correlation import current
 from qfr_core.dsl import DslLimits, canonicalize, parse, validate
 from qfr_core.dsl.explain import explain
 from qfr_core.eval_api import ReportType
+from qfr_core.log_maintenance import measure
 from qfr_core.log_reader import LogQuery, LogReader
 from qfr_core.logging import JsonLogger, StdlibBridge, env_secrets
 from qfr_core.pool_import import NO_DEFAULTS_NOTICE
@@ -44,13 +48,14 @@ from qfr_mcp.evidence_validation import validate_owner_evidence
 from qfr_mcp.imports import ImportPathError, read_import
 from qfr_mcp.job_tools import JobToolDeps
 from qfr_mcp.job_tools import register as register_job_tools
+from qfr_mcp.ops_tools import register as register_ops_tools
 from qfr_mcp.pool_importer import PoolImporter, pool_counts
 from qfr_mcp.registry_client import RegistryClient, RegistryRefused, RegistryUnavailable
 from qfr_mcp.research_client import ResearchClient
 from qfr_mcp.resources import register as register_resources
-from qfr_mcp.results import ToolResult
+from qfr_mcp.results import ToolResult, owner_grade
 
-PHASE = 6
+PHASE = 7
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
 WRITE = ToolAnnotations(
     readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
@@ -288,12 +293,61 @@ def create_app(
     ) -> ToolResult:
         return ToolResult(request_id=current()["request_id"], status=status, data=data)
 
+    def disk_view() -> dict[str, JsonValue]:
+        """The logs volume measured now, the space left on the Docker disk it lives on,
+        and what the last nightly run did (Sections 15.4 and 17.5)."""
+        files, size = measure(reader.root)
+        view: dict[str, JsonValue] = {
+            "logs_volume": {
+                "files": files,
+                "bytes": size,
+                "warning_bytes": log_config.disk_warning_bytes,
+                "over_limit": size > log_config.disk_warning_bytes,
+            },
+        }
+        try:
+            usage = shutil.disk_usage(reader.root)
+            view["docker_disk"] = {"total_bytes": usage.total, "free_bytes": usage.free}
+        except OSError:
+            view["docker_disk"] = None
+        last = store.latest_ops_run()
+        view["nightly"] = (
+            {"status": "not_run_yet"}
+            if last is None
+            else {
+                "at": last.at.isoformat(),
+                "due_at": last.due_at.isoformat(),
+                "backup": last.report.get("backup"),
+                "alerts_raised": last.report.get("alerts"),
+                "compressed": len(logs.get("compressed") or [])  # type: ignore[arg-type]
+                if isinstance(logs := last.report.get("logs"), dict)
+                else None,
+                "deleted": len(logs.get("deleted") or [])  # type: ignore[arg-type]
+                if isinstance(logs, dict)
+                else None,
+            }
+        )
+        return view
+
+    async def costs_today() -> dict[str, JsonValue] | None:
+        if research is None:
+            return None
+        start = datetime.combine(datetime.now(UTC).date(), time(0), tzinfo=UTC)
+        try:
+            report = await research.costs(start, None, ["provider"], None)
+        except (DownstreamUnavailable, DownstreamRefused):
+            return None
+        return {"since": start.isoformat(), **report.model_dump(mode="json")}
+
     @server.tool(
         name="qfr.status",
         description=(
-            "Health of every service, setup state, registry and pool counts, and the "
-            "no-defaults notice while the pools are empty. Services of later phases are "
-            "reported as unavailable or not implemented, never guessed."
+            "Health of every service, setup state, registry and pool counts, active jobs, "
+            "today's spend against the cap with costs by provider, the evaluator's queues, "
+            "release counts, quota use over the last 24 hours, burn meters and data "
+            "freshness, the logs volume and Docker disk, the last nightly run and backup, "
+            "and open alerts per source. A service that does not answer is reported as "
+            "unavailable, never guessed."
         ),
         annotations=READ,
     )
@@ -310,6 +364,26 @@ def create_app(
         summary = await summary_or_none()
         evaluation = await eval_summary()
         researching = await research_summary()
+        disk = await asyncio.to_thread(disk_view)
+        operations_open = await asyncio.to_thread(open_operations_alerts)
+        alerts: dict[str, JsonValue] = {
+            "evaluation": None if evaluation is None else evaluation.get("open_alerts"),
+            "research": None if researching is None else researching.open_alerts,
+            "operations": operations_open,
+            "tool": "qfr.ops.alerts",
+        }
+        counted = [v for k, v in alerts.items() if k != "tool" and isinstance(v, int)]
+        alerts["open_total_known"] = sum(counted)
+        complete = (
+            evaluation is not None
+            and researching is not None
+            and summary is not None
+            and all(
+                isinstance(v, dict) and v.get("status") in ("ok", "running", None)
+                for k, v in services.items()
+                if k != "control_db"
+            )
+        )
         return result(
             {
                 "phase": PHASE,
@@ -341,20 +415,34 @@ def create_app(
                     "daily_cap": researching.daily_cap_cny,
                     "currency": researching.currency,
                 },
+                "costs_today": await costs_today(),
                 "evaluation": None
                 if evaluation is None
                 else {
-                    k: evaluation.get(k) for k in ("ready", "active", "intake", "queue", "release")
+                    k: evaluation.get(k)
+                    for k in ("ready", "active", "intake", "release", "acceptance_cases")
                 },
+                "queues": None
+                if evaluation is None
+                else {
+                    "evaluation": evaluation.get("queue"),
+                    "release": evaluation.get("release"),
+                    "simulations": evaluation.get("simulations"),
+                },
+                "quotas": None if evaluation is None else evaluation.get("quotas"),
                 "data_freshness": None if evaluation is None else evaluation.get("data_freshness"),
                 "burn_meters": None if evaluation is None else evaluation.get("burn_meters"),
-                "alerts": None
-                if evaluation is None
-                else {"open": evaluation.get("open_alerts"), "tool": "qfr.ops.alerts"},
+                "disk": disk,
+                "alerts": alerts,
                 "notice": notice_for(summary, states.get("pool")),
             },
-            "partial",
+            "ok" if complete else "partial",
         )
+
+    def open_operations_alerts() -> int:
+        alerts = store.ops_alerts(config.list_max)
+        acked = store.acks("operations", [a.alert_id for a in alerts])
+        return sum(1 for a in alerts if a.alert_id not in acked)
 
     @server.tool(
         name="qfr.setup.status",
@@ -559,7 +647,7 @@ def create_app(
     async def config_get(owner_only: bool = False) -> ToolResult:
         if owner_only:
             data = await require_admin().private_config()
-            return result({"visibility": "owner_only", "configuration": data})
+            return result(owner_grade({"configuration": data}))
         values: dict[str, JsonValue] = {"state": "preview_not_activated"}
         if feedback is not None:
             try:
@@ -736,6 +824,7 @@ def create_app(
     )
     register_job_tools(server, deps)
     register_approval_tools(server, deps, store)
+    register_ops_tools(server, deps, store, reader)
     register_resources(server, deps, pool_page)
     logger.logger.info(
         "service_started",

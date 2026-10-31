@@ -1168,6 +1168,206 @@
         "${QFR_INGEST_SOURCE:-cn}"
       ]
     },
+    "ops-nightly": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 180 else 1)"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "mcp",
+        "args": {
+          "QFR_PACKAGE": "qfr-mcp"
+        }
+      },
+      "image": "qfr-v2-mcp:phase2",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "ops-nightly",
+        "QFR_ZONE": "control",
+        "TZ": "Asia/Shanghai",
+        "CONTROL_DB_URL": "${CONTROL_DB_URL:?run just init-secrets}",
+        "QFR_LOG_VOLUME": "/var/log/qfr",
+        "QFR_BACKUPS_DIR": "/backups",
+        "QFR_HEARTBEAT_FILE": "/tmp/heartbeat"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr",
+          "read_only": false
+        },
+        {
+          "type": "bind",
+          "source": "../backups",
+          "target": "/backups",
+          "read_only": true
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "control_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_mcp.nightly"
+      ]
+    },
+    "backup": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "1",
+            "memory": "1G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "test $$(( $$(date +%s) - $$(stat -c %Y /tmp/heartbeat) )) -lt 180"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "backup"
+      },
+      "image": "qfr-v2-backup:phase7",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_SERVICE": "backup",
+        "QFR_ZONE": "control",
+        "TZ": "Asia/Shanghai",
+        "HOME": "/tmp",
+        "QFR_NIGHTLY_LOCAL": "02:30",
+        "QFR_BACKUP_DAILY_RETENTION": "30",
+        "QFR_BACKUP_MONTHLY_RETENTION": "12",
+        "QFR_BACKUPS_DIR": "/backups",
+        "QFR_LOG_DIR": "/var/log/qfr/backup",
+        "QFR_LOG_VOLUME": "/var/log/qfr",
+        "QFR_HEARTBEAT_FILE": "/tmp/heartbeat",
+        "REGISTRY_MIGRATION_URL": "${REGISTRY_MIGRATION_URL:?run just init-secrets}",
+        "RESEARCH_MIGRATION_URL": "${RESEARCH_MIGRATION_URL:?run just init-secrets}",
+        "EVAL_MIGRATION_URL": "${EVAL_MIGRATION_URL:?run just init-secrets}",
+        "CONTROL_MIGRATION_URL": "${CONTROL_MIGRATION_URL:?run just init-secrets}"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr",
+          "read_only": true
+        },
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/backup",
+          "read_only": false,
+          "volume": {
+            "subpath": "backup"
+          }
+        },
+        {
+          "type": "bind",
+          "source": "../backups",
+          "target": "/backups",
+          "read_only": false
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_full",
+          "target": "/mirror/full",
+          "read_only": true
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_research",
+          "target": "/mirror/research",
+          "read_only": true
+        },
+        {
+          "type": "volume",
+          "source": "eval_store",
+          "target": "/mirror/eval_store",
+          "read_only": true
+        }
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "networks": [
+        "control_net"
+      ],
+      "command": [
+        "qfr-backup",
+        "serve"
+      ]
+    },
     "migrate": {
       "user": "10001:10001",
       "read_only": true,
@@ -1302,7 +1502,7 @@
       "command": [
         "python",
         "-c",
-        "from pathlib import Path; Path('/var/log/qfr/qfr-mcp').mkdir(exist_ok=True); Path('/var/log/qfr/research-api').mkdir(exist_ok=True); Path('/var/log/qfr/research-worker').mkdir(exist_ok=True); Path('/var/log/qfr/registry-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-scheduler').mkdir(exist_ok=True); Path('/var/log/qfr/eval-worker').mkdir(exist_ok=True); Path('/var/log/qfr/release-worker').mkdir(exist_ok=True); Path('/var/log/qfr/sim-engine').mkdir(exist_ok=True); Path('/var/log/qfr/feedback-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-admin-api').mkdir(exist_ok=True); Path('/var/log/qfr/data-ingest').mkdir(exist_ok=True); Path('/var/log/qfr/migrate').mkdir(exist_ok=True)"
+        "from pathlib import Path; Path('/var/log/qfr/qfr-mcp').mkdir(exist_ok=True); Path('/var/log/qfr/research-api').mkdir(exist_ok=True); Path('/var/log/qfr/research-worker').mkdir(exist_ok=True); Path('/var/log/qfr/registry-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-scheduler').mkdir(exist_ok=True); Path('/var/log/qfr/eval-worker').mkdir(exist_ok=True); Path('/var/log/qfr/release-worker').mkdir(exist_ok=True); Path('/var/log/qfr/sim-engine').mkdir(exist_ok=True); Path('/var/log/qfr/feedback-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-admin-api').mkdir(exist_ok=True); Path('/var/log/qfr/data-ingest').mkdir(exist_ok=True); Path('/var/log/qfr/migrate').mkdir(exist_ok=True); Path('/var/log/qfr/ops-nightly').mkdir(exist_ok=True); Path('/var/log/qfr/backup').mkdir(exist_ok=True)"
       ]
     }
   },

@@ -1,7 +1,7 @@
 """Public wire contracts. Private official measurement types belong in qfr_eval."""
 
 from enum import StrEnum
-from typing import Annotated, Literal, Self
+from typing import Annotated, Final, Literal, Self
 
 from pydantic import (
     UUID7,
@@ -742,6 +742,68 @@ class LogLine(Contract):
     payload: dict[str, JsonValue] | None = None
 
 
+# Every MCP response that carries owner-grade evidence is labelled with these two fields
+# (Sections 10.3 and 13.4). The text is the one owner_evidence/1 fixes.
+OWNER_ONLY: Final = "owner_only"
+HYGIENE_WARNING: Final = "Never copy owner-only evidence into research briefs or steering notes."
+
+
+class AlertAckRequest(Contract):
+    """The owner's acknowledgement of one alert, sent by the front door to the service
+    that raised it (eval-admin-api or research-api)."""
+
+    by: Annotated[str, StringConstraints(min_length=1, max_length=64)]
+    note: Annotated[str, StringConstraints(min_length=1, max_length=2000)] | None = None
+
+
+BundleSchema = Literal[
+    "deliverable", "factor_manifest", "strategy_manifest", "trace_export", "owner_records"
+]
+
+
+BUNDLE_PATH: Final = r"^[A-Za-z0-9_-][A-Za-z0-9._-]*(/[A-Za-z0-9_-][A-Za-z0-9._-]*)*$"
+
+
+class BundleFile(Contract):
+    """One file of an export bundle, with the schema it validates against (none for
+    Markdown, CSV and Parquet; owner_records holds owner_evidence/1 documents)."""
+
+    # Relative, and no segment starts with a dot: no "..", no hidden files.
+    path: Annotated[str, StringConstraints(max_length=240, pattern=BUNDLE_PATH)]
+    sha256: Hash
+    bytes: int = Field(ge=0)
+    schema_name: BundleSchema | None
+
+
+class BundleItem(Contract):
+    version_id: UUID7
+    kind: Literal["factor", "strategy"]
+    directory: str
+    # SHA-256 of the canonical JSON of the item's trace.json at export time.
+    trace_hash: Hash
+    # Whether that equals the trace_hash the deliverable recorded when it was assembled;
+    # reports released afterwards make the export longer, never different before them.
+    trace_hash_matches_deliverable: bool
+
+
+class ExportBundle(Contract):
+    """export_bundle/1: the index of a deliverable bundle under exports/<job>/<deliverable>/
+    (Section 13.4). MANIFEST.sha256 lists every file including this one."""
+
+    schema_version: Literal["export_bundle/1"]
+    deliverable_id: UUID7
+    job_id: UUID7
+    exported_at: AwareDatetime
+    visibility: Literal["owner_only"]
+    hygiene_warning: Literal[
+        "Never copy owner-only evidence into research briefs or steering notes."
+    ]
+    evidence: Literal["ok", "evaluator_not_configured", "evaluator_unavailable"]
+    short_codes: list[str]
+    items: list[BundleItem] = Field(min_length=1)
+    files: list[BundleFile] = Field(min_length=1)
+
+
 PUBLIC_CONTRACTS: dict[str, type[Contract]] = {
     "factor_manifest": FactorManifest,
     "strategy_manifest": StrategyManifest,
@@ -751,6 +813,7 @@ PUBLIC_CONTRACTS: dict[str, type[Contract]] = {
     "iteration_history": IterationHistory,
     "trace_step": TraceStep,
     "trace_export": TraceExport,
+    "export_bundle": ExportBundle,
     "approval_record": ApprovalRecord,
     "pool_entry": PoolEntry,
     "pool_import": PoolImport,

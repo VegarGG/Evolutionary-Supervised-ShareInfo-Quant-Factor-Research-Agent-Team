@@ -7,6 +7,7 @@ from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import JsonValue
+from qfr_core.contracts import AlertAckRequest
 from qfr_core.research_api import (
     CloseRequest,
     CostReport,
@@ -18,6 +19,8 @@ from qfr_core.research_api import (
     JobView,
     JobWait,
     ProbeReport,
+    ProviderAlert,
+    ProviderAlertPage,
     ResearchLineage,
     ResearchSummary,
     SteerRequest,
@@ -126,3 +129,11 @@ class ResearchClient(ApiClient):
         path = "/v1/programs/pause_all" if paused else "/v1/programs/resume_all"
         _, data = await self._call("POST", path)
         return dict(data)
+
+    async def alerts(self, state: str | None, kind: str | None, limit: int) -> ProviderAlertPage:
+        params = {"state": state, "kind": kind, "limit": limit}
+        return await self._model(ProviderAlertPage, "GET", "/v1/alerts", params=params)
+
+    async def acknowledge_alert(self, alert_id: UUID, request: AlertAckRequest) -> ProviderAlert:
+        path = f"/v1/alerts/{alert_id}/acknowledge"
+        return await self._model(ProviderAlert, "POST", path, body=request.model_dump(mode="json"))

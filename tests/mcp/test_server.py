@@ -90,7 +90,7 @@ def test_mcp_01_status_tail_are_audited_and_request_id_reaches_downstream(rig):
     assert audit.calls[-1].downstream_request_ids == []
 
 
-def test_mcp_02_catalog_is_the_phase_six_catalog(rig):
+def test_mcp_02_catalog_is_the_phase_seven_catalog(rig):
     client, _, headers, _ = rig
     response = call(client, headers, "tools/list")
     tools = {tool["name"] for tool in response.json()["result"]["tools"]}
@@ -134,6 +134,11 @@ def test_mcp_02_catalog_is_the_phase_six_catalog(rig):
         "qfr.acceptance.list_cases",
         "qfr.acceptance.decide",
         "qfr.ops.alerts",
+        "qfr.ops.acknowledge_alert",
+        "qfr.ops.pause_research",
+        "qfr.ops.resume_research",
+        "qfr.logs.export",
+        "qfr.deliverable.export",
     }
     annotations = {
         t["name"]: t.get("annotations") or {} for t in response.json()["result"]["tools"]
@@ -155,6 +160,11 @@ def test_mcp_02_catalog_is_the_phase_six_catalog(rig):
         "qfr.pool.annotate",
         "qfr.job.close",
         "qfr.acceptance.decide",
+        "qfr.ops.acknowledge_alert",
+        "qfr.ops.pause_research",
+        "qfr.ops.resume_research",
+        "qfr.logs.export",
+        "qfr.deliverable.export",
     }
     # The approval-gated tools (Section 13.7) are marked destructive.
     destructive = {name for name, a in annotations.items() if a.get("destructiveHint")}
@@ -173,6 +183,7 @@ def test_mcp_02_catalog_is_the_phase_six_catalog(rig):
         "qfr://cards/policy",
         "qfr://pools/factors",
         "qfr://pools/strategies",
+        "qfr://docs/host-agent-guide",
     }
     templates = call(client, headers, "resources/templates/list").json()["result"]
     assert {t["uriTemplate"] for t in templates["resourceTemplates"]} == {
@@ -182,7 +193,9 @@ def test_mcp_02_catalog_is_the_phase_six_catalog(rig):
         "qfr://schemas/{name}",
     }
     prompts = call(client, headers, "prompts/list").json()["result"]["prompts"]
-    assert {p["name"] for p in prompts} == {"qfr.brief", "qfr.report_deliverable"}
+    assert {p["name"] for p in prompts} == {
+        "qfr.brief", "qfr.report_deliverable", "qfr.approval", "qfr.investigate",
+    }  # fmt: skip
 
 
 def test_schema_resources_and_prompts_hold_no_defaults(rig):
@@ -193,7 +206,7 @@ def test_schema_resources_and_prompts_hold_no_defaults(rig):
     assert audit.calls[-1].tool == "resources/read" and audit.calls[-1].outcome == "ok"
     unknown = call(client, headers, "resources/read", {"uri": "qfr://schemas/nothing"}).json()
     assert "error" in unknown
-    for name in ("qfr.brief", "qfr.report_deliverable"):
+    for name in ("qfr.brief", "qfr.report_deliverable", "qfr.approval", "qfr.investigate"):
         prompt = call(client, headers, "prompts/get", {"name": name}).json()["result"]
         text = prompt["messages"][0]["content"]["text"]
         assert "owner-only" in text.lower() or "owner_evidence" in text
@@ -201,6 +214,15 @@ def test_schema_resources_and_prompts_hold_no_defaults(rig):
         assert "$close" not in text and "$open" not in text
     brief = call(client, headers, "prompts/get", {"name": "qfr.brief"}).json()["result"]
     assert "no default factors" in brief["messages"][0]["content"]["text"]
+    approval = call(client, headers, "prompts/get", {"name": "qfr.approval"}).json()["result"]
+    assert "verbatim" in approval["messages"][0]["content"]["text"]
+    # P7.5: the guide resource is the full text of docs/HOST_AGENT_GUIDE.md.
+    guide = call(client, headers, "resources/read", {"uri": "qfr://docs/host-agent-guide"})
+    contents = guide.json()["result"]["contents"][0]
+    assert contents["mimeType"] == "text/markdown"
+    assert contents["text"] == Path("docs/HOST_AGENT_GUIDE.md").read_text()
+    for rule in ("qfr.dsl.validate", "owner_only", "short codes", "qfr.ops.pause_research"):
+        assert rule in contents["text"], rule
 
 
 def test_auth_limits_errors_and_audit_fail_closed(rig):
@@ -264,7 +286,7 @@ def test_dsl_validate_returns_canonical_form_complexity_and_explanation(rig):
 def test_registry_tools_fail_explicitly_when_the_registry_is_not_configured(rig):
     client, audit, headers, _ = rig
     status = structured(client, headers, "qfr.status")["structuredContent"]["data"]
-    assert status["phase"] == 6
+    assert status["phase"] == 7
     assert status["services"]["registry-api"] == {"status": "not_configured"}
     assert status["pool_counts"] is None and status["notice"] is None
     setup = structured(client, headers, "qfr.setup.status")["structuredContent"]["data"]

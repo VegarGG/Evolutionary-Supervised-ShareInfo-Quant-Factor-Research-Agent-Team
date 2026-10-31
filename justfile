@@ -62,14 +62,31 @@ trace-export version_id:
     docker compose --env-file .env -f infra/docker-compose.yml exec -T research-api qfr trace export {{version_id}} --out /tmp/traces
     docker compose --env-file .env -f infra/docker-compose.yml cp research-api:/tmp/traces/{{version_id}} exports/traces/{{version_id}}
 
+# Re-check an export bundle written by qfr.deliverable.export: every SHA-256 in
+# MANIFEST.sha256 and every JSON file against its published schema (SC8).
+export-verify path:
+    uv run --locked qfr export verify {{path}}
+
 logs *args:
     docker compose --env-file .env -f infra/docker-compose.yml exec -T qfr-mcp qfr logs {{args}}
 
 mcp-config:
     uv run --locked python scripts/ops.py mcp-config
 
+# One backup now, in the running backup service (Section 17.5); the nightly backup runs
+# after 02:30 Asia/Shanghai on its own. Writes backups/<date>/ and prints its SHA256SUMS.
 backup:
-    uv run --locked python scripts/ops.py deferred backup Phase7
+    docker compose --env-file .env -f infra/docker-compose.yml exec -T backup qfr-backup now
+
+# Restore the newest backup into a throwaway Compose project and run BND-01, REG-01 and
+# EVL-04 on it. The report is written to exports/restore-drill/ and logged.
+restore-drill:
+    uv run --locked python scripts/restore_drill.py
+
+# A new owner MCP token: the old one stops working when qfr-mcp is recreated.
+rotate-mcp-token:
+    uv run --locked python scripts/ops.py rotate-mcp-token
+    docker compose --env-file .env -f infra/docker-compose.yml up -d qfr-mcp
 
 # The Section 18.3 benchmarks (BM-PLANTED, BM-NULL, BM-DECAY, BM-STRATEGY) on the
 # synthetic worlds, offline with the scripted LLM, against the disposable test database as

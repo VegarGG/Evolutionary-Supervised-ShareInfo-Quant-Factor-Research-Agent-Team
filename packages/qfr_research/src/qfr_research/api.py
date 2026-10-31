@@ -24,6 +24,7 @@ from fastapi import FastAPI, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from qfr_core.config import RuntimeSettings
+from qfr_core.contracts import AlertAckRequest
 from qfr_core.correlation import bind, current, from_headers
 from qfr_core.logging import JsonLogger, env_secrets
 from qfr_core.registry_api import ApiError, Health
@@ -41,6 +42,8 @@ from qfr_core.research_api import (
     JobWait,
     LineageHop,
     ProbeReport,
+    ProviderAlert,
+    ProviderAlertPage,
     ResearchLineage,
     ResearchSummary,
     SteerRequest,
@@ -54,6 +57,7 @@ from sqlalchemy.engine import Connection
 from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from qfr_research import alerts as provider_alerts
 from qfr_research.charter import BriefRejected
 from qfr_research.db import dumps
 from qfr_research.env import ResearchEnv
@@ -579,6 +583,11 @@ def create_app(env: ResearchEnv, token: str) -> FastAPI:
                 currency="CNY",
                 research_paused=bool(halted),
                 last_probe=latest_probe(conn),
+                open_alerts=int(
+                    conn.execute(
+                        text("SELECT count(*) FROM provider_alerts WHERE state = 'open'")
+                    ).scalar_one()
+                ),
             )
 
         return await run(read, load)
@@ -618,6 +627,45 @@ def create_app(env: ResearchEnv, token: str) -> FastAPI:
     @app.post("/v1/programs/resume_all")
     async def resume_all() -> dict[str, Any]:
         return await run(set_paused, False)
+
+    @app.get("/v1/alerts", response_model=ProviderAlertPage, responses=ERRORS)
+    async def alert_list(
+        state: Literal["open", "acknowledged"] | None = None,
+        kind: Literal["provider_fallback", "probe_failed"] | None = None,
+        limit: int | None = None,
+    ) -> ProviderAlertPage:
+        n = size(limit)
+
+        def load(conn: Connection) -> ProviderAlertPage:
+            return ProviderAlertPage.model_validate(
+                provider_alerts.list_alerts(conn, state, kind, n)
+            )
+
+        return await run(read, load)
+
+    @app.post("/v1/alerts/{alert_id}/acknowledge", response_model=ProviderAlert, responses=ERRORS)
+    async def alert_acknowledge(alert_id: UUID, body: AlertAckRequest) -> ProviderAlert:
+        def write() -> ProviderAlert:
+            with env.db.transaction() as conn:
+                try:
+                    row = provider_alerts.acknowledge(
+                        conn, alert_id, body.by, body.note, env.clock.now()
+                    )
+                except provider_alerts.AlertNotFound:
+                    raise Failure(
+                        404, "ALERT_NOT_FOUND", "no provider alert with this id"
+                    ) from None
+                audit(
+                    conn, env.clock, PRINCIPAL, "alert.acknowledge", "provider_alert",
+                    str(alert_id), {"by": body.by},
+                )  # fmt: skip
+            return ProviderAlert.model_validate(row)
+
+        alert = await run(write)
+        env.logger.logger.info(
+            "alert_acknowledged", outcome="ok", payload={"alert_id": str(alert_id)}
+        )
+        return alert
 
     return app
 

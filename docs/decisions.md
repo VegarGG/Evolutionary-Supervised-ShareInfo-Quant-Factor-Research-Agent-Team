@@ -1068,3 +1068,125 @@ operations tools) is not started.
     such a strategy and the front door's tier confirmation showed the official W1 failure
     (the deliverable was best_effort). A strategy's reading now blocks on WEAK_SIGNAL,
     SIGN_MISMATCH and HIGH_DRAWDOWN, and checks net Sharpe, IR and the drawdown bucket.
+
+# Phase 7 decisions
+
+Phase 7 implements P7.1 to P7.6: deliverable export bundles, the full owner-grade
+evidence views, the operations tools, log reading at scale with the nightly
+maintenance job, the host-agent guide with its prompts and resource, backups, the
+restore drill, and a scripted twin of the owner's rehearsal. It is built on the Phase 6
+branch (PR #17), stacked on PR #16, #15 and #14; none was merged. control_db gains
+migration 0004 and research_db migration 0004. Nothing here depends on the open owner
+decisions (the DSR calibration, the BM-DECAY bound, provisional members, the safeguards
+card), and nothing has reached a real provider.
+
+1. **Bundle layout: one folder per item.** Section 13.4 lists deliverable.json,
+   iteration_history.md, trace.json, manifests, series and MANIFEST.sha256. A
+   deliverable can hold several items, so each item gets `items/<version_id>/` with its
+   `manifest.json`, `trace.json` and `owner_records.json` and a `series/` folder;
+   `deliverable.json`, `iteration_history.md` (every item's history with its owner-grade
+   evidence), `bundle.json` and `MANIFEST.sha256` sit at the top. `trace.json` is pure
+   trace/1, so it validates against the published schema; the evaluator's records of
+   the version and its ancestors, which `qfr.trace.export` puts under `owner_records`,
+   go to `owner_records.json` instead.
+2. **export_bundle/1.** `bundle.json` indexes the bundle: the items with the canonical
+   hash of each `trace.json` and whether it still equals the trace hash the deliverable
+   recorded, and every file with its SHA-256, size and schema. It holds no owner value,
+   so its schema is public (`schemas/public/export_bundle.json`); it is still labelled
+   owner_only because the bundle is. `just export-verify <path>` (`qfr export verify`)
+   re-checks every hash, flags a missing or unlisted file, validates every JSON file
+   against its schema (owner records against owner_evidence/1) and compares each series
+   with the SHA-256 the evaluator recorded for it.
+3. **Exports replace and are recorded.** Exporting again writes a fresh bundle to a
+   hidden staging folder and swaps it into place, so a reader never sees half a bundle.
+   Each export appends a row to control_db's `deliveries` (path, manifest hash, file
+   count, principal, request id). A series whose bytes differ from the evaluator's
+   recorded hash stops the export (SERIES_HASH_MISMATCH) rather than shipping it.
+4. **Owner-grade labels everywhere.** Every MCP response carrying owner-grade evidence
+   now has `visibility: owner_only` and the owner_evidence/1 hygiene sentence as
+   `hygiene_warning` (it replaces Phase 4's `hygiene` key): deliverables, evidence,
+   acceptance cases, trace exports, private configuration, alerts and export results.
+5. **Evidence views.** `qfr.evidence.get` lists every window the evaluator measured
+   with its stage, every gate value labelled with stage and window, the acceptance
+   case's gates as stage `acceptance`, every simulation account of the version with its
+   state and metrics, and its acceptance cases. owner_evidence/1 gains `windows` and
+   `acceptance_cases`, and `simulation_state` changes from one object to a list (a
+   version can have an incubation and a monitoring account). The schema keeps its
+   version: it is private, computed on request by eval-admin-api and stored nowhere,
+   and producer and consumer ship together.
+6. **Alert acknowledgement is its own tool.** The plan's tool table has
+   `qfr.ops.alerts` ("open or acknowledged") and P7.3 asks for acknowledgement but names
+   no tool, so `qfr.ops.acknowledge_alert` (source, alert id, optional note) is added.
+   The service that raised the alert marks it acknowledged, and control_db's
+   `alert_acks` records who acknowledged which alert when, for all three sources.
+   Acknowledging twice returns the first acknowledgement.
+7. **Provider alerts live in research_db.** Section 17.4 says repeated fallbacks raise
+   an alert. research_db's `provider_alerts` (insert-only apart from acknowledgement)
+   holds them: one alert per model per day once 3 fallbacks away from it fall within 60
+   minutes (`alerts` in configs/research/service.yaml, the owner's to change), and one
+   per day for a probe that finds a role without its primary model.
+8. **ops-nightly is a new service.** The nightly work of Section 17.4 that belongs to no
+   zone (log compression and retention, the disk guard, the backup check) runs in
+   ops-nightly: the qfr-mcp image, the control role, control_net only, the whole logs
+   volume read-write (it compresses and deletes other services' old days) and the
+   backups folder read-only. It runs once per night after deployment.yaml's 02:30, also
+   when the Mac was asleep at 02:30, and records each run in control_db's `ops_runs`,
+   which `qfr.status` shows. An operations alert (disk or backup) is raised at most once
+   a day and not again while an earlier one of its kind is unacknowledged.
+9. **Log days are UTC.** Day files are named by UTC date (Phase 0), so compression after
+   7 days and deletion after 180 count UTC days. Search reads `.jsonl.gz` days as well
+   as open ones; a correlate without dates scans 30 days (`correlate_default_days`)
+   and an export stops at 500,000 lines with a cursor (`export_max_lines`), both new
+   logging.yaml settings.
+10. **qfr.status.** It adds the evaluation, release and simulation queues, quota usage,
+    data freshness, burn meters, the logs volume against the disk guard and the free
+    Docker disk, the last nightly run, open alerts per zone and today's costs by
+    provider. It reports `partial` and names the source when one cannot be read.
+11. **Backups run in their own service.** pg_dump must match the server's major version,
+    so `backup` is built from the postgres:16 image with a bash script
+    (`infra/backup/backup.sh`); it runs as the qfr user (uid 10001) so it can read the
+    log files and volumes it archives. Each database is dumped with its migration role,
+    the owner of every object in it: the application roles cannot read everything (the
+    feedback views are feedback_ro's). It reaches postgres over control_net only. The
+    schedule and retention are passed from deployment.yaml through Compose, and a test
+    keeps them equal. The logs tarball goes into the first backup of each month, the one
+    monthly retention keeps.
+12. **Snapshot mirroring without rsync, and the evaluation store too.** Section 17.5
+    mirrors the snapshot volumes "with rsync"; the postgres image has no rsync, so the
+    script copies files that are new or newer than the mirror's copy (rsync's default
+    check), skipping hidden staging files and the store's scratch folder, and never
+    deletes. It also mirrors the evaluation store: EVL-04 in the restore drill needs the
+    stored library artifacts as well as the full snapshot.
+13. **The restore drill.** `just restore-drill` restores the newest complete backup into
+    a throwaway Compose project (its own name, volumes and subnets 10.234.40-47.0/24),
+    loads each dump with `pg_restore --clean --if-exists` into the bootstrapped
+    databases, runs BND-01 and REG-01 there (the owner-side UPDATE and DELETE probes need
+    a row, so on an empty table the trigger is checked instead), and for EVL-04 copies
+    the mirrors into the throwaway volumes and re-runs the newest official record. A
+    backup without official records reports EVL-04 as SKIP, not as a failure. Passwords
+    reach psql on stdin. The project is removed with its volumes afterwards; the report
+    goes to `exports/restore-drill/` and is logged by ops-nightly (`qfr ops record`).
+14. **The doctor.** `just doctor` adds ops-nightly and backup to the running services,
+    checks that each service can write its own log folder, logs its report through
+    ops-nightly and reports backup freshness as an observation: a new installation has
+    no backup until its first night, so freshness is not a DEP-01 check (ops-nightly
+    alerts when backups go stale).
+15. **`just rotate-mcp-token`.** Section 13.2 names it and no earlier phase added it. It
+    replaces `QFR_MCP_TOKEN` in `.env` (mode 0600) without printing it, then recreates
+    qfr-mcp; `just mcp-config` prints the new client snippets.
+16. **The guide ships in the image.** `qfr://docs/host-agent-guide` serves
+    `docs/HOST_AGENT_GUIDE.md` verbatim; the mcp image copies it (a `.dockerignore`
+    exception) along with deployment.yaml for ops-nightly.
+17. **The rehearsal (P7.6).** The real-host-agent rehearsal on the Mac Studio is the
+    owner's step (SC8 needs a real host agent). Its offline twin,
+    `tests/research/test_operator_rehearsal.py`, makes the same calls with scripted
+    model answers: status, brief, deliverable, evidence, export and verification (with
+    tampering caught), approval, pool entry, library sync, pause and resume, alerts,
+    costs, correlation across seven services and a log export, and checks that every
+    call is audited and logged. `docs/phase7-acceptance.md` holds the owner's runbook.
+18. **The disk guard watches the logs volume.** Section 15.4 defines the guard on the
+    logs volume (20 GB, logging.yaml's `disk_warning_bytes`), and that is what ops-nightly
+    checks. Phase 3 decision 25 expected it to own the snapshot volume's growth as well;
+    snapshots are kept because official records pin them, so nothing prunes them.
+    Instead `qfr.status` shows the free space on the Docker disk every volume shares, and
+    `just doctor` checks its headroom.

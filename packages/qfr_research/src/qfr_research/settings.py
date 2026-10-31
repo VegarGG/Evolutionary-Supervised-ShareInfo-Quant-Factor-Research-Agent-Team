@@ -80,6 +80,14 @@ class EstimateSection(BaseModel):
     chars_per_token: float = Field(gt=0)
 
 
+class AlertsSection(BaseModel):
+    """When repeated provider fallbacks raise an alert (Section 17.4)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    fallback_threshold: int = Field(gt=0)
+    fallback_window_minutes: int = Field(gt=0)
+
+
 class ServiceConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     version: str
@@ -91,6 +99,7 @@ class ServiceConfig(BaseModel):
     island_keywords: dict[str, list[IslandKey]]
     timeline: dict[Literal["w1_pass", "w2_pass", "advanced", "incubated"], TimelineSection]
     estimate: EstimateSection
+    alerts: AlertsSection
 
 
 @dataclass(frozen=True)
