@@ -4,13 +4,16 @@ A simulation account trades one version: a factor through the reference strategy
 strategy through its own TopK-dropout parameters, both with the protocol's costs. For
 each new trading day d the engine
   1. scales held shares by the ratio of consecutive adjustment factors (splits and
-     dividends);
+     dividends), and closes a holding that has left the market (no row on d) at its
+     last traded close;
   2. fills the orders decided at d-1 at the raw close of d: sells first (a suspended or
      limit-down name stays pending), then buys down the ranking (suspended or limit-up
      names are skipped) in 100-share lots sized at NAV / k from available cash;
   3. computes the version's values at d and decides the orders for d+1;
-  4. marks to market at the raw close of d and writes NAV;
-  5. records the RankIC of the decision day whose label has just completed.
+  4. marks to market at the raw close of d (a suspended name at its last traded close)
+     and writes NAV; the day's data is complete when the values cover the minimum
+     cross-section and every holding has a price;
+  5. records the raw RankIC of the decision day whose label has just completed.
 Capital is 100,000,000 CNY notional. There is no backfill: a simulation starts on the
 first trading day after the later of its publication and its admission.
 
@@ -471,10 +474,33 @@ class SimEngine:
                         {"s": fresh.sim_id, "d": fresh.last_day},
                     ).scalar_one()
                 )
-            # 2. Fills of the orders decided at d-1: sells, then buys down the ranking.
             fills: list[dict[str, Any]] = []
-            pending: list[str] = []
             traded = costs = 0.0
+            # A held name with no row on d has left the market (the panel has a row for
+            # every day up to an instrument's last observation; a suspension is a row
+            # without a trade). It is closed at its last traded close, with the sell cost.
+            delisted = []
+            for name in sorted(positions):
+                j = column.get(name)
+                if j is not None and data.present[d, j]:
+                    continue
+                shares = positions.pop(name)
+                last = recorded.get(name, math.nan)
+                value = shares * last if math.isfinite(last) else 0.0
+                cash += value * (1.0 - sell_cost)
+                traded += value
+                costs += value * sell_cost
+                delisted.append(name)
+                fills.append({"i": name, "side": "sell", "st": "filled", "r": "delisted",
+                              "n": shares, "p": _finite(last), "v": value,
+                              "c": value * sell_cost})  # fmt: skip
+            if delisted:
+                self._event(
+                    conn, fresh.sim_id, "DELISTED", day,
+                    {"instruments": cast(JsonValue, delisted[:50])}, now,
+                )  # fmt: skip
+            # 2. Fills of the orders decided at d-1: sells, then buys down the ranking.
+            pending: list[str] = []
             for order in orders:
                 if order.side != "sell" or order.instrument not in positions:
                     continue
@@ -566,12 +592,14 @@ class SimEngine:
                      "sc": _finite(scores[d, j])},
                 )  # fmt: skip
                 seq += 1
-            # 4. Mark to market at the raw close of d.
-            complete = bool(np.isfinite(scores[d]).any())
-            for name in positions:
-                j = column.get(name)
-                if j is None or not data.present[d, j] or not math.isfinite(data.close_raw[d, j]):
-                    complete = False
+            # 4. Mark to market at the raw close of d; a suspended name is valued at its last
+            # traded close. The day's data is complete when the version's values cover the
+            # minimum cross-section and every holding has a price: a suspension is a market
+            # condition the fill rules handle, not missing data (G-OPS).
+            covered = int((market.eligible[d] & np.isfinite(scores[d])).sum())
+            complete = covered >= market.minimum and all(
+                math.isfinite(price(name)) for name in positions
+            )
             nav = cash + sum(shares * price(name) for name, shares in positions.items())
             first_day = fresh.last_day is None
             number = int(fresh.days_done) + 1
@@ -638,8 +666,10 @@ class SimEngine:
                         "INSERT INTO eval.sim_rankic (sim_id, decision_day, computed_on, value) "
                         "VALUES (:s, :t, :d, :v) ON CONFLICT DO NOTHING"
                     ),
+                    # The scores carry the declared sign; the stored RankIC is the raw
+                    # value, like the official series, so readers apply the sign once.
                     {"s": fresh.sim_id, "t": market.dates[t], "d": day,
-                     "v": _finite(series[0]) if series.size else None},
+                     "v": _finite(int(s["sign"]) * series[0]) if series.size else None},
                 )  # fmt: skip
             if number % int(s["checkpoint_days"]) == 0:
                 self._event(

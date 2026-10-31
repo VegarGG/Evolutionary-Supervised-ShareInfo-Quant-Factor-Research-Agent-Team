@@ -1,6 +1,9 @@
 """BM-PLANTED and BM-NULL through acceptance, BM-DECAY and BM-STRATEGY (PLAN Section
-18.3, P6.9; Phase 6 acceptance), on the benchmark worlds with replay incubation and the
-shipped v1 gates.
+18.3, P6.9; Phase 6 acceptance) with replay incubation and the shipped v1 gates.
+
+BM-PLANTED, BM-NULL and BM-STRATEGY run on the shipped synthetic world and epoch with a
+replay tail after W3; BM-DECAY runs on the 800-day decay world, whose tail starts at W2
+(tests/synthetic_fixtures.py explains both).
 
 Each runs the whole offline stack as the W1-level benchmarks do (test_benchmarks.py),
 then lets the evaluator work through W2, the holdout and replay incubation while a
@@ -40,7 +43,7 @@ from tests.benchmarks.harness import (
 from tests.eval.eval_rig import replay_config
 from tests.registry_rig import factor_manifest
 from tests.research.rig import brief, research_stack
-from tests.synthetic_fixtures import DECAY_REPLAY_EPOCH, REPLAY_EPOCH, small_epoch
+from tests.synthetic_fixtures import DECAY_REPLAY_EPOCH, small_epoch, validation_epoch
 
 pytestmark = [pytest.mark.postgres, pytest.mark.benchmark]
 
@@ -63,7 +66,7 @@ def acceptance_run(tmp_path, monkeypatch, zones, seed, generations, name):
     fix_engine_seeds(monkeypatch, seed)
     script = BenchmarkScript(expressions=[], engineer_uses_tool=False, seed=seed)
     with research_stack(
-        tmp_path, monkeypatch, zones, script, BenchmarkModels, epoch=REPLAY_EPOCH,
+        tmp_path, monkeypatch, zones, script, BenchmarkModels, epoch=validation_epoch(),
         config=replay_config(REPLAY_DAYS_PER_TICK),
     ) as full:  # fmt: skip
         run = run_benchmark(full, generations, ISLANDS)
@@ -169,7 +172,8 @@ def test_bm_strategy_delivers_a_strategy_that_passes_its_gates(
     fix_engine_seeds(monkeypatch, STRATEGY_SEED)
     script = BenchmarkScript(expressions=[], engineer_uses_tool=False, seed=STRATEGY_SEED)
     with research_stack(
-        tmp_path, monkeypatch, planted_world, script, BenchmarkModels, epoch=REPLAY_EPOCH,
+        tmp_path, monkeypatch, planted_world, script, BenchmarkModels,
+        epoch=validation_epoch(),
         config=replay_config(REPLAY_DAYS_PER_TICK),
     ) as full:  # fmt: skip
         mcp = full.mcp

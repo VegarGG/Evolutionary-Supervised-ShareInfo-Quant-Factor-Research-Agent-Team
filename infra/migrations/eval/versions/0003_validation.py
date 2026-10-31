@@ -63,6 +63,7 @@ SIM_EVENTS = (
     "CHECKPOINT",
     "DATA_REVISION",
     "INCOMPLETE_DAY",
+    "DELISTED",
     "PAUSED",
     "RESUMED",
     "COMPLETED",
@@ -97,7 +98,9 @@ def upgrade():
     _check("queue_jobs", "queue_jobs_kind_check", f"kind IN ({_in(JOB_KINDS)})")
     _check("runs", "runs_stage_check", f"stage IN ({_in(STAGES)})")
     _check("official_records", "official_records_stage_check", f"stage IN ({_in(STAGES)})")
-    _check("release_queue", "release_queue_report_type_check", f"report_type IN ({_in(REPORT_TYPES)})")
+    _check(
+        "release_queue", "release_queue_report_type_check", f"report_type IN ({_in(REPORT_TYPES)})"
+    )
     _check(
         "released_reports",
         "released_reports_report_type_check",
@@ -364,7 +367,8 @@ def upgrade():
     op.execute("""CREATE TRIGGER acceptance_cases_guard
         BEFORE INSERT OR UPDATE OR DELETE ON eval.acceptance_cases
         FOR EACH ROW EXECUTE FUNCTION eval.guard_acceptance_case()""")
-    op.execute("""CREATE TRIGGER acceptance_cases_no_truncate BEFORE TRUNCATE ON eval.acceptance_cases
+    op.execute("""CREATE TRIGGER acceptance_cases_no_truncate
+        BEFORE TRUNCATE ON eval.acceptance_cases
         FOR EACH STATEMENT EXECUTE FUNCTION reject_mutation()""")
 
     # Alerts (Sections 9.4 and 10.4): one per condition, readable in qfr.ops.alerts.

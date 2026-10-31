@@ -1,8 +1,11 @@
 """sim-engine (P6.4, Section 10.2): orders decided at the close and filled the next day,
-board lots, limit-up and limit-down blocks, costs, positions, NAV and checkpoints, on a
-replay incubation; staleness pauses forward simulations.
+board lots, limit-up, limit-down and suspension blocks, a delisted holding, costs,
+positions, NAV, data completeness, the forward RankIC and checkpoints, on a replay
+incubation; staleness pauses forward simulations.
 
 The version reaches incubation under the test protocol of tests/eval/test_validation.py.
+It is the planted reversal written as momentum with a negative declared sign, so the
+sign is applied exactly once on the way to the gates.
 """
 
 import math
@@ -26,6 +29,7 @@ pytestmark = pytest.mark.postgres
 SHANGHAI = ZoneInfo("Asia/Shanghai")
 INGEST = time(18, 30)
 LIMIT_UP_DAY, LIMIT_DOWN_DAY = 1, 6  # replay days (0 is the first) the test blocks
+SUSPENDED_DAY = 3  # every name is suspended on this replay day
 
 
 def test_staleness_counts_weekdays_after_the_last_day():
@@ -41,13 +45,14 @@ def test_staleness_counts_weekdays_after_the_last_day():
 
 @pytest.fixture
 def replayed(tmp_path, replay_zones):
-    """One factor incubated by replay, with every buy blocked on one replay day (limit up)
-    and every sell blocked on another (limit down)."""
+    """One factor incubated by replay, with every buy blocked on one replay day (limit up),
+    every sell on another (limit down), every name suspended on a third, and one holding
+    delisted after the first simulation tick."""
     with eval_rig(
         tmp_path, replay_zones, epoch=REPLAY_EPOCH, config=replay_config(REPLAY_DAYS_PER_TICK)
     ) as rig:
         rig.activate_protocol("test-loose", LOOSE)
-        response = rig.registry.publish(factor_manifest("reversal", "-Pct($close,5)"))
+        response = rig.registry.publish(factor_manifest("momentum", "Pct($close,5)", sign=-1))
         version = UUID(response.json()["version"]["version_id"])
         rig.cycle()
         with rig.db.read() as conn:
@@ -63,16 +68,31 @@ def replayed(tmp_path, replay_zones):
         start = next(i for i, d in enumerate(data.market.dates) if d >= state.epoch.replay_start)
         data.market.limit_up[start + LIMIT_UP_DAY, :] = True
         data.market.limit_down[start + LIMIT_DOWN_DAY, :] = True
+        data.close_raw[start + SUSPENDED_DAY, :] = math.nan
+        data.market.tradable[start + SUSPENDED_DAY, :] = False
+        run_until(rig, version, {"Incubating"}, days=16)
+        query = "SELECT * FROM eval.sim_accounts WHERE version_id = :v AND purpose = 'incubation'"
+        while rig.db.rows(query, v=version)[0].days_done == 0:
+            rig.sim.tick()
+        sim = rig.db.rows(query, v=version)[0]
+        held = rig.db.rows(
+            "SELECT instrument FROM eval.sim_positions WHERE sim_id = :s AND day = :d "
+            "ORDER BY instrument LIMIT 1",
+            s=sim.sim_id,
+            d=sim.last_day,
+        )[0].instrument
+        j = data.market.instruments.index(held)
+        gone = start + sim.days_done  # the next replay day: the name has no more rows
+        for mask in (data.present, data.market.tradable, data.market.eligible):
+            mask[gone:, j] = False
+        data.close_raw[gone:, j] = math.nan
         run_until(rig, version, {"AcceptanceReview"}, days=16)
-        sim = rig.db.rows(
-            "SELECT * FROM eval.sim_accounts WHERE version_id = :v AND purpose = 'incubation'",
-            v=version,
-        )[0]
-        yield rig, sim, data.market.dates[start:]
+        sim = rig.db.rows(query, v=version)[0]
+        yield rig, sim, data.market.dates[start:], (held, gone - start)
 
 
 def test_sim_01_replay_starts_at_the_tail_and_runs_the_required_days(replayed):
-    rig, sim, days = replayed
+    rig, sim, days, _ = replayed
     navs = rig.db.rows(
         "SELECT * FROM eval.sim_nav WHERE sim_id = :s ORDER BY day_number", s=sim.sim_id
     )
@@ -88,7 +108,7 @@ def test_sim_01_replay_starts_at_the_tail_and_runs_the_required_days(replayed):
 
 
 def test_sim_02_fills_respect_lots_limits_and_costs(replayed):
-    rig, sim, days = replayed
+    rig, sim, days, _ = replayed
     settings = sim.settings
     lot, buy, sell = settings["lot_size"], settings["buy_bps"] / 1e4, settings["sell_bps"] / 1e4
     fills = rig.db.rows("SELECT * FROM eval.sim_fills WHERE sim_id = :s", s=sim.sim_id)
@@ -118,7 +138,7 @@ def test_sim_02_fills_respect_lots_limits_and_costs(replayed):
 
 
 def test_sim_03_nav_is_cash_plus_positions_every_day(replayed):
-    rig, sim, _ = replayed
+    rig, sim, _, _ = replayed
     navs = rig.db.rows(
         "SELECT * FROM eval.sim_nav WHERE sim_id = :s ORDER BY day_number", s=sim.sim_id
     )
@@ -143,6 +163,71 @@ def test_sim_03_nav_is_cash_plus_positions_every_day(replayed):
             )
         previous = nav
     assert navs[0].nav <= float(sim.capital)
+
+
+def test_sim_05_suspensions_and_delistings_are_market_events_not_missing_data(replayed):
+    rig, sim, days, (held, gone) = replayed
+    navs = rig.db.rows("SELECT * FROM eval.sim_nav WHERE sim_id = :s", s=sim.sim_id)
+    assert len(navs) == 60 and all(n.complete for n in navs)  # G-OPS sees complete data
+    # Nothing trades on the suspended day, and holdings keep their last traded close.
+    fills = rig.db.rows(
+        "SELECT * FROM eval.sim_fills WHERE sim_id = :s AND day = :d", s=sim.sim_id,
+        d=days[SUSPENDED_DAY],
+    )  # fmt: skip
+    assert fills and all((f.status, f.reason) == ("blocked", "suspended") for f in fills)
+    positions = "SELECT instrument, price FROM eval.sim_positions WHERE sim_id = :s AND day = :d"
+    before = {r.instrument: r.price for r in rig.db.rows(positions, s=sim.sim_id,
+                                                          d=days[SUSPENDED_DAY - 1])}  # fmt: skip
+    during = rig.db.rows(positions, s=sim.sim_id, d=days[SUSPENDED_DAY])
+    assert during and {r.instrument: r.price for r in during} == before
+    # A holding with no more rows is closed once at its last traded close.
+    (fill,) = rig.db.rows(
+        "SELECT * FROM eval.sim_fills WHERE sim_id = :s AND reason = 'delisted'", s=sim.sim_id
+    )
+    last = rig.db.scalar(
+        "SELECT price FROM eval.sim_positions WHERE sim_id = :s AND day = :d AND instrument = :i",
+        s=sim.sim_id, d=days[gone - 1], i=held,
+    )  # fmt: skip
+    assert (fill.instrument, fill.day, fill.side, fill.status) == (held, days[gone], "sell",
+                                                                   "filled")  # fmt: skip
+    assert math.isclose(fill.price, last) and math.isclose(fill.value, fill.shares * last)
+    after = rig.db.scalar(
+        "SELECT count(*) FROM eval.sim_positions WHERE sim_id = :s AND instrument = :i "
+        "AND day >= :d",
+        s=sim.sim_id, i=held, d=days[gone],
+    )  # fmt: skip
+    assert after == 0
+    (event,) = rig.db.rows(
+        "SELECT day, payload FROM eval.sim_events WHERE sim_id = :s AND kind = 'DELISTED'",
+        s=sim.sim_id,
+    )
+    assert (event.day, event.payload["instruments"]) == (days[gone], [held])
+
+
+def test_sim_06_the_forward_rankic_is_stored_raw_and_signed_once(replayed):
+    rig, sim, _, _ = replayed
+    assert sim.settings["sign"] == -1
+    values = [
+        r.value
+        for r in rig.db.rows(
+            "SELECT value FROM eval.sim_rankic WHERE sim_id = :s AND value IS NOT NULL",
+            s=sim.sim_id,
+        )
+    ]
+    raw = sum(values) / len(values)
+    assert raw < 0  # momentum on the planted reversal world, like its official RankIC
+    gates = rig.db.scalar(
+        "SELECT gate_results FROM eval.acceptance_cases WHERE sim_id = :s", s=sim.sim_id
+    )
+    forward = next(g for g in gates if g["name"] == "G-FWD")
+    assert math.isclose(forward["value"], -raw, rel_tol=1e-9)
+    assert forward["detail"]["historical_rankic_mean"] > 0  # s x RankIC over W1 to W3
+    final = rig.db.scalar(
+        "SELECT payload FROM eval.sim_events WHERE sim_id = :s AND kind = 'CHECKPOINT' "
+        "ORDER BY day DESC LIMIT 1",
+        s=sim.sim_id,
+    )
+    assert math.isclose(final["rankic_mean"], -raw, rel_tol=1e-9)
 
 
 def test_sim_04_stale_data_pauses_a_forward_simulation_once(tmp_path, replay_zones):
