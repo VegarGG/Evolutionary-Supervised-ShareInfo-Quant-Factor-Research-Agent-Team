@@ -715,6 +715,43 @@ class JobService:
             env.logger.logger.info(f"job_{kind}", outcome="ok", job_id=str(job_id))
             return self.get(conn, job_id)
 
+    def close(self, job_id: UUID, decision: str, approval_id: UUID, principal: str) -> JobView:
+        """The owner closes a delivered job as approved or rejected (Section 13.5). The
+        front door has checked the approval record; research stores its id. Closing again
+        with the same approval returns the job unchanged."""
+        env = self.env
+        with env.db.transaction(lock=True) as conn:
+            job = self.get(conn, job_id)
+            approved = conn.execute(
+                text("SELECT approval_id FROM research_jobs WHERE job_id = :j"), {"j": job_id}
+            ).scalar()
+            if job.state == "CLOSED":
+                if approved == approval_id and job.close_decision == decision:
+                    return job
+                raise JobConflict("JOB_CLOSED", "the job is already closed")
+            if job.state not in ("DELIVERABLE_READY", "DELIVERED"):
+                raise JobConflict(
+                    "JOB_NOT_DELIVERED", "only a job with a deliverable can be approved or rejected"
+                )
+            verb = "approved" if decision == "approved" else "rejected"
+            self.set_state(
+                conn,
+                job_id,
+                "CLOSED",
+                reason=f"{verb} by the owner",
+                close_decision=decision,
+                principal=principal,
+            )
+            conn.execute(
+                text("UPDATE research_jobs SET approval_id = :a WHERE job_id = :j"),
+                {"a": approval_id, "j": job_id},
+            )
+            audit(
+                conn, env.clock, principal, "job.close", "job", job_id,
+                {"decision": decision, "approval_id": str(approval_id)},
+            )  # fmt: skip
+            return self.get(conn, job_id)
+
     def cancel(self, job_id: UUID, principal: str) -> JobView:
         env = self.env
         with env.db.transaction(lock=True) as conn:

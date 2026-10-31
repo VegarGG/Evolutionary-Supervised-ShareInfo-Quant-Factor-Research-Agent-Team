@@ -69,6 +69,15 @@ class IngestConfig(BaseModel):
     keep_raw_releases: int = Field(ge=1)
 
 
+class SimulationConfig(BaseModel):
+    """sim-engine's operating parameters; the simulation rules are in the protocol."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    interval_seconds: float = Field(gt=0)
+    mode: Literal["forward", "replay"]
+    replay_days_per_tick: int = Field(ge=1)
+
+
 class EvalConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     version: str
@@ -78,6 +87,7 @@ class EvalConfig(BaseModel):
     release: ReleaseConfig
     apis: dict[Literal["feedback", "admin"], ApiConfig]
     ingest: IngestConfig
+    simulation: SimulationConfig
 
 
 def eval_config(root: Path) -> EvalConfig:

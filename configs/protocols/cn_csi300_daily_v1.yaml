@@ -21,6 +21,6 @@ gates:
   w2_strategy: {net_sharpe_min: 0.5, ir_min: 0.3}
   holdout_factor: {rankic_min: 0.01, ls_net_sharpe_min: 0.3, reference_ir_min: 0.3}
   holdout_strategy: {net_sharpe_min: 0.3, ir_min: 0.3}
-  acceptance: {dsr_min: 0.90, cluster_similarity: 0.7, pbo_max: 0.30, pbo_blocks: 16, hlz_t_min: 3.0, incubation_days_min: 60, consistency_z_min: -1.645, forward_drawdown_max: 0.15, library_correlation_max: 0.60, complete_data_min: 0.98}
+  acceptance: {dsr_min: 0.90, cluster_similarity: 0.7, neff_family_fallback_trials: 20000, pbo_max: 0.30, pbo_blocks: 16, pbo_cohort_min: 4, hlz_t_min: 3.0, incubation_days_min: 60, consistency_z_min: -1.645, forward_drawdown_max: 0.15, library_correlation_max: 0.60, complete_data_min: 0.98}
 simulation: {trading_days: 60, checkpoint_days: 20, capital_cny: 100000000, lot_size: 100, staleness_days: 2}
 monitoring: {rolling_days: 60, rankic_mean_below: 0, consecutive_days: 20}

@@ -32,3 +32,11 @@ ingest:
   check_seconds: 60         # how often the service looks at the clock
   recheck_seconds: 3600     # after no new release or a failure, try again this much later
   keep_raw_releases: 2      # raw archives kept; full snapshots are always retained
+simulation:
+  # sim-engine (PLAN 10.2) looks for a newly registered full snapshot this often and runs
+  # the daily cycle for every new trading day. forward is production; replay plays the
+  # epoch's reserved historical tail as if it were live (tests and benchmarks only, and
+  # refused unless the snapshot is synthetic), this many trading days per tick.
+  interval_seconds: 60
+  mode: forward
+  replay_days_per_tick: 1

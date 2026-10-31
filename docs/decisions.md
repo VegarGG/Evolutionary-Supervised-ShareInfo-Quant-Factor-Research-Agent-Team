@@ -816,3 +816,255 @@ branch (PR #14); neither was merged. Nothing here has reached a real provider.
     pool, the seeds or the engine can move it below 25%. The check follows the plan as
     written; measuring coverage against the reachable cells would be a plan change, so
     it is left for the owner.
+
+# Phase 6 decisions
+
+Phase 6 implements P6.1 to P6.9: W2 validation with the Ladder, the private W3 holdout,
+trial clustering with the DSR, PBO and HLZ gates, the simulation engine, strategies on
+the evaluation side, acceptance cases, approvals and pool curation through MCP, library
+monitoring with alerts, and the four validation benchmarks. It is built on the Phase 5
+branch (PR #16), which is stacked on PR #15 and PR #14; none was merged. eval_db gains
+migration 0003 and control_db migration 0003. Nothing here has reached a real provider.
+Phase 7 work (exports, the full evidence views, alert acknowledgement and the other
+operations tools) is not started.
+
+1. **Shipped v1 configs are edited in place.** No protocol, quota or policy version has
+   been activated on a real campaign yet, so the new settings go into the v1 files
+   instead of v2 copies, as Phase 3 decision 16 did: the protocol's acceptance gates
+   gain `neff_family_fallback_trials: 20000` and `pbo_cohort_min: 4` (decisions 6 and
+   7), the quotas gain `family.w2_wait_days: 28` (Section 8.8's 4 weeks), the release
+   policy gains the sim report's RankIC bucket edges, `eval.yaml` gains the simulation
+   section and `mcp.yaml` widens the confirmation pattern to case and entry codes. No
+   gate value changes. Activation stores the content, so an evaluation database that
+   activated the earlier v1 files keeps them, and Phase 6's evaluator needs the new
+   settings (W2 admission and acceptance read them). Such a database, like the real
+   stack after the Phase 3 CN run, must be recreated before Phase 6 runs on it; the
+   throwaway qfr-dry stack is recreated by its clean-up step.
+2. **W2 pick and admission.** W1 passes join the W2 queue. Each tick the evaluator
+   takes, per family, the waiting version with the best sign-adjusted W1 RankIC_IR (ties
+   go to the earlier publication), and only when no other version of that family is
+   still waiting for W1, so a better sibling in flight is not passed over (Section 8.8
+   "the one with the best W1 RankIC_IR"). The pick runs only when the family quota (1
+   per 7 days), the program quota (10 per 7 days) and the epoch budget (400) allow it,
+   and each run is counted on all three and on the burn meter. A version that waits 28
+   days without a W2 slot becomes W2Expired. It receives no report: W2 never ran, so
+   there is no result to release, and research already knows the version passed W1.
+3. **The Ladder.** The query statistic is s x RankIC_mean on W2. The family best starts
+   at 0, so a family's first W2 releases a best only when its value is at least eta
+   (0.005). The best moves, and is released rounded to 0.01, only when a W2 value beats
+   it by at least eta; the stored best and every Ladder event keep full precision
+   (REL-06). The W2 report carries PASS or FAIL, the Ladder status (improved or not) and
+   the rounded family best when it improved.
+4. **The holdout is one shot per version.** A W2 pass is admitted to the W3 holdout
+   once, within the epoch's W3 budget (100); a version never returns to HoldoutCheck.
+   Its only release is the advancement report with ADVANCED or NOT_ADVANCED, one bit
+   (INV-6, REL-05): no W3 metric has a mapping in the release engine, and the public
+   schema forbids extra fields. Advanced versions wait in AwaitingSlot for one of the 40
+   incubation slots.
+5. **An internal error is a failure, released as one.** When a W2 or holdout job still
+   fails inside the evaluator after its retries (an exception, not a gate), the version
+   becomes W2Failed or NotAdvanced with reason INTERNAL_ERROR, research receives FAIL or
+   NOT_ADVANCED with nothing beyond the status (Section 9.2), and the quota it used
+   stays used. Leaving it queued would ask the window again without limit; the owner
+   sees the error in the event log and the service logs.
+6. **N_eff.** The nightly job (and an acceptance case, when the latest cluster run
+   predates the newest trial) clusters the epoch's W1 trials by single linkage at
+   fingerprint similarity 0.7, separately per kind: a factor's trial series is its daily
+   LS net return and a strategy's is its daily active return, so the two are never
+   pooled in one cluster count or one Sharpe variance. Similarity is exact rather than
+   sampled: fingerprints with the same support on every date are compared in blocks of
+   512 by matrix products, and the rare pairs with different supports are re-ranked
+   pairwise as intake dedup does. Above 20,000 trials the number of families stands in
+   for the cluster count, which bounds the nightly cost. With fewer than 2 clusters
+   there is nothing to deflate, so G-DSR is the PSR against 0 and says so in its detail.
+   The DSR with the raw trial count is recorded beside it.
+7. **PBO.** PBO is computed by CSCV with 16 blocks on the version's family cohort of W1
+   trials (their series joined on common dates). When the family has fewer than 4
+   members the generation cohort is used, and when that also has fewer than 4, G-PBO is
+   marked skipped and counts as passed, with the reason in its detail (Section 8.7).
+8. **HLZ.** G-HLZ is the Newey-West t of the daily trial series over W1, W2 and W3
+   combined, with the lag from the sample size, against t of 3.0. Only the windows' own
+   days are used, so embargo gaps are left out.
+9. **The other gates.** G-W1, G-W2 and G-HOLDOUT read the version's own records. G-FWD
+   needs at least 60 incubation days, a positive forward s x RankIC_mean, a consistency
+   z of at least -1.645 against the version's W1 to W3 daily RankIC, and a forward
+   drawdown of at most 15%. G-NOVELTY is the library correlation of Section 8.5 measured
+   on W3: the largest absolute mean daily Spearman correlation between the version's
+   values and each seed or active entry of its pool's library, all recomputed from their
+   expressions, against 0.60. With an empty library it is vacuous and marked skipped.
+   G-OPS needs a completed simulation with no error and at least 98% of days with
+   complete data. A day's data is complete when the version's values cover the
+   protocol's minimum cross-section and every holding has a price. A suspended holding
+   (a panel row without a trade) is valued at its last traded close and does not make
+   the day incomplete: a suspension is a market condition the fill rules handle, not
+   missing data. Counting it as missing, as the first version did, failed G-OPS for a
+   50-name portfolio on about a quarter of days. Every gate stores its value, threshold
+   and detail.
+10. **Acceptance cases.** The sim engine opens one case when a version's incubation
+    ends, with every gate computed from the evaluator's own records, and numbers it
+    C-nnnn. A case also opens when the incubation failed, so the owner can reject it.
+    The recommendation is ACCEPT only when every gate passes. In v1 a case with a failed
+    gate cannot be accepted (Section 10.3 lets the owner reject, not override): the
+    service refuses it and a table constraint enforces it too. A trigger lets a case
+    open only for a finished incubation of the same version (ACC-02) and be decided
+    once, with its gates unchanged. A decision needs an approval whose decision
+    (accept_case or reject_case) and scope name the case (ACC-03). Research receives a
+    decision report with ACCEPTED or REJECTED and a reason category (gates_passed,
+    gate_failed with the first failing gate's name, incubation_failed or
+    owner_rejected); gate values stay owner-only.
+11. **Monitoring.** A monitoring simulation (forward in production, replay in the
+    benchmarks) runs for each active library entry and each accepted version. A retired
+    entry's monitoring stops at the next library sync. The v1 decay rule (Section 10.4)
+    raises one alert when the rolling 60-day s x RankIC_mean stays below 0 for 20
+    consecutive days. An alert does not retire anything: the owner retires an entry with
+    an approval. Accepting a decay alert, the plan's other route to Retired, needs alert
+    acknowledgement, which is P7.3.
+12. **BM-DECAY needs about 70 days on this world; the plan asks for 60.** With the
+    shipped rule, the alert fires 69 trading days after the switch-off (the rolling mean
+    needs about 50 days to fall below 0 and then 20 more). The benchmark records the
+    delay and allows up to 80 days (`QFR_BM_DECAY_DAYS`). The owner has been asked to
+    choose: keep the rule and allow 80 days, shorten the rule to meet 60 days, or bring
+    the CUSUM rule forward from Phase 8.
+13. **Staleness.** The engine counts the weekdays after the last data day up to the
+    latest day whose data should have arrived (today after the 18:30 local ingest time,
+    else the previous weekday). At 2 or more it raises one staleness alert and pauses
+    forward simulations until data returns. Exchange holidays are not known in advance,
+    so a holiday can count as a missing day; the alert says how many days are missing.
+14. **Fills.** Orders are decided at the close of day d-1 from the version's values and
+    filled at the raw close of day d: sells first, then buys down the ranking. A
+    suspended or limit-down name cannot be sold and is ordered again the next day; a
+    suspended or limit-up name is skipped for buys. Buys are whole 100-share lots sized
+    at NAV / k from the cash available; a sell may close an odd lot left by a corporate
+    action. Costs are 5 bps on buys and 15 bps on sells (the protocol's costs). Held
+    shares are scaled by the ratio of consecutive adjustment factors before trading, so
+    splits and dividends keep the position's value. A holding with no row on the day has
+    left the market (the panel has a row for every day up to an instrument's last
+    observation), so it is closed at its last traded close with the sell cost and logged
+    as DELISTED; Section 10.2 does not cover delistings, and holding the name forever
+    would block a slot. The close is optimistic, since a real delisting usually trades
+    lower first. NAV is cash plus positions at the raw close, a suspended name at its
+    last traded close. The stored daily RankIC is the raw value, like the official
+    series, and every reader applies the declared sign once; the first version stored it
+    from the sign-adjusted scores, which reversed G-FWD, the checkpoints and the decay
+    rule for a negative-sign factor. A checkpoint is written every 20 days. A simulation
+    starts on the first trading day after the later of its publication and its admission
+    (no backfill). Its settings are pinned at creation. A revised past value never
+    rewrites a simulation: it continues from its recorded state and logs DATA_REVISION.
+15. **Replay mode is for synthetic snapshots only.** Replay plays the epoch's reserved
+    tail (a new optional `replay.start` in the epoch config, after W0) as if it were
+    live, a configured number of days per tick, starting at the tail's first day. The
+    scheduler refuses it unless the snapshot's source is synthetic and the epoch has a
+    tail, and the mode is recorded on the simulation and its case, so a replay result
+    can never pass for forward evidence.
+16. **The sim-engine service** runs the eval image (`python -m qfr_eval.sim`) on
+    eval_net with the full snapshots and the evaluator's artifact store mounted
+    read-only, a 256 MB scratch tmpfs and a heartbeat health check. It writes only to
+    eval_db.
+17. **Short codes.** A deliverable item is J-nnnn F-k (factor) or J-nnnn S-k (strategy),
+    with k numbered per kind in the deliverable. A case is C-nnnn. A pool entry is E-
+    and the last six hex digits of its id, shown by qfr.pool.list. The owner's
+    confirmation must contain every code in scope, case-insensitively; a job code and
+    item code may appear apart ("APPROVE J-0042 F-1 F-2"). A bare version without a code
+    is refused (VERSION_UNCODED), and an approval with no version named covers the whole
+    deliverable.
+18. **Approvals fix the tier.** An approval that adds to a pool fixes the tier: the tier
+    the evaluator confirms for every version in scope, or a lower tier the owner names.
+    A tier above the one reached is refused (TIER_NOT_REACHED). The tier order is
+    w1_pass, w2_pass, advanced, incubated.
+19. **One approval-gated write at a time.** qfr.pool.add, qfr.pool.set_status,
+    qfr.job.close and qfr.acceptance.decide run one at a time in the front door
+    (`approval_concurrency: 1`). Each checks that the approval's decision and scope
+    cover the call, and the owning service checks the scope again (POOL-01, ACC-03).
+    qfr.pool.annotate changes no status and needs no approval. These four tools are
+    marked destructive. `rollover_epoch` is a valid decision in the schema but is
+    refused with DECISION_UNSUPPORTED until Phase 8 brings the rollover tool.
+20. **Phase 7 parts are left for Phase 7.** qfr.ops.alerts lists the evaluator's alerts
+    (open and acknowledged) and qfr.status shows the open count, but acknowledgement and
+    provider alerts are P7.3. qfr.acceptance.list_cases returns the gate values with the
+    owner_only label and the hygiene note; the complete evidence views are P7.2.
+21. **A brief's mode fixes the deliverable's kind.** A new_strategy or improve_strategy
+    job delivers strategies, the factor modes deliver factors and review_and_iterate may
+    deliver either (Section 11.1). Before this, a strategy job's deliverable could list
+    its component factors as items, and its readiness was measured on factor readings.
+22. **Strategy composition fixes.** compose_strategy now writes its STRATEGY_COMPOSED
+    step at the candidate's scope, so the strategy's iteration history finds it. It
+    records a SIMILARITY_CHECKED step with a canonical hash of the sorted components
+    (version, sign, weight) and the portfolio, so a strategy the program already
+    composed is caught as a duplicate (the evaluator measures behavioral similarity to
+    the strategy library at W1). The strategy inherits the lead component's rationale
+    with the other components' hypotheses listed, because a composite has no hypothesis
+    of its own. A strategy's trial series is its daily active return (decision 6).
+23. **Contribution tables come from the records.** The evaluator stores each component's
+    contribution in the strategy record's summary (owner-grade), and qfr.deliverable.get
+    composes the contribution table in the front door from those summaries.
+24. **Benchmark worlds and test protocols.** BM-PLANTED, BM-NULL and BM-STRATEGY run on
+    the shipped synthetic world and epoch (`configs/data/synthetic_v1.yaml` and
+    `configs/epochs/synthetic_001.yaml`: 300 instruments, a 240-name universe, W1, W2
+    and W3 of about 2.0, 1.3 and 1.5 years) with 100 more weekdays for the embargo and
+    an 80-day replay tail. The shipped gates need windows of that length. On the 800-day
+    world used at first, the planted A1 forms' Newey-West t over W1 to W3 was 1.3 to 2.5
+    against the HLZ hurdle of 3.0, and their W3 of 47 days was mostly noise; on the
+    shipped epoch it is 4.8 to 6.3, with W1 PSR above 0.98. This uses the plan's own
+    synthetic epoch, so no gate changes. BM-DECAY stays on the 800-day decay world (300
+    names), whose tail starts at W2 so monitoring spans the switch-off: the decay rule's
+    delay does not depend on the window lengths. Mechanics tests (the W1-to-decision
+    flow, the simulation, the MCP approvals and the five-step workflow) run on the
+    60-name test world and activate a test protocol version with gates any correctly
+    signed signal clears, so they check the machinery rather than the gates; the
+    benchmarks measure the shipped gates. Test protocol versions are never shipped.
+25. **Log outcomes.** An alert is logged with outcome ok (raising it worked; the alert
+    is the event), and a refused replay with outcome failed: the log schema's outcomes
+    are ok, failed, retried, skipped, deferred and fallback.
+26. **BM-PLANTED and the DSR gate (pending the owner).** On the shipped synthetic epoch
+    BM-PLANTED publishes 44 versions in 10 generations; 16 pass W1, 11 pass W2 and the
+    holdout, and all 11 incubate and reach a case. Every case is rejected, and for 8 of
+    them G-DSR is the only failing gate (values 0.06 to 0.63 against 0.90). G-FWD, G-OPS
+    and G-PBO pass for all 11 and G-HLZ for 8. The DSR is computed exactly as Section
+    8.7 says: V is the variance of the daily Sharpe ratios of all 44 W1 trials, and most
+    trials are cost-dominated noise (annualized LS net Sharpe from -5.1 to 1.7, mean
+    -0.9), so the null's expected maximum Sharpe is high even with few clusters (about
+    0.9 annualized at N = 2 and 2.0 at N = 5) while the best planted factors reach 1.6
+    to 1.7 on W1. Even with 2 clusters the best planted factor's DSR would be about
+    0.87. Changing a gate is the owner's call (P6.9, the Section 18.3 calibration rule);
+    the owner has been asked to choose between lowering dsr_min to 0.50 (2 planted
+    factors would then be accepted, every other gate unchanged), keeping 0.90 with
+    BM-PLANTED failing, or using the null sampling variance for V.
+27. **The strategy engineer reads released reports and measures composites.** The
+    strategy prompt promised the components "with their released report digests" but
+    listed only expressions, signs and titles. compose_strategy now gives each component
+    the digest the factor engineer sees: its latest released W1 values and its W2,
+    screening or intake status. workbench.evaluate also measures composites, as its
+    Section 11.3 entry says (factors and composites): given published factor versions
+    with signs and weights and a portfolio within the protocol's strategy bounds, it
+    returns the composite's W0 metrics, reference net Sharpe, information ratio and
+    drawdown and the contribution rows, labelled in-sample. BM-STRATEGY seeds A1, two A1
+    variants (`EMA(-Pct($close,5),5)` and `-Mean($ret,5)`) and A2 and asks for a 20-name
+    portfolio. On the 240-name universe no 50-name long-only composite of A1, its
+    variants and A2 reached the 0.8 net Sharpe of the W0 pre-screen (0.56 at best), and
+    20 names is within the protocol's strategy bounds (20 to 100). The scripted engineer
+    ranks the components by released W1 RankIC_IR, leaves out those whose released
+    long-short net Sharpe is not positive (A2's is -2.5 on W1: its top turnover of 0.69
+    makes it cost-dominated), measures every equally weighted composition of the top
+    four on W0 and returns the best one by W0 net Sharpe that it has not returned
+    before; the evaluator's gates decide. The W1 drawdown cap (25%) is the gate that
+    binds: of the 15 equally weighted compositions of the four seeds, 11 have a W1
+    drawdown above 25% (0.252 to 0.42), and only A1, A1 with `-Mean($ret,5)`, the EMA
+    variant with `-Mean($ret,5)`, and `-Mean($ret,5)` alone pass the W1 strategy gate;
+    the last fails the W0 pre-screen. W0 ranks seven failing compositions above the
+    first passing one, most of them with A2. Two earlier runs that kept A2 among the
+    leaders composed 11 strategies in 8 generations, and none passed W1. In the
+    benchmark run the evaluator refused `-Mean($ret,5)` at intake as a near duplicate of
+    A1 and the engineer left A2 out, so it combined A1 and the EMA variant: in
+    generation 1 it composed the EMA variant alone (W1 drawdown 0.30, FAIL) and then A1
+    alone, which passed W1 (net Sharpe 1.14, IR 1.08), W2 (1.85 and 2.01) and the
+    holdout. The deliverable is complete, at the advanced tier.
+28. **Research reads a strategy's W1 report against the strategy gate.** Research
+    decides the w1_pass tier it claims from the released W1 report and the public gates.
+    For strategies it used the factor flags, so a strategy with HIGH_TURNOVER or a
+    failed coverage bucket read as a W1 failure although neither is a strategy gate, and
+    it missed HIGH_DRAWDOWN, the flag Section 9.2 defines for a drawdown above the gate.
+    The released drawdown is rounded to 0.05, so a drawdown just above 0.25 is released
+    as 0.25 and read as a pass; in one BM-STRATEGY run the deliverable claimed w1_pass for
+    such a strategy and the front door's tier confirmation showed the official W1 failure
+    (the deliverable was best_effort). A strategy's reading now blocks on WEAK_SIGNAL,
+    SIGN_MISMATCH and HIGH_DRAWDOWN, and checks net Sharpe, IR and the drawdown bucket.

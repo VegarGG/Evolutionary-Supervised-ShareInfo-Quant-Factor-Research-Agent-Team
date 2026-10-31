@@ -1,9 +1,16 @@
-"""Artifact-kind plugins (PLAN Section 8.10). Phase 3 implements the factor plugin.
+"""Artifact-kind plugins (PLAN Section 8.10): factors (Phase 3) and strategies (Phase 6).
 
 A plugin decides eligibility for a manifest, names its ordered stages, runs each stage
 into an official record payload, maps a record to whitelisted released fields, and maps
-records to the owner-grade view. Strategies are held at intake until the strategy
-plugin arrives in Phase 6.
+records to the owner-grade view. A factor is measured on its own values through the
+reference strategy; a v1 strategy is the zscore_weighted_sum composite of its published
+factor components, recomputed by the evaluator from the components' expressions, and
+measured through its own TopK-dropout portfolio (Section 7.8).
+
+Every window runs the same measurement (Section 8.5 metrics and the reference
+backtest); only the gates differ (Section 8.8): W1 and W2 are public, the W3 holdout is
+private. W3 measurements never leave the evaluator: the holdout's release mapping is
+the one bit ADVANCED or NOT_ADVANCED (INV-6, REL-05).
 """
 
 import hashlib
@@ -15,9 +22,19 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Literal, cast
 
 import numpy as np
-from qfr_core.backtest import BacktestSettings, run_backtest
+from qfr_core.backtest import BacktestResult, BacktestSettings, run_backtest
+from qfr_core.composite import CompositePart, composite, contribution_table, normalized_weights
 from qfr_core.config import canonical_json
-from qfr_core.contracts import DiagnosticFlag, FactorManifest, HorizonKey, ReasonCode, W1Content
+from qfr_core.contracts import (
+    DiagnosticFlag,
+    FactorManifest,
+    HorizonKey,
+    ReasonCode,
+    SimulationContent,
+    StrategyManifest,
+    W1Content,
+    W2Content,
+)
 from qfr_core.dsl import DslError, DslLimits, compile_expression, declaration_mismatches
 from qfr_core.eligibility import Eligibility
 from qfr_core.metrics.factor import FactorEvaluation, MetricSettings, evaluate_factor
@@ -26,7 +43,9 @@ from qfr_core.metrics.stats import moments
 
 from qfr_eval.compute import ComputeResult
 
-STAGES = ("screening", "w1")
+STAGES = ("screening", "w1", "w2", "holdout", "simulation")
+Stage = Literal["screening", "w1", "w2", "holdout", "simulation"]
+WINDOW_STAGE: dict[str, Stage] = {"W1": "w1", "W2": "w2", "W3": "holdout"}
 
 
 def results_hash(metrics: dict[str, float | None]) -> str:
@@ -56,7 +75,7 @@ def probe_cuts(window: tuple[int, int], count: int, seed: int) -> list[int]:
 
 @dataclass(frozen=True)
 class StageOutcome:
-    stage: Literal["screening", "w1"]
+    stage: Stage
     passed: bool
     reasons: list[ReasonCode]
     metrics: dict[str, float | None]
@@ -80,6 +99,48 @@ class LazyLibrary(Mapping[str, Array]):
 
     def __len__(self) -> int:
         return len(self._loaders)
+
+
+@dataclass(frozen=True)
+class Measurement:
+    """One window measured: the Section 8.5 metrics, the backtest and the ledger moments."""
+
+    evaluation: FactorEvaluation
+    backtest: BacktestResult
+    metrics: dict[str, float | None]
+    ledger: dict[str, float | None]
+    trial_returns: Array  # The daily series the trial ledger, DSR, PBO and HLZ use.
+    series: dict[str, dict[str, list[Any]]]
+
+
+def _gate(name: str, value: float | None, threshold: float, above: bool = True) -> dict[str, Any]:
+    passed = value is not None and (value >= threshold if above else value <= threshold)
+    return {
+        "name": name,
+        "passed": bool(passed),
+        "value": value,
+        "threshold": threshold,
+        "skipped_reason": None,
+    }
+
+
+def _ir_gate(metrics: dict[str, float | None], g: dict[str, Any]) -> dict[str, Any]:
+    return _gate(
+        "information_ratio", metrics.get("reference_information_ratio"), float(g["ir_min"])
+    )
+
+
+def _ledger(returns: Array) -> dict[str, float | None]:
+    try:
+        sharpe_daily, skew, kurt, n_obs = moments(returns)
+        return {"sharpe_daily": sharpe_daily, "skew": skew, "kurt_raw": kurt, "n_obs": n_obs}
+    except ValueError:
+        return {
+            "sharpe_daily": None,
+            "skew": None,
+            "kurt_raw": None,
+            "n_obs": int(np.isfinite(returns).sum()),
+        }
 
 
 class FactorPlugin:
@@ -172,49 +233,39 @@ class FactorPlugin:
         }
         return StageOutcome("screening", not reasons, reasons, metrics, summary, resources)
 
-    # W1 ------------------------------------------------------------------------------
+    # Measurement ---------------------------------------------------------------------
 
-    def run_w1(
+    def backtest_settings(self) -> BacktestSettings:
+        return BacktestSettings.from_protocol(self.protocol)
+
+    def trial_returns(self, evaluation: FactorEvaluation, backtest: BacktestResult) -> Array:
+        """The factor's trial series: daily LS net returns (Section 8.7)."""
+        return evaluation.series.ls_net
+
+    def measure(
         self,
-        manifest: FactorManifest,
-        factor: Array,
+        scores: Array,
+        sign: Literal[1, -1],
         market: Market,
         start: date,
         end: date,
-        library_source: Mapping[str, Array],
-        coverage: float | None,
-        complexity: int,
-    ) -> tuple[StageOutcome, FactorEvaluation]:
-        sign = manifest.declared.expected_sign
+        library_source: Mapping[str, Array] | None = None,
+    ) -> Measurement:
+        """Section 8.5 metrics on [start, end] and the reference backtest of sign x scores."""
         evaluation = evaluate_factor(
-            factor,
+            scores,
             market,
             start,
             end,
             sign,
             self.settings,
-            library_source,
+            library_source or {},
             library_window_aligned=True,
         )
         m = evaluation.metrics
-        backtest = run_backtest(
-            sign * factor, market, start, end, BacktestSettings.from_protocol(self.protocol)
-        )
-        try:
-            sharpe_daily, skew, kurt, n_obs = moments(evaluation.series.ls_net)
-            ledger: dict[str, float | None] = {
-                "sharpe_daily": sharpe_daily,
-                "skew": skew,
-                "kurt_raw": kurt,
-                "n_obs": n_obs,
-            }
-        except ValueError:
-            ledger = {
-                "sharpe_daily": None,
-                "skew": None,
-                "kurt_raw": None,
-                "n_obs": int(np.isfinite(evaluation.series.ls_net).sum()),
-            }
+        backtest = run_backtest(sign * scores, market, start, end, self.backtest_settings())
+        returns = self.trial_returns(evaluation, backtest)
+        ledger = _ledger(returns)
         metrics: dict[str, float | None] = {
             "dates_evaluated": float(m.dates_evaluated),
             "ic_mean": m.ic_mean,
@@ -250,6 +301,49 @@ class FactorPlugin:
         for name, value in backtest.metrics.model_dump().items():
             metrics[f"reference_{name}"] = _f(value)
         metrics = {k: _f(v) for k, v in sorted(metrics.items())}
+        dates = [d.isoformat() for d in evaluation.series.dates]
+        series = {
+            "rankic": {
+                "date": dates,
+                "ic": evaluation.series.ic.tolist(),
+                "rank_ic": evaluation.series.rank_ic.tolist(),
+            },
+            "ls_returns": {
+                "date": dates,
+                "ls": evaluation.series.ls.tolist(),
+                "ls_net": evaluation.series.ls_net.tolist(),
+                "top_turnover": evaluation.series.top_turnover.tolist(),
+                "bottom_turnover": evaluation.series.bottom_turnover.tolist(),
+            },
+            "nav": {
+                "date": [d.isoformat() for d in backtest.dates],
+                "nav": backtest.nav.tolist(),
+                "gross_return": backtest.gross_return.tolist(),
+                "net_return": backtest.net_return.tolist(),
+                "benchmark_return": backtest.benchmark_return.tolist(),
+                "turnover": backtest.turnover.tolist(),
+                "holdings": backtest.holdings.tolist(),
+            },
+        }
+        return Measurement(evaluation, backtest, metrics, ledger, returns, series)
+
+    # W1 ------------------------------------------------------------------------------
+
+    def run_w1(
+        self,
+        manifest: FactorManifest,
+        factor: Array,
+        market: Market,
+        start: date,
+        end: date,
+        library_source: Mapping[str, Array],
+        coverage: float | None,
+        complexity: int,
+    ) -> tuple[StageOutcome, FactorEvaluation]:
+        sign = manifest.declared.expected_sign
+        measured = self.measure(factor, sign, market, start, end, library_source)
+        m = measured.evaluation.metrics
+        metrics = measured.metrics
         gates = self.w1_gates(metrics, sign, m.library_correlation.vacuous, coverage)
         passed = all(g["passed"] for g in gates)
         library = m.library_correlation
@@ -266,7 +360,20 @@ class FactorPlugin:
             },
             "complexity": complexity,
         }
-        raw = {
+        raw = self._w1_raw(measured, sign, coverage, complexity)
+        outcome = StageOutcome(
+            "w1", passed, [], metrics, summary, {}, raw | {"ledger": measured.ledger},
+            measured.series,
+        )  # fmt: skip
+        return outcome, measured.evaluation
+
+    def _w1_raw(
+        self, measured: Measurement, sign: int, coverage: float | None, complexity: int
+    ) -> dict[str, Any]:
+        m = measured.evaluation.metrics
+        library = m.library_correlation
+        return {
+            "kind": self.kind,
             "sign": sign,
             "rankic_mean": m.rankic_mean,
             "rankic_ir": m.rankic_ir,
@@ -287,32 +394,6 @@ class FactorPlugin:
             "size_neutral_rankic": m.size_neutral_rankic,
             "complexity": complexity,
         }
-        series = {
-            "rankic": {
-                "date": [d.isoformat() for d in evaluation.series.dates],
-                "ic": evaluation.series.ic.tolist(),
-                "rank_ic": evaluation.series.rank_ic.tolist(),
-            },
-            "ls_returns": {
-                "date": [d.isoformat() for d in evaluation.series.dates],
-                "ls": evaluation.series.ls.tolist(),
-                "ls_net": evaluation.series.ls_net.tolist(),
-                "top_turnover": evaluation.series.top_turnover.tolist(),
-                "bottom_turnover": evaluation.series.bottom_turnover.tolist(),
-            },
-            "nav": {
-                "date": [d.isoformat() for d in backtest.dates],
-                "nav": backtest.nav.tolist(),
-                "gross_return": backtest.gross_return.tolist(),
-                "net_return": backtest.net_return.tolist(),
-                "turnover": backtest.turnover.tolist(),
-                "holdings": backtest.holdings.tolist(),
-            },
-        }
-        outcome = StageOutcome(
-            "w1", passed, [], metrics, summary, {}, raw | {"ledger": ledger}, series
-        )
-        return outcome, evaluation
 
     def w1_gates(
         self,
@@ -328,46 +409,99 @@ class FactorPlugin:
             value = metrics.get(name)
             return None if value is None else sign * value
 
-        def gate(
-            name: str, value: float | None, threshold: float, above: bool = True
-        ) -> dict[str, Any]:
-            passed = value is not None and (value >= threshold if above else value <= threshold)
+        gates = [
+            _gate("sign_consistency", metrics["sign_consistency"], float(g["sign"])),
+            _gate("rankic_mean", adjusted("rankic_mean"), float(g["rankic_min"])),
+            _gate("rankic_ir", adjusted("rankic_ir"), float(g["ir_min"])),
+            _gate("rankic_t_nw", adjusted("rankic_t_nw"), float(g["nw_t_min"])),
+            _gate("top_turnover", metrics["top_turnover"], float(g["turnover_max"]), above=False),
+        ]
+        gates.append(
+            self._library_gate(
+                library_vacuous,
+                metrics["library_max_abs_correlation"],
+                "library_correlation",
+                float(g["library_correlation_max"]),
+            )
+        )
+        gates.append(_gate("coverage", coverage, float(self.screening["coverage_min"])))
+        return gates
+
+    @staticmethod
+    def _library_gate(
+        vacuous: bool, value: float | None, name: str, threshold: float
+    ) -> dict[str, Any]:
+        if vacuous:
             return {
                 "name": name,
-                "passed": bool(passed),
-                "value": value,
+                "passed": True,
+                "value": None,
                 "threshold": threshold,
-                "skipped_reason": None,
+                "skipped_reason": "the library is empty; the gate is vacuous",
             }
+        return _gate(name, value, threshold, above=False)
 
-        gates = [
-            gate("sign_consistency", metrics["sign_consistency"], float(g["sign"])),
-            gate("rankic_mean", adjusted("rankic_mean"), float(g["rankic_min"])),
-            gate("rankic_ir", adjusted("rankic_ir"), float(g["ir_min"])),
-            gate("rankic_t_nw", adjusted("rankic_t_nw"), float(g["nw_t_min"])),
-            gate("top_turnover", metrics["top_turnover"], float(g["turnover_max"]), above=False),
-        ]
-        if library_vacuous:
-            gates.append(
-                {
-                    "name": "library_correlation",
-                    "passed": True,
-                    "value": None,
-                    "threshold": float(g["library_correlation_max"]),
-                    "skipped_reason": "the library is empty; the gate is vacuous",
-                }
-            )
+    # W2 and the W3 holdout -------------------------------------------------------------
+
+    def run_window(
+        self,
+        window: Literal["W2", "W3"],
+        sign: Literal[1, -1],
+        scores: Array,
+        market: Market,
+        start: date,
+        end: date,
+    ) -> StageOutcome:
+        """W2 validation or the private W3 holdout: the W1 measurement, other gates."""
+        measured = self.measure(scores, sign, market, start, end)
+        metrics = measured.metrics
+        if window == "W2":
+            gates = self.w2_gates(metrics, sign)
         else:
-            gates.append(
-                gate(
-                    "library_correlation",
-                    metrics["library_max_abs_correlation"],
-                    float(g["library_correlation_max"]),
-                    above=False,
-                )
-            )
-        gates.append(gate("coverage", coverage, float(self.screening["coverage_min"])))
-        return gates
+            gates = self.holdout_gates(metrics, sign)
+        passed = all(g["passed"] for g in gates)
+        summary = {
+            "status": "PASS" if passed else "FAIL",
+            "gates": gates,
+            "sign": sign,
+            "window": {"start": start.isoformat(), "end": end.isoformat()},
+        }
+        rankic = metrics.get("rankic_mean")
+        raw = {
+            "kind": self.kind,
+            "sign": sign,
+            # The Ladder's query statistic: s x RankIC_mean (Section 9.2).
+            "ladder_value": None if rankic is None else sign * rankic,
+            "ledger": measured.ledger,
+        }
+        return StageOutcome(
+            WINDOW_STAGE[window], passed, [], metrics, summary, {}, raw, measured.series
+        )
+
+    def w2_gates(self, metrics: dict[str, float | None], sign: int) -> list[dict[str, Any]]:
+        """The public W2 factor gate (Section 8.8)."""
+        g = self.protocol["gates"]["w2_factor"]
+        rankic, ir = metrics.get("rankic_mean"), metrics.get("rankic_ir")
+        return [
+            _gate("sign_consistency", metrics["sign_consistency"], 1.0),
+            _gate("rankic_mean", None if rankic is None else sign * rankic, float(g["rankic_min"])),
+            _gate("rankic_ir", None if ir is None else sign * ir, float(g["ir_min"])),
+            _gate("ls_net_sharpe", metrics.get("ls_net_sharpe"), float(g["ls_net_sharpe_min"])),
+        ]
+
+    def holdout_gates(self, metrics: dict[str, float | None], sign: int) -> list[dict[str, Any]]:
+        """The private W3 holdout gate (Section 8.8)."""
+        g = self.protocol["gates"]["holdout_factor"]
+        rankic = metrics.get("rankic_mean")
+        return [
+            _gate("rankic_mean", None if rankic is None else sign * rankic, float(g["rankic_min"])),
+            _gate("ls_net_sharpe", metrics.get("ls_net_sharpe"), float(g["ls_net_sharpe_min"])),
+            _gate(
+                "reference_ir",
+                metrics.get("reference_information_ratio"),
+                float(g["reference_ir_min"]),
+            ),
+        ]
 
     # Release mapping -----------------------------------------------------------------
 
@@ -410,6 +544,7 @@ class FactorPlugin:
         if gross is not None and net is not None and gross > 0:
             if net < flags_cfg["cost_dominated_net_over_gross_below"] * gross:
                 flags.add(DiagnosticFlag.COST_DOMINATED)
+        strategy = self._release_strategy_fields(raw, r, flags)
         return W1Content(
             type="w1",
             rankic_mean=quantize(rankic, r["rankic"]),
@@ -441,7 +576,258 @@ class FactorPlugin:
             else quantize(raw["size_neutral_rankic"], r["rankic"]),
             complexity=int(raw["complexity"]),
             flags=sorted(flags, key=lambda f: f.value),
+            **strategy,
         )
+
+    def _release_strategy_fields(
+        self, raw: dict[str, Any], rounding: dict[str, Any], flags: set[DiagnosticFlag]
+    ) -> dict[str, float | None]:
+        # The raw payload says its kind, so one mapping serves factors and strategies.
+        return release_strategy_fields(raw, rounding, flags)
+
+
+def release_w2(raw: dict[str, Any], policy: dict[str, Any]) -> W2Content:
+    """PASS or FAIL, the family's Ladder status and, only when the family best improved
+    by at least eta, the new best rounded to the Ladder step (Section 9.2, REL-06)."""
+    improved = bool(raw["improved"])
+    best = raw.get("released_best")
+    return W2Content(
+        type="w2",
+        status="PASS" if raw["passed"] else "FAIL",
+        ladder_status="IMPROVED" if improved else "UNCHANGED",
+        family_best_rankic=quantize(float(best), policy["rounding"]["ladder_best"])
+        if improved and best is not None
+        else None,
+    )
+
+
+def release_sim(raw: dict[str, Any], policy: dict[str, Any]) -> SimulationContent:
+    """Completion status and the forward RankIC and Sharpe buckets, released only when
+    incubation ends (Section 9.2)."""
+    sharpe = raw.get("sharpe")
+    return SimulationContent(
+        type="sim",
+        status=raw["status"],
+        forward_rankic_bucket=rankic_bucket(raw.get("rankic_mean"), policy["sim_rankic_buckets"]),
+        forward_sharpe_bucket=quantize(
+            float(sharpe) if sharpe is not None and math.isfinite(sharpe) else 0.0,
+            policy["rounding"]["sharpe"],
+        ),
+    )
+
+
+@dataclass(frozen=True)
+class LadderStep:
+    """One comparison of the Ladder (Blum and Hardt): the family best moves only when a
+    new W2 value beats it by at least eta. The first best must clear 0 by eta, so a
+    family has no best until it shows an edge."""
+
+    value: float | None
+    previous_best: float
+    improved: bool
+    best: float
+
+
+def ladder_step(previous_best: float | None, value: float | None, eta: float) -> LadderStep:
+    base = 0.0 if previous_best is None else previous_best
+    improved = value is not None and value >= base + eta
+    best = float(value) if improved and value is not None else base
+    return LadderStep(value, base, improved, best)
+
+
+class StrategyPlugin(FactorPlugin):
+    """v1 strategies (Section 7.8): a zscore_weighted_sum of published factor versions,
+    traded with the strategy's own TopK-dropout parameters and the protocol's costs."""
+
+    kind = "strategy"
+
+    def __init__(self, protocol: dict[str, Any], manifest: StrategyManifest) -> None:
+        super().__init__(protocol)
+        self.manifest = manifest
+        self.gates = protocol["gates"]["w1_strategy"]
+        portfolio = manifest.implementation.portfolio
+        self.top_k, self.dropout = portfolio.top_k, portfolio.dropout
+
+    def backtest_settings(self) -> BacktestSettings:
+        return BacktestSettings.from_protocol(self.protocol, self.top_k, self.dropout)
+
+    def trial_returns(self, evaluation: FactorEvaluation, backtest: BacktestResult) -> Array:
+        """A long-only strategy's long-short counterpart: its daily net return in excess
+        of the equal-weight benchmark, so DSR, PBO and HLZ measure skill, not beta."""
+        return backtest.net_return - backtest.benchmark_return
+
+    def component_checks(self, components: Mapping[str, tuple[str, Any]]) -> list[ReasonCode]:
+        """Every component is a published factor version that passed screening, within the
+        protocol's strategy bounds. components maps version id -> (kind, intake state)."""
+        bounds = self.protocol["strategy_bounds"]
+        impl = self.manifest.implementation
+        if len(impl.components) > int(bounds["max_components"]):
+            return [ReasonCode.COMPONENT_INVALID]
+        low_k, high_k = (int(x) for x in bounds["top_k"])
+        low_d, high_d = (int(x) for x in bounds["dropout"])
+        if not (low_k <= self.top_k <= high_k and low_d <= self.dropout <= high_d):
+            return [ReasonCode.COMPONENT_INVALID]
+        for component in impl.components:
+            found = components.get(str(component.version_id))
+            if found is None or found[0] != "factor" or found[1] not in SCREENED_STATES:
+                return [ReasonCode.COMPONENT_INVALID]
+        return []
+
+    def compose(self, values: Mapping[str, Array], market: Market) -> Array:
+        parts = self.parts(values)
+        return composite(parts, market, self.settings)
+
+    def parts(self, values: Mapping[str, Array]) -> list[CompositePart]:
+        return [
+            CompositePart(str(c.version_id), c.sign, c.weight, values[str(c.version_id)])
+            for c in self.manifest.implementation.components
+        ]
+
+    def run_w1(  # type: ignore[override]
+        self,
+        manifest: StrategyManifest,
+        factor: Array,
+        market: Market,
+        start: date,
+        end: date,
+        library_source: Mapping[str, Array],
+        coverage: float | None,
+        complexity: int,
+        component_values: Mapping[str, Array] | None = None,
+    ) -> tuple[StageOutcome, FactorEvaluation]:
+        measured = self.measure(factor, 1, market, start, end, library_source)
+        m = measured.evaluation.metrics
+        metrics = measured.metrics
+        gates = self.w1_gates(metrics, 1, m.library_correlation.vacuous, coverage)
+        passed = all(g["passed"] for g in gates)
+        contributions: list[dict[str, Any]] = []
+        full = None
+        if component_values is not None:
+            full, rows = contribution_table(
+                self.parts(component_values), market, start, end, self.settings
+            )
+            components = self.manifest.implementation.components
+            weights = normalized_weights([c.weight for c in components])
+            for component, weight, row in zip(components, weights, rows, strict=True):
+                contributions.append(
+                    {
+                        "version_id": str(component.version_id),
+                        "sign": component.sign,
+                        "weight": weight,
+                        "rankic_without": row.rankic_without,
+                        "rankic_change": row.rankic_change,
+                    }
+                )
+        library = m.library_correlation
+        summary = {
+            "status": "PASS" if passed else "FAIL",
+            "gates": gates,
+            "sign": 1,
+            "window": {"start": start.isoformat(), "end": end.isoformat()},
+            "library": {
+                "vacuous": library.vacuous,
+                "size": len(library_source),
+                "argmax_version_id": library.argmax,
+                "note": library.note,
+            },
+            "complexity": complexity,
+            "portfolio": {"top_k": self.top_k, "dropout": self.dropout},
+            "composite_rankic_mean": full,
+            "contributions": contributions,
+        }
+        raw = self._w1_raw(measured, 1, coverage, complexity) | {
+            "strategy_net_sharpe": metrics.get("reference_sharpe"),
+            "strategy_ir": metrics.get("reference_information_ratio"),
+            "strategy_max_drawdown": metrics.get("reference_max_drawdown"),
+            "drawdown_max": float(self.gates["drawdown_max"]),
+        }
+        outcome = StageOutcome(
+            "w1", passed, [], metrics, summary, {}, raw | {"ledger": measured.ledger},
+            measured.series,
+        )  # fmt: skip
+        return outcome, measured.evaluation
+
+    def w1_gates(
+        self,
+        metrics: dict[str, float | None],
+        sign: int,
+        library_vacuous: bool,
+        coverage: float | None,
+    ) -> list[dict[str, Any]]:
+        """The public W1 strategy gate (Section 8.8) on the composite and its backtest."""
+        g = self.gates
+        return [
+            _gate("composite_rankic_mean", metrics.get("rankic_mean"), float(g["rankic_min"])),
+            _gate("composite_rankic_t_nw", metrics.get("rankic_t_nw"), float(g["nw_t_min"])),
+            _gate("net_sharpe", metrics.get("reference_sharpe"), float(g["net_sharpe_min"])),
+            _ir_gate(metrics, g),
+            _gate(
+                "max_drawdown",
+                metrics.get("reference_max_drawdown"),
+                float(g["drawdown_max"]),
+                above=False,
+            ),
+            self._library_gate(
+                library_vacuous,
+                metrics.get("library_max_abs_correlation"),
+                "strategy_correlation",
+                float(g["strategy_correlation_max"]),
+            ),
+        ]
+
+    def w2_gates(self, metrics: dict[str, float | None], sign: int) -> list[dict[str, Any]]:
+        g = self.protocol["gates"]["w2_strategy"]
+        return [
+            _gate("net_sharpe", metrics.get("reference_sharpe"), float(g["net_sharpe_min"])),
+            _ir_gate(metrics, g),
+        ]
+
+    def holdout_gates(self, metrics: dict[str, float | None], sign: int) -> list[dict[str, Any]]:
+        g = self.protocol["gates"]["holdout_strategy"]
+        return [
+            _gate("net_sharpe", metrics.get("reference_sharpe"), float(g["net_sharpe_min"])),
+            _ir_gate(metrics, g),
+        ]
+
+
+def release_strategy_fields(
+    raw: dict[str, Any], rounding: dict[str, Any], flags: set[DiagnosticFlag]
+) -> dict[str, float | None]:
+    """The strategy counterparts of the W1 factor fields (Section 8.10): net Sharpe, IR and
+    drawdown buckets, and HIGH_DRAWDOWN when the drawdown is above the gate."""
+    if raw.get("kind") != "strategy":
+        return {}
+    drawdown = raw.get("strategy_max_drawdown")
+    if drawdown is not None and drawdown > float(raw["drawdown_max"]):
+        flags.add(DiagnosticFlag.HIGH_DRAWDOWN)
+    sharpe, ir = raw.get("strategy_net_sharpe"), raw.get("strategy_ir")
+    return {
+        "strategy_net_sharpe": None if sharpe is None else quantize(sharpe, rounding["sharpe"]),
+        "strategy_ir": None if ir is None else quantize(ir, rounding["ir"]),
+        "strategy_drawdown_bucket": None
+        if drawdown is None
+        else clamp(quantize(drawdown, rounding["shares"]), 0.0, 1.0),
+    }
+
+
+# Intake states a component may be in: it passed screening (Section 7.8).
+SCREENED_STATES = frozenset(
+    {
+        "W1Evaluated", "W1GateFailed", "W2Queued", "W2Failed", "W2Expired", "HoldoutCheck",
+        "NotAdvanced", "AwaitingSlot", "Incubating", "AcceptanceReview", "Accepted",
+        "Rejected", "Monitoring", "Retired",
+    }
+)  # fmt: skip
+# Intake states of a component still on its way through intake or screening.
+IN_FLIGHT_STATES = frozenset({"Discovered", "Held", "Fingerprinting", "Deferred", "Screening"})
+
+
+def plugin_for(
+    protocol: dict[str, Any], manifest: FactorManifest | StrategyManifest
+) -> FactorPlugin:
+    if isinstance(manifest, StrategyManifest):
+        return StrategyPlugin(protocol, manifest)
+    return FactorPlugin(protocol)
 
 
 def quantize(value: float, step: float) -> float:
@@ -473,11 +859,35 @@ def t_bucket(
     return labels[min(index, len(labels) - 1)]
 
 
-def released_value_count(content: W1Content) -> int:
-    """Numeric values a W1 report releases, for burn accounting (Section 9.4)."""
+def released_value_count(content: W1Content | W2Content) -> int:
+    """Numeric values a report releases, for burn accounting (Section 9.4)."""
+    if isinstance(content, W2Content):
+        return int(content.family_best_rankic is not None)
     count = 6  # rankic_mean, rankic_ir, hit_ratio, ls_net_sharpe, monotonicity, top_turnover
     count += 1  # rank_autocorrelation
     count += len(content.decay_profile) + len(content.yearly_rankic)
     count += content.max_library_correlation is not None
     count += content.size_neutral_rankic is not None
+    strategy = (
+        content.strategy_net_sharpe,
+        content.strategy_ir,
+        content.strategy_drawdown_bucket,
+    )
+    count += sum(v is not None for v in strategy)
     return count
+
+
+def rankic_bucket(
+    value: float | None, edges: list[float]
+) -> Literal["negative", "0_to_0.01", "0.01_to_0.03", "above_0.03"]:
+    """The sim report's forward RankIC bucket (Section 9.2) from the policy's edges."""
+    labels: list[Literal["negative", "0_to_0.01", "0.01_to_0.03", "above_0.03"]] = [
+        "negative",
+        "0_to_0.01",
+        "0.01_to_0.03",
+        "above_0.03",
+    ]
+    if value is None or not math.isfinite(value):
+        return "negative"
+    index = sum(1 for edge in edges if value >= edge)
+    return labels[min(index, len(labels) - 1)]

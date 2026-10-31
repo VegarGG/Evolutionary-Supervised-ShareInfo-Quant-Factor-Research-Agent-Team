@@ -141,6 +141,7 @@ EVAL_SERVICES = {
     "eval-scheduler": ["python", "-m", "qfr_eval.scheduler"],
     "eval-worker": ["python", "-m", "qfr_eval.worker"],
     "release-worker": ["python", "-m", "qfr_eval.release"],
+    "sim-engine": ["python", "-m", "qfr_eval.sim"],
     "feedback-api": ["python", "-m", "qfr_eval.feedback_api"],
     "eval-admin-api": ["python", "-m", "qfr_eval.admin_api"],
 }
@@ -163,6 +164,7 @@ def test_the_evaluation_store_is_written_only_by_the_worker():
         "eval-worker": True,
         "eval-scheduler": False,
         "eval-admin-api": False,
+        "sim-engine": False,
     }
 
 

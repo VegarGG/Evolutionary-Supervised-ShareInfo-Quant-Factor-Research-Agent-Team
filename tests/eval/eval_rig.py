@@ -1,5 +1,5 @@
-"""The evaluation zone in process: registry-api, eval-scheduler, eval-worker and the
-release engine over real PostgreSQL, on the small synthetic world.
+"""The evaluation zone in process: registry-api, eval-scheduler, eval-worker, the release
+engine and the simulation engine over real PostgreSQL, on the small synthetic world.
 
 registry_db and eval_db each run inside an outer transaction that is rolled back after
 the test, so every test starts from an empty stack. Each service write is a savepoint
@@ -11,17 +11,27 @@ import io
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import yaml
 from qfr_core.config import RuntimeSettings, logging_config
 from qfr_core.logging import JsonLogger
 from qfr_eval.compute import InlineRunner, Runner
+from qfr_eval.configs import activate_version, create_version
 from qfr_eval.registry import RegistryReader
 from qfr_eval.release import ReleaseEngine
-from qfr_eval.runtime import SCHEDULER_LOCK, Database, EvalEnvironment, FixedClock, eval_config
+from qfr_eval.runtime import (
+    SCHEDULER_LOCK,
+    Database,
+    EvalConfig,
+    EvalEnvironment,
+    FixedClock,
+    eval_config,
+)
 from qfr_eval.scheduler import Scheduler
+from qfr_eval.sim import SimEngine
 from qfr_eval.worker import Worker
 from qfr_registry.db import WRITE_LOCK
 from sqlalchemy import create_engine, text
@@ -80,6 +90,7 @@ class EvalRig:
     worker: Worker
     release: ReleaseEngine
     tmp_path: Path
+    sim: SimEngine
 
     def drain(self, limit: int = 500) -> int:
         """Run the worker until the queue is empty (jobs due now)."""
@@ -95,9 +106,45 @@ class EvalRig:
             self.drain()
         self.scheduler.tick()
 
+    def run_days(self, days: int, rounds: int = 2, step: timedelta = timedelta(days=1)) -> None:
+        """Move the clock a step at a time; each step runs the scheduler and the worker,
+        releases, and ticks the simulation engine."""
+        for _ in range(days):
+            self.clock.advance(seconds=step.total_seconds())
+            self.cycle(rounds)
+            self.release.tick()
+            self.sim.tick()
+            self.release.tick()
+
     def state_counts(self) -> dict[str, int]:
         rows = self.db.rows("SELECT state, count(*) AS n FROM eval.intake GROUP BY state")
         return {r.state: int(r.n) for r in rows}
+
+    def activate_protocol(self, version: str, gates: dict[str, dict[str, Any]]) -> None:
+        """Activate a test protocol version: the shipped protocol with the gate values the
+        test names. It is never shipped; the first scheduler tick bootstraps the shipped
+        versions and the epoch, then this version replaces the shipped protocol."""
+        self.scheduler.tick()
+        raw = yaml.safe_load(PROTOCOL.read_text(encoding="utf-8"))
+        raw["version"] = version
+        for name, values in gates.items():
+            raw["gates"][name] = raw["gates"][name] | values
+        now = self.clock.now()
+        with self.db.transaction() as conn:
+            created, _ = create_version(conn, "protocol", yaml.safe_dump(raw), "test", "r", now)
+            activate_version(conn, "protocol", created.id, created.version, "test", None, "r", now)
+
+
+PROTOCOL = Path("configs/protocols/cn_csi300_daily_v1.yaml")
+
+
+def replay_config(days_per_tick: int) -> EvalConfig:
+    """The shipped evaluator settings with replay incubation (synthetic worlds only)."""
+    config = eval_config(Path("configs"))
+    simulation = config.simulation.model_copy(
+        update={"mode": "replay", "replay_days_per_tick": days_per_tick}
+    )
+    return config.model_copy(update={"simulation": simulation})
 
 
 @contextmanager
@@ -108,6 +155,7 @@ def eval_rig(
     runner: Runner | None = None,
     epoch: dict[str, Any] | None = None,
     registry: RegistryRig | None = None,
+    config: EvalConfig | None = None,
 ) -> Iterator[EvalRig]:
     db = TransactionalEvalDatabase(database_url("EVAL"))
     try:
@@ -128,7 +176,7 @@ def eval_rig(
                 image_digest="sha256:test",
                 worker_id="test-worker",
             )
-            config = eval_config(Path("configs"))
+            config = config or eval_config(Path("configs"))
             reader = RegistryReader(
                 "http://registry-api:8000",
                 TOKENS["evaluator"],
@@ -144,7 +192,11 @@ def eval_rig(
                 runner or InlineRunner(), clock,
             )  # fmt: skip
             release = ReleaseEngine(db, config, eval_logger(tmp_path, "release-worker"), clock)
-            yield EvalRig(reg, db, clock, env, scheduler, worker, release, tmp_path)
+            sim = SimEngine(
+                db, env, config, eval_logger(tmp_path, "sim-engine"), runner or InlineRunner(),
+                clock,
+            )  # fmt: skip
+            yield EvalRig(reg, db, clock, env, scheduler, worker, release, tmp_path, sim)
     finally:
         db.close()
 

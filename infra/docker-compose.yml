@@ -777,7 +777,7 @@
         "no-new-privileges:true"
       ],
       "tmpfs": [
-        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+        "/tmp:rw,noexec,nosuid,size=256m,uid=10001,gid=10001"
       ],
       "restart": "no",
       "deploy": {
@@ -793,7 +793,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 180 else 1)"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -802,12 +802,12 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "eval",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-eval"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-eval:phase3",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -815,7 +815,12 @@
         "QFR_ZONE": "eval",
         "TZ": "Asia/Shanghai",
         "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
-        "QFR_FULL_SNAPSHOT_DIR": "/data/full"
+        "QFR_FULL_SNAPSHOT_DIR": "/data/full",
+        "QFR_EVAL_STORE_DIR": "/data/eval-store",
+        "QFR_SCRATCH_DIR": "/tmp/scratch",
+        "QFR_HEARTBEAT_FILE": "/tmp/heartbeat",
+        "QFR_GIT_SHA": "${QFR_GIT_SHA:-}",
+        "QFR_IMAGE_DIGEST": "${QFR_EVAL_IMAGE_DIGEST:-}"
       },
       "volumes": [
         {
@@ -832,6 +837,12 @@
           "source": "snapshots_full",
           "target": "/data/full",
           "read_only": true
+        },
+        {
+          "type": "volume",
+          "source": "eval_store",
+          "target": "/data/eval-store",
+          "read_only": true
         }
       ],
       "depends_on": {
@@ -847,6 +858,11 @@
       },
       "networks": [
         "eval_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_eval.sim"
       ]
     },
     "feedback-api": {

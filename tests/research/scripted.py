@@ -9,6 +9,7 @@ The expressions an engineer drafts are given by each test; there is no default.
 import json
 import re
 from dataclasses import dataclass, field
+from itertools import combinations
 from typing import Any
 
 from pydantic_ai.exceptions import ModelHTTPError
@@ -26,6 +27,7 @@ from qfr_research.providers import ModelRef
 from qfr_research.settings import ResearchConfig
 
 UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+STRATEGY_LEADERS = 4  # components the scripted strategy engineer combines at most
 CAVEATS = [
     "Released values are coarsened, so small differences are not meaningful.",
     "Multiple testing: many candidates were tried in this family and program.",
@@ -40,6 +42,7 @@ class Script:
     critic_verdicts: list[str] = field(default_factory=list)  # consumed in order, then approve
     candidates_per_task: int = 2
     engineer_uses_tool: bool = True
+    strategy_top_k: int = 20  # the strategy portfolio when the brief's spec names no top_k
     failing: set[str] = field(default_factory=set)  # "provider/model" refs that answer 503
     balance: dict[str, Any] = field(default_factory=lambda: {"available_balance": 50.0})
     calls: list[dict[str, Any]] = field(default_factory=list)
@@ -88,6 +91,10 @@ def tool_returns(messages: list[ModelMessage], name: str) -> list[Any]:
     ]
 
 
+def _key(components: list[dict[str, Any]], top_k: int) -> tuple[Any, ...]:
+    return (top_k, *sorted((c["version_id"], c["sign"], c["weight"]) for c in components))
+
+
 def answer(info: AgentInfo, value: dict[str, Any]) -> ModelResponse:
     """Structured output through the output tool, or JSON text in prompted mode."""
     if info.output_tools:
@@ -100,6 +107,7 @@ class ScriptedModels:
 
     def __init__(self, config: ResearchConfig, script: Script) -> None:
         self.config, self.script = config, script
+        self.strategies_returned: set[tuple[Any, ...]] = set()
 
     def model(self, role: str, ref: ModelRef) -> FunctionModel:
         def respond(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
@@ -143,6 +151,8 @@ class ScriptedModels:
             }
             for island in proposal["islands"]
         ]
+        # Strategy modes: the compose_strategy tasks the engine proposed, unchanged.
+        tasks += [t for t in proposal["tasks"] if t["type"] == "compose_strategy"]
         return answer(
             info,
             {
@@ -179,6 +189,8 @@ class ScriptedModels:
         )
 
     def _engineer(self, text: str, messages: list[ModelMessage], info: AgentInfo) -> Any:
+        if "working in strategy mode" in text:
+            return self._strategy(text, messages, info)
         tools = {t.name for t in info.function_tools}
         expressions = self.script.expressions
         if (
@@ -207,6 +219,90 @@ class ScriptedModels:
             for expression, sign in expressions[:count]
         ]
         return answer(info, {"drafts": drafts})
+
+    def _strategy(self, text: str, messages: list[ModelMessage], info: AgentInfo) -> Any:
+        """A StrategyDraft, as the strategy prompt asks: it ranks the listed components by
+        their released W1 RankIC_IR (sign-adjusted), leaving out those whose released
+        long-short net Sharpe is not positive (all are used when none qualifies), measures
+        every equally weighted composition of the four leaders with workbench.evaluate
+        when it has the tool, and returns the one with the best W0 net Sharpe it has not
+        returned before. The portfolio follows the brief's strategy specification."""
+        listed = text.split("Available factor versions with their released report digests:", 1)
+        assert len(listed) == 2, "the strategy prompt lists its components"
+        components = []
+        for line in listed[1].splitlines():
+            try:
+                components.append(json.loads(line[2:]))
+            except ValueError:
+                continue  # a line cut by the context budget, or the truncation marker
+        spec_line = text.split("Strategy specification from the brief:\n", 1)[1].split("\n", 1)[0]
+        spec = json.loads(spec_line)
+        most = re.search(r"from at most (\d+) published factor versions", text)
+        size = min(int(most.group(1)) if most else len(components), len(components))
+        top_k = int(spec.get("top_k", self.script.strategy_top_k))
+        dropout = int(spec.get("dropout", 5))
+
+        def score(c: dict[str, Any]) -> float:
+            w1 = (c.get("released") or {}).get("w1") or {}
+            ir, net = w1.get("rankic_ir"), w1.get("ls_net_sharpe")
+            if ir is None or net is None or float(net) <= 0:
+                return float("-inf")  # no W1 report, or it loses money after costs
+            return int(c["expected_sign"]) * float(ir)
+
+        ranked = (
+            sorted((c for c in components if score(c) > 0), key=score, reverse=True) or components
+        )
+        leaders = ranked[:STRATEGY_LEADERS]
+        options = [
+            list(option)
+            for n in range(1, min(size, len(leaders)) + 1)
+            for option in combinations(leaders, n)
+        ]
+
+        def parts(option: list[dict[str, Any]]) -> list[dict[str, Any]]:
+            weight = round(1 / len(option), 2)
+            return [
+                {"version_id": c["version_id"], "sign": int(c["expected_sign"]), "weight": weight}
+                for c in option
+            ]
+
+        tools = {t.name for t in info.function_tools}
+        measured = tool_returns(messages, "workbench_evaluate")
+        if "workbench_evaluate" in tools and not measured:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "workbench_evaluate",
+                        {"components": parts(o), "top_k": top_k, "dropout": dropout},
+                    )
+                    for o in options
+                ]
+            )
+        sharpe = {
+            tuple(c["version_id"] for c in r["components"]): r["reference_sharpe"]
+            for r in measured
+            if isinstance(r, dict) and r.get("ok") and r.get("reference_sharpe") is not None
+        }
+        options.sort(
+            key=lambda o: sharpe.get(tuple(c["version_id"] for c in o), float("-inf")),
+            reverse=True,
+        )
+        fresh = [o for o in options if _key(parts(o), top_k) not in self.strategies_returned]
+        chosen = parts((fresh or options)[0])
+        self.strategies_returned.add(_key(chosen, top_k))
+        ids = [c["version_id"] for c in chosen]
+        return answer(
+            info,
+            {
+                "components": chosen,
+                "portfolio": {"top_k": top_k, "dropout": dropout},
+                "composition_rationale": "Equal weights over the strongest released "
+                "components, chosen by W0 net Sharpe.",
+                "expected_horizon_days": 5,
+                "parent_version_ids": ids,
+                "change_summary": None,
+            },
+        )
 
     def _critic(self, text: str, messages: list[ModelMessage], info: AgentInfo) -> Any:
         verdict = self.script.critic_verdicts.pop(0) if self.script.critic_verdicts else "approve"

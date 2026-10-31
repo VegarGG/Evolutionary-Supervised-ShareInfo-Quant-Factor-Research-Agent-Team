@@ -22,6 +22,7 @@ import pytest
 from qfr_core.config import logging_config
 from qfr_core.eval_api import Card, ReportPage
 from qfr_core.logging import JsonLogger
+from qfr_eval.runtime import EvalConfig
 from qfr_registry.db import WRITE_LOCK
 from qfr_research import api as research_api
 from qfr_research.clients import FeedbackClient, RegistryClient, ServiceUnavailable
@@ -269,6 +270,9 @@ def research_stack(
     zones: BuiltZones,
     script: Script,
     models: Callable[[ResearchConfig, Script], Any] = ScriptedModels,
+    *,
+    epoch: dict[str, Any] | None = None,
+    config: EvalConfig | None = None,
 ) -> Iterator[ResearchStack]:
     admin_late, feedback_late, research_late = LateApp(), LateApp(), LateApp()
     transports: dict[str, httpx.AsyncBaseTransport] = {
@@ -279,7 +283,7 @@ def research_stack(
     monkeypatch.setenv("RESEARCH_CONTROL_TOKEN", RESEARCH_TOKEN)
     with (
         setup_rig(tmp_path, monkeypatch, transports) as mcp,
-        eval_rig(tmp_path, zones, registry=mcp.registry) as rig,
+        eval_rig(tmp_path, zones, registry=mcp.registry, epoch=epoch, config=config) as rig,
     ):
         admin_late.app, feedback_late.app = eval_apps(rig)
         with (

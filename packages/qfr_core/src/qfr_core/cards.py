@@ -13,7 +13,17 @@ from typing import Any
 from pydantic import JsonValue
 
 from qfr_core.config import canonical_json
-from qfr_core.contracts import DiagnosticFlag, IntakeContent, LibraryContent, ReasonCode, W1Content
+from qfr_core.contracts import (
+    AdvancementContent,
+    DecisionContent,
+    DiagnosticFlag,
+    IntakeContent,
+    LibraryContent,
+    ReasonCode,
+    SimulationContent,
+    W1Content,
+    W2Content,
+)
 
 PROTOCOL_FIELDS = (
     "protocol_id",
@@ -36,6 +46,10 @@ REPORT_FIELDS: dict[str, list[str]] = {
     "intake": sorted(IntakeContent.model_fields),
     "screening": sorted(IntakeContent.model_fields),
     "w1": sorted(W1Content.model_fields),
+    "w2": sorted(W2Content.model_fields),
+    "advancement": sorted(AdvancementContent.model_fields),
+    "sim": sorted(SimulationContent.model_fields),
+    "decision": sorted(DecisionContent.model_fields),
     "library": sorted(LibraryContent.model_fields),
 }
 

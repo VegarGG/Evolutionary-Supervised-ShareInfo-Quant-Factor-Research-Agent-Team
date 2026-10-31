@@ -28,6 +28,7 @@ from qfr_core.correlation import bind, current, from_headers
 from qfr_core.logging import JsonLogger, env_secrets
 from qfr_core.registry_api import ApiError, Health
 from qfr_core.research_api import (
+    CloseRequest,
     CostReport,
     CostRow,
     DeliverablePage,
@@ -285,6 +286,10 @@ def create_app(env: ResearchEnv, token: str) -> FastAPI:
     @app.post("/v1/jobs/{job_id}/cancel", response_model=JobView, responses=ERRORS)
     async def cancel(job_id: UUID) -> JobView:
         return await run(jobs.cancel, job_id, PRINCIPAL)
+
+    @app.post("/v1/jobs/{job_id}/close", response_model=JobView, responses=ERRORS)
+    async def close(job_id: UUID, body: CloseRequest) -> JobView:
+        return await run(jobs.close, job_id, body.decision, body.approval_id, PRINCIPAL)
 
     # Deliverables ------------------------------------------------------------------------
 

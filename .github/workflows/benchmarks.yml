@@ -1,6 +1,8 @@
 name: Nightly benchmarks
-# BM-PLANTED and BM-NULL (PLAN Section 18.3) with their fixed seeds, offline with the
-# scripted LLM; the result files are kept as an artifact.
+# The Section 18.3 benchmarks (BM-PLANTED and BM-NULL at W1 and through acceptance,
+# BM-DECAY, BM-STRATEGY) with their fixed seeds, offline with the scripted LLM; the result
+# files are kept as an artifact. Run one at a time on 4 cores they add up to about 90
+# minutes.
 on:
   schedule:
     - cron: '30 18 * * *'
@@ -10,7 +12,7 @@ permissions:
 jobs:
   benchmarks:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 240
     services:
       postgres:
         image: postgres:16

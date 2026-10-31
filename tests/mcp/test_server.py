@@ -90,7 +90,7 @@ def test_mcp_01_status_tail_are_audited_and_request_id_reaches_downstream(rig):
     assert audit.calls[-1].downstream_request_ids == []
 
 
-def test_mcp_02_catalog_is_the_phase_five_catalog(rig):
+def test_mcp_02_catalog_is_the_phase_six_catalog(rig):
     client, _, headers, _ = rig
     response = call(client, headers, "tools/list")
     tools = {tool["name"] for tool in response.json()["result"]["tools"]}
@@ -126,6 +126,14 @@ def test_mcp_02_catalog_is_the_phase_five_catalog(rig):
         "qfr.trace.export",
         "qfr.lineage.get",
         "qfr.ops.costs",
+        "qfr.approval.record",
+        "qfr.pool.add",
+        "qfr.pool.set_status",
+        "qfr.pool.annotate",
+        "qfr.job.close",
+        "qfr.acceptance.list_cases",
+        "qfr.acceptance.decide",
+        "qfr.ops.alerts",
     }
     annotations = {
         t["name"]: t.get("annotations") or {} for t in response.json()["result"]["tools"]
@@ -141,11 +149,24 @@ def test_mcp_02_catalog_is_the_phase_five_catalog(rig):
         "qfr.job.pause",
         "qfr.job.resume",
         "qfr.job.cancel",
+        "qfr.approval.record",
+        "qfr.pool.add",
+        "qfr.pool.set_status",
+        "qfr.pool.annotate",
+        "qfr.job.close",
+        "qfr.acceptance.decide",
     }
+    # The approval-gated tools (Section 13.7) are marked destructive.
+    destructive = {name for name, a in annotations.items() if a.get("destructiveHint")}
+    assert destructive == {
+        "qfr.pool.add", "qfr.pool.set_status", "qfr.job.close", "qfr.acceptance.decide",
+    }  # fmt: skip
     # No tool publishes, runs research tools, writes official records or alters the
-    # evaluator's runs and queues (MCP-02, INV-14).
+    # evaluator's runs and queues (MCP-02, INV-14). qfr.approval.record writes the
+    # owner's approval to control_db, not an evaluation record.
     forbidden = ("publish", "evaluate", "record", "queue", "run", "tool", "official", "agent")
-    assert not {name for name in tools for word in forbidden if word in name.split(".")[-1]}
+    named = tools - {"qfr.approval.record"}
+    assert not {name for name in named for word in forbidden if word in name.split(".")[-1]}
     resources = call(client, headers, "resources/list").json()["result"]["resources"]
     assert {r["uri"] for r in resources} == {
         "qfr://cards/protocol",
@@ -243,7 +264,7 @@ def test_dsl_validate_returns_canonical_form_complexity_and_explanation(rig):
 def test_registry_tools_fail_explicitly_when_the_registry_is_not_configured(rig):
     client, audit, headers, _ = rig
     status = structured(client, headers, "qfr.status")["structuredContent"]["data"]
-    assert status["phase"] == 4
+    assert status["phase"] == 6
     assert status["services"]["registry-api"] == {"status": "not_configured"}
     assert status["pool_counts"] is None and status["notice"] is None
     setup = structured(client, headers, "qfr.setup.status")["structuredContent"]["data"]

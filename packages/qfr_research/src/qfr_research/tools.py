@@ -14,7 +14,7 @@ are checked on every write.
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Any, Literal, TypedDict
 from uuid import UUID
 
 from pydantic_ai import RunContext, Tool
@@ -253,7 +253,20 @@ def dsl_explain(deps: ToolDeps, expression: str) -> dict[str, Any]:
     return explain(canonicalize(parse(expression)), check_.analysis).model_dump(mode="json")
 
 
-def workbench_evaluate(deps: ToolDeps, expression: str, expected_sign: int) -> dict[str, Any]:
+def workbench_evaluate(
+    deps: ToolDeps,
+    expression: str | None = None,
+    expected_sign: int = 1,
+    components: list[dict[str, Any]] | None = None,
+    top_k: int | None = None,
+    dropout: int | None = None,
+) -> dict[str, Any]:
+    """A factor's W0 report, or with components a composite's (PLAN Section 11.3: the tool
+    measures factors and composites)."""
+    if components is not None:
+        return _composite_evaluate(deps, components, top_k, dropout)
+    if expression is None:
+        return {"ok": False, "errors": [{"code": "ARGUMENT_MISSING", "message": "expression"}]}
     check_ = validate(expression, deps.env.limits)
     if not check_.ok:
         return {"ok": False, "errors": [dict(e) for e in check_.errors]}
@@ -271,6 +284,63 @@ def workbench_evaluate(deps: ToolDeps, expression: str, expected_sign: int) -> d
         "metrics": {k: metrics.get(k) for k in WORKBENCH_FIELDS},
         "decay": metrics.get("decay"),
         "reference_sharpe": report.reference_strategy.sharpe,
+    }
+
+
+def _composite_evaluate(
+    deps: ToolDeps, components: list[dict[str, Any]], top_k: int | None, dropout: int | None
+) -> dict[str, Any]:
+    """The W0 report of a composite of published factor versions, as compose_strategy
+    measures a draft: the same components, signs, weights and portfolio."""
+    from qfr_core.workbench import ComponentInput
+
+    env = deps.env
+    raw = env.workbench.protocol["strategy_bounds"]
+    assert isinstance(raw, dict)
+    bounds: dict[str, Any] = dict(raw)
+    errors: list[dict[str, str]] = []
+    if not 1 <= len(components) <= int(bounds["max_components"]):
+        errors.append({"code": "COMPONENTS_OUT_OF_BOUNDS", "message": str(len(components))})
+    for name, value in (("top_k", top_k), ("dropout", dropout)):
+        low, high = bounds[name]
+        if value is not None and not int(low) <= value <= int(high):
+            errors.append({"code": "PORTFOLIO_OUT_OF_BOUNDS", "message": f"{name} {value}"})
+    parts: list[ComponentInput] = []
+    for component in components:
+        version_id = str(component.get("version_id"))
+        weight = float(component.get("weight", 0))
+        try:
+            manifest = env.registry.version(UUID(version_id)).manifest
+        except ValueError:
+            errors.append({"code": "VERSION_UNKNOWN", "message": version_id})
+            continue
+        expression = getattr(manifest.implementation, "expression", None)
+        if expression is None or weight <= 0:
+            errors.append({"code": "COMPONENT_INVALID", "message": version_id})
+            continue
+        sign: Literal[1, -1] = 1 if int(component.get("sign", 1)) >= 0 else -1
+        parts.append(ComponentInput(expression, sign, weight))
+    if errors:
+        return {"ok": False, "errors": errors}
+    report = env.workbench.composite(parts, top_k, dropout)
+    metrics = report.metrics.model_dump(mode="json")
+    return {
+        "ok": True,
+        "visibility": report.visibility,
+        "window": report.window,
+        "label": IN_SAMPLE,
+        "snapshot_id": report.snapshot_id,
+        "composite": True,
+        "components": [
+            {"version_id": str(c.get("version_id")), "sign": p.sign, "weight": p.weight}
+            for c, p in zip(components, parts, strict=True)
+        ],
+        "portfolio": {"top_k": top_k, "dropout": dropout},
+        "metrics": {k: metrics.get(k) for k in WORKBENCH_FIELDS},
+        "reference_sharpe": report.reference_strategy.sharpe,
+        "reference_information_ratio": report.reference_strategy.information_ratio,
+        "reference_max_drawdown": report.reference_strategy.max_drawdown,
+        "contributions": [row.model_dump(mode="json") for row in report.contributions],
     }
 
 
@@ -529,17 +599,40 @@ async def _dsl_explain(ctx: RunContext[ToolDeps], expression: str) -> dict[str, 
     return invoke(ctx.deps, "dsl.explain", expression=expression)
 
 
+class CompositeComponent(TypedDict):
+    version_id: str
+    sign: Literal[-1, 1]
+    weight: float
+
+
 async def _workbench_evaluate(
-    ctx: RunContext[ToolDeps], expression: str, expected_sign: Literal[-1, 1]
+    ctx: RunContext[ToolDeps],
+    expression: str | None = None,
+    expected_sign: Literal[-1, 1] = 1,
+    components: list[CompositeComponent] | None = None,
+    top_k: int | None = None,
+    dropout: int | None = None,
 ) -> dict[str, Any]:
-    """Measure a factor on W0 with the evaluator's metric definitions.
+    """Measure a factor, or a composite of published factor versions, on W0 with the
+    evaluator's metric definitions.
 
     The numbers are in-sample and optimistic; they are never an official evaluation.
 
     Args:
-        expression: The factor expression.
+        expression: The factor expression (for a factor).
         expected_sign: 1 if larger values should predict higher returns, else -1.
+        components: For a composite: published factor versions with sign and weight.
+        top_k: For a composite: the portfolio's number of holdings.
+        dropout: For a composite: the portfolio's dropout.
     """
+    if components is not None:
+        return invoke(
+            ctx.deps,
+            "workbench.evaluate",
+            components=[dict(c) for c in components],
+            top_k=top_k,
+            dropout=dropout,
+        )
     return invoke(
         ctx.deps, "workbench.evaluate", expression=expression, expected_sign=expected_sign
     )

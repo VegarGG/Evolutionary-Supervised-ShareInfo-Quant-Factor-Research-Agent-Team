@@ -3,7 +3,8 @@
 Priority is fair round-robin across families and first-in first-out within a family
 (Section 8.3): a job's priority is its family's count of jobs still waiting, then the
 global enqueue order. Nothing outside the evaluator can set or change a priority.
-Fingerprint jobs (which gate behavioral dedup) are claimed before evaluation jobs.
+Fingerprint jobs (which gate behavioral dedup) are claimed first, then W2 and holdout
+jobs (each is one rationed query), then W1 evaluation jobs.
 """
 
 from dataclasses import dataclass
@@ -17,7 +18,7 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
 QUEUE = "eval"
-JobKind = Literal["fingerprint", "evaluate"]
+JobKind = Literal["fingerprint", "evaluate", "w2", "holdout"]
 ROUND = 10**12  # Priority = family round x ROUND + enqueue sequence.
 
 
@@ -74,7 +75,8 @@ def claim(conn: Connection, worker: str, at: datetime) -> Job | None:
             "UPDATE eval.queue_jobs SET state = 'running', attempts = attempts + 1, "
             "locked_by = :w, locked_at = :at WHERE queue_job_id = ("
             "  SELECT queue_job_id FROM eval.queue_jobs WHERE queue = :q AND state = 'queued' "
-            "  AND run_after <= :at ORDER BY (kind = 'evaluate'), priority "
+            "  AND run_after <= :at ORDER BY (CASE kind WHEN 'fingerprint' THEN 0 "
+            "  WHEN 'evaluate' THEN 2 ELSE 1 END), priority "
             "  FOR UPDATE SKIP LOCKED LIMIT 1) "
             "RETURNING queue_job_id, kind, version_id, payload, attempts"
         ),
