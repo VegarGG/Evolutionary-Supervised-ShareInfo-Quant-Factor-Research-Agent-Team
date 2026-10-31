@@ -786,8 +786,14 @@ branch (PR #14); neither was merged. Nothing here has reached a real provider.
     so `just test` and CI stay fast. `just bench` runs both against the disposable test
     database (or CI's), and `scripts/test_database.py` now passes extra arguments to
     pytest.
-17. **Immediate release (plan v2.2).** Research gets each report as soon as the
-    evaluator records it. Nothing in the engine depends on release times: stagnation,
-    migration and forgetting count generations, and reports are read from report_cache
-    by release time and id. Only the benchmark harness moves the test clock and runs the
-    release step, in `deliver_reports`.
+17. **Immediate release and the benchmark clock (plan v2.2).** Research gets each
+    report as soon as the evaluator records it. Nothing in the engine depends on release
+    times: stagnation, migration and forgetting count generations, and reports are read
+    from report_cache by release time and id. The benchmark harness runs the job on the
+    v2.2 cadence: a generation starts when the previous one's feedback is complete (or
+    after the max wait), and the reports are released at once. Because the test clock
+    only moves when the harness moves it, the harness advances it 1 hour per generation
+    to stand for the time a generation and its evaluation take; the 24-hour quotas then
+    see a realistic pace. After the generation cap it steps 6 hours at a time, so
+    versions deferred by their family quota are evaluated and the job closes. Both
+    steps are recorded with the results (`clock_hours`).

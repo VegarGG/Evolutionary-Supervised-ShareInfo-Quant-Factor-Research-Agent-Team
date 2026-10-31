@@ -275,6 +275,7 @@ class BenchmarkRun:
     published: list[dict[str, Any]]
     deliverable: dict[str, Any] | None
     job_state: str
+    clock_hours: float
 
     def summary(self) -> dict[str, Any]:
         fitness = [g.best_fitness for g in self.generations if g.best_fitness is not None]
@@ -290,6 +291,7 @@ class BenchmarkRun:
             "last_best_fitness": fitness[-1] if fitness else None,
             "final_coverage": self.generations[-1].coverage if self.generations else 0.0,
             "job_state": self.job_state,
+            "clock_hours": round(self.clock_hours, 2),
         }
 
 
@@ -305,29 +307,50 @@ def benchmark_brief(generations: int, islands: list[str]) -> dict[str, Any]:
     )
 
 
+GENERATION_HOURS = 1  # test-clock time one generation and its evaluation take
+DRAIN_HOURS = 6  # test-clock step after the generation cap, a quarter of a quota window
+
+
 def run_benchmark(
-    full: ResearchStack, generations: int, islands: list[str], drain_batches: int = 40
+    full: ResearchStack, generations: int, islands: list[str], drain_steps: int = 40
 ) -> BenchmarkRun:
+    """Run the job as research-worker would on the plan v2.2 cadence: a generation starts
+    when the previous one's feedback is complete (or after the max wait), the evaluator
+    works off what it published, and its reports are released at once. The test clock
+    moves GENERATION_HOURS per generation, so the 24-hour quotas see a realistic pace."""
     mcp, research = full.mcp, full.research
+    started_at = full.eval.clock.at
     submitted = mcp.ok("qfr.job.submit", brief=benchmark_brief(generations, islands))["data"]
     job_id = submitted["job"]["job_id"]
-    for _ in range(generations):
-        research.tick()
-        full.settle()
-        due = research.db.scalar(
-            "SELECT next_generation_at FROM research_jobs WHERE job_id = :j", j=job_id
-        )
-        if due is None:
+    ran = idle = 0
+    while ran < generations:
+        if research.tick()["ran"]:
+            ran += 1
+            idle = 0
+            full.settle()  # the evaluator pulls, screens and runs W1
+            deliver_reports(full, full.eval.clock.at + timedelta(hours=GENERATION_HOURS))
+            continue
+        # Nothing was due: research stopped, or the feedback is incomplete and the next
+        # generation waits for the max wait (or the next day, after the daily cost cap).
+        job = research.db.rows(
+            "SELECT next_generation_at, daily_wait_until FROM research_jobs WHERE job_id = :j",
+            j=job_id,
+        )[0]
+        if job.next_generation_at is None:
             break
-        deliver_reports(full, max(full.eval.clock.at, due))
+        idle += 1
+        assert idle <= 3, "research is not starting generations"
+        due = max(d for d in (job.next_generation_at, job.daily_wait_until) if d is not None)
+        full.settle()
+        deliver_reports(full, max(full.eval.clock.at + timedelta(hours=GENERATION_HOURS), due))
     # Research has stopped on the generation cap; the evaluator works off what is queued
     # (deferred versions wait for their family quota) and the job closes with a deliverable.
-    for _ in range(drain_batches):
+    for _ in range(drain_steps):
         state = _job_state(full, job_id)
         if state in ("CLOSED", "DELIVERABLE_READY", "DELIVERED"):
             break
         full.settle()
-        deliver_reports(full, full.eval.clock.at + timedelta(hours=6))
+        deliver_reports(full, full.eval.clock.at + timedelta(hours=DRAIN_HOURS))
         research.tick()
     return BenchmarkRun(
         job_id,
@@ -335,14 +358,16 @@ def run_benchmark(
         _published(full, job_id),
         _deliverable(full, job_id),
         _job_state(full, job_id),
+        (full.eval.clock.at - started_at).total_seconds() / 3600,
     )
 
 
 def deliver_reports(full: ResearchStack, at: Any) -> None:
-    """Move the shared clock to `at` and let the evaluator's finished reports reach
-    research. The only place the harness touches the release step."""
-    full.eval.clock.at = at
+    """Run the release step, then move the shared clock to `at`. Reports are released as
+    soon as the evaluator records them (plan v2.2); the clock then stands for the time
+    the next generation and its evaluation take."""
     full.eval.release.tick()
+    full.eval.clock.at = at
 
 
 def _job_state(full: ResearchStack, job_id: str) -> str:
