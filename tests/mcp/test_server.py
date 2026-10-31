@@ -264,7 +264,7 @@ def test_dsl_validate_returns_canonical_form_complexity_and_explanation(rig):
 def test_registry_tools_fail_explicitly_when_the_registry_is_not_configured(rig):
     client, audit, headers, _ = rig
     status = structured(client, headers, "qfr.status")["structuredContent"]["data"]
-    assert status["phase"] == 6
+    assert status["phase"] == 7
     assert status["services"]["registry-api"] == {"status": "not_configured"}
     assert status["pool_counts"] is None and status["notice"] is None
     setup = structured(client, headers, "qfr.setup.status")["structuredContent"]["data"]

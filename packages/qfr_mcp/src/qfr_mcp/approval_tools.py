@@ -29,7 +29,7 @@ from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
 from qfr_mcp.approvals import ApprovalRefused, Decision, Resolver, entry_code, match
 from qfr_mcp.control_store import ControlStore
 from qfr_mcp.job_tools import JobToolDeps
-from qfr_mcp.results import ToolResult
+from qfr_mcp.results import ToolResult, owner_grade
 
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
 WRITE = ToolAnnotations(
@@ -413,13 +413,7 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
             raise RuntimeError("EVAL_ADMIN_UNCONFIGURED: EVAL_ADMIN_API_URL is not set")
         page = await downstream(lambda: admin.cases(state, version_id, case_id))
         items: list[JsonValue] = [c.model_dump(mode="json") for c in page.items]
-        return result(
-            {
-                "visibility": "owner_only",
-                "items": items,
-                "hygiene": "Never copy owner-grade numbers into briefs or steering notes.",
-            }
-        )
+        return result(owner_grade({"items": items}))
 
     @server.tool(
         name="qfr.acceptance.decide",
@@ -473,4 +467,4 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
                     "approval_id": str(approval_id),
                 },
             )
-            return result(case.model_dump(mode="json"))
+            return result(owner_grade(case.model_dump(mode="json")))

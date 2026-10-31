@@ -1,4 +1,4 @@
-"""Phase 7 operations tools (PLAN Sections 13.7, 15.5 and 17.4).
+"""Phase 7 operations and export tools (PLAN Sections 13.4, 13.7, 15.5 and 17.4).
 
 qfr.ops.alerts merges the three alert sources: the evaluator's (decay, staleness, burn,
 ops), research's provider alerts (repeated fallbacks, failed probes) and the front
@@ -6,12 +6,16 @@ door's own operations alerts from the nightly job (disk guard, missing backups).
 qfr.ops.acknowledge_alert records the owner's acknowledgement in control_db and, for
 evaluation and research alerts, in the service that raised it. qfr.ops.pause_research
 and qfr.ops.resume_research stop or restart every research program for an incident.
-qfr.logs.export writes a filtered log slice to exports/logs/.
+qfr.logs.export writes a filtered log slice to exports/logs/, and
+qfr.deliverable.export writes a deliverable bundle to exports/<job>/<deliverable>/ and
+records the delivery in control_db.
 """
 
 import asyncio
+import hashlib
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
+from functools import partial
 from pathlib import Path
 from typing import Any, Literal
 from uuid import UUID
@@ -20,14 +24,15 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 from pydantic import JsonValue
 from qfr_core.contracts import AlertAckRequest
-from qfr_core.correlation import current
+from qfr_core.correlation import bind, current
 from qfr_core.ids import uuid7
 from qfr_core.log_reader import LogQuery, LogReader
 
 from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
-from qfr_mcp.control_store import AlertAck, AlertSource, ControlStore
+from qfr_mcp.control_store import AlertAck, AlertSource, ControlStore, Delivery
+from qfr_mcp.exports import EVIDENCE, Evidence, ItemSources, write_bundle
 from qfr_mcp.job_tools import JobToolDeps
-from qfr_mcp.results import ToolResult
+from qfr_mcp.results import ToolResult, owner_grade
 
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
 WRITE = ToolAnnotations(
@@ -43,6 +48,14 @@ KINDS: dict[AlertSource, frozenset[str]] = {
     "research": frozenset({"provider_fallback", "probe_failed"}),
     "operations": frozenset({"disk", "backup"}),
 }
+
+
+def evidence_of(value: object) -> Evidence:
+    """compose() reports ok, evaluator_not_configured or evaluator_unavailable."""
+    for known in EVIDENCE:
+        if value == known:
+            return known
+    raise RuntimeError(f"UNEXPECTED_EVIDENCE: {value!r}")
 
 
 def exported(root: Path, path: Path) -> str:
@@ -138,13 +151,16 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore, reader: 
             items += page["items"]
         items.sort(key=lambda i: (str(i["at"]), str(i["alert_id"])), reverse=True)
         complete = all(v in ("ok", "skipped") for v in status.values())
+        # Decay alerts carry rolling values of monitored versions: owner-grade.
         return result(
-            {
-                "items": items[:size],
-                "open": open_counts,
-                "sources": status,
-                "acknowledge_with": "qfr.ops.acknowledge_alert",
-            },
+            owner_grade(
+                {
+                    "items": items[:size],  # type: ignore[dict-item]
+                    "open": open_counts,
+                    "sources": status,
+                    "acknowledge_with": "qfr.ops.acknowledge_alert",
+                }
+            ),
             "ok" if complete else "partial",
         )
 
@@ -268,3 +284,105 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore, reader: 
             payload={"path": exported(root, target), "lines": written["lines"]},
         )
         return result({"path": exported(root, target)} | written)
+
+    @server.tool(
+        name="qfr.deliverable.export",
+        description=(
+            "Write a deliverable bundle the owner can open on the Mac to "
+            "exports/<job_id>/<deliverable_id>/: deliverable.json (with owner-grade "
+            "evidence), iteration_history.md, each item's manifest, trace.json and the "
+            "evaluator's records of the version and its ancestors, the NAV, daily RankIC "
+            "and long-short series of every evaluated window and each simulation's NAV as "
+            "Parquet and CSV, bundle.json and MANIFEST.sha256. Exporting again replaces the "
+            "folder. Returns the path, the file count and the manifest's SHA-256; "
+            "`just export-verify <path>` re-checks it. Argument: deliverable_id."
+        ),
+        annotations=WRITE,
+    )
+    async def deliverable_export(deliverable_id: UUID) -> ToolResult:
+        if deps.exports_dir is None:
+            raise RuntimeError("EXPORTS_UNCONFIGURED: QFR_EXPORTS_DIR is not set")
+        root = deps.exports_dir
+        research = deps.require_research()
+        view = await downstream(lambda: research.deliverable(deliverable_id, True))
+        job_id = view.deliverable.job_id
+        with bind(job_id=str(job_id)):
+            composed = await deps.compose(view)
+            document = composed["deliverable"]
+            assert isinstance(document, dict)
+            evidence = evidence_of(composed["evidence"])
+            sources: list[ItemSources] = []
+            for item in view.deliverable.items:
+                owned = await downstream(partial(deps.owner_trace, item.version_id))
+                records = owner_records(owned.evidence, owned.status)
+                found = ItemSources(
+                    version_id=item.version_id,
+                    kind=item.kind,
+                    manifest=item.manifest.model_dump(mode="json"),
+                    trace=owned.bundle.export,
+                    deliverable_trace_hash=item.trace_hash,
+                    owner_records=records,
+                    history_markdown=owned.markdown,
+                )
+                own = owned.evidence.get(str(item.version_id))
+                if isinstance(own, dict) and deps.admin is not None:
+                    await fetch_series(own, found)
+                sources.append(found)
+            written = await asyncio.to_thread(
+                write_bundle, root, document, sources, evidence, datetime.now(UTC),
+            )  # fmt: skip
+            delivery = Delivery(
+                delivery_id=uuid7(), deliverable_id=deliverable_id, job_id=job_id,
+                fetched_at=datetime.now(UTC), exported_path=written.relative,
+                export_sha256=written.manifest_sha256, files=len(written.bundle.files) + 2,
+                principal=OWNER, request_id=current()["request_id"],
+            )  # fmt: skip
+            await asyncio.to_thread(control.append_delivery, delivery)
+            logger.info(
+                "deliverable_exported",
+                outcome="ok",
+                payload={
+                    "deliverable_id": str(deliverable_id),
+                    "path": written.relative,
+                    "files": delivery.files,
+                    "manifest_sha256": written.manifest_sha256,
+                    "evidence": evidence,
+                },
+            )
+        return result(
+            owner_grade(
+                {
+                    "deliverable_id": str(deliverable_id),
+                    "job_id": str(job_id),
+                    "path": written.relative,
+                    "files": delivery.files,
+                    "manifest_sha256": written.manifest_sha256,
+                    "delivery_id": str(delivery.delivery_id),
+                    "evidence": evidence,
+                    "items": [i.model_dump(mode="json") for i in written.bundle.items],
+                    "verify": f"just export-verify {written.relative}",
+                }
+            ),
+            "ok" if evidence == "ok" else "partial",
+        )
+
+    def owner_records(evidence: dict[str, JsonValue], status: str) -> dict[str, JsonValue]:
+        return {"visibility": "owner_only", "status": status, "versions": evidence}
+
+    async def fetch_series(evidence: dict[str, Any], into: ItemSources) -> None:
+        """The evaluator's series files of every window, each checked against the hash
+        the evaluator recorded, and the daily NAV of each simulation account."""
+        admin = deps.admin
+        assert admin is not None
+        for ref in evidence.get("series") or []:
+            run_id, kind = UUID(str(ref["run_id"])), str(ref["kind"])
+            data = await downstream(partial(admin.series, run_id, kind))
+            if hashlib.sha256(data).hexdigest() != ref["sha256"]:
+                raise RuntimeError(
+                    f"SERIES_HASH_MISMATCH: {kind} of run {run_id} differs from its record"
+                )
+            into.series[(str(ref["window"]), kind, str(run_id))] = data
+        for sim in evidence.get("simulation_state") or []:
+            sim_id = UUID(str(sim["sim_id"]))
+            view = await downstream(partial(admin.simulation, sim_id))
+            into.sims[(view.purpose, str(sim_id))] = list(view.nav)

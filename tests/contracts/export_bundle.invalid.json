@@ -1,0 +1,39 @@
+{
+  "schema_version": "export_bundle/1",
+  "deliverable_id": "019a35e0-0000-7000-8000-0000000000d1",
+  "job_id": "019a35e0-0000-7000-8000-0000000000a1",
+  "exported_at": "2026-10-31T00:00:00Z",
+  "visibility": "owner_only",
+  "hygiene_warning": "Never copy owner-only evidence into research briefs or steering notes.",
+  "evidence": "ok",
+  "short_codes": [],
+  "items": [
+    {
+      "version_id": "019a35e0-0000-7000-8000-0000000000f1",
+      "kind": "factor",
+      "directory": "items/019a35e0-0000-7000-8000-0000000000f1",
+      "trace_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "trace_hash_matches_deliverable": true
+    }
+  ],
+  "files": [
+    {
+      "path": "deliverable.json",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "bytes": 10,
+      "schema_name": "deliverable"
+    },
+    {
+      "path": "items/../../etc/passwd",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "bytes": 10,
+      "schema_name": "factor_manifest"
+    },
+    {
+      "path": "iteration_history.md",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "bytes": 10,
+      "schema_name": null
+    }
+  ]
+}

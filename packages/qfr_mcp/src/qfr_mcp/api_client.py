@@ -110,6 +110,48 @@ class ApiClient:
         )
         return response.status_code, data
 
+    async def _bytes(self, path: str) -> bytes:
+        """A GET that answers with a file (a series Parquet); errors are still JSON."""
+        headers = to_headers() | {"Authorization": f"Bearer {self.token}"}
+        record_downstream_request(headers["X-Request-Id"])
+        options: dict[str, Any] = {"timeout": self.timeout, "trust_env": False}
+        if self.transport is not None:
+            options["transport"] = self.transport
+        fields = {"backend": self.backend, "method": "GET", "path": path}
+        try:
+            async with httpx.AsyncClient(**options) as client:
+                response = await client.get(self.base_url + path, headers=headers)
+        except httpx.HTTPError as error:
+            self.logger.logger.warning("downstream_unavailable", outcome="failed", payload=fields)
+            raise self.unavailable(f"{self.backend} unavailable: {type(error).__name__}") from error
+        if response.status_code >= 400:
+            try:
+                refusal = response.json()
+            except ValueError:
+                refusal = {}
+            refusal = refusal if isinstance(refusal, dict) else {}
+            self.logger.logger.warning(
+                "downstream_refused",
+                outcome="failed",
+                error_code=str(refusal.get("error", "HTTP_ERROR")),
+                payload=fields | {"status": response.status_code},
+            )
+            if response.status_code >= 500:
+                raise self.unavailable(f"{self.backend} failed with {response.status_code}")
+            raise self.refused(
+                response.status_code,
+                str(refusal.get("error", "HTTP_ERROR")),
+                str(refusal.get("message", "")),
+                list(refusal.get("details", [])),
+                str(refusal.get("request_id", headers["X-Request-Id"])),
+            )
+        self.logger.logger.info(
+            "downstream_call_completed",
+            outcome="ok",
+            payload=fields | {"status": response.status_code, "bytes": len(response.content)},
+        )
+        return response.content
+
     async def _model(self, model: type[M], method: str, path: str, **kw: Any) -> M:
         _, data = await self._call(method, path, **kw)
         try:

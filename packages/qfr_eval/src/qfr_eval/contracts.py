@@ -40,6 +40,39 @@ class GateResult(Contract):
     value: FiniteFloat | None
     threshold: FiniteFloat | None
     skipped_reason: str | None
+    # Which record or case the gate belongs to: w1, w2, holdout or acceptance, and the
+    # window it measured (the acceptance gates span the incubation, so no window).
+    stage: Literal["w1", "w2", "holdout", "acceptance"] | None = None
+    window: Literal["W1", "W2", "W3", "W4"] | None = None
+
+
+class WindowEvidence(Contract):
+    """One evaluated window of the version: the index the owner reads first."""
+
+    stage: Literal["screening", "w1", "w2", "holdout", "simulation"]
+    window: Literal["W1", "W2", "W3", "W4"]
+    record_id: UUID7
+    status: str | None
+    created_at: AwareDatetime
+    results_hash: Hash
+    series_kinds: list[Literal["nav", "rankic", "ls_returns"]]
+
+
+class SimulationEvidence(Contract):
+    """One simulation account of the version (incubation or monitoring) without its
+    day-by-day rows; qfr.deliverable.export writes its NAV."""
+
+    sim_id: UUID7
+    purpose: Literal["incubation", "monitoring"]
+    mode: Literal["forward", "replay"]
+    status: str
+    start_date: str | None
+    last_day: str | None
+    days_done: int
+    required_days: int | None
+    error_code: str | None
+    metrics: dict[str, FiniteFloat | None]
+    last_checkpoint: dict[str, JsonValue] | None
 
 
 class EvaluationState(Contract):
@@ -58,11 +91,13 @@ class OwnerEvidence(Contract):
     version_id: UUID7
     evaluation: EvaluationState | None
     official_records: list[OfficialRecord]
+    windows: list[WindowEvidence]
     gate_values: list[GateResult]
     series: list[SeriesReference]
     reference_strategy_stats: dict[str, FiniteFloat | None]
     library_correlation: dict[str, JsonValue] | None
-    simulation_state: dict[str, JsonValue] | None
+    simulation_state: list[SimulationEvidence]
+    acceptance_cases: list[dict[str, JsonValue]]
     hygiene_warning: Literal[
         "Never copy owner-only evidence into research briefs or steering notes."
     ]

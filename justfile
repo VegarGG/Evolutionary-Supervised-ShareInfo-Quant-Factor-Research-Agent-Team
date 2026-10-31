@@ -62,6 +62,11 @@ trace-export version_id:
     docker compose --env-file .env -f infra/docker-compose.yml exec -T research-api qfr trace export {{version_id}} --out /tmp/traces
     docker compose --env-file .env -f infra/docker-compose.yml cp research-api:/tmp/traces/{{version_id}} exports/traces/{{version_id}}
 
+# Re-check an export bundle written by qfr.deliverable.export: every SHA-256 in
+# MANIFEST.sha256 and every JSON file against its published schema (SC8).
+export-verify path:
+    uv run --locked qfr export verify {{path}}
+
 logs *args:
     docker compose --env-file .env -f infra/docker-compose.yml exec -T qfr-mcp qfr logs {{args}}
 

@@ -53,7 +53,7 @@ from qfr_mcp.pool_importer import PoolImporter, pool_counts
 from qfr_mcp.registry_client import RegistryClient, RegistryRefused, RegistryUnavailable
 from qfr_mcp.research_client import ResearchClient
 from qfr_mcp.resources import register as register_resources
-from qfr_mcp.results import ToolResult
+from qfr_mcp.results import ToolResult, owner_grade
 
 PHASE = 7
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
@@ -647,7 +647,7 @@ def create_app(
     async def config_get(owner_only: bool = False) -> ToolResult:
         if owner_only:
             data = await require_admin().private_config()
-            return result({"visibility": "owner_only", "configuration": data})
+            return result(owner_grade({"configuration": data}))
         values: dict[str, JsonValue] = {"state": "preview_not_activated"}
         if feedback is not None:
             try:

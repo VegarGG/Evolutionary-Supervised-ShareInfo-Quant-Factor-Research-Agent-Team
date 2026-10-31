@@ -10,9 +10,11 @@ from typing import Any, Final
 from uuid import UUID
 
 from pydantic import JsonValue
+from qfr_core.contracts import HYGIENE_WARNING
 from sqlalchemy import bindparam, text
 from sqlalchemy.engine import Connection
 
+from qfr_eval import acceptance
 from qfr_eval.configs import EvalError, active_state
 from qfr_eval.contracts import (
     EvaluationState,
@@ -20,9 +22,11 @@ from qfr_eval.contracts import (
     OfficialRecord,
     OwnerEvidence,
     SeriesReference,
+    SimulationEvidence,
+    WindowEvidence,
 )
 
-HYGIENE: Final = "Never copy owner-only evidence into research briefs or steering notes."
+HYGIENE: Final = HYGIENE_WARNING
 TIERS = {
     "Discovered": "pending",
     "Fingerprinting": "pending",
@@ -105,6 +109,11 @@ def official_records(conn: Connection, version_id: UUID) -> list[OfficialRecord]
 
 
 def owner_evidence(conn: Connection, version_id: UUID) -> OwnerEvidence:
+    """Everything the evaluator recorded about one version, at full precision: an index
+    of every evaluated window, the gate values of every stage (W1, W2, the W3 holdout and
+    acceptance) labelled with stage and window, the series of every window, the W1
+    reference-strategy stats and library correlation, every simulation account and every
+    acceptance case."""
     intake = conn.execute(
         text(
             "SELECT state, reason_code, duplicate_of, discovered_at, decided_at "
@@ -119,10 +128,50 @@ def owner_evidence(conn: Connection, version_id: UUID) -> OwnerEvidence:
     library: dict[str, JsonValue] | None = None
     reference: dict[str, float | None] = {}
     series: list[SeriesReference] = []
+    windows: list[WindowEvidence] = []
+    run_ids = [run for record in records for run in record.run_ids]
+    files = (
+        conn.execute(
+            text(
+                "SELECT run_id, kind, uri, sha256 FROM eval.series_files WHERE run_id IN :runs "
+                "AND kind <> 'factor_values' ORDER BY kind"
+            ).bindparams(bindparam("runs", expanding=True)),
+            {"runs": run_ids},
+        ).all()
+        if run_ids
+        else []
+    )
     for record in records:
+        found = [
+            SeriesReference(
+                run_id=r.run_id, window=record.window, kind=r.kind, uri=r.uri, sha256=r.sha256
+            )
+            for r in files
+            if r.run_id in record.run_ids
+        ]
+        series += found
+        status = record.summary.get("status")
+        windows.append(
+            WindowEvidence(
+                stage=record.stage,
+                window=record.window,
+                record_id=record.record_id,
+                status=status if isinstance(status, str) else None,
+                created_at=record.created_at,
+                results_hash=record.results_hash,
+                series_kinds=sorted({s.kind for s in found}),
+            )
+        )
+        raw_gates = record.summary.get("gates")
+        if record.stage in ("w1", "w2", "holdout") and isinstance(raw_gates, list):
+            gates += [
+                GateResult.model_validate(g).model_copy(
+                    update={"stage": record.stage, "window": record.window}
+                )
+                for g in raw_gates
+            ]
         if record.stage != "w1":
             continue
-        gates += [GateResult.model_validate(g) for g in record.summary.get("gates", [])]  # type: ignore[union-attr]
         summary_library = record.summary.get("library")
         library = dict(summary_library) if isinstance(summary_library, dict) else None
         if library is not None:
@@ -132,19 +181,10 @@ def owner_evidence(conn: Connection, version_id: UUID) -> OwnerEvidence:
             for k, v in record.metrics.items()
             if k.startswith("reference_")
         }
-        rows = conn.execute(
-            text(
-                "SELECT run_id, kind, uri, sha256 FROM eval.series_files WHERE run_id IN :runs "
-                "AND kind <> 'factor_values' ORDER BY kind"
-            ).bindparams(bindparam("runs", expanding=True)),
-            {"runs": record.run_ids},
-        ).all()
-        series += [
-            SeriesReference(
-                run_id=r.run_id, window=record.window, kind=r.kind, uri=r.uri, sha256=r.sha256
-            )
-            for r in rows
-        ]
+    case_rows = acceptance.list_cases(conn, None, version_id, None)
+    for case in case_rows:
+        gates += [acceptance_gate(g) for g in case["gates"]]
+    cases = jsonable(case_rows)
     return OwnerEvidence(
         schema_version="owner_evidence/1",
         visibility="owner_only",
@@ -158,14 +198,81 @@ def owner_evidence(conn: Connection, version_id: UUID) -> OwnerEvidence:
             discovered_at=intake.discovered_at,
             decided_at=intake.decided_at,
         ),
+        windows=windows,
         official_records=records,
         gate_values=gates,
         series=series,
         reference_strategy_stats=reference,
         library_correlation=library,
-        simulation_state=None,
+        simulation_state=simulations(conn, version_id),
+        acceptance_cases=[c for c in cases if isinstance(c, dict)],
         hygiene_warning=HYGIENE,
     )
+
+
+def acceptance_gate(gate: dict[str, Any]) -> GateResult:
+    """An acceptance case's gate (Section 10.3) in the shape of the window gates; a
+    skipped gate carries the note its detail gives."""
+    detail = gate.get("detail") or {}
+    reason = (str(detail.get("note") or "skipped")) if gate.get("skipped") else None
+    return GateResult(
+        name=gate["name"],
+        passed=gate["passed"],
+        value=gate["value"],
+        threshold=gate["threshold"],
+        skipped_reason=reason,
+        stage="acceptance",
+    )
+
+
+def simulations(conn: Connection, version_id: UUID) -> list[SimulationEvidence]:
+    """Each simulation account of the version, oldest first, with its metrics and last
+    checkpoint (the rows themselves stay behind GET /v1/sim/{sim_id})."""
+    ids: list[UUID] = list(
+        conn.execute(
+            text(
+                "SELECT sim_id FROM eval.sim_accounts WHERE version_id = :v "
+                "ORDER BY not_before, sim_id"
+            ),
+            {"v": version_id},
+        ).scalars()
+    )
+    found: list[SimulationEvidence] = []
+    for sim_id in ids:
+        view = sim_view(conn, sim_id)
+        checkpoints = view["checkpoints"]
+        found.append(
+            SimulationEvidence(
+                sim_id=view["sim_id"],
+                purpose=view["purpose"],
+                mode=view["mode"],
+                status=view["status"],
+                start_date=None if view["start_date"] is None else view["start_date"].isoformat(),
+                last_day=None if view["last_day"] is None else view["last_day"].isoformat(),
+                days_done=view["days_done"],
+                required_days=view["required_days"],
+                error_code=view["error_code"],
+                metrics=view["metrics"],
+                last_checkpoint=checkpoints[-1] if checkpoints else None,
+            )
+        )
+    return found
+
+
+def jsonable(rows: list[dict[str, Any]]) -> list[JsonValue]:
+    """Rows with ids and times as strings, the way the API serialises them."""
+    out: list[JsonValue] = []
+    for row in rows:
+        item: dict[str, JsonValue] = {}
+        for key, value in row.items():
+            if isinstance(value, UUID):
+                item[key] = str(value)
+            elif hasattr(value, "isoformat"):
+                item[key] = value.isoformat()
+            else:
+                item[key] = value
+        out.append(item)
+    return out
 
 
 def version_states(conn: Connection, version_ids: list[UUID]) -> list[dict[str, Any]]:

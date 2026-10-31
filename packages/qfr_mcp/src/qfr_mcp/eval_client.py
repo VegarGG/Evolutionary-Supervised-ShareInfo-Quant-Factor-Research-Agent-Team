@@ -87,6 +87,10 @@ class EvalAdminClient(ApiClient):
         path = f"/v1/alerts/{alert_id}/acknowledge"
         return await self._model(AlertView, "POST", path, body=request.model_dump(mode="json"))
 
+    async def series(self, run_id: UUID, kind: str) -> bytes:
+        """One run's series file (Parquet) as stored by the evaluator."""
+        return await self._bytes(f"/v1/series/{run_id}/{kind}")
+
     async def burn(self) -> dict[str, JsonValue]:
         _, data = await self._call("GET", "/v1/burn")
         return dict(data)

@@ -56,8 +56,24 @@ def test_a_case_is_decided_and_its_version_curated_through_mcp(full):
     mcp = full.mcp
     version = incubated(full)
 
+    # P7.2: owner-grade evidence on every window, gates labelled by stage and window,
+    # the incubation account and the open case, with the owner_only label.
+    evidence = mcp.ok("qfr.evidence.get", version_id=str(version))["data"]
+    assert evidence["visibility"] == "owner_only"
+    assert evidence["hygiene_warning"].startswith("Never copy owner-only evidence")
+    windows = {(w["stage"], w["window"]) for w in evidence["windows"]}
+    assert {("w1", "W1"), ("w2", "W2"), ("holdout", "W3")} <= windows
+    assert {g["stage"] for g in evidence["gate_values"]} == {"w1", "w2", "holdout", "acceptance"}
+    for gate in evidence["gate_values"]:
+        expected = {"w1": "W1", "w2": "W2", "holdout": "W3", "acceptance": None}
+        assert gate["window"] == expected[gate["stage"]]
+    assert {"W1", "W2"} <= {s["window"] for s in evidence["series"]}
+    (sim,) = [s for s in evidence["simulation_state"] if s["purpose"] == "incubation"]
+    assert sim["days_done"] > 0 and sim["metrics"]["final_nav"] is not None
+    assert [c["state"] for c in evidence["acceptance_cases"]] == ["open"]
+
     listed = mcp.ok("qfr.acceptance.list_cases", state="open")["data"]
-    assert listed["visibility"] == "owner_only" and "hygiene" in listed
+    assert listed["visibility"] == "owner_only" and "hygiene_warning" in listed
     (case,) = listed["items"]
     assert case["version_id"] == str(version) and case["recommendation"] == "ACCEPT"
     code = case["short_code"]
