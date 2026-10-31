@@ -16,9 +16,14 @@ from datetime import datetime, time
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Literal, Protocol
 
+import pydantic_ai
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings
 from qfr_core.config import ProviderModel, ProviderProfile, ProvidersConfig, RolesConfig
+
+# The services and the CLI own their output (JSON log lines and probe reports), so the
+# library's first-run banner is never printed.
+pydantic_ai.BANNER_ENABLED = False
 
 ProviderKey = Literal["deepseek", "kimi", "glm"]
 PROVIDER_KEYS: tuple[ProviderKey, ...] = ("deepseek", "kimi", "glm")

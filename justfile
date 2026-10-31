@@ -50,6 +50,18 @@ data-serve-once *args:
 eval-reproduce record_id:
     docker compose --env-file .env -f infra/docker-compose.yml run --rm eval-worker qfr eval reproduce {{record_id}}
 
+# Check every configured model: listed, priced, tool and json_object output, thinking, and
+# the Moonshot concurrency and balance. Runs inside research-worker, the only service with
+# provider keys. Each probe call is a small paid request recorded in the budget ledger.
+llm-probe trigger="manual":
+    docker compose --env-file .env -f infra/docker-compose.yml exec -T research-worker qfr llm probe --trigger {{trigger}}
+
+# Write trace.json and iteration_history.md for one published version to exports/traces.
+trace-export version_id:
+    mkdir -p exports/traces
+    docker compose --env-file .env -f infra/docker-compose.yml exec -T research-api qfr trace export {{version_id}} --out /tmp/traces
+    docker compose --env-file .env -f infra/docker-compose.yml cp research-api:/tmp/traces/{{version_id}} exports/traces/{{version_id}}
+
 logs *args:
     docker compose --env-file .env -f infra/docker-compose.yml exec -T qfr-mcp qfr logs {{args}}
 

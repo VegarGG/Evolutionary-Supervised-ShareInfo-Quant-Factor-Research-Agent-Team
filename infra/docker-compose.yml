@@ -306,7 +306,7 @@
           "CMD",
           "python",
           "-c",
-          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 600 else 1)"
+          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 180 else 1)"
         ],
         "interval": "5s",
         "timeout": "3s",

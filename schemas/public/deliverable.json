@@ -221,14 +221,21 @@
           "type": "array"
         },
         "tier_reached": {
-          "enum": [
-            "w1_pass",
-            "w2_pass",
-            "advanced",
-            "incubated"
+          "anyOf": [
+            {
+              "enum": [
+                "w1_pass",
+                "w2_pass",
+                "advanced",
+                "incubated"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Tier Reached",
-          "type": "string"
+          "title": "Tier Reached"
         },
         "trace_hash": {
           "pattern": "^[a-f0-9]{64}$",

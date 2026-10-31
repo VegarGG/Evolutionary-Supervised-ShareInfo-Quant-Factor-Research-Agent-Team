@@ -10,6 +10,8 @@ Only this service holds provider keys (BND-07).
 
 import asyncio
 import os
+import threading
+import time
 from datetime import UTC, datetime
 from datetime import time as dtime
 from pathlib import Path
@@ -148,23 +150,31 @@ class Worker:
         return str(report.probe_id)
 
 
-async def heartbeat(worker: Worker, path: Path) -> None:
-    """Touch the healthcheck file and log a heartbeat on a timer, also while a long
-    generation is running (its LLM calls await, so this task keeps its schedule)."""
-    cfg = worker.env.config.service.worker
-    while True:
-        path.touch()
-        with bind():
-            worker.env.logger.logger.info("worker_heartbeat", outcome="ok")
-        await asyncio.sleep(cfg.heartbeat_seconds)
+def start_heartbeat(path: Path, seconds: float) -> threading.Thread:
+    """Touch the healthcheck file from a background thread, as the Phase 3 services do,
+    so a long synchronous step inside a generation (workbench, prescreen) cannot make a
+    working worker look stale. Compose marks a file older than 180 seconds unhealthy."""
+
+    def beat() -> None:
+        while True:
+            path.touch()
+            time.sleep(seconds)
+
+    thread = threading.Thread(target=beat, name="heartbeat", daemon=True)
+    thread.start()
+    return thread
 
 
 async def serve(worker: Worker, beat_file: Path) -> None:
     env = worker.env
     cfg = env.config.service.worker
-    beating = asyncio.create_task(heartbeat(worker, beat_file))
-    while not beating.done():
+    start_heartbeat(beat_file, cfg.heartbeat_seconds)
+    logged = 0.0
+    while True:
         with bind():
+            if time.monotonic() - logged >= cfg.heartbeat_seconds:
+                env.logger.logger.info("worker_heartbeat", outcome="ok")
+                logged = time.monotonic()
             try:
                 result = await worker.tick()
                 if result["ran"] or result["generations_started"] or result["jobs_closed"]:
