@@ -15,6 +15,8 @@ the gates; BM-STRATEGY measures the shipped gates on the benchmark world.
 """
 
 import pytest
+from qfr_research.store import Ctx
+from qfr_research.tools import ToolDeps, workbench_evaluate
 
 from tests.research.rig import brief, research_stack
 from tests.research.scripted import Script
@@ -130,6 +132,33 @@ def test_a_host_agent_completes_the_five_workflow_steps(full, monkeypatch):
         == (factor["version_id"])
     )
     assert strategy_fetched["contribution_tables"][strategy["version_id"]]
+
+    # The strategy prompt lists each component with its released W1 report, and the
+    # engineer measured the composite on W0 with workbench.evaluate (Section 11.3).
+    composed = next(
+        s
+        for s in full.research.steps(step_type="PROMPT_SENT", actor="engineer")
+        if "working in strategy mode" in s.payload["prompt"]
+    )
+    assert '"w1_report_id": ' in composed.payload["prompt"]
+    measured = [
+        s
+        for s in full.research.steps(step_type="TOOL_CALLED", actor="tool:workbench.evaluate")
+        if "components" in s.inputs["args"]
+    ]
+    assert measured and measured[0].payload["composite"] is True
+    assert measured[0].payload["components"][0]["version_id"] == factor["version_id"]
+    assert measured[0].payload["visibility"] == "research_non_official"
+    deps = ToolDeps(full.research.env, "engineer", Ctx())
+    part = {"version_id": factor["version_id"], "sign": 1, "weight": 1.0}
+    for arguments, reason in (
+        ({"components": [part], "top_k": 5, "dropout": 5}, "PORTFOLIO_OUT_OF_BOUNDS"),
+        ({"components": [part] * 9, "top_k": 20, "dropout": 5}, "COMPONENTS_OUT_OF_BOUNDS"),
+        ({"components": [part | {"version_id": "x"}], "top_k": 20}, "VERSION_UNKNOWN"),
+        ({"components": [part | {"weight": 0}], "top_k": 20}, "COMPONENT_INVALID"),
+    ):
+        refused = workbench_evaluate(deps, **arguments)
+        assert refused["ok"] is False and reason in str(refused["errors"]), (arguments, refused)
 
     # 3-4b. The strategy approval and pool entry.
     recorded = mcp.ok(

@@ -42,7 +42,9 @@ from qfr_research.workflow import has_open_generation
 
 TIERS: tuple[Tier, ...] = ("w1_pass", "w2_pass", "advanced", "incubated")
 RANK = {tier: i for i, tier in enumerate(TIERS)}
-# Flags whose presence means a public W1 gate failed (policy flags mirror the gates).
+# Flags whose presence means a public W1 gate failed (policy flags mirror the gates). The
+# strategy gate has no turnover, coverage or factor-library check, and HIGH_DRAWDOWN is
+# exact where the released drawdown bucket is rounded (Section 9.2).
 BLOCKING_FLAGS = frozenset(
     {
         DiagnosticFlag.WEAK_SIGNAL,
@@ -51,6 +53,9 @@ BLOCKING_FLAGS = frozenset(
         DiagnosticFlag.SIGN_MISMATCH,
         DiagnosticFlag.LOW_COVERAGE,
     }
+)
+STRATEGY_BLOCKING_FLAGS = frozenset(
+    {DiagnosticFlag.WEAK_SIGNAL, DiagnosticFlag.SIGN_MISMATCH, DiagnosticFlag.HIGH_DRAWDOWN}
 )
 WATCHING = ("WAITING_FOR_EVALUATION", "DELIVERABLE_READY", "DELIVERED")
 # The brief's mode fixes the deliverable kind (Section 11.2); review_and_iterate may
@@ -101,13 +106,14 @@ def read_w1(kind: str, sign: int, content: Any, gates: dict[str, Any]) -> dict[s
         ok = value is not None and (value >= threshold if above else value <= threshold)
         checks[name] = {"value": value, "threshold": threshold, "passed": bool(ok)}
 
-    flags = sorted(f.value for f in content.flags if f in BLOCKING_FLAGS)
+    blocking = BLOCKING_FLAGS if kind == "factor" else STRATEGY_BLOCKING_FLAGS
+    flags = sorted(f.value for f in content.flags if f in blocking)
     checks["flags"] = {"value": flags, "passed": not flags}
-    checks["coverage_bucket"] = {
-        "value": content.coverage_bucket,
-        "passed": content.coverage_bucket == "PASS",
-    }
     if kind == "factor":
+        checks["coverage_bucket"] = {
+            "value": content.coverage_bucket,
+            "passed": content.coverage_bucket == "PASS",
+        }
         g = gates["w1_factor"]
         check("rankic_mean", sign * content.rankic_mean, float(g["rankic_min"]))
         check("rankic_ir", sign * content.rankic_ir, float(g["ir_min"]))

@@ -1029,3 +1029,42 @@ operations tools) is not started.
     the owner has been asked to choose between lowering dsr_min to 0.50 (2 planted
     factors would then be accepted, every other gate unchanged), keeping 0.90 with
     BM-PLANTED failing, or using the null sampling variance for V.
+27. **The strategy engineer reads released reports and measures composites.** The
+    strategy prompt promised the components "with their released report digests" but
+    listed only expressions, signs and titles. compose_strategy now gives each component
+    the digest the factor engineer sees: its latest released W1 values and its W2,
+    screening or intake status. workbench.evaluate also measures composites, as its
+    Section 11.3 entry says (factors and composites): given published factor versions
+    with signs and weights and a portfolio within the protocol's strategy bounds, it
+    returns the composite's W0 metrics, reference net Sharpe, information ratio and
+    drawdown and the contribution rows, labelled in-sample. BM-STRATEGY seeds A1, two A1
+    variants (`EMA(-Pct($close,5),5)` and `-Mean($ret,5)`) and A2 and asks for a 20-name
+    portfolio. On the 240-name universe no 50-name long-only composite of A1, its
+    variants and A2 reached the 0.8 net Sharpe of the W0 pre-screen (0.56 at best), and
+    20 names is within the protocol's strategy bounds (20 to 100). The scripted engineer
+    ranks the components by released W1 RankIC_IR, leaves out those whose released
+    long-short net Sharpe is not positive (A2's is -2.5 on W1: its top turnover of 0.69
+    makes it cost-dominated), measures every equally weighted composition of the top
+    four on W0 and returns the best one by W0 net Sharpe that it has not returned
+    before; the evaluator's gates decide. The W1 drawdown cap (25%) is the gate that
+    binds: of the 15 equally weighted compositions of the four seeds, 11 have a W1
+    drawdown above 25% (0.252 to 0.42), and only A1, A1 with `-Mean($ret,5)`, the EMA
+    variant with `-Mean($ret,5)`, and `-Mean($ret,5)` alone pass the W1 strategy gate;
+    the last fails the W0 pre-screen. W0 ranks seven failing compositions above the
+    first passing one, most of them with A2. Two earlier runs that kept A2 among the
+    leaders composed 11 strategies in 8 generations, and none passed W1. In the
+    benchmark run the evaluator refused `-Mean($ret,5)` at intake as a near duplicate of
+    A1 and the engineer left A2 out, so it combined A1 and the EMA variant: in
+    generation 1 it composed the EMA variant alone (W1 drawdown 0.30, FAIL) and then A1
+    alone, which passed W1 (net Sharpe 1.14, IR 1.08), W2 (1.85 and 2.01) and the
+    holdout. The deliverable is complete, at the advanced tier.
+28. **Research reads a strategy's W1 report against the strategy gate.** Research
+    decides the w1_pass tier it claims from the released W1 report and the public gates.
+    For strategies it used the factor flags, so a strategy with HIGH_TURNOVER or a
+    failed coverage bucket read as a W1 failure although neither is a strategy gate, and
+    it missed HIGH_DRAWDOWN, the flag Section 9.2 defines for a drawdown above the gate.
+    The released drawdown is rounded to 0.05, so a drawdown just above 0.25 is released
+    as 0.25 and read as a pass; in one BM-STRATEGY run the deliverable claimed w1_pass for
+    such a strategy and the front door's tier confirmation showed the official W1 failure
+    (the deliverable was best_effort). A strategy's reading now blocks on WEAK_SIGNAL,
+    SIGN_MISMATCH and HIGH_DRAWDOWN, and checks net Sharpe, IR and the drawdown bucket.

@@ -32,7 +32,7 @@ from sqlalchemy.engine import Connection
 
 from qfr_research.agents import RoleFailed, RoleResult, RoleRunner
 from qfr_research.budget import BudgetExceeded
-from qfr_research.context import Context, ContextAssembler, parent_hypothesis
+from qfr_research.context import Context, ContextAssembler, parent_hypothesis, report_digest
 from qfr_research.db import dumps
 from qfr_research.engine import EvolutionEngine, GenerationRef
 from qfr_research.env import ResearchEnv
@@ -1628,16 +1628,20 @@ class GenerationRunner:
             return {"skipped": "NO_COMPONENTS"}
         components = []
         rationales: dict[str, dict[str, str]] = {}
+        with env.db.read() as conn:
+            digests = {v: report_digest(conn, v) for v in parents[:40]}
         for version_id in parents[:40]:
             manifest = env.registry.version(UUID(version_id)).manifest
             expression = getattr(manifest.implementation, "expression", None)
             if expression:
+                # The prompt promises each component with its released report digests.
                 components.append(
                     {
                         "version_id": version_id,
                         "expression": expression,
                         "expected_sign": manifest.declared.expected_sign,
                         "title": manifest.title,
+                        "released": digests[version_id],
                     }
                 )
                 rationales[version_id] = {

@@ -155,7 +155,7 @@ class BenchmarkModels(ScriptedModels):
 
     def _engineer(self, text: str, messages: list[ModelMessage], info: AgentInfo) -> Any:
         if "working in strategy mode" in text:
-            return self._strategy(text, info)
+            return self._strategy(text, messages, info)
         operator_found = re.search(r"the operator \((\w+)\)", text)
         operator = operator_found.group(1) if operator_found else "explore"
         limit = re.search(r"into 1 to (\d+) qfr-dsl", text)

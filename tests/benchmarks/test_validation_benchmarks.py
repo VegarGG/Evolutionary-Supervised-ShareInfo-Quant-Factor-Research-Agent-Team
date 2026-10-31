@@ -16,8 +16,10 @@ scripted owner decides each acceptance case through the MCP front door
 - BM-DECAY: an approved A3-like factor (imported, then approved with its entry code) is
   monitored in replay from W2; a decay alert fires after the switch-off and is visible in
   qfr.ops.alerts.
-- BM-STRATEGY: a new_strategy job with A1 and A2 variants as seeds delivers a strategy
-  that beats the benchmark on W1 and W2 with net Sharpe above the gates.
+- BM-STRATEGY: a new_strategy job with A1, its variants and A2 as seeds delivers a strategy
+  that beats the benchmark on W1 and W2 with net Sharpe above the gates. The scripted
+  engineer reads the components' released W1 reports and measures compositions with
+  workbench.evaluate on W0 (tests/research/scripted.py); the evaluator's gates decide.
 """
 
 import os
@@ -59,6 +61,16 @@ VALIDATION_DAYS = 120  # test-clock days for W2 (one per family a week), holdout
 # The owner's answer on the rule or the bound is pending; the measured delay is recorded.
 DECAY_ALERT_DAYS = int(os.environ.get("QFR_BM_DECAY_DAYS", "80"))
 DECAY_DAYS_PER_TICK = 5
+# BM-STRATEGY: A1, two A1 variants and A2 as seeds. A 20-name portfolio: on the 240-name
+# synthetic universe a 50-name long-only portfolio of these signals stays below the 0.8
+# net Sharpe of the W0 pre-screen and the W1 gate.
+STRATEGY_SEEDS = (
+    ("a1", "-Pct($close,5)"),
+    ("a1_ema", "EMA(-Pct($close,5),5)"),
+    ("a1_mean_return", "-Mean($ret,5)"),
+    ("a2", "Clip(Sign($ret)*($volume/Mean($volume,20)-1),-3,3)"),
+)
+STRATEGY_SPEC = {"top_k": 20, "dropout": 5, "max_components": 4}
 
 
 def acceptance_run(tmp_path, monkeypatch, zones, seed, generations, name):
@@ -178,10 +190,7 @@ def test_bm_strategy_delivers_a_strategy_that_passes_its_gates(
     ) as full:  # fmt: skip
         mcp = full.mcp
         seeds = []
-        for name, expression in (
-            ("a1_variant", "EMA(-Pct($close,5),5)"),
-            ("a2_variant", "Clip(Sign($ret)*($volume/Mean($volume,20)-1),-3,3)"),
-        ):
+        for name, expression in STRATEGY_SEEDS:
             response = mcp.registry.publish(factor_manifest(name, expression))
             seeds.append(response.json()["version"]["version_id"])
         full.settle()
@@ -195,7 +204,7 @@ def test_bm_strategy_delivers_a_strategy_that_passes_its_gates(
                 islands=["I1", "I2"],
                 seeds={"pool_entry_ids": [], "version_ids": seeds, "expressions": [],
                        "notes": ""},
-                strategy_spec={"top_k": 50, "dropout": 5, "max_components": 4},
+                strategy_spec=STRATEGY_SPEC,
                 deliverable={"tier": "w2_pass", "min_count": 1, "max_candidates": 2},
                 budget={"max_cost": 200.0, "max_generations": 4, "max_wall_clock_days": 30},
             ),
