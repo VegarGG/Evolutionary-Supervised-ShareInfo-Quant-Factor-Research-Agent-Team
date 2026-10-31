@@ -5,6 +5,16 @@ import socket
 import pytest
 
 
+@pytest.fixture(autouse=True, scope="session")
+def forbid_model_requests():
+    """No test reaches an LLM provider: PydanticAI refuses every real model request, and
+    research tests use scripted FunctionModels (P4.12)."""
+    import pydantic_ai.models
+
+    pydantic_ai.models.ALLOW_MODEL_REQUESTS = False
+    yield
+
+
 @pytest.fixture(autouse=True)
 def forbid_external_network(monkeypatch):
     original = socket.socket.connect

@@ -1,0 +1,80 @@
+{
+  "schema_version": "trace/1",
+  "version_id": null,
+  "candidate_id": "019a35e0-0000-7000-8000-000000000010",
+  "job_id": null,
+  "ancestors": [],
+  "steps": [
+    {
+      "schema_version": "trace_step/1",
+      "step_id": "019a35e0-0000-7000-8000-000000000001",
+      "at": "2026-10-30T00:00:00.000000Z",
+      "job_id": null,
+      "program_id": null,
+      "generation_id": null,
+      "task_id": null,
+      "candidate_id": null,
+      "version_id": null,
+      "step_type": "BRIEF_RECEIVED",
+      "actor_kind": "deterministic",
+      "actor": "contract-test",
+      "inputs": {},
+      "payload": {},
+      "outcome": "ok",
+      "request_id": "test"
+    },
+    {
+      "schema_version": "trace_step/1",
+      "step_id": "019a35e0-0000-7000-8000-000000000003",
+      "at": "2026-10-30T00:00:00.000000Z",
+      "job_id": null,
+      "program_id": null,
+      "generation_id": null,
+      "task_id": null,
+      "candidate_id": "019a35e0-0000-7000-8000-000000000010",
+      "version_id": null,
+      "step_type": "MODEL_RESPONDED",
+      "actor_kind": "llm",
+      "actor": "engineer",
+      "inputs": {},
+      "payload": {},
+      "outcome": "ok",
+      "request_id": "test",
+      "provider": "deepseek",
+      "model_id": "contract-test-model",
+      "prompt_template_id": "engineer@contract-test",
+      "prompt_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "run_id": "019a35e0-0000-7000-8000-000000000020"
+    }
+  ],
+  "agent_runs": [
+    {
+      "run_id": "019a35e0-0000-7000-8000-000000000020",
+      "step_id": "019a35e0-0000-7000-8000-000000000003",
+      "role": "engineer",
+      "provider": "deepseek",
+      "model_id": "contract-test-model",
+      "prompt_template_id": "engineer@contract-test",
+      "prompt_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "request_messages": [
+        {
+          "kind": "request",
+          "parts": [
+            {
+              "content": "contract test"
+            }
+          ]
+        }
+      ],
+      "response_text": "{}",
+      "response_json": {},
+      "usage": {},
+      "settings": {},
+      "status": "ok",
+      "latency_ms": 0.0
+    }
+  ],
+  "lineage": [],
+  "released_reports": [],
+  "owner_records": null
+}

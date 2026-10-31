@@ -507,3 +507,142 @@ memory is not changed.
     Phase 2. Each rig takes the registry write lock before touching eval_db, so
     parallel test workers cannot deadlock across the two databases. Catalog checks
     replace TRUNCATE probes, which would wait on other workers' open transactions.
+
+# Phase 4 decisions
+
+Phase 4 implements P4.1 to P4.12: research_db, the provider layer and probe, the tool
+layer, feedback sync, the six agents with versioned prompts, the DSL card, the packager,
+the generation state machine, the budget ledger, research jobs with the job monitor and
+research-api, the MCP job, deliverable and trace tools with resources and prompts, and
+scripted offline scenarios. The evolution engine (Phase 5), approvals and
+`qfr.job.close` (Phase 6) and the host-agent guide (P7.5) are not started. It is built
+on the Phase 3 branch (PR #14), which was not yet merged. Nothing here has reached a
+real provider: the one real generation per provider is the owner's on-machine step.
+
+1. **Phase 4 generations explore only.** Without the evolution engine the proposal is
+   the empty-start rule of Section 12.1 every generation: explore slots spread evenly
+   over the brief's islands, plus at most the charter's `compose_strategy` tasks in the
+   strategy modes. An invalid supervisor plan gets one repair attempt, then the
+   proposal's default. A mutation, crossover or repair task is skipped with
+   `PHASE_5_OPERATOR`. Selection ranks pre-screen survivors by W0 sign-adjusted RankIC
+   IR, then originality, round-robin across islands, until Phase 5's provisional
+   fitness.
+2. **Research reads the tier; the front door confirms it.** The monitor reads each
+   version's tier from its released reports with the public gates of the active
+   protocol card, because released W1 reports carry values and no pass or fail
+   (Phase 3 decision 20). Released values are rounded, so near a gate this reading can
+   differ from the evaluator's decision. `qfr.deliverable.get` therefore adds
+   `tier_confirmation` per item from eval-admin-api (`research_tier`,
+   `official_evidence_tier`, `confirmed`), and the `qfr.report_deliverable` prompt
+   tells the host agent to report a mismatch.
+3. **No new LLM work after the criteria are met.** When the monitor finds the
+   deliverable criteria met during a generation's SYNCING, the generation stops
+   (`criteria_met`) and goes straight to selection and publishing: candidates already
+   approved are still published, but no new plan, hypothesis or draft is paid for.
+4. **Stops and closing.** A generation cap or job cost cap stops research
+   (`research_stopped`, `next_generation_at` cleared) and moves a RUNNING job to
+   WAITING_FOR_EVALUATION; evaluation of what was published continues. When nothing is
+   pending and nothing reached the tier, the job closes as `budget_exhausted`; at the
+   wall-clock deadline it closes as `expired`. Either close assembles a `best_effort`
+   deliverable from the best readings so far when anything was published. A
+   `best_effort` item may have no tier yet, so `DeliverableItem.tier_reached` is
+   nullable (schema regenerated).
+5. **Delivery and closing are separate.** `qfr.deliverable.get` marks the deliverable
+   fetched and the job DELIVERED. The `qfr://deliverables/{id}` resource reads the same
+   composition without marking it. Closing a delivered job as approved or rejected is
+   `qfr.job.close` with an approval record, which the plan puts in Phase 6 (P6.7); until
+   then a delivered job stays DELIVERED and spends nothing.
+6. **The owner-only scan (MCP-03, submit and steer).** The front door compares every
+   decimal number with at least two decimals in a brief or steering note with every
+   non-integral owner value of the referenced versions (seed versions, seed pool
+   entries' versions, and for a steer every version of the job): at full precision
+   written to the text's own decimals, and at the release step of the metric's class.
+   Keys that hold public or non-measurement numbers (`threshold`, `version`,
+   `protocol_version`, `seed`, `step`) are skipped, zero never matches, and signs are
+   ignored. A match rejects the text with `OWNER_ONLY_VALUE`, names the versions and
+   never the value, and logs `owner_only_scan_rejected` without the number. Only the
+   verdict reaches research, which refuses a brief whose scan does not cover every seed
+   version (`SCAN_INCOMPLETE`). The rule can reject an unrelated number that happens to
+   equal an owner value at two decimals; the owner then rephrases. The approval half of
+   MCP-03 is Phase 6.
+7. **Active cards first.** research-worker, the monitor and the MCP resources read the
+   active protocol and policy cards from feedback-api, and fall back to the bundled
+   preview cards only when feedback-api does not answer or has no active card. The
+   resources label which one they serve (`active` or `preview_not_activated`).
+8. **Cadence (plan v2.2).** Reports are released as soon as the evaluator records them,
+   so the next generation starts as soon as the previous generation's feedback is
+   complete (`cadence.after_feedback_complete`), and at the latest `max_wait_hours` (6)
+   after it closed. A version counts as answered once its intake is refused or deferred
+   (a quota deferral is an answer), its screening fails, or its W1 report is released.
+   The seeds are generation 0: with seeds the first generation waits for their
+   feedback in the same way; without seeds, or after a generation that published
+   nothing, the next one starts at once. After a FAILED generation the next one waits
+   the full `max_wait_hours`, so a provider outage cannot use up the generation cap in
+   minutes. The monitor reads each waiting version's reports from feedback-api by
+   version id without moving the program's sync cursor, so the next generation's sync
+   still interprets them. This replaces the earlier rule (six hours, then just after
+   the next W1 release batch, or ten new reports).
+9. **One generation at a time.** One research-worker runs one generation at a time and
+   a program never has two open generations. Tasks inside a generation run with the
+   charter's concurrency (4). A queue job that fails is retried after 60, then 300
+   seconds; the third failure marks the generation FAILED (it counts toward the cap) and
+   the job schedules the next one. A worker that dies leaves its lease; after
+   `lease_seconds` (3600) the generation returns to the queue and resumes from its last
+   persisted state.
+10. **Budgets.** Every agent run is admitted against the smallest remaining cap (job,
+    daily, program daily, generation) before it is sent, using the whole prompt at the
+    miss rate plus the full output budget, and a token limit that leaves room for one
+    more request at the dearest rate. A refused call stops the generation with
+    `budget_<scope>`; nothing is ever sent over a cap. The daily cap defers the job to
+    the next UTC day instead of stopping it. Probe calls are recorded in the ledger
+    under the role `probe`; the probe at job start counts toward that job's cost, the
+    setup and daily probes toward no job.
+11. **Provider layer.** Models are PydanticAI's `OpenAIChatModel` with
+    `DeepSeekProvider` and `MoonshotAIProvider`, and `ZaiModel` with `ZaiProvider`
+    (pydantic-ai 2.63). The library supplies each provider's thinking control and
+    reasoning pass-back; QFR passes `max_tokens`, the timeout and `thinking` (the
+    model's effort on strong models, off or the lowest effort on fast ones) and a
+    temperature only when the model does not think. `supports_forced_tool_choice` is
+    off for all three in providers.yaml, so output tools use `tool_choice: auto`.
+    Structured output tries the output tool, then after two validation failures a
+    prompted `json_object` run. The OpenAI SDK's own retries are off; QFR retries with
+    its backoff, then falls back along the role's chain. The critic's chain excludes the
+    provider that drafted the candidate. `tests/research/test_providers.py` records the
+    request body each configured model receives over a mock transport.
+12. **Model ids and prices are the owner's to set.** The shipped providers.yaml names
+    the plan's model ids and has no prices, so no model may run until the owner fills
+    them in from each provider's console. `qfr llm probe` (`just llm-probe`) then checks
+    that each model is listed, priced, accepts the tool and `json_object` requests with
+    its thinking setting, and on Moonshot that the configured account concurrency covers
+    `request.concurrency` (4) and the balance is positive. The probe runs at setup,
+    daily at 00:30 UTC and before a job's first generation.
+13. **Prompts in the image.** The research image target copies `prompts/` and sets
+    `QFR_PROMPTS_DIR`; prompt ids and hashes go into every agent run and trace step.
+    The DSL card is generated from the operator registry and the protocol's DSL limits,
+    and its hash is recorded in each engineer step.
+14. **Network and credentials.** research-api is on research_net and control_net (as in
+    the Phase 0 Compose file) so qfr-mcp can reach it; it checks
+    `RESEARCH_CONTROL_TOKEN` on every route but `/healthz`, holds the registry
+    publisher token (seed publication) and the feedback reader token, and no evaluation,
+    registry control or owner token. control_net also carries eval-admin-api, which
+    research-api could open a connection to but holds no token for (BND-05 checks the
+    configuration and the code). research-worker is on research_net and
+    research_egress_net, holds the provider keys (BND-07) and no control token.
+15. **Health.** research-api's Compose healthcheck reads `/healthz`; research-worker
+    touches `/tmp/heartbeat` from a background thread, like the Phase 3 services, and is
+    unhealthy when the file is older than 180 seconds.
+16. **Logging.** `sensitive_field_pattern` now matches `token` only as a whole word part
+    (`api_key`, `_token`, `token_`), so token counts such as `tokens_in` stay readable
+    while credential fields stay redacted. Services take credential values from the
+    environment by name (`env_secrets`), skipping purely numeric values, which are
+    settings such as a token-count limit and would otherwise be redacted inside
+    timestamps. Every Phase 3 service now binds the job id where it knows one, so one
+    job id joins qfr-mcp, research, registry and evaluation log lines (LOG-03).
+17. **Scripted scenarios.** Tests answer every role with PydanticAI `FunctionModel`s
+    built from the prompt text (`tests/research/scripted.py`), and the test session sets
+    `ALLOW_MODEL_REQUESTS = False`. The provider request-shape test lifts that switch
+    only around a mock HTTP transport. The expressions the scripted engineer drafts are
+    chosen by each test; the product ships none.
+18. **Deferred.** The `qfr://docs/host-agent-guide` resource arrives with the guide in P7.5.
+    Per-program feedback tokens (Phase 3 decision 21) are not added: both research
+    services are one trust zone, and requests narrow by program.

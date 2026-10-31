@@ -47,7 +47,7 @@ def rig(tmp_path, monkeypatch):
 
 def test_set_01_a_fresh_stack_is_empty_and_says_so(rig):
     status = rig.ok("qfr.status")["data"]
-    assert status["phase"] == 3
+    assert status["phase"] == 4
     assert status["services"]["registry-api"]["status"] == "ok"
     assert status["services"]["control_db"] == {"healthy": True}
     assert status["pool_counts"] == {"factor": ZERO, "strategy": ZERO}
@@ -61,7 +61,7 @@ def test_set_01_a_fresh_stack_is_empty_and_says_so(rig):
 
     setup = rig.ok("qfr.setup.status")["data"]
     assert setup["steps"]["pool"]["status"] == "not_started"
-    assert setup["steps"]["providers"]["status"] == "deferred"
+    assert setup["steps"]["providers"]["status"] == "not_configured"
     assert setup["steps"]["data"]["status"] == "not_configured"
     assert setup["steps"]["token"]["status"] == "ok"
     assert setup["notice"] == NO_DEFAULTS_NOTICE and setup["setup_complete"] is False

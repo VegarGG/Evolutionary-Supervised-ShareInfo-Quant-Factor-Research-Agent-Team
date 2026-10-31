@@ -21,6 +21,7 @@ ConfigKind = Literal[
     "logging",
     "mcp",
     "registry",
+    "research",
 ]
 CONFIG_FILES: dict[ConfigKind, str] = {
     "protocol": "protocols/cn_csi300_daily_v1.yaml",
@@ -33,6 +34,7 @@ CONFIG_FILES: dict[ConfigKind, str] = {
     "logging": "logging.yaml",
     "mcp": "mcp.yaml",
     "registry": "registry.yaml",
+    "research": "research/service.yaml",
 }
 PUBLIC_CARDS_FILE = "public_cards.json"
 
@@ -247,12 +249,47 @@ class CharterConfig(BaseModel):
     job: dict[str, JsonValue]
 
 
+PriceClass = Literal["in_miss", "in_hit", "cache_write", "out", "offpeak_factor"]
+
+
 class ProviderModel(BaseModel):
+    """One model of a provider. Prices are per million tokens, in CNY or (for USD-billed
+    endpoints) in USD converted with budget.usd_to_cny; null means not configured."""
+
     model_config = ConfigDict(extra="forbid")
     tier: Literal["strong", "fast"]
     thinking: Literal["on", "off", "always"]
     effort: Literal["low", "high", "max"] | None = None
-    price_cny_per_mtok: dict[str, float | None]
+    price_cny_per_mtok: dict[PriceClass, float | None] | None = None
+    price_usd_per_mtok: dict[PriceClass, float | None] | None = None
+
+    @model_validator(mode="after")
+    def one_currency(self) -> "ProviderModel":
+        if (self.price_cny_per_mtok is None) == (self.price_usd_per_mtok is None):
+            raise ValueError("give exactly one of price_cny_per_mtok or price_usd_per_mtok")
+        return self
+
+
+class PricingCalendar(BaseModel):
+    """When peak prices apply (DeepSeek halves prices off-peak). Times are UTC."""
+
+    model_config = ConfigDict(extra="forbid")
+    peak_utc: list[str]
+    weekdays: list[Literal["mon", "tue", "wed", "thu", "fri", "sat", "sun"]]
+    holidays: list[date]
+
+    @model_validator(mode="after")
+    def windows(self) -> "PricingCalendar":
+        for window in self.peak_utc:
+            start, _, end = window.partition("-")
+            if not (len(start) == len(end) == 5 and start < end):
+                raise ValueError("peak windows are HH:MM-HH:MM in UTC")
+        return self
+
+
+class ProviderAccount(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    concurrency_limit: int | None = Field(default=None, gt=0)
 
 
 class ProviderProfile(BaseModel):
@@ -261,6 +298,12 @@ class ProviderProfile(BaseModel):
     api_key_env: Literal["DEEPSEEK_API_KEY", "MOONSHOT_API_KEY", "ZHIPU_API_KEY"]
     pydantic_ai_provider: Literal["deepseek", "moonshotai", "zai"]
     models: dict[str, ProviderModel]
+    pricing_calendar: PricingCalendar | None = None
+    account: ProviderAccount | None = None
+    # Overrides of PydanticAI's model profile for this provider (configuration only; the
+    # library is never patched). QFR sets supports_forced_tool_choice false everywhere so
+    # structured output always goes out with tool_choice auto (Section 11.8).
+    profile_overrides: dict[str, bool] = Field(default_factory=dict)
 
 
 class ProvidersConfig(BaseModel):

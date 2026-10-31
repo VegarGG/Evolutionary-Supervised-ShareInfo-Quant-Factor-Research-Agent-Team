@@ -5,20 +5,30 @@ providers:
     base_url: https://api.deepseek.com
     api_key_env: DEEPSEEK_API_KEY
     pydantic_ai_provider: deepseek
+    profile_overrides: {supports_forced_tool_choice: false}   # tool_choice auto, never forced
     models:
       deepseek-v4-pro: {tier: strong, thinking: "on",  effort: high, price_cny_per_mtok: {in_miss: null, in_hit: null, out: null, offpeak_factor: 0.5}}
       deepseek-flash:  {tier: fast,   thinking: "off",               price_cny_per_mtok: {in_miss: null, in_hit: null, out: null, offpeak_factor: 0.5}}
+    # Off-peak prices apply outside these UTC windows, and all day on weekends and on the
+    # Chinese public holidays listed here (the owner keeps the list current).
+    pricing_calendar: {peak_utc: ['01:00-04:00', '06:00-10:00'], weekdays: [mon, tue, wed, thu, fri], holidays: []}
   kimi:
     base_url: https://api.moonshot.cn/v1          # international: https://api.moonshot.ai/v1
     api_key_env: MOONSHOT_API_KEY
     pydantic_ai_provider: moonshotai
+    profile_overrides: {supports_forced_tool_choice: false}   # tool_choice auto, never forced
     models:
       kimi-k3:   {tier: strong, thinking: always, effort: high, price_cny_per_mtok: {in_miss: null, in_hit: null, cache_write: null, out: null}}
       kimi-k2.6: {tier: fast,   thinking: "off",                  price_cny_per_mtok: {in_miss: null, in_hit: null, out: null}}
+    # Moonshot publishes no API for the account tier; set the concurrency your recharge tier
+    # allows (Moonshot console, rate limits page). The probe refuses a lower value than
+    # request.concurrency, and checks the balance at /users/me/balance.
+    account: {concurrency_limit: null}
   glm:
     base_url: https://open.bigmodel.cn/api/paas/v4   # international: https://api.z.ai/api/paas/v4
     api_key_env: ZHIPU_API_KEY
     pydantic_ai_provider: zai
+    profile_overrides: {supports_forced_tool_choice: false}   # tool_choice auto, never forced
     models:
       glm-5.3:       {tier: strong, thinking: always, effort: high, price_cny_per_mtok: {in_miss: null, in_hit: null, out: null}}
       glm-5.3-flash: {tier: fast,   thinking: always,               price_cny_per_mtok: {in_miss: null, in_hit: null, out: null}}

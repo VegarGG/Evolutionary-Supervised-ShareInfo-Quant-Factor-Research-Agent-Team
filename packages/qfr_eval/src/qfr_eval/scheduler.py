@@ -351,11 +351,11 @@ class Scheduler:
         similarity: float | None = None,
         extra: str = "",
     ) -> None:
-        conn.execute(
+        job_id = conn.execute(
             text(
                 "UPDATE eval.intake SET state = :s, reason_code = :rc, duplicate_of = :dup, "
                 "similarity = :sim, decided_at = CASE WHEN :final THEN :at ELSE decided_at END, "
-                f"updated_at = :at {extra} WHERE version_id = :v"
+                f"updated_at = :at {extra} WHERE version_id = :v RETURNING job_id"
             ),
             {
                 "s": new_state,
@@ -366,7 +366,7 @@ class Scheduler:
                 "at": now,
                 "v": row.version_id,
             },
-        )
+        ).scalar()
         if status is not None:
             content: dict[str, Any] = {
                 "type": "intake",
@@ -389,15 +389,17 @@ class Scheduler:
              "duplicate_of": str(duplicate_of) if duplicate_of else None},
         )  # fmt: skip
         report.count(new_state)
-        self.log.info(
-            "intake_decided",
-            outcome="ok",
-            payload={
-                "version_id": str(row.version_id),
-                "state": new_state,
-                "reason": reason.value if reason else None,
-            },
-        )
+        # The line carries the version and, for research's versions, the job (LOG-03).
+        with bind(version_id=str(row.version_id), job_id=str(job_id) if job_id else None):
+            self.log.info(
+                "intake_decided",
+                outcome="ok",
+                payload={
+                    "version_id": str(row.version_id),
+                    "state": new_state,
+                    "reason": reason.value if reason else None,
+                },
+            )
 
     def process_discovered(self, report: TickReport, state: ActiveState) -> None:
         now = self.clock.now()

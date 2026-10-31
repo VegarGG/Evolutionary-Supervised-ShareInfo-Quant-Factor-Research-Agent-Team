@@ -212,7 +212,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import json,urllib.request; r=json.load(urllib.request.urlopen('http://127.0.0.1:8000/healthz')); assert r['status']=='ok', r"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -221,12 +221,12 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "research",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-research"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-research:phase4",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -238,7 +238,9 @@
         "REGISTRY_API_URL": "http://registry-api:8000",
         "FEEDBACK_API_URL": "http://feedback-api:8000",
         "FEEDBACK_READER_TOKEN": "${FEEDBACK_READER_TOKEN:?run just init-secrets}",
-        "RESEARCH_CONTROL_TOKEN": "${RESEARCH_CONTROL_TOKEN:?run just init-secrets}"
+        "RESEARCH_CONTROL_TOKEN": "${RESEARCH_CONTROL_TOKEN:?run just init-secrets}",
+        "REGISTRY_PUBLISHER_TOKEN": "${REGISTRY_PUBLISHER_TOKEN:?run just init-secrets}",
+        "QFR_RESEARCH_BIND": "0.0.0.0"
       },
       "volumes": [
         {
@@ -271,6 +273,11 @@
       "networks": [
         "research_net",
         "control_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_research.api"
       ]
     },
     "research-worker": {
@@ -299,7 +306,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 180 else 1)"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -308,12 +315,12 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "research",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-research"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-research:phase4",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -328,7 +335,8 @@
         "DEEPSEEK_API_KEY": "${DEEPSEEK_API_KEY-}",
         "MOONSHOT_API_KEY": "${MOONSHOT_API_KEY-}",
         "ZHIPU_API_KEY": "${ZHIPU_API_KEY-}",
-        "REGISTRY_PUBLISHER_TOKEN": "${REGISTRY_PUBLISHER_TOKEN:?run just init-secrets}"
+        "REGISTRY_PUBLISHER_TOKEN": "${REGISTRY_PUBLISHER_TOKEN:?run just init-secrets}",
+        "QFR_HEARTBEAT_FILE": "/tmp/heartbeat"
       },
       "volumes": [
         {
@@ -361,6 +369,11 @@
       "networks": [
         "research_net",
         "research_egress_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_research.worker"
       ]
     },
     "registry-api": {

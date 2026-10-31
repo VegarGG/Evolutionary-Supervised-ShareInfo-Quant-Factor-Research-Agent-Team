@@ -122,7 +122,8 @@ def setup_rig(
     monkeypatch: pytest.MonkeyPatch,
     eval_transports: dict[str, httpx.AsyncBaseTransport] | None = None,
 ) -> Iterator[SetupRig]:
-    """With eval_transports, the front door also reaches eval-admin-api and feedback-api."""
+    """With eval_transports, the front door also reaches eval-admin-api and feedback-api,
+    and research-api when the transports include one."""
     with registry_rig(tmp_path) as registry:
         control_db = TransactionalControl(database_url("CONTROL"))
         store = PostgresControlStore(begin=control_db.begin)
@@ -133,6 +134,9 @@ def setup_rig(
         monkeypatch.setenv("QFR_IMPORTS_DIR", str(imports))
         for name in ("RESEARCH_API_URL", "EVAL_ADMIN_API_URL", "FEEDBACK_API_URL"):
             monkeypatch.delenv(name, raising=False)
+        if eval_transports is not None and "research-api" in eval_transports:
+            # The caller sets RESEARCH_CONTROL_TOKEN; the research rig serves the app.
+            monkeypatch.setenv("RESEARCH_API_URL", "http://research-api:8000")
         if eval_transports is not None:
             monkeypatch.setenv("EVAL_ADMIN_API_URL", "http://eval-admin-api:8000")
             monkeypatch.setenv("EVAL_OWNER_TOKEN", EVAL_TOKENS["eval-admin-api"])

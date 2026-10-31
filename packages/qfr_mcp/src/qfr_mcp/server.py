@@ -1,5 +1,6 @@
-"""MCP front door: Phase 0 reads, the Phase 2 setup, pool, DSL and artifact tools, and the
-Phase 3 evidence, report and evaluator-configuration tools."""
+"""MCP front door: Phase 0 reads, the Phase 2 setup, pool, DSL and artifact tools, the
+Phase 3 evidence, report and evaluator-configuration tools, and the Phase 4 job,
+deliverable, trace, lineage and cost tools with their resources and prompts."""
 
 import asyncio
 import logging
@@ -20,83 +21,47 @@ from qfr_core.config import (
     mcp_config,
     public_protocol_section,
 )
-from qfr_core.contracts import Contract, PoolStatus
-from qfr_core.correlation import current, to_headers
+from qfr_core.contracts import PoolStatus
+from qfr_core.correlation import current
 from qfr_core.dsl import DslLimits, canonicalize, parse, validate
 from qfr_core.dsl.explain import explain
 from qfr_core.log_reader import LogQuery, LogReader
-from qfr_core.logging import JsonLogger, StdlibBridge
+from qfr_core.logging import JsonLogger, StdlibBridge, env_secrets
 from qfr_core.pool_import import NO_DEFAULTS_NOTICE
 from qfr_core.registry_api import RegistrySummary
+from qfr_core.research_api import ResearchSummary
 
 from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
 from qfr_mcp.audit import AuditStore, PostgresAudit
-from qfr_mcp.boundary import MCPBoundary, record_downstream_request
+from qfr_mcp.boundary import MCPBoundary
 from qfr_mcp.control_store import SETUP_STEPS, ControlStore, PostgresControlStore, SetupState
 from qfr_mcp.eval_client import EvalAdminClient, FeedbackClient
 from qfr_mcp.evidence_validation import validate_owner_evidence
 from qfr_mcp.imports import ImportPathError, read_import
+from qfr_mcp.job_tools import JobToolDeps
+from qfr_mcp.job_tools import register as register_job_tools
 from qfr_mcp.pool_importer import PoolImporter, pool_counts
 from qfr_mcp.registry_client import RegistryClient, RegistryRefused, RegistryUnavailable
+from qfr_mcp.research_client import ResearchClient
+from qfr_mcp.resources import register as register_resources
+from qfr_mcp.results import ToolResult
 
-PHASE = 3
+PHASE = 4
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
 WRITE = ToolAnnotations(
     readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
 )
 DONE_STATUSES = frozenset({"ok", "imported", "empty", "kept"})
-# Steps whose implementation lands in a later phase; shown until a row records them.
-DEFERRED_STEPS: dict[str, dict[str, JsonValue]] = {
-    "providers": {
-        "status": "deferred",
-        "implementation_phase": 4,
-        "next": "qfr llm probe arrives in Phase 4; setup cannot finish before it passes.",
-    },
-}
+PROBE_NEXT = (
+    "Run `docker compose exec research-worker qfr llm probe --trigger setup`; setup cannot "
+    "finish before every role has a usable model."
+)
 DATA_NEXT = (
     "Build snapshots with `just data-build --source synthetic` for a dry run or "
     "`--source cn`; the evaluator registers the full snapshot and activates the epoch "
     "on its next tick."
 )
 ConfigFile = Literal["protocol", "policy", "quotas"]
-
-
-class ToolResult(Contract):
-    request_id: str
-    status: Literal["ok", "partial", "not_implemented_in_phase_0"]
-    data: dict[str, JsonValue]
-
-
-class BackendReader:
-    def __init__(self, timeout: float, logger: JsonLogger) -> None:
-        self.timeout, self.logger = timeout, logger
-
-    async def get(self, env_name: str, path: str, token_env: str) -> dict[str, JsonValue]:
-        base = os.environ.get(env_name)
-        if not base:
-            return {"status": "not_implemented_in_phase_0"}
-        headers = to_headers() | {"Authorization": f"Bearer {os.environ.get(token_env, '')}"}
-        record_downstream_request(headers["X-Request-Id"])
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout, trust_env=False) as client:
-                response = await client.get(base.rstrip("/") + path, headers=headers)
-                response.raise_for_status()
-                result = response.json()
-                if not isinstance(result, dict):
-                    raise ValueError("backend returned a non-object")
-                self.logger.logger.info(
-                    "downstream_read_completed",
-                    outcome="ok",
-                    payload={"backend": env_name, "path": path},
-                )
-                return dict(result)
-        except (httpx.HTTPError, ValueError):
-            self.logger.logger.warning(
-                "downstream_unavailable",
-                outcome="failed",
-                payload={"backend": env_name, "path": path},
-            )
-            return {"status": "unavailable", "implementation_phase": "later"}
 
 
 def _state_view(state: SetupState) -> dict[str, JsonValue]:
@@ -131,11 +96,7 @@ def create_app(
             raise ValueError("CONTROL_DB_URL is required")
         control = PostgresControlStore(settings.control_db_url.get_secret_value())
     store: ControlStore = control
-    secret_values = [
-        v
-        for k, v in os.environ.items()
-        if any(word in k.upper() for word in ("TOKEN", "PASSWORD", "SECRET", "API_KEY", "DB_URL"))
-    ]
+    secret_values = env_secrets(os.environ)
     logger = JsonLogger(
         "qfr-mcp", "control", settings.log_dir, log_config, secrets=secret_values + [token]
     )
@@ -147,7 +108,6 @@ def create_app(
     reader = LogReader(
         Path(os.environ.get("QFR_LOG_READ_DIR", settings.log_dir)), log_config, config
     )
-    backend = BackendReader(config.downstream_timeout_seconds, logger)
     limits = DslLimits.from_protocol(public_protocol_section(settings.config_dir, "dsl"))
     registry: RegistryClient | None = None
     if os.environ.get("REGISTRY_API_URL"):
@@ -176,6 +136,15 @@ def create_app(
             config.downstream_timeout_seconds,
             logger,
             transports.get("feedback-api"),
+        )
+    research: ResearchClient | None = None
+    if os.environ.get("RESEARCH_API_URL"):
+        research = ResearchClient(
+            os.environ["RESEARCH_API_URL"],
+            os.environ.get("RESEARCH_CONTROL_TOKEN", ""),
+            config.downstream_timeout_seconds,
+            logger,
+            transports.get("research-api"),
         )
     evidence_schema = Path(
         os.environ.get("QFR_OWNER_EVIDENCE_SCHEMA") or "schemas/private/owner_evidence.json"
@@ -226,7 +195,36 @@ def create_app(
         except (DownstreamUnavailable, DownstreamRefused):
             return None
 
-    async def eval_health(client: EvalAdminClient | FeedbackClient | None) -> dict[str, JsonValue]:
+    async def research_summary() -> ResearchSummary | None:
+        if research is None:
+            return None
+        try:
+            return await research.summary()
+        except (DownstreamUnavailable, DownstreamRefused):
+            return None
+
+    def providers_step(summary: ResearchSummary | None) -> dict[str, JsonValue]:
+        """The providers step from research's latest probe (Section 11.8)."""
+        if research is None:
+            return {"status": "not_configured", "next": PROBE_NEXT}
+        if summary is None:
+            return {"status": "unavailable", "next": "research-api did not answer."}
+        probe = summary.last_probe
+        if probe is None:
+            return {"status": "not_started", "next": PROBE_NEXT}
+        return {
+            "status": "ok" if probe.ok else "failed",
+            "at": probe.at.isoformat(),
+            "trigger": probe.trigger,
+            "probe_id": str(probe.probe_id),
+            "roles_usable": [r for r, v in sorted(probe.roles.items()) if v.ok],
+            "roles_unusable": [r for r, v in sorted(probe.roles.items()) if not v.ok],
+            "next": None if probe.ok else PROBE_NEXT,
+        }
+
+    async def eval_health(
+        client: EvalAdminClient | FeedbackClient | ResearchClient | None,
+    ) -> dict[str, JsonValue]:
         if client is None:
             return {"status": "not_configured"}
         try:
@@ -300,15 +298,14 @@ def create_app(
             "qfr-mcp": {"status": "running"},
             "control_db": {"healthy": await asyncio.to_thread(store.healthy)},
         }
-        services["research-api"] = await backend.get(
-            "RESEARCH_API_URL", "/healthz", "RESEARCH_CONTROL_TOKEN"
-        )
+        services["research-api"] = await eval_health(research)
         services["eval-admin-api"] = await eval_health(admin)
         services["feedback-api"] = await eval_health(feedback)
         services["registry-api"] = await registry_health()
         states = await asyncio.to_thread(store.latest_setup_states)
         summary = await summary_or_none()
         evaluation = await eval_summary()
+        researching = await research_summary()
         return result(
             {
                 "phase": PHASE,
@@ -325,8 +322,21 @@ def create_app(
                     "strategy_versions": summary.strategy_versions,
                     "families": summary.families,
                 },
-                "active_jobs": None,
-                "budgets": None,
+                "active_jobs": None
+                if researching is None
+                else {
+                    "active": researching.active_jobs,
+                    "by_state": dict(researching.jobs_by_state),
+                    "paused_programs": researching.paused_programs,
+                    "research_paused": researching.research_paused,
+                },
+                "budgets": None
+                if researching is None
+                else {
+                    "cost_today": researching.cost_today_cny,
+                    "daily_cap": researching.daily_cap_cny,
+                    "currency": researching.currency,
+                },
                 "evaluation": None
                 if evaluation is None
                 else {
@@ -343,9 +353,9 @@ def create_app(
     @server.tool(
         name="qfr.setup.status",
         description=(
-            "Setup state per step (pool, providers, data, token), the evaluator's snapshot "
-            "ids, pool counts and the no-defaults notice. Provider probes arrive in Phase 4; "
-            "until then that step reads deferred."
+            "Setup state per step (pool, providers, data, token), the latest provider probe "
+            "per model and role, the evaluator's snapshot ids, pool counts and the "
+            "no-defaults notice."
         ),
         annotations=READ,
     )
@@ -353,6 +363,7 @@ def create_app(
         states = await asyncio.to_thread(store.latest_setup_states)
         summary = await summary_or_none()
         data = data_step(await eval_summary())
+        researching = await research_summary()
         steps: dict[str, JsonValue] = {}
         for step in SETUP_STEPS:
             if step == "data" and step not in states:
@@ -377,14 +388,16 @@ def create_app(
                     ),
                 }
             else:
-                steps[step] = DEFERRED_STEPS[step]
+                steps[step] = providers_step(researching)
         done = all(isinstance(v, dict) and v.get("status") in DONE_STATUSES for v in steps.values())
         return result(
             {
                 "phase": PHASE,
                 "setup_complete": done,
                 "steps": steps,
-                "probe_results": None,
+                "probe_results": None
+                if researching is None or researching.last_probe is None
+                else researching.last_probe.model_dump(mode="json"),
                 "snapshot_ids": data.get("snapshot_ids"),
                 "pool_counts": counts_view(summary),
                 "registry": "ok" if summary is not None else "unavailable",
@@ -437,7 +450,18 @@ def create_app(
         size = limit or config.list_default
         if not 1 <= size <= config.list_max:
             raise ValueError(f"LIMIT_INVALID: limit must be between 1 and {config.list_max}")
-        page = await require_registry().pool_entries(pool, status, size, cursor)
+        data = await pool_page(pool, status, size, cursor)
+        return result(data, "ok" if admin is not None else "partial")
+
+    async def pool_page(
+        pool: Literal["factor", "strategy"],
+        status: PoolStatus | None = None,
+        size: int | None = None,
+        cursor: UUID | None = None,
+    ) -> dict[str, JsonValue]:
+        page = await require_registry().pool_entries(
+            pool, status, size or config.list_default, cursor
+        )
         known = await evidence_states([item.version_id for item in page.items])
         items: list[JsonValue] = [
             item.model_dump(mode="json")
@@ -447,15 +471,12 @@ def create_app(
             }
             for item in page.items
         ]
-        return result(
-            {
-                "pool": pool,
-                "items": items,
-                "next_cursor": page.next_cursor,
-                "evidence": "ok" if admin is not None else "evaluator_not_configured",
-            },
-            "ok" if admin is not None else "partial",
-        )
+        return {
+            "pool": pool,
+            "items": items,
+            "next_cursor": page.next_cursor,
+            "evidence": "ok" if admin is not None else "evaluator_not_configured",
+        }
 
     @server.tool(
         name="qfr.pool.get",
@@ -692,6 +713,19 @@ def create_app(
     def logs_correlate(id: str, id_kind: str, query: LogQuery) -> ToolResult:
         return result(reader.correlate(id, id_kind, query))
 
+    deps = JobToolDeps(
+        research=research,
+        admin=admin,
+        feedback=feedback,
+        registry=registry,
+        config=config,
+        config_dir=settings.config_dir,
+        evidence_schema=evidence_schema,
+        logger=logger,
+        result=result,
+    )
+    register_job_tools(server, deps)
+    register_resources(server, deps, pool_page)
     logger.logger.info(
         "service_started",
         payload={
