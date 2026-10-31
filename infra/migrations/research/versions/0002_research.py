@@ -239,7 +239,9 @@ def upgrade():
         CHECK ((kind = 'factor') = (expression IS NOT NULL))
     )""")
     op.execute("CREATE INDEX candidates_generation_idx ON candidates (generation_id, state)")
-    op.execute("CREATE INDEX candidates_program_hash_idx ON candidates (program_id, canonical_hash)")
+    op.execute(
+        "CREATE INDEX candidates_program_hash_idx ON candidates (program_id, canonical_hash)"
+    )
     op.execute("""CREATE TABLE candidate_versions (
         candidate_id uuid PRIMARY KEY REFERENCES candidates (candidate_id),
         version_id uuid NOT NULL UNIQUE,

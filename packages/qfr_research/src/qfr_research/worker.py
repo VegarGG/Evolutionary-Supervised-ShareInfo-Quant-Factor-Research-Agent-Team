@@ -10,9 +10,9 @@ Only this service holds provider keys (BND-07).
 
 import asyncio
 import os
-import time
 from datetime import UTC, datetime
 from datetime import time as dtime
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
@@ -148,15 +148,23 @@ class Worker:
         return str(report.probe_id)
 
 
-async def serve(worker: Worker) -> None:
+async def heartbeat(worker: Worker, path: Path) -> None:
+    """Touch the healthcheck file and log a heartbeat on a timer, also while a long
+    generation is running (its LLM calls await, so this task keeps its schedule)."""
+    cfg = worker.env.config.service.worker
+    while True:
+        path.touch()
+        with bind():
+            worker.env.logger.logger.info("worker_heartbeat", outcome="ok")
+        await asyncio.sleep(cfg.heartbeat_seconds)
+
+
+async def serve(worker: Worker, beat_file: Path) -> None:
     env = worker.env
     cfg = env.config.service.worker
-    beat = 0.0
-    while True:
+    beating = asyncio.create_task(heartbeat(worker, beat_file))
+    while not beating.done():
         with bind():
-            if time.monotonic() - beat >= cfg.heartbeat_seconds:
-                env.logger.logger.info("worker_heartbeat", outcome="ok")
-                beat = time.monotonic()
             try:
                 result = await worker.tick()
                 if result["ran"] or result["generations_started"] or result["jobs_closed"]:
@@ -179,7 +187,8 @@ def main() -> None:
     env.logger.logger.info(
         "service_started", outcome="ok", payload={"configuration_digests": env.config.digests}
     )
-    asyncio.run(serve(Worker(env, f"{SERVICE}:{os.getpid()}")))
+    beat_file = Path(os.environ.get("QFR_HEARTBEAT_FILE") or "/tmp/heartbeat")
+    asyncio.run(serve(Worker(env, f"{SERVICE}:{os.getpid()}"), beat_file))
 
 
 if __name__ == "__main__":

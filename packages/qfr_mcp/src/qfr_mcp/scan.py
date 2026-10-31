@@ -6,6 +6,7 @@ values of each referenced version (official records, gate values, library and
 simulation numbers from eval-admin-api) at full precision, written to the text's own
 number of decimals, and at the release policy's precision for that metric. A match
 rejects the text and is logged without the value. Only the verdict reaches research.
+Signs are ignored, so writing a value negated does not hide it.
 """
 
 import math
@@ -104,7 +105,9 @@ def matches(text: str, evidence: dict[str, Any], rounding: dict[str, Any]) -> tu
             )
             step = step_for(key, rounding)
             released = None if step is None else _quantize(value, step)
-            if exact == number.value or (released is not None and released == number.value):
+            # A sign change does not hide a value.
+            target = abs(number.value)
+            if abs(exact) == target or (released is not None and abs(released) == target):
                 hits += 1
                 break
     return hits, len(values)

@@ -23,6 +23,8 @@ RUNNING_SERVICES = {
     "postgres",
     "qfr-mcp",
     "registry-api",
+    "research-api",
+    "research-worker",
     "eval-scheduler",
     "eval-worker",
     "release-worker",
@@ -325,6 +327,7 @@ try:
                 "data": setup["steps"]["data"],
                 "snapshot_ids": setup.get("snapshot_ids"),
                 "pool": setup["steps"]["pool"]["status"],
+                "providers": setup["steps"]["providers"],
                 "pool_counts": setup["pool_counts"],
                 "notice": setup["notice"],
                 "setup_complete": setup["setup_complete"],
@@ -335,13 +338,14 @@ except (subprocess.CalledProcessError, KeyError, ValueError, IndexError, OSError
 
 result = {
     "at": datetime.now(UTC).isoformat(),
-    "phase": 3,
+    "phase": 4,
     "status": "PASS" if checks and all(c["status"] == "PASS" for c in checks) else "FAIL",
     "checks": checks,
     "observations": observations,
     "limitations": [
-        "research-api, research-worker and sim-engine are successful placeholders until their "
-        "phases (4 and 5).",
+        "sim-engine is a successful placeholder until Phase 5.",
+        "Provider readiness is the latest `qfr llm probe` result in qfr.setup.status; the "
+        "doctor itself never calls a provider.",
         "Container memory is a point-in-time docker stats sample, not a peak.",
         "Run the PostgreSQL boundary suite separately; this report does not replace it.",
         "OOM checks cover current container state, not an indefinite historical event record.",

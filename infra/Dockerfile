@@ -53,6 +53,12 @@ CMD ["python", "-m", "qfr_core.placeholder"]
 # registry-api (build with QFR_PACKAGE=qfr-registry).
 FROM runtime AS registry
 
+# research-api and research-worker (build with QFR_PACKAGE=qfr-research). The prompt files
+# are versioned with the code; provider keys reach only research-worker (BND-07).
+FROM runtime AS research
+COPY prompts /app/prompts
+ENV QFR_PROMPTS_DIR=/app/prompts
+
 FROM runtime AS mcp
 COPY schemas/private/owner_evidence.json /app/schemas/owner_evidence.json
 

@@ -10,8 +10,11 @@ Every model answer is scripted; no provider is reached.
 
 import json
 from datetime import datetime
+from decimal import ROUND_HALF_UP, Decimal
+from pathlib import Path
 
 import pytest
+from qfr_mcp.scan import _quantize, owner_values, step_for
 
 from tests.research.rig import brief, research_stack
 from tests.research.scripted import Script
@@ -188,3 +191,46 @@ def test_log_03_and_mcp_01_one_job_id_joins_every_service(full):
         if line.get("request_id") == fetch.request_id
     ]  # fmt: skip
     assert api_lines and all(line.get("job_id") in (None, job_id) for line in api_lines)
+
+
+def test_mcp_03_submit_and_steer_reject_owner_only_values_of_referenced_versions(full):
+    """A brief or steering note that repeats an owner-only number of a referenced version,
+    at full precision or at the release precision, never reaches research."""
+    mcp, research = full.mcp, full.research
+    _, job_id = run_to_deliverable(full)
+    (listed,) = mcp.ok("qfr.deliverable.list", job_id=job_id)["data"]["items"]
+    fetched = mcp.ok("qfr.deliverable.get", deliverable_id=listed["deliverable_id"])["data"]
+    (item,) = fetched["deliverable"]["items"]
+    version_id, evidence = item["version_id"], item["owner_evidence"]
+    rounding = json.loads(Path("configs/public_cards.json").read_text())["policy"]["rounding"]
+    key, value = next((k, v) for k, v in owner_values(evidence) if step_for(k, rounding))
+    exact = str(Decimal(repr(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
+    released = str(abs(_quantize(value, step_for(key, rounding))).quantize(Decimal("0.001")))
+    seeds = {"pool_entry_ids": [], "version_ids": [version_id], "expressions": [], "notes": ""}
+    jobs_before = research.db.scalar("SELECT count(*) FROM research_jobs")
+
+    for number in (exact, released):
+        objective = f"Improve on the earlier factor, whose {key} was {number}."
+        error = mcp.error("qfr.job.submit", brief=brief(objective=objective, seeds=seeds))
+        assert "OWNER_ONLY_VALUE" in error and number not in error, (number, error)
+    noted = mcp.error("qfr.job.steer", job_id=job_id, note=f"Beat {exact} next time.")
+    assert "OWNER_ONLY_VALUE" in noted
+    assert research.db.scalar("SELECT count(*) FROM research_jobs") == jobs_before
+    assert not research.db.rows("SELECT * FROM job_events WHERE kind = 'steered'")
+    rejected = mcp.events("qfr-mcp", "owner_only_scan_rejected")
+    assert len(rejected) == 3 and all(line["error_code"] == "OWNER_ONLY_VALUE" for line in rejected)
+    assert not [line for line in mcp.logs("qfr-mcp") if exact in json.dumps(line)]
+    refused = [
+        c for c in mcp.audit.calls
+        if c.tool in ("qfr.job.submit", "qfr.job.steer") and c.outcome == "failed"
+    ]  # fmt: skip
+    assert [c.tool for c in refused] == ["qfr.job.submit", "qfr.job.submit", "qfr.job.steer"]
+
+    # The same brief without the number is scanned against the version and accepted.
+    clean = brief(objective="Improve on the earlier factor's reversal.", seeds=seeds)
+    accepted = mcp.ok("qfr.job.submit", brief=clean)["data"]
+    assert accepted["created"] is True
+    scan = research.db.scalar(
+        "SELECT scan FROM research_jobs WHERE job_id = :j", j=accepted["job"]["job_id"]
+    )
+    assert scan["referenced_version_ids"] == [version_id] and scan["values_compared"] > 0
