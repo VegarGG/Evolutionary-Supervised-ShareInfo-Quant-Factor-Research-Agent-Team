@@ -668,6 +668,10 @@ IN_FLIGHT = (
 OWNER_RATIONALE = "Scripted owner: follows the evaluator's recommendation."
 
 
+# Gates whose details the results keep (the inputs a calibration needs).
+DETAILED_GATES = ("G-DSR", "G-PBO", "G-HLZ", "G-FWD")
+
+
 def decide_cases(full: ResearchStack) -> list[dict[str, Any]]:
     """The scripted owner decides every open case through the MCP front door."""
     decided = []
@@ -696,6 +700,7 @@ def decide_cases(full: ResearchStack) -> list[dict[str, Any]]:
                 "failing_gates": case["failing_gates"],
                 "gates": {
                     g["name"]: {k: g[k] for k in ("passed", "skipped", "value", "threshold")}
+                    | ({"detail": g["detail"]} if g["name"] in DETAILED_GATES else {})
                     for g in case["gates"]
                 },
                 "decision": result["decision"],
