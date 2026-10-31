@@ -15,7 +15,6 @@ is the state_id of the "importing" setup_state row; the final row records the co
 """
 
 import asyncio
-import hashlib
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
@@ -51,6 +50,7 @@ from qfr_core.registry_api import (
 )
 
 from qfr_mcp.control_store import ControlStore, SetupState
+from qfr_mcp.imports import ImportPathError, read_import
 from qfr_mcp.registry_client import RegistryClient, RegistryRefused, RegistryUnavailable
 
 ACTOR = "qfr-mcp/pool-import"
@@ -156,27 +156,10 @@ class PoolImporter:
 
     def read_file(self, name: str) -> tuple[bytes, dict[str, JsonValue]]:
         """Read one file under the imports folder; nothing outside it is reachable."""
-        if self.imports_dir is None:
-            raise self._reject("IMPORTS_DIR_UNSET", "QFR_IMPORTS_DIR is not configured")
-        root = self.imports_dir.resolve()
-        candidate = (root / name).resolve()
-        if candidate == root or not candidate.is_relative_to(root):
-            raise self._reject("PATH_OUTSIDE_IMPORTS", "name a file inside the imports folder")
-        if not candidate.is_file():
-            raise self._reject("FILE_NOT_FOUND", f"imports/{name} does not exist")
-        size = candidate.stat().st_size
-        if size > self.config.import_max_bytes:
-            raise self._reject(
-                "FILE_TOO_LARGE",
-                f"{size} bytes exceed the limit of {self.config.import_max_bytes}",
-            )
-        data = candidate.read_bytes()
-        return data, {
-            "kind": "file",
-            "file": candidate.relative_to(root).as_posix(),
-            "bytes": len(data),
-            "sha256": hashlib.sha256(data).hexdigest(),
-        }
+        try:
+            return read_import(self.imports_dir, name, self.config.import_max_bytes)
+        except ImportPathError as error:
+            raise self._reject(error.code, error.message) from None
 
     # ---- helpers ------------------------------------------------------------------
 

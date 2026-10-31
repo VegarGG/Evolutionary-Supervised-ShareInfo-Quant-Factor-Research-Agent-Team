@@ -1,4 +1,4 @@
-"""Inspect the running stack (Phase 2) without changing Docker or host settings."""
+"""Inspect the running stack (Phase 3) without changing Docker or host settings."""
 
 import json
 import subprocess
@@ -18,8 +18,18 @@ compose = [
 ]
 checks = []
 observations = []
-# Long-running services by Phase 2; the rest are placeholders that exit 0.
-RUNNING_SERVICES = {"postgres", "qfr-mcp", "registry-api"}
+# Long-running services by Phase 3; the rest are placeholders that exit 0.
+RUNNING_SERVICES = {
+    "postgres",
+    "qfr-mcp",
+    "registry-api",
+    "eval-scheduler",
+    "eval-worker",
+    "release-worker",
+    "feedback-api",
+    "eval-admin-api",
+    "data-ingest",
+}
 # BND-09: the registry's only mutation routes.
 REGISTRY_MUTATIONS = [
     "POST /v1/artifacts",
@@ -149,6 +159,17 @@ try:
                 run(compose + ["exec", "-T", "registry-api", "python", "-c", openapi_probe])
             )
             record("BND-09:registry_mutation_routes", mutations == REGISTRY_MUTATIONS, mutations)
+        if service == "feedback-api" and state["Running"]:
+            # BND-03: the Feedback API's OpenAPI document holds GET operations only.
+            openapi_probe = (
+                "import json,urllib.request; "
+                "d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/openapi.json')); "
+                "print(json.dumps(sorted({m for i in d['paths'].values() for m in i})))"
+            )
+            methods = json.loads(
+                run(compose + ["exec", "-T", "feedback-api", "python", "-c", openapi_probe])
+            )
+            record("BND-03:feedback_get_only", methods == ["get"], methods)
         if service == "qfr-mcp":
             record(
                 "BND-08:qfr-mcp",
@@ -174,6 +195,26 @@ try:
                     ),
                     access,
                 )
+    # Memory actually used per container, for sizing Docker Desktop (owner decision).
+    stats = (
+        run(
+            [
+                "docker",
+                "stats",
+                "--no-stream",
+                "--format",
+                "{{json .}}",
+                *[c["Id"] for c in containers],
+            ]
+        ).splitlines()
+        if containers
+        else []
+    )
+    usage = {}
+    for line in stats:
+        item = json.loads(line)
+        usage[item.get("Name", "?")] = {"memory": item.get("MemUsage"), "cpu": item.get("CPUPerc")}
+    observations.append({"observation": "container_memory", "containers": usage})
     record(
         "all_services_accounted_for",
         set(expected) <= seen,
@@ -281,6 +322,8 @@ try:
         observations.append(
             {
                 "observation": "setup",
+                "data": setup["steps"]["data"],
+                "snapshot_ids": setup.get("snapshot_ids"),
                 "pool": setup["steps"]["pool"]["status"],
                 "pool_counts": setup["pool_counts"],
                 "notice": setup["notice"],
@@ -292,12 +335,14 @@ except (subprocess.CalledProcessError, KeyError, ValueError, IndexError, OSError
 
 result = {
     "at": datetime.now(UTC).isoformat(),
-    "phase": 2,
+    "phase": 3,
     "status": "PASS" if checks and all(c["status"] == "PASS" for c in checks) else "FAIL",
     "checks": checks,
     "observations": observations,
     "limitations": [
-        "Domain services other than registry-api are successful placeholders until their phase.",
+        "research-api, research-worker and sim-engine are successful placeholders until their "
+        "phases (4 and 5).",
+        "Container memory is a point-in-time docker stats sample, not a peak.",
         "Run the PostgreSQL boundary suite separately; this report does not replace it.",
         "OOM checks cover current container state, not an indefinite historical event record.",
     ],

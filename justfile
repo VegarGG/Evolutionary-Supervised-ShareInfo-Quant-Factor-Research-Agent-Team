@@ -21,7 +21,10 @@ build:
     uv run --locked python scripts/build_public_cards.py
     docker compose --env-file .env -f infra/docker-compose.yml build
 
+# The evaluator records the git commit and the eval image id in every official record.
 up:
+    QFR_GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unversioned)" \
+    QFR_EVAL_IMAGE_DIGEST="$(docker image inspect --format '{{{{.Id}}}}' qfr-v2-eval:phase3 2>/dev/null || echo unpinned)" \
     docker compose --env-file .env -f infra/docker-compose.yml up -d
 
 down:
@@ -38,6 +41,14 @@ doctor:
 
 data-build *args:
     docker compose --env-file .env -f infra/docker-compose.yml run --rm data-ingest qfr data build {{args}}
+
+# One daily-ingest check now (e.g. `just data-serve-once --force`), outside the schedule.
+data-serve-once *args:
+    docker compose --env-file .env -f infra/docker-compose.yml run --rm data-ingest qfr data serve --once {{args}}
+
+# EVL-04: re-run an official record with its pinned inputs and compare the results hash.
+eval-reproduce record_id:
+    docker compose --env-file .env -f infra/docker-compose.yml run --rm eval-worker qfr eval reproduce {{record_id}}
 
 logs *args:
     docker compose --env-file .env -f infra/docker-compose.yml exec -T qfr-mcp qfr logs {{args}}

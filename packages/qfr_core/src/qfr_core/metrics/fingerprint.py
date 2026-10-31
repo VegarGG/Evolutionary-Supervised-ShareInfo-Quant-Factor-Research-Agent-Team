@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import date
 
 import numpy as np
+from numpy.typing import NDArray
 
 from qfr_core.metrics.matrix import Array, Market, rank_rows, row_spearman
 
@@ -45,10 +46,16 @@ def fingerprint(factor: Array, market: Market, dates: list[date]) -> Fingerprint
     if missing:
         raise ValueError(f"fingerprint dates missing from the market: {missing[:3]}")
     rows = [position[d] for d in dates]
-    values = np.where(market.eligible[rows], factor[rows], np.nan)
-    ranks = rank_rows(values)
+    return fingerprint_rows(factor[rows], market.eligible[rows], market.instruments, dates)
+
+
+def fingerprint_rows(
+    values: Array, eligible: NDArray[np.bool_], instruments: list[str], dates: list[date]
+) -> Fingerprint:
+    """The fingerprint from the factor's rows on the fingerprint dates only."""
+    ranks = rank_rows(np.where(eligible, values, np.nan))
     keep = np.isfinite(ranks).any(axis=0)
-    names = [name for name, k in zip(market.instruments, keep, strict=True) if k]
+    names = [name for name, k in zip(instruments, keep, strict=True) if k]
     return Fingerprint(list(dates), names, ranks[:, keep])
 
 

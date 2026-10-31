@@ -1,7 +1,7 @@
 # QFR v2
 
 New, independent implementation of the owner's
-[authoritative plan](docs/QFR-Implementation-Plan-v2.1-EN.html).
+[authoritative plan](docs/QFR-Implementation-Plan-v2.2-EN.html).
 The canonical project is
 [Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team).
 Previous QFR code and PRs are outdated and are not dependencies of this repository.
@@ -50,6 +50,17 @@ JSON, YAML or CSV, placed under `imports/`) or to start empty, which records the
 no-defaults notice. Read [the Phase 2 record](docs/phase2-acceptance.md) and the
 [Phase 2 decisions](docs/decisions.md#phase-2-decisions). Phase 2 was built on the
 unmerged Phase 1 branch at the owner's request.
+
+Phase 3 adds the independent evaluator. eval-scheduler pulls published versions and
+pool events, deduplicates them, applies quotas and queues work; eval-worker screens each
+factor in a limited child process and runs W1; release-worker releases rounded,
+whitelisted reports as soon as they are recorded; feedback-api (GET only) serves them to research,
+and eval-admin-api serves the owner. data-ingest builds a new full snapshot each day
+after 18:30 Shanghai time. The MCP front door gains `qfr.evidence.get`,
+`qfr.report.list` and `qfr.ops.activate_protocol`, `_policy` and `_quotas`. Re-run an
+official record with `just eval-reproduce <record_id>`. Read
+[the Phase 3 record](docs/phase3-acceptance.md), which ends with the on-machine test
+steps, and the [Phase 3 decisions](docs/decisions.md#phase-3-decisions).
 
 ## License and use
 

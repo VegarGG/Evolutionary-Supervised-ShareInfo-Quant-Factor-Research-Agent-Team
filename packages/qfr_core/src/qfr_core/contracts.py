@@ -20,6 +20,8 @@ Slug = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9_-]*$", max_le
 ShortText = Annotated[str, StringConstraints(min_length=1, max_length=120)]
 Sign = Literal[-1, 1]
 Horizon = Literal[1, 5, 10, 20]
+# JSON object keys are strings, so released horizon-keyed maps use the string forms.
+HorizonKey = Literal["1", "5", "10", "20"]
 Tier = Literal["w1_pass", "w2_pass", "advanced", "incubated"]
 Operator = Literal[
     "explore", "llm_mutation", "syntactic_mutation", "crossover", "repair", "human_seed"
@@ -239,7 +241,7 @@ class W1Content(Contract):
     rankic_ir: FiniteFloat
     nw_t_bucket: Literal["below_1", "1_to_2", "2_to_3", "above_3"]
     hit_ratio: float = Field(ge=0, le=1)
-    decay_profile: dict[Horizon, FiniteFloat]
+    decay_profile: dict[HorizonKey, FiniteFloat]
     ls_net_sharpe: FiniteFloat
     monotonicity: float = Field(ge=-1, le=1)
     top_turnover: float = Field(ge=0, le=1)

@@ -4,9 +4,12 @@ import hashlib
 import json
 import os
 import sys
+import time
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Annotated, cast
 
+import httpx
 import typer
 from pydantic import JsonValue
 from qfr_core.config import RuntimeSettings, canonical_json, logging_config
@@ -24,8 +27,10 @@ from qfr_core.metrics.factor import MetricSettings
 
 from qfr_eval.ingest.cn import ingest_cn
 from qfr_eval.ingest.config import World, load_cn, load_epoch, load_synthetic, load_yaml
+from qfr_eval.ingest.serve import BuildFn, IngestService, Schedule, cn_source, replay_source
 from qfr_eval.ingest.synthetic import generate
 from qfr_eval.ingest.zones import build_zones
+from qfr_eval.runtime import eval_config, start_heartbeat
 
 app = typer.Typer(no_args_is_help=True, help="Market data snapshots (evaluation side).")
 
@@ -218,3 +223,71 @@ def verify(
         )
         raise typer.Exit(1) from None
     typer.echo(json.dumps(report, sort_keys=True))
+
+
+@app.command("serve")
+def serve(
+    source: Annotated[
+        str, typer.Option(help="cn; replay (synthetic, tests only); off (no builds)")
+    ] = "cn",
+    world: Annotated[str, typer.Option(help="Replay: synthetic world")] = "planted",
+    replay_from: Annotated[
+        str | None, typer.Option(help="Replay: first revealed date (default W1 start)")
+    ] = None,
+    once: Annotated[bool, typer.Option(help="Run one check, print the result and exit")] = False,
+    force: Annotated[bool, typer.Option(help="With --once: build now, ignoring the clock")] = False,
+    out: Annotated[
+        Path | None, typer.Option(help="Use <out>/full and <out>/research instead")
+    ] = None,
+    raw_dir: Annotated[Path | None, typer.Option(help="Raw download dir (QFR_RAW_DIR)")] = None,
+) -> None:
+    """The daily job: build a new full snapshot after the ingest time (PLAN P3.8)."""
+    settings = RuntimeSettings()
+    logger = _logger(settings)
+    if source not in ("cn", "replay", "off"):
+        raise typer.BadParameter("source must be cn, replay or off")
+    beat = os.environ.get("QFR_HEARTBEAT_FILE")
+    if source == "off":
+        # A synthetic dry run: keep the service healthy without downloading CN data.
+        logger.logger.info("ingest_disabled", payload={"source": "off"})
+        if once:
+            typer.echo(json.dumps({"status": "disabled"}))
+            return
+        start_heartbeat(Path(beat) if beat else None)
+        while True:
+            time.sleep(3600)
+    if world not in ("planted", "null", "decay"):
+        raise typer.BadParameter("world must be planted, null or decay")
+    config = eval_config(settings.config_dir).ingest
+    deployment = load_yaml(settings.config_dir / "deployment.yaml")
+    protocol = load_yaml(settings.config_dir / PROTOCOL_FILE)
+    build_fn: BuildFn
+    if source == "cn":
+        epoch_id = str(protocol["epoch_ref"])
+        raw = raw_dir or Path(os.environ.get("QFR_RAW_DIR") or LOCAL_RAW)
+        cn = load_cn(settings.config_dir)
+        client = httpx.Client(timeout=cn.download_timeout_seconds)
+        build_fn = cn_source(cn, raw, client, logger, config.keep_raw_releases)
+    else:
+        data, full, _, epoch_id = _synthetic(
+            settings.config_dir, cast(World, world), protocol, logger
+        )
+        first = load_epoch(settings.config_dir, epoch_id).W1.start
+        build_fn = replay_source(
+            data, full, date.fromisoformat(replay_from) if replay_from else first
+        )
+    service = IngestService(
+        _dirs(out),
+        load_epoch(settings.config_dir, epoch_id),
+        Schedule.from_deployment(deployment),
+        build_fn,
+        logger,
+        config.recheck_seconds,
+    )
+    logger.logger.info("service_started", payload={"phase": 3, "source": source})
+    if once:
+        result = service.run_once(datetime.now(UTC), force=force)
+        typer.echo(json.dumps(result, sort_keys=True))
+        raise typer.Exit(1 if result["status"] == "failed" else 0)
+    start_heartbeat(Path(beat) if beat else None)
+    service.serve(config.check_seconds)

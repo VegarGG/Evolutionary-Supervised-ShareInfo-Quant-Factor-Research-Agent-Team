@@ -1,5 +1,64 @@
 {
   "$defs": {
+    "EvaluationState": {
+      "additionalProperties": false,
+      "description": "Where the version is in the evaluator's lifecycle (Section 7.9).",
+      "properties": {
+        "decided_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Decided At"
+        },
+        "discovered_at": {
+          "format": "date-time",
+          "title": "Discovered At",
+          "type": "string"
+        },
+        "duplicate_of": {
+          "anyOf": [
+            {
+              "format": "uuid7",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Duplicate Of"
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason Code"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "reason_code",
+        "duplicate_of",
+        "discovered_at",
+        "decided_at"
+      ],
+      "title": "EvaluationState",
+      "type": "object"
+    },
     "GateResult": {
       "additionalProperties": false,
       "properties": {
@@ -285,6 +344,16 @@
   },
   "additionalProperties": false,
   "properties": {
+    "evaluation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EvaluationState"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "gate_values": {
       "items": {
         "$ref": "#/$defs/GateResult"
@@ -296,6 +365,20 @@
       "const": "Never copy owner-only evidence into research briefs or steering notes.",
       "title": "Hygiene Warning",
       "type": "string"
+    },
+    "library_correlation": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Library Correlation"
     },
     "official_records": {
       "items": {
@@ -359,10 +442,12 @@
     "schema_version",
     "visibility",
     "version_id",
+    "evaluation",
     "official_records",
     "gate_values",
     "series",
     "reference_strategy_stats",
+    "library_correlation",
     "simulation_state",
     "hygiene_warning"
   ],

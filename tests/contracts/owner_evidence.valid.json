@@ -2,6 +2,13 @@
   "schema_version": "owner_evidence/1",
   "visibility": "owner_only",
   "version_id": "019a35e0-0000-7000-8000-000000000001",
+  "evaluation": {
+    "state": "W1Evaluated",
+    "reason_code": null,
+    "duplicate_of": null,
+    "discovered_at": "2026-10-30T00:00:00.000000Z",
+    "decided_at": "2026-10-30T00:00:00.000000Z"
+  },
   "official_records": [
     {
       "version_id": "019a35e0-0000-7000-8000-000000000001",
@@ -34,6 +41,7 @@
   "gate_values": [],
   "series": [],
   "reference_strategy_stats": {},
+  "library_correlation": null,
   "simulation_state": null,
   "hygiene_warning": "Never copy owner-only evidence into research briefs or steering notes."
 }

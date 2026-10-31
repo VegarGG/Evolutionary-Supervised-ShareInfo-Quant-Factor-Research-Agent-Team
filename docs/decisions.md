@@ -1,3 +1,19 @@
+# Plan amendments
+
+1. **v2.2, 2026-10-31: immediate release.** The owner replaced the batched release of
+   reports to research (6-hour W1 batches, weekly W2 and advancement batches,
+   advancement delayed at least 7 days) with immediate release: every report is
+   released as soon as the evaluator records it, and research starts its next
+   generation when the previous generation's feedback is complete (or after at most
+   6 hours). Coarsening, quotas, the Ladder, the private W3 holdout, the trial ledger
+   with DSR and the burn meters are unchanged. Sections changed: 1.2, 1.3, SC5, the
+   architecture and workflow figures, 4.4, D11, 7.9, 9.1 to 9.3, 11.1, 11.8, 12.1
+   (published provisional members no longer expire), 13.3, 15.3, 16.3, 17.1, 17.4,
+   REL-02, P3.5, P6.2, the Phase 3 acceptance check, M1 and the Release and Research
+   defaults. The plan is now `docs/QFR-Implementation-Plan-v2.2-EN.html` and
+   `docs/PLAN.md`; the SHA-256 under Phase 0 below is that of v2.1. Phase 3 decision
+   16 records the implementation.
+
 # Phase 0 decisions
 
 The authoritative document is the owner's complete HTML, retained byte for byte as
@@ -344,3 +360,150 @@ which was not yet merged, as the owner asked.
     of SET-01 (a job submitted through MCP completes a generation from exploration
     alone, with the library-correlation gate recorded as vacuous, and zero programs)
     needs research jobs (Phase 4) and the evaluator (Phase 3).
+
+# Phase 3 decisions
+
+Phase 3 implements P3.1 to P3.8 only: eval_db, the scheduler and queue, the eval
+worker with screening and W1, the release engine, feedback-api, eval-admin-api,
+`qfr eval reproduce` and the daily data-ingest service, plus the MCP tools that reach
+them. Strategies are held at intake (their plugin is Phase 6); W2, simulation,
+acceptance, approvals, research jobs and providers are not started. It was built on
+the Phase 2 branch and rebased onto main once Phases 1 and 2 merged (PRs #12 and #13).
+The Phase 3 on-machine test on the Mac Studio is left to the owner, and Docker Desktop
+memory is not changed.
+
+1. **eval_db is insert-only where the plan says so.** Official records, the trial
+   ledger, metrics, series files, released reports, events, burn history and quota
+   usage are protected by REVOKE plus row and TRUNCATE triggers, as in Phase 2.
+   Configuration versions may only move draft → active → retired; a guard trigger
+   refuses any content change to an active or retired version, and a partial unique
+   index keeps one active version per kind. One epoch may be active.
+2. **Configuration bootstrap.** On first start, when no protocol, policy or quota
+   version is active, the scheduler activates the shipped files (principal
+   `eval-scheduler`, no approval id; `bootstrap_configs: true` in `configs/eval.yaml`).
+   Later versions are created and activated by the owner through
+   `qfr.ops.activate_protocol`, `qfr.ops.activate_policy` and `qfr.ops.activate_quotas`.
+   The approval id is optional and stored when given, because the approval workflow is
+   Phase 6; every activation is logged and audited.
+3. **Which epoch.** The scheduler pins `configs/epochs/${QFR_EPOCH:-epoch_001}.yaml`.
+   The protocol's `epoch_ref` is recorded next to the epoch in the activation check
+   (`protocol_epoch_ref_matches`), so a synthetic dry run with
+   `QFR_EPOCH=synthetic_001` is visible as such rather than silently passing. Switching
+   epochs later needs a fresh evaluator database; rollover is Phase 8.
+4. **The embargo is enforced, and epoch_001's W1 and W2 start later than the plan's
+   defaults.** Activation resolves the windows on the snapshot's own trading calendar
+   and refuses with `EMBARGO_TOO_SHORT` (logged as `epoch_activation_refused`) when any
+   gap is below `embargo_trading_days` (20). On the SSE calendar the plan's dates
+   (W1 from 2020-02-04, W2 from 2023-02-01) leave 17 and 16 trading days because of
+   the Spring Festival closures. The owner chose on 2026-10-31 to move the starts to
+   2020-02-07 and 2023-02-07, which gives 20, 20 and 23 (checked against the
+   exchange_calendars XSHG calendar; `tests/eval/test_epochs.py` keeps the check). The
+   window ends, W0 and W3 are unchanged. The file keeps version 1 because no epoch was
+   ever activated with the old dates: no evaluator before Phase 3 existed, and Phase 3
+   refuses them.
+5. **Two job kinds.** A `fingerprint` job computes the 40-date W0 fingerprint that
+   behavioral dedup needs; an `evaluate` job screens and, on a pass, runs W1.
+   Fingerprint jobs are claimed first. The queue is fair round-robin across families
+   (priority = jobs still waiting in the family, then enqueue order), claimed with
+   `FOR UPDATE SKIP LOCKED`.
+6. **Dedup.** Exact dedup compares the canonical hash with every version already
+   admitted in the epoch. Behavioral dedup compares fingerprints with the admitted set
+   at similarity ≥ 0.95 and is serialized under the scheduler's advisory lock, so two
+   near-duplicates published together cannot both pass. The reason is
+   `NEAR_DUPLICATE_OF` with the earlier version id.
+7. **Quotas.** A W1 slot is consumed at admission (when the evaluate job is queued),
+   in rolling windows: family `w1_count` per `w1_hours`, program `w1_daily` and global
+   `w1_daily` per 24 hours, by the evaluator's clock. A version without room is
+   `Deferred` (`QUOTA_DEFERRED`, released) and re-tried every tick; after
+   `deferral_expiry_days` (7) it is rejected with `QUOTA_EXPIRED`.
+8. **Strategies are Held.** A strategy version gets an intake row in state `Held` with
+   the hold reason "the strategy plugin arrives in Phase 6", and no job.
+9. **Runner limits.** Production computes each factor in a child process. The CPU
+   budget is an RLIMIT_CPU soft limit (snapshot load gets `load_cpu_seconds`, then the
+   protocol's `cpu_seconds`), with a wall-clock backstop of 3× the budget; a watchdog
+   ends the child when its peak RSS passes `memory_gb`. Either way the result is
+   `RUNTIME_LIMIT` with the limit named in owner evidence only.
+10. **Prefix probe tolerance.** The probe compares values at each seeded cut date with
+    a relative tolerance (`prefix_tolerance` 1e-9, scaled by the value's magnitude), so
+    rolling-sum rounding cannot be mistaken for lookahead while a one-day peek always
+    is (EVL-03).
+11. **Degeneracy and coverage.** `DEGENERATE` when more than
+    `degenerate_date_fraction_max` (10%) of W1-window dates have fewer than two finite
+    values among eligible stocks, or no spread at all; `LOW_COVERAGE` when mean coverage is
+    below `coverage_min`. Screening uses only data up to the end of W1.
+12. **Screening records.** A screening record carries `window: W1`, its metrics (no
+    W1 performance) and its reasons. Screening failures are not trials: the ledger and
+    the burn meter count W1 runs only (EVL-06).
+13. **Internal errors.** An evaluator exception (not the artifact's fault) is retried
+    with backoff up to `max_attempts` (3). After that the version is `ScreenFailed`
+    with `INTERNAL_ERROR`, no official W1 record and no trial.
+14. **Library values.** Each evaluated version's W1 factor values are stored once as a
+    `factor_values` series in the eval store, so the library-correlation check reads
+    them back instead of recomputing. The series route of eval-admin-api refuses
+    `factor_values` (it is evaluator-internal, and large).
+15. **Library membership.** The scheduler follows pool events from the registry. A
+    library entry is effective from the version's W1 record time in the epoch, so a
+    factor evaluated before a pool admission is not compared with it after the fact.
+    Library changes are released immediately (Section 9.2). A pool admission never
+    triggers an evaluation.
+16. **Release timing.** By the owner's plan change of 2026-10-31 (plan v2.2,
+    Section 9.2), every report is released as soon as the evaluator records it; no
+    report waits for a batch time. The deciding service queues the report in the same
+    transaction as its decision with `due_at` = the decision time, and release-worker
+    releases it on its next tick (`release.interval_seconds`, 1 second), writing
+    `released_at` = the release time. The release policy says `release_timing:
+    immediate` in place of the old `batching` block, so the public policy card tells
+    research when it hears back. Release-worker stays the only writer of
+    `released_reports`, which keeps rounding and whitelisting in one place and lets a
+    library change for a version not yet pulled wait for its intake row. The feedback
+    views keep their `released_at <= now()` filter as a guard. Reports due together are
+    released in the order they were queued (the UUIDv7 queue id breaks ties), so a
+    version's intake precedes its screening and W1 (REL-02). Policy `default/1` is
+    edited in place rather than published as `default/2` because Phase 3 is not merged;
+    a stack that activated the earlier `default/1` keeps serving the old policy card
+    until its evaluation database is recreated.
+17. **Rounding.** Released values are rounded half away from zero to the policy step
+    in decimal arithmetic (`Decimal(repr(x))`), so 0.0125 at step 0.005 is 0.015, not
+    the binary-float 0.01. Negative zero is released as 0.0.
+18. **Diagnostic flags.** The thresholds live in the release policy (`flags:`): the
+    plan's fixed rules (DECAYS_FAST below 40% of h=1, COST_DOMINATED below 50% of
+    gross) and, where the plan gives no number, the W1 gate values (turnover 0.60,
+    library correlation 0.70, RankIC 0.02 with NW-t 2.5) and 0.50 for monotonicity.
+    The policy refuses to load unless every rule has a threshold.
+19. **Policy card.** The public policy card includes the active quota card, and its
+    ref is `default/1+quotas:default/1`, so research sees the quotas it is held to.
+    Cards never name windows, dates, holdout or acceptance details.
+20. **Contract fixes.** `W1Content.decay_profile` keys are the strings "1", "5", "10",
+    "20" (`HorizonKey`), because JSON object keys are strings and the released report
+    must round-trip through the schema. A released W1 report carries the Section 9.2
+    values and no pass or fail; the artifact status route shows `EVALUATED` for it,
+    and the W1 gate verdict is owner evidence. `OwnerEvidence` gains `evaluation` (the
+    intake state) and `library_correlation`. The schemas are regenerated.
+21. **One feedback token.** feedback-api has one reader token for the research zone;
+    requests may narrow by program, and per-program tokens wait for Phase 4. It
+    connects as `feedback_ro`, which reads five views in the `feedback` schema only.
+22. **Owner reads.** eval-admin-api serves summary, intake, runs, records, owner
+    evidence, series, burn meters, quota usage (by the evaluator's clock), the library
+    and the private configuration. It has no report routes; `qfr.report.list` goes to
+    feedback-api like research would.
+23. **Data ingest service.** `qfr data serve` runs once per local day after
+    `schedule.ingest_local` (18:30 Asia/Shanghai). The CN source reads the latest
+    investment_data tag from the `/releases/latest` redirect (no API token) and builds
+    only when the tag is new; otherwise it re-checks hourly. Daily builds write the
+    full zone only: the research snapshot never changes within an epoch (Section 6.4),
+    and evaluation stays pinned to the epoch's snapshot. Full snapshots are retained
+    for reproducibility; extracted raw copies are removed and two raw archives kept.
+    `--source replay` reveals a synthetic world one day per build (tests), and
+    `--source off` (`QFR_INGEST_SOURCE=off`) keeps the service healthy without
+    downloading, for a synthetic dry run.
+24. **Health and provenance.** Scheduler, worker, release engine and ingest write a
+    heartbeat file from a background thread; Compose marks them unhealthy when it is
+    older than 180 seconds. `just up` passes the git commit and the eval image id,
+    which every official record stores as `code_version` and `image_digest`.
+25. **Disk.** Retaining every daily full snapshot grows the data volume by roughly one
+    snapshot per trading day. The Phase 7 disk guard owns the limit; until then the
+    owner can see the size with `just doctor`.
+26. **Tests and locks.** Evaluation tests run in a rolled-back outer transaction like
+    Phase 2. Each rig takes the registry write lock before touching eval_db, so
+    parallel test workers cannot deadlock across the two databases. Catalog checks
+    replace TRUNCATE probes, which would wait on other workers' open transactions.

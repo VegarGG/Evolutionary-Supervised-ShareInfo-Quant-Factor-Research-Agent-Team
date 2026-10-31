@@ -89,7 +89,7 @@ def test_mcp_01_status_tail_are_audited_and_request_id_reaches_downstream(rig):
     assert audit.calls[-1].downstream_request_ids == []
 
 
-def test_mcp_catalog_is_the_phase_two_catalog(rig):
+def test_mcp_catalog_is_the_phase_three_catalog(rig):
     client, _, headers, _ = rig
     response = call(client, headers, "tools/list")
     tools = {tool["name"] for tool in response.json()["result"]["tools"]}
@@ -105,12 +105,22 @@ def test_mcp_catalog_is_the_phase_two_catalog(rig):
         "qfr.pool.get",
         "qfr.dsl.validate",
         "qfr.artifact.get",
+        "qfr.evidence.get",
+        "qfr.report.list",
+        "qfr.ops.activate_protocol",
+        "qfr.ops.activate_policy",
+        "qfr.ops.activate_quotas",
     }
     annotations = {
         t["name"]: t.get("annotations") or {} for t in response.json()["result"]["tools"]
     }
     writes = {name for name, a in annotations.items() if not a.get("readOnlyHint")}
-    assert writes == {"qfr.pool.import"}
+    assert writes == {
+        "qfr.pool.import",
+        "qfr.ops.activate_protocol",
+        "qfr.ops.activate_policy",
+        "qfr.ops.activate_quotas",
+    }
 
 
 def test_auth_limits_errors_and_audit_fail_closed(rig):
@@ -174,7 +184,7 @@ def test_dsl_validate_returns_canonical_form_complexity_and_explanation(rig):
 def test_registry_tools_fail_explicitly_when_the_registry_is_not_configured(rig):
     client, audit, headers, _ = rig
     status = structured(client, headers, "qfr.status")["structuredContent"]["data"]
-    assert status["phase"] == 2
+    assert status["phase"] == 3
     assert status["services"]["registry-api"] == {"status": "not_configured"}
     assert status["pool_counts"] is None and status["notice"] is None
     setup = structured(client, headers, "qfr.setup.status")["structuredContent"]["data"]

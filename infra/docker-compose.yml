@@ -127,7 +127,8 @@
         "EVAL_ADMIN_API_URL": "http://eval-admin-api:8000",
         "FEEDBACK_API_URL": "http://feedback-api:8000",
         "QFR_IMPORTS_DIR": "/imports",
-        "QFR_EXPORTS_DIR": "/exports"
+        "QFR_EXPORTS_DIR": "/exports",
+        "QFR_OWNER_EVIDENCE_SCHEMA": "/app/schemas/owner_evidence.json"
       },
       "volumes": [
         {
@@ -475,7 +476,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 180 else 1)"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -484,12 +485,12 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "eval",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-eval"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-eval:phase3",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -500,7 +501,11 @@
         "REGISTRY_EVALUATOR_TOKEN": "${REGISTRY_EVALUATOR_TOKEN:?run just init-secrets}",
         "REGISTRY_API_URL": "http://registry-api:8000",
         "QFR_FULL_SNAPSHOT_DIR": "/data/full",
-        "QFR_EPOCH_CONFIG": "/app/configs/epochs/epoch_001.yaml"
+        "QFR_EPOCH_CONFIG": "/app/configs/epochs/${QFR_EPOCH:-epoch_001}.yaml",
+        "QFR_EVAL_STORE_DIR": "/data/eval-store",
+        "QFR_HEARTBEAT_FILE": "/tmp/heartbeat",
+        "QFR_GIT_SHA": "${QFR_GIT_SHA:-}",
+        "QFR_IMAGE_DIGEST": "${QFR_EVAL_IMAGE_DIGEST:-}"
       },
       "volumes": [
         {
@@ -519,9 +524,33 @@
           "read_only": true
         },
         {
+          "type": "volume",
+          "source": "eval_store",
+          "target": "/data/eval-store",
+          "read_only": true
+        },
+        {
           "type": "bind",
           "source": "../configs/epochs",
           "target": "/app/configs/epochs",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "../configs/protocols",
+          "target": "/app/configs/protocols",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "../configs/release_policies",
+          "target": "/app/configs/release_policies",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "../configs/quotas",
+          "target": "/app/configs/quotas",
           "read_only": true
         }
       ],
@@ -539,6 +568,11 @@
       "networks": [
         "eval_net",
         "registry_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_eval.scheduler"
       ]
     },
     "eval-worker": {
@@ -568,7 +602,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 180 else 1)"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -577,12 +611,12 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "eval",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-eval"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-eval:phase3",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -591,7 +625,10 @@
         "TZ": "Asia/Shanghai",
         "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
         "QFR_FULL_SNAPSHOT_DIR": "/data/full",
-        "QFR_EPOCH_CONFIG": "/app/configs/epochs/epoch_001.yaml"
+        "QFR_EVAL_STORE_DIR": "/data/eval-store",
+        "QFR_HEARTBEAT_FILE": "/tmp/heartbeat",
+        "QFR_GIT_SHA": "${QFR_GIT_SHA:-}",
+        "QFR_IMAGE_DIGEST": "${QFR_EVAL_IMAGE_DIGEST:-}"
       },
       "volumes": [
         {
@@ -610,10 +647,10 @@
           "read_only": true
         },
         {
-          "type": "bind",
-          "source": "../configs/epochs",
-          "target": "/app/configs/epochs",
-          "read_only": true
+          "type": "volume",
+          "source": "eval_store",
+          "target": "/data/eval-store",
+          "read_only": false
         }
       ],
       "depends_on": {
@@ -629,6 +666,11 @@
       },
       "networks": [
         "eval_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_eval.worker"
       ]
     },
     "release-worker": {
@@ -657,7 +699,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 180 else 1)"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -666,19 +708,20 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "eval",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-eval"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-eval:phase3",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
         "QFR_SERVICE": "release-worker",
         "QFR_ZONE": "eval",
         "TZ": "Asia/Shanghai",
-        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}"
+        "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
+        "QFR_HEARTBEAT_FILE": "/tmp/heartbeat"
       },
       "volumes": [
         {
@@ -704,6 +747,11 @@
       },
       "networks": [
         "eval_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_eval.release"
       ]
     },
     "sim-engine": {
@@ -814,7 +862,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import json,urllib.request; r=json.load(urllib.request.urlopen('http://127.0.0.1:8000/healthz')); assert r['status']=='ok', r"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -823,12 +871,12 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "eval",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-eval"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-eval:phase3",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -836,7 +884,8 @@
         "QFR_ZONE": "eval",
         "TZ": "Asia/Shanghai",
         "FEEDBACK_DB_URL": "${FEEDBACK_DB_URL:?run just init-secrets}",
-        "FEEDBACK_READER_TOKEN": "${FEEDBACK_READER_TOKEN:?run just init-secrets}"
+        "FEEDBACK_READER_TOKEN": "${FEEDBACK_READER_TOKEN:?run just init-secrets}",
+        "QFR_FEEDBACK_BIND": "0.0.0.0"
       },
       "volumes": [
         {
@@ -864,6 +913,11 @@
         "eval_net",
         "control_net",
         "research_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_eval.feedback_api"
       ]
     },
     "eval-admin-api": {
@@ -892,7 +946,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import json,urllib.request; r=json.load(urllib.request.urlopen('http://127.0.0.1:8000/healthz')); assert r['status']=='ok', r"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -901,12 +955,12 @@
       "build": {
         "context": "..",
         "dockerfile": "infra/Dockerfile",
-        "target": "runtime",
+        "target": "eval",
         "args": {
-          "QFR_PACKAGE": "qfr-core"
+          "QFR_PACKAGE": "qfr-eval"
         }
       },
-      "image": "qfr-v2-placeholder:phase0",
+      "image": "qfr-v2-eval:phase3",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -915,7 +969,8 @@
         "TZ": "Asia/Shanghai",
         "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
         "EVAL_OWNER_TOKEN": "${EVAL_OWNER_TOKEN:?run just init-secrets}",
-        "QFR_EPOCH_CONFIG": "/app/configs/epochs/epoch_001.yaml"
+        "QFR_EVAL_ADMIN_BIND": "0.0.0.0",
+        "QFR_EVAL_STORE_DIR": "/data/eval-store"
       },
       "volumes": [
         {
@@ -931,6 +986,12 @@
           "type": "bind",
           "source": "../configs/epochs",
           "target": "/app/configs/epochs",
+          "read_only": true
+        },
+        {
+          "type": "volume",
+          "source": "eval_store",
+          "target": "/data/eval-store",
           "read_only": true
         }
       ],
@@ -948,6 +1009,11 @@
       "networks": [
         "eval_net",
         "control_net"
+      ],
+      "command": [
+        "python",
+        "-m",
+        "qfr_eval.admin_api"
       ]
     },
     "data-ingest": {
@@ -976,7 +1042,7 @@
           "CMD",
           "python",
           "-c",
-          "import qfr_core"
+          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 180 else 1)"
         ],
         "interval": "5s",
         "timeout": "3s",
@@ -990,7 +1056,7 @@
           "QFR_PACKAGE": "qfr-eval"
         }
       },
-      "image": "qfr-v2-eval:phase1",
+      "image": "qfr-v2-eval:phase3",
       "platform": "${QFR_PLATFORM:-linux/arm64}",
       "environment": {
         "QFR_ENV": "prod",
@@ -1000,7 +1066,8 @@
         "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
         "QFR_FULL_SNAPSHOT_DIR": "/data/full",
         "QFR_RESEARCH_SNAPSHOT_DIR": "/data/research",
-        "QFR_RAW_DIR": "/data/raw"
+        "QFR_RAW_DIR": "/data/raw",
+        "QFR_HEARTBEAT_FILE": "/tmp/heartbeat"
       },
       "volumes": [
         {
@@ -1063,6 +1130,13 @@
       "networks": [
         "eval_net",
         "ingest_egress_net"
+      ],
+      "command": [
+        "qfr",
+        "data",
+        "serve",
+        "--source",
+        "${QFR_INGEST_SOURCE:-cn}"
       ]
     },
     "migrate": {
@@ -1208,7 +1282,8 @@
     "snapshots_full": {},
     "snapshots_research": {},
     "data_raw": {},
-    "qfr_logs": {}
+    "qfr_logs": {},
+    "eval_store": {}
   },
   "networks": {
     "control_net": {
