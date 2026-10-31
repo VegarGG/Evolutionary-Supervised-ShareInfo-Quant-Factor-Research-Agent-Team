@@ -75,6 +75,17 @@
         },
         "portfolio": {
           "$ref": "#/$defs/Portfolio"
+        },
+        "rules": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRules"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -227,6 +238,52 @@
         "long_only"
       ],
       "title": "Portfolio",
+      "type": "object"
+    },
+    "StrategyRules": {
+      "additionalProperties": false,
+      "description": "The Phase 8 rules an owner can ask for (a job's strategy_spec or a pool import):\na short book, industry neutralization, and position and industry caps. A strategy\nwith rules is published as qfr-strategy/2.",
+      "properties": {
+        "long_short": {
+          "default": false,
+          "title": "Long Short",
+          "type": "boolean"
+        },
+        "max_industry_weight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Industry Weight"
+        },
+        "max_position_weight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Position Weight"
+        },
+        "neutralize": {
+          "default": "none",
+          "enum": [
+            "none",
+            "industry"
+          ],
+          "title": "Neutralize",
+          "type": "string"
+        }
+      },
+      "title": "StrategyRules",
       "type": "object"
     }
   },

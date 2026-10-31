@@ -4,7 +4,7 @@ import hashlib
 import json
 from datetime import date
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, SecretStr, model_validator
@@ -132,6 +132,30 @@ class ConfigDocument(BaseModel):
     sha256: str
 
 
+class LongShortRules(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    allowed: bool
+    borrow_bps_annual: float = Field(ge=0, le=5000)
+
+
+class StrategyRulesConfig(BaseModel):
+    """The protocol's bounds for qfr-strategy/2 (Phase 8, P8.2). Each cap is a [low,
+    high] range a manifest's value must fall in; neutralize lists the allowed modes."""
+
+    model_config = ConfigDict(extra="forbid")
+    long_short: LongShortRules
+    max_position_weight: tuple[float, float]
+    max_industry_weight: tuple[float, float]
+    neutralize: list[Literal["none", "industry"]] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def ranges(self) -> Self:
+        for low, high in (self.max_position_weight, self.max_industry_weight):
+            if not 0 < low <= high <= 1:
+                raise ValueError("cap ranges are 0 < low <= high <= 1")
+        return self
+
+
 class ProtocolConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     protocol_id: str
@@ -157,6 +181,12 @@ class ProtocolConfig(BaseModel):
     # then refused as an unsupported kind, and strategies keep the v1 rules.
     python: dict[str, JsonValue] | None = None
     strategy_rules: dict[str, JsonValue] | None = None
+
+    @model_validator(mode="after")
+    def rules_shape(self) -> Self:
+        if self.strategy_rules is not None:
+            StrategyRulesConfig.model_validate(self.strategy_rules)
+        return self
 
 
 class ThresholdoutConfig(BaseModel):

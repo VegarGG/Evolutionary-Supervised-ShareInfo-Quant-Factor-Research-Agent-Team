@@ -12,6 +12,7 @@ from pydantic import (
     FiniteFloat,
     JsonValue,
     StringConstraints,
+    ValidationError,
     model_validator,
 )
 
@@ -206,6 +207,103 @@ class StrategyImplementation(Contract):
         return self
 
 
+class RulesPortfolio(Contract):
+    """The qfr-strategy/2 portfolio (Phase 8, PLAN 7.8): TopK-dropout with optional
+    rules. long_only false adds a short book of the k worst names; max_position_weight
+    caps a name's weight (entries sized at most at the cap, drifted holdings trimmed);
+    max_industry_weight caps one industry's share of a book's names. The protocol's
+    strategy_rules section bounds the values further."""
+
+    type: Literal["topk_dropout"]
+    top_k: int = Field(ge=20, le=100)
+    dropout: int = Field(ge=1, le=20)
+    rebalance: Literal["daily"]
+    long_only: bool
+    max_position_weight: float | None = Field(default=None, ge=0.005, le=0.2)
+    max_industry_weight: float | None = Field(default=None, ge=0.05, le=1.0)
+
+    @model_validator(mode="after")
+    def granular(self) -> Self:
+        for value, digits in ((self.max_position_weight, 3), (self.max_industry_weight, 2)):
+            if value is not None and round(value, digits) != value:
+                raise ValueError(f"portfolio caps have at most {digits} decimals")
+        return self
+
+
+class StrategyRules(Contract):
+    """The Phase 8 rules an owner can ask for (a job's strategy_spec or a pool import):
+    a short book, industry neutralization, and position and industry caps. A strategy
+    with rules is published as qfr-strategy/2."""
+
+    long_short: bool = False
+    neutralize: Literal["none", "industry"] = "none"
+    max_position_weight: float | None = None
+    max_industry_weight: float | None = None
+
+    @model_validator(mode="after")
+    def used(self) -> Self:
+        if (
+            not self.long_short
+            and self.neutralize == "none"
+            and self.max_position_weight is None
+            and self.max_industry_weight is None
+        ):
+            raise ValueError("strategy rules need at least one Phase 8 rule")
+        return self
+
+    def portfolio(self, top_k: int, dropout: int) -> "RulesPortfolio":
+        """The qfr-strategy/2 portfolio these rules give; raises ValueError when a cap is
+        out of range."""
+        try:
+            return RulesPortfolio(
+                type="topk_dropout",
+                top_k=top_k,
+                dropout=dropout,
+                rebalance="daily",
+                long_only=not self.long_short,
+                max_position_weight=self.max_position_weight,
+                max_industry_weight=self.max_industry_weight,
+            )
+        except ValidationError as error:
+            raise ValueError(error.errors()[0]["msg"]) from None
+
+
+class StrategyRulesImplementation(Contract):
+    """qfr-strategy/2 (Phase 8): the v1 composite with richer rules. neutralize
+    "industry" demeans the composite within each industry every day before ranking.
+    At least one Phase 8 rule is used; a plain strategy stays qfr-strategy/1."""
+
+    language: Literal["qfr-strategy/2"]
+    components: list[Component] = Field(min_length=1, max_length=8)
+    combination: Literal["zscore_weighted_sum"]
+    neutralize: Literal["none", "industry"]
+    portfolio: RulesPortfolio
+
+    @model_validator(mode="after")
+    def rules(self) -> Self:
+        ids = [c.version_id for c in self.components]
+        if len(ids) != len(set(ids)):
+            raise ValueError("components must name distinct versions")
+        p = self.portfolio
+        if (
+            self.neutralize == "none"
+            and p.long_only
+            and p.max_position_weight is None
+            and p.max_industry_weight is None
+        ):
+            raise ValueError("qfr-strategy/2 uses at least one Phase 8 rule; else use /1")
+        return self
+
+    @property
+    def needs_industry(self) -> bool:
+        return self.neutralize == "industry" or self.portfolio.max_industry_weight is not None
+
+
+StrategyCode = Annotated[
+    StrategyImplementation | StrategyRulesImplementation, Field(discriminator="language")
+]
+
+
 class StrategyDeclaration(Declaration):
     expected_sign: Literal[1]
 
@@ -216,7 +314,7 @@ class StrategyManifest(Contract):
     family_id: UUID7 | None
     name: Slug
     title: ShortText
-    implementation: StrategyImplementation
+    implementation: StrategyCode
     declared: StrategyDeclaration
     rationale: StrategyRationale
     provenance: Provenance
@@ -372,6 +470,14 @@ class StrategySpec(Contract):
     top_k: int = Field(ge=20, le=100)
     dropout: int = Field(ge=1, le=20)
     max_components: int = Field(ge=1, le=8)
+    # Phase 8: rules every draft of the job uses (deterministic, not chosen by the LLM).
+    rules: StrategyRules | None = None
+
+    @model_validator(mode="after")
+    def rules_fit(self) -> Self:
+        if self.rules is not None:
+            self.rules.portfolio(self.top_k, self.dropout)
+        return self
 
 
 class DeliverableCriteria(Contract):
@@ -693,12 +799,19 @@ class ImportStrategy(Contract):
     components: list[ImportComponent] = Field(min_length=1, max_length=8)
     combination: Literal["zscore_weighted_sum"]
     portfolio: Portfolio
+    rules: StrategyRules | None = None
 
     @model_validator(mode="after")
     def unique_components(self) -> Self:
         names = [c.name for c in self.components]
         if len(names) != len(set(names)):
             raise ValueError("components must name distinct factor entries")
+        return self
+
+    @model_validator(mode="after")
+    def phase8_rules(self) -> Self:
+        if self.rules is not None:
+            self.rules.portfolio(self.portfolio.top_k, self.portfolio.dropout)
         return self
 
 

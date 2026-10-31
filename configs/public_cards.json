@@ -260,6 +260,24 @@
         100
       ]
     },
+    "strategy_rules": {
+      "long_short": {
+        "allowed": true,
+        "borrow_bps_annual": 800
+      },
+      "max_industry_weight": [
+        0.1,
+        1.0
+      ],
+      "max_position_weight": [
+        0.01,
+        0.1
+      ],
+      "neutralize": [
+        "none",
+        "industry"
+      ]
+    },
     "universe": {
       "membership": "point_in_time",
       "name": "csi300"

@@ -49,13 +49,14 @@ import numpy as np
 from numpy.typing import NDArray
 from pydantic import JsonValue
 from qfr_core.config import RuntimeSettings, canonical_json
-from qfr_core.contracts import StrategyManifest
+from qfr_core.contracts import StrategyManifest, StrategyRulesImplementation
 from qfr_core.correlation import bind, current
 from qfr_core.data.snapshot import read_snapshot
 from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
 from qfr_core.metrics.factor import MetricSettings, evaluate_factor, rank_ic_series, sharpe
 from qfr_core.metrics.matrix import Array, Market
+from qfr_core.portfolio import PortfolioRules, decide, industry_full
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
@@ -64,7 +65,7 @@ from qfr_eval.alerts import raise_alert
 from qfr_eval.configs import ActiveState, active_state
 from qfr_eval.ingest.config import load_yaml
 from qfr_eval.monitoring import CusumReference, lower_cusum, reference_from_metrics
-from qfr_eval.plugins import plugin_for
+from qfr_eval.plugins import StrategyPlugin, plugin_for
 from qfr_eval.reports import queue_report
 from qfr_eval.runtime import (
     Clock,
@@ -135,27 +136,58 @@ class SimMarkets:
 def sim_settings(protocol: dict[str, Any], manifest: Any) -> dict[str, JsonValue]:
     """The settings a simulation pins at creation (immutable afterwards)."""
     sim, monitoring, costs = protocol["simulation"], protocol["monitoring"], protocol["costs"]
+    rules: dict[str, JsonValue] = {}
     if isinstance(manifest, StrategyManifest):
         portfolio = manifest.implementation.portfolio
         top_k, dropout, sign = portfolio.top_k, portfolio.dropout, 1
+        implementation = manifest.implementation
+        if isinstance(implementation, StrategyRulesImplementation):
+            # qfr-strategy/2 (Phase 8): the book's rules; a v1 account keeps none.
+            plugin = StrategyPlugin(protocol, manifest)
+            settings = plugin.backtest_settings()
+            rules = {
+                "long_only": settings.long_only,
+                "max_position_weight": settings.max_position_weight,
+                "max_industry_weight": settings.max_industry_weight,
+                "borrow_bps": settings.borrow_bps,
+                "neutralize": implementation.neutralize,
+            }
     else:
         reference = protocol["reference_strategy"]
         top_k, dropout = int(reference["top_k"]), int(reference["dropout"])
         sign = int(manifest.declared.expected_sign)
-    return {
-        "top_k": top_k,
-        "dropout": dropout,
-        "sign": sign,
-        "buy_bps": float(costs["buy_bps"]),
-        "sell_bps": float(costs["sell_bps"]),
-        "lot_size": int(sim["lot_size"]),
-        "checkpoint_days": int(sim["checkpoint_days"]),
-        "staleness_days": int(sim["staleness_days"]),
-        "horizon": int(protocol["label"]["primary"]),
-        "rolling_days": int(monitoring["rolling_days"]),
-        "rankic_mean_below": float(monitoring["rankic_mean_below"]),
-        "consecutive_days": int(monitoring["consecutive_days"]),
-    } | _cusum_settings(monitoring)
+    return (
+        rules
+        | {
+            "top_k": top_k,
+            "dropout": dropout,
+            "sign": sign,
+            "buy_bps": float(costs["buy_bps"]),
+            "sell_bps": float(costs["sell_bps"]),
+            "lot_size": int(sim["lot_size"]),
+            "checkpoint_days": int(sim["checkpoint_days"]),
+            "staleness_days": int(sim["staleness_days"]),
+            "horizon": int(protocol["label"]["primary"]),
+            "rolling_days": int(monitoring["rolling_days"]),
+            "rankic_mean_below": float(monitoring["rankic_mean_below"]),
+            "consecutive_days": int(monitoring["consecutive_days"]),
+        }
+        | _cusum_settings(monitoring)
+    )
+
+
+def sim_rules(settings: dict[str, Any]) -> PortfolioRules:
+    """The book's trading rules from its pinned settings (v1 accounts: long only)."""
+    position = settings.get("max_position_weight")
+    industry = settings.get("max_industry_weight")
+    return PortfolioRules(
+        top_k=int(settings["top_k"]),
+        dropout=int(settings["dropout"]),
+        long_only=bool(settings.get("long_only", True)),
+        max_position_weight=None if position is None else float(position),
+        max_industry_weight=None if industry is None else float(industry),
+        borrow_bps=float(settings.get("borrow_bps", 0.0)),
+    )
 
 
 def _cusum_settings(monitoring: dict[str, Any]) -> dict[str, JsonValue]:
@@ -426,7 +458,8 @@ class SimEngine:
         """One trading day of one simulation, written in one transaction."""
         market = data.market
         s = dict(sim.settings)
-        k, n, lot = int(s["top_k"]), int(s["dropout"]), int(s["lot_size"])
+        k, lot = int(s["top_k"]), int(s["lot_size"])
+        rules = sim_rules(s)
         buy_cost, sell_cost = float(s["buy_bps"]) / 1e4, float(s["sell_bps"]) / 1e4
         names = market.instruments
         column = {name: j for j, name in enumerate(names)}
@@ -473,7 +506,7 @@ class SimEngine:
                     if not math.isclose(data.close_raw[previous, j], recorded[name], rel_tol=1e-9):
                         revised.append(name)
                 if math.isfinite(old) and math.isfinite(new) and old > 0 and new != old:
-                    positions[name] = max(0, int(round(positions[name] * new / old)))
+                    positions[name] = int(round(positions[name] * new / old))
                     if positions[name] == 0:
                         del positions[name]
             if revised:
@@ -500,7 +533,8 @@ class SimEngine:
             traded = costs = 0.0
             # A held name with no row on d has left the market (the panel has a row for
             # every day up to an instrument's last observation; a suspension is a row
-            # without a trade). It is closed at its last traded close, with the sell cost.
+            # without a trade). It is closed at its last traded close: a long sold with
+            # the sell cost, a short covered with the buy cost.
             delisted = []
             for name in sorted(positions):
                 j = column.get(name)
@@ -508,112 +542,181 @@ class SimEngine:
                     continue
                 shares = positions.pop(name)
                 last = recorded.get(name, math.nan)
-                value = shares * last if math.isfinite(last) else 0.0
-                cash += value * (1.0 - sell_cost)
+                value = abs(shares) * last if math.isfinite(last) else 0.0
+                if shares > 0:
+                    cash += value * (1.0 - sell_cost)
+                    costs += value * sell_cost
+                else:
+                    cash -= value * (1.0 + buy_cost)
+                    costs += value * buy_cost
                 traded += value
-                costs += value * sell_cost
                 delisted.append(name)
-                fills.append({"i": name, "side": "sell", "st": "filled", "r": "delisted",
-                              "n": shares, "p": _finite(last), "v": value,
-                              "c": value * sell_cost})  # fmt: skip
+                fills.append({"i": name, "side": "sell" if shares > 0 else "buy", "st": "filled",
+                              "r": "delisted", "n": abs(shares), "p": _finite(last), "v": value,
+                              "c": value * (sell_cost if shares > 0 else buy_cost)})  # fmt: skip
             if delisted:
                 self._event(
                     conn, fresh.sim_id, "DELISTED", day,
                     {"instruments": cast(JsonValue, delisted[:50])}, now,
                 )  # fmt: skip
-            # 2. Fills of the orders decided at d-1: sells, then buys down the ranking.
+            # 2. Fills of the orders decided at d-1: long exits, covers, trims, short
+            # entries, then buys down the ranking. A long-only book has only the first and
+            # the last.
+            industry = market.industry.codes[d] if market.industry is not None else None
+            slots = rules.industry_slots
+
+            def blocked_reason(j: int | None, selling: bool) -> str | None:
+                if j is None or not market.tradable[d, j]:
+                    return "suspended"
+                if selling and market.limit_down[d, j]:
+                    return "limit_down"
+                if not selling and market.limit_up[d, j]:
+                    return "limit_up"
+                if not math.isfinite(data.close_raw[d, j]):
+                    return "no_price"
+                return None
+
             pending: list[str] = []
+            pending_covers: list[str] = []
             for order in orders:
-                if order.side != "sell" or order.instrument not in positions:
+                closing_long = order.side == "sell" and order.reason in ("dropout", "pending")
+                closing_short = order.side == "buy" and order.reason in ("cover", "cover_pending")
+                if not (closing_long or closing_short):
                     continue
                 name, j = order.instrument, column.get(order.instrument)
-                blocked = None
-                if j is None or not market.tradable[d, j]:
-                    blocked = "suspended"
-                elif market.limit_down[d, j]:
-                    blocked = "limit_down"
-                elif not math.isfinite(data.close_raw[d, j]):
-                    blocked = "no_price"
+                held = positions.get(name, 0)
+                if (closing_long and held <= 0) or (closing_short and held >= 0):
+                    continue
+                blocked = blocked_reason(j, closing_long)
                 if blocked:
-                    pending.append(name)
+                    (pending if closing_long else pending_covers).append(name)
                     fills.append(self._fill(order, "blocked", blocked, 0, None, 0.0, 0.0))
                     continue
-                shares = positions.pop(name)
-                value = shares * float(data.close_raw[d, j])
-                cash += value * (1.0 - sell_cost)
-                traded += value
-                costs += value * sell_cost
-                fills.append(self._fill(order, "filled", None, shares, float(data.close_raw[d, j]),
-                                        value, value * sell_cost))  # fmt: skip
-            nav_now = cash + sum(shares * price(name) for name, shares in positions.items())
-            size = nav_now / k
-            for order in orders:
-                if order.side != "buy":
-                    continue
-                if len(positions) >= k or cash <= 0:
-                    break
-                name, j = order.instrument, column.get(order.instrument)
-                if name in positions:
-                    continue
-                if j is None or not market.tradable[d, j]:
-                    fills.append(self._fill(order, "blocked", "suspended", 0, None, 0.0, 0.0))
-                    continue
-                if market.limit_up[d, j]:
-                    fills.append(self._fill(order, "blocked", "limit_up", 0, None, 0.0, 0.0))
-                    continue
+                assert j is not None
                 close = float(data.close_raw[d, j])
-                if not math.isfinite(close) or close <= 0:
-                    fills.append(self._fill(order, "blocked", "no_price", 0, None, 0.0, 0.0))
-                    continue
-                budget = min(size, cash / (1.0 + buy_cost))
-                shares = int(budget // (close * lot)) * lot
-                if shares <= 0:
-                    fills.append(self._fill(order, "skipped", "lot", 0, close, 0.0, 0.0))
-                    continue
+                shares = abs(positions.pop(name))
                 value = shares * close
-                cash -= value * (1.0 + buy_cost)
-                positions[name] = shares
+                if closing_long:
+                    cash += value * (1.0 - sell_cost)
+                    cost = value * sell_cost
+                else:
+                    cash -= value * (1.0 + buy_cost)
+                    cost = value * buy_cost
                 traded += value
-                costs += value * buy_cost
-                fills.append(self._fill(order, "filled", None, shares, close, value,
-                                        value * buy_cost))  # fmt: skip
-            # 3. Decide the orders for d+1 from the values at d.
-            ranking = np.flatnonzero(market.eligible[d] & np.isfinite(scores[d])).tolist()
-            ranking.sort(key=lambda j: (-scores[d, j], j))
-            top = {names[j] for j in ranking[:k]}
-            rank_of = {names[j]: r for r, j in enumerate(ranking)}
-            outside = [name for name in positions if name not in top and name not in pending]
-            outside.sort(key=lambda name: (-rank_of.get(name, len(ranking)), name))
-            sells = pending + outside[:n]
-            seq = 0
-            for name in sells:
-                conn.execute(
-                    text(
-                        "INSERT INTO eval.sim_orders (sim_id, decided_on, seq, instrument, side, "
-                        "reason, score) VALUES (:s, :d, :q, :i, 'sell', :r, :sc)"
-                    ),
-                    {
-                        "s": fresh.sim_id,
-                        "d": day,
-                        "q": seq,
-                        "i": name,
-                        "r": "pending" if name in pending else "dropout",
-                        "sc": _finite(scores[d, column[name]]) if name in column else None,
-                    },
-                )
-                seq += 1
-            for j in ranking:
-                if names[j] in positions:
+                costs += cost
+                fills.append(self._fill(order, "filled", None, shares, close, value, cost))
+            nav_now = cash + sum(shares * price(name) for name, shares in positions.items())
+            cap = rules.max_position_weight
+            for order in orders:
+                if order.reason != "trim" or cap is None or order.instrument not in positions:
                     continue
+                name, j = order.instrument, column.get(order.instrument)
+                held = positions[name]
+                blocked = blocked_reason(j, held > 0)
+                if blocked:
+                    fills.append(self._fill(order, "blocked", blocked, 0, None, 0.0, 0.0))
+                    continue
+                assert j is not None
+                close = float(data.close_raw[d, j])
+                keep = int((cap * nav_now) // (close * lot)) * lot
+                cut = abs(held) - keep
+                if cut <= 0:
+                    fills.append(self._fill(order, "skipped", "within_cap", 0, close, 0.0, 0.0))
+                    continue
+                value = cut * close
+                if held > 0:
+                    positions[name] = held - cut
+                    cash += value * (1.0 - sell_cost)
+                    cost = value * sell_cost
+                else:
+                    positions[name] = held + cut
+                    cash -= value * (1.0 + buy_cost)
+                    cost = value * buy_cost
+                if positions[name] == 0:
+                    del positions[name]
+                traded += value
+                costs += cost
+                fills.append(self._fill(order, "filled", None, cut, close, value, cost))
+            nav_now = cash + sum(shares * price(name) for name, shares in positions.items())
+            size = rules.entry_size(nav_now)
+
+            def book(sign: int) -> list[int]:
+                return [column[n] for n, q in positions.items() if q * sign > 0 and n in column]
+
+            for side, reason, sign in (("sell", "short_entry", -1), ("buy", "entry", 1)):
+                for order in orders:
+                    if order.side != side or order.reason != reason:
+                        continue
+                    current = book(sign)
+                    if len(current) >= k or (sign > 0 and cash <= 0):
+                        break
+                    name, j = order.instrument, column.get(order.instrument)
+                    if name in positions:
+                        continue
+                    blocked = blocked_reason(j, sign < 0)
+                    if blocked:
+                        fills.append(self._fill(order, "blocked", blocked, 0, None, 0.0, 0.0))
+                        continue
+                    assert j is not None
+                    if industry_full(j, current, industry, slots):
+                        fills.append(self._fill(order, "skipped", "industry_cap", 0, None, 0.0,
+                                                0.0))  # fmt: skip
+                        continue
+                    close = float(data.close_raw[d, j])
+                    if close <= 0:
+                        fills.append(self._fill(order, "blocked", "no_price", 0, None, 0.0, 0.0))
+                        continue
+                    budget = size if sign < 0 else min(size, cash / (1.0 + buy_cost))
+                    shares = int(budget // (close * lot)) * lot
+                    if shares <= 0:
+                        fills.append(self._fill(order, "skipped", "lot", 0, close, 0.0, 0.0))
+                        continue
+                    value = shares * close
+                    if sign > 0:
+                        cash -= value * (1.0 + buy_cost)
+                        cost = value * buy_cost
+                    else:
+                        cash += value * (1.0 - sell_cost)
+                        cost = value * sell_cost
+                    positions[name] = sign * shares
+                    traded += value
+                    costs += cost
+                    fills.append(self._fill(order, "filled", None, shares, close, value, cost))
+            # The short book pays its borrow cost on the day's closing value.
+            short_value = sum(q * price(n) for n, q in positions.items() if q < 0)
+            if short_value < 0:
+                borrow = rules.daily_borrow(short_value)
+                cash -= borrow
+                costs += borrow
+            # 3. Decide the orders for d+1 from the values at d.
+            nav_decide = cash + sum(shares * price(name) for name, shares in positions.items())
+            values = {column[n]: q * price(n) for n, q in positions.items() if n in column}
+            decision = decide(
+                scores[d], market.eligible[d], industry,
+                {j: v for j, v in values.items() if positions[names[j]] > 0},
+                {j: v for j, v in values.items() if positions[names[j]] < 0},
+                [column[n] for n in pending], [column[n] for n in pending_covers],
+                nav_decide, rules,
+            )  # fmt: skip
+            planned: list[tuple[int, str, str]] = (
+                [(j, "sell", "pending" if names[j] in pending else "dropout")
+                 for j in decision.sells]
+                + [(j, "buy", "cover_pending" if names[j] in pending_covers else "cover")
+                   for j in decision.covers]
+                + [(j, "sell" if positions[names[j]] > 0 else "buy", "trim")
+                   for j in decision.trims]
+                + [(j, "sell", "short_entry") for j in decision.shorts]
+                + [(j, "buy", "entry") for j in decision.buys]
+            )  # fmt: skip
+            for seq, (j, side, reason) in enumerate(planned):
                 conn.execute(
                     text(
                         "INSERT INTO eval.sim_orders (sim_id, decided_on, seq, instrument, side, "
-                        "reason, score) VALUES (:s, :d, :q, :i, 'buy', 'entry', :sc)"
+                        "reason, score) VALUES (:s, :d, :q, :i, :side, :r, :sc)"
                     ),
-                    {"s": fresh.sim_id, "d": day, "q": seq, "i": names[j],
-                     "sc": _finite(scores[d, j])},
+                    {"s": fresh.sim_id, "d": day, "q": seq, "i": names[j], "side": side,
+                     "r": reason, "sc": _finite(scores[d, j])},
                 )  # fmt: skip
-                seq += 1
             # 4. Mark to market at the raw close of d; a suspended name is valued at its last
             # traded close. The day's data is complete when the version's values cover the
             # minimum cross-section and every holding has a price: a suspension is a market

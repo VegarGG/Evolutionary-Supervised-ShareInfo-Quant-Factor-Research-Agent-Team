@@ -5,7 +5,9 @@ into an official record payload, maps a record to whitelisted released fields, a
 records to the owner-grade view. A factor is measured on its own values through the
 reference strategy; a v1 strategy is the zscore_weighted_sum composite of its published
 factor components, recomputed by the evaluator from the components' expressions, and
-measured through its own TopK-dropout portfolio (Section 7.8).
+measured through its own TopK-dropout portfolio (Section 7.8). A qfr-strategy/2 strategy
+(Phase 8) adds rules within the protocol's strategy_rules bounds: industry
+neutralization of the composite, a short book, and position and industry caps.
 
 Every window runs the same measurement (Section 8.5 metrics and the reference
 backtest); only the gates differ (Section 8.8): W1 and W2 are public, the W3 holdout is
@@ -33,6 +35,7 @@ from qfr_core.contracts import (
     ReasonCode,
     SimulationContent,
     StrategyManifest,
+    StrategyRulesImplementation,
     W1Content,
     W2Content,
 )
@@ -41,6 +44,7 @@ from qfr_core.eligibility import Eligibility
 from qfr_core.metrics.factor import FactorEvaluation, MetricSettings, evaluate_factor
 from qfr_core.metrics.matrix import Array, Market
 from qfr_core.metrics.stats import moments
+from qfr_core.portfolio import neutralize
 from qfr_core.pyfactor import PythonLimits, check_source, declaration_errors
 
 from qfr_eval.compute import ComputeResult
@@ -707,14 +711,80 @@ class StrategyPlugin(FactorPlugin):
         self.gates = protocol["gates"]["w1_strategy"]
         portfolio = manifest.implementation.portfolio
         self.top_k, self.dropout = portfolio.top_k, portfolio.dropout
+        impl = manifest.implementation
+        self.rules = impl if isinstance(impl, StrategyRulesImplementation) else None
+
+    @property
+    def needs_industry(self) -> bool:
+        return self.rules is not None and self.rules.needs_industry
+
+    @property
+    def long_only(self) -> bool:
+        return self.rules is None or self.rules.portfolio.long_only
+
+    def borrow_bps(self) -> float:
+        rules = self.protocol.get("strategy_rules") or {}
+        return float((rules.get("long_short") or {}).get("borrow_bps_annual", 0.0))
 
     def backtest_settings(self) -> BacktestSettings:
-        return BacktestSettings.from_protocol(self.protocol, self.top_k, self.dropout)
+        base = BacktestSettings.from_protocol(self.protocol, self.top_k, self.dropout)
+        if self.rules is None:
+            return base
+        portfolio = self.rules.portfolio
+        return BacktestSettings.model_validate(
+            base.model_dump()
+            | {
+                "long_only": portfolio.long_only,
+                "max_position_weight": portfolio.max_position_weight,
+                "max_industry_weight": portfolio.max_industry_weight,
+                "borrow_bps": 0.0 if portfolio.long_only else self.borrow_bps(),
+            }
+        )
+
+    def portfolio_summary(self) -> dict[str, Any]:
+        summary: dict[str, Any] = {"top_k": self.top_k, "dropout": self.dropout}
+        if self.rules is not None:
+            portfolio = self.rules.portfolio
+            summary |= {
+                "long_only": portfolio.long_only,
+                "max_position_weight": portfolio.max_position_weight,
+                "max_industry_weight": portfolio.max_industry_weight,
+                "neutralize": self.rules.neutralize,
+            }
+        return summary
 
     def trial_returns(self, evaluation: FactorEvaluation, backtest: BacktestResult) -> Array:
         """A long-only strategy's long-short counterpart: its daily net return in excess
-        of the equal-weight benchmark, so DSR, PBO and HLZ measure skill, not beta."""
+        of the equal-weight benchmark, so DSR, PBO and HLZ measure skill, not beta. A
+        long-short book is already market neutral: its own net return."""
+        if not self.long_only:
+            return backtest.net_return
         return backtest.net_return - backtest.benchmark_return
+
+    def rules_checks(self) -> list[ReasonCode]:
+        """A qfr-strategy/2 manifest needs the protocol's strategy_rules section and
+        values within its bounds (Phase 8)."""
+        if self.rules is None:
+            return []
+        bounds = self.protocol.get("strategy_rules")
+        if not isinstance(bounds, dict):
+            return [ReasonCode.COMPONENT_INVALID]
+        portfolio = self.rules.portfolio
+        if not portfolio.long_only and not (bounds.get("long_short") or {}).get("allowed"):
+            return [ReasonCode.COMPONENT_INVALID]
+        if self.rules.neutralize not in bounds.get("neutralize", ["none"]):
+            return [ReasonCode.COMPONENT_INVALID]
+        for key in ("max_position_weight", "max_industry_weight"):
+            value = getattr(portfolio, key)
+            if value is None:
+                continue
+            low, high = (float(x) for x in bounds[key])
+            if not low <= value <= high:
+                return [ReasonCode.COMPONENT_INVALID]
+        return []
+
+    def industry_missing(self, market: Market) -> bool:
+        return self.needs_industry and market.industry is None
 
     def component_checks(self, components: Mapping[str, tuple[str, Any]]) -> list[ReasonCode]:
         """Every component is a published factor version that passed screening, within the
@@ -727,6 +797,8 @@ class StrategyPlugin(FactorPlugin):
         low_d, high_d = (int(x) for x in bounds["dropout"])
         if not (low_k <= self.top_k <= high_k and low_d <= self.dropout <= high_d):
             return [ReasonCode.COMPONENT_INVALID]
+        if self.rules_checks():
+            return [ReasonCode.COMPONENT_INVALID]
         for component in impl.components:
             found = components.get(str(component.version_id))
             if found is None or found[0] != "factor" or found[1] not in SCREENED_STATES:
@@ -735,7 +807,16 @@ class StrategyPlugin(FactorPlugin):
 
     def compose(self, values: Mapping[str, Array], market: Market) -> Array:
         parts = self.parts(values)
-        return composite(parts, market, self.settings)
+        return self.transform(composite(parts, market, self.settings), market)
+
+    def transform(self, combined: Array, market: Market) -> Array:
+        """Industry neutralization (qfr-strategy/2): the composite demeaned within each
+        industry every day. Without the snapshot's industry table there is no score."""
+        if self.rules is None or self.rules.neutralize == "none":
+            return combined
+        if market.industry is None:
+            return np.full(combined.shape, np.nan)
+        return neutralize(combined, market.industry.codes)
 
     def parts(self, values: Mapping[str, Array]) -> list[CompositePart]:
         return [
@@ -764,8 +845,9 @@ class StrategyPlugin(FactorPlugin):
         full = None
         if component_values is not None:
             full, rows = contribution_table(
-                self.parts(component_values), market, start, end, self.settings
-            )
+                self.parts(component_values), market, start, end, self.settings,
+                lambda combined: self.transform(combined, market),
+            )  # fmt: skip
             components = self.manifest.implementation.components
             weights = normalized_weights([c.weight for c in components])
             for component, weight, row in zip(components, weights, rows, strict=True):
@@ -791,7 +873,7 @@ class StrategyPlugin(FactorPlugin):
                 "note": library.note,
             },
             "complexity": complexity,
-            "portfolio": {"top_k": self.top_k, "dropout": self.dropout},
+            "portfolio": self.portfolio_summary(),
             "composite_rankic_mean": full,
             "contributions": contributions,
         }

@@ -10,6 +10,10 @@ quantiles: 5
 costs: {long_short_bps_per_side: 10, buy_bps: 5, sell_bps: 15}
 reference_strategy: {type: topk_dropout, top_k: 50, dropout: 5, rebalance: daily, long_only: true}
 strategy_bounds: {top_k: [20, 100], dropout: [1, 20], max_components: 8}
+# qfr-strategy/2 rules (Phase 8): a short book of the k worst names (8% a year borrow cost
+# on its value), position and industry caps within these ranges, and industry
+# neutralization, which needs a snapshot with an industry classification.
+strategy_rules: {long_short: {allowed: true, borrow_bps_annual: 800}, max_position_weight: [0.01, 0.10], max_industry_weight: [0.10, 1.0], neutralize: [none, industry]}
 fingerprint: {dates: 40, window: W0, seed: 20261030}
 # qfr-python/1 factors (Phase 8) run only in the eval-sandbox container. Screening's CPU
 # and memory limits apply to each sandbox run; max_lookback_days is the DSL's cap. The

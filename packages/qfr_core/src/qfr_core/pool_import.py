@@ -27,6 +27,7 @@ from qfr_core.contracts import (
     FactorImplementation,
     FactorManifest,
     Hash,
+    ImportStrategy,
     PoolImportEntry,
     Provenance,
     PythonImplementation,
@@ -37,6 +38,7 @@ from qfr_core.contracts import (
     StrategyImplementation,
     StrategyManifest,
     StrategyRationale,
+    StrategyRulesImplementation,
 )
 from qfr_core.dsl import DslAnalysis, DslLimits, validate
 from qfr_core.pyfactor import ENTRYPOINT, LANGUAGE, PythonAnalysis, PythonLimits, check_source
@@ -283,6 +285,12 @@ def entry_digest(entry: PoolImportEntry, components: Mapping[str, UUID] | None =
         strategy = {
             "combination": entry.strategy.combination,
             "portfolio": entry.strategy.portfolio.model_dump(mode="json"),
+            # Phase 8 rules join the identity only when given, so v1 digests are unchanged.
+            **(
+                {}
+                if entry.strategy.rules is None
+                else {"rules": entry.strategy.rules.model_dump(mode="json")}
+            ),
             "components": [
                 {
                     "name": c.name,
@@ -306,6 +314,27 @@ def entry_digest(entry: PoolImportEntry, components: Mapping[str, UUID] | None =
         "strategy": strategy,
     }
     return hashlib.sha256(canonical_json(identity).encode()).hexdigest()
+
+
+def _implementation(
+    strategy: ImportStrategy, parts: list[Component]
+) -> StrategyImplementation | StrategyRulesImplementation:
+    """qfr-strategy/1, or qfr-strategy/2 when the entry gives Phase 8 rules."""
+    if strategy.rules is None:
+        return StrategyImplementation(
+            language="qfr-strategy/1",
+            components=parts,
+            combination=strategy.combination,
+            portfolio=strategy.portfolio,
+        )
+    portfolio = strategy.portfolio
+    return StrategyRulesImplementation(
+        language="qfr-strategy/2",
+        components=parts,
+        combination=strategy.combination,
+        neutralize=strategy.rules.neutralize,
+        portfolio=strategy.rules.portfolio(portfolio.top_k, portfolio.dropout),
+    )
 
 
 def _mechanism(entry: PoolImportEntry) -> str:
@@ -414,12 +443,7 @@ def strategy_seed_manifest(
         family_id=family_id,
         name=entry.name,
         title=entry.title,
-        implementation=StrategyImplementation(
-            language="qfr-strategy/1",
-            components=parts,
-            combination=strategy.combination,
-            portfolio=strategy.portfolio,
-        ),
+        implementation=_implementation(strategy, parts),
         declared=StrategyDeclaration(expected_sign=1, horizon_days=entry.horizon_days),
         rationale=StrategyRationale(
             hypothesis_id=ids.hypothesis_id,

@@ -348,6 +348,8 @@ class Evaluator:
     ) -> tuple[Any, str | None]:
         plugin = plugin_for(protocol, manifest)
         market = self.markets.get(snapshot_id, plugin)
+        if isinstance(plugin, StrategyPlugin) and plugin.industry_missing(market):
+            return None, ReasonCode.COMPONENT_INVALID.value
         spec = protocol["fingerprint"]
         w0 = [d for d in market.dates if windows["W0"].start <= d <= windows["W0"].end]
         dates = fingerprint_dates(w0, int(spec["dates"]), int(spec["seed"]))
@@ -417,6 +419,18 @@ class Evaluator:
             )
             return EvaluationOutcome(seed, complexity, outcome, None, None, [])
         market = self.markets.get(snapshot_id, plugin)
+        if isinstance(plugin, StrategyPlugin) and plugin.industry_missing(market):
+            # Industry rules need the snapshot's classification (Phase 8).
+            reasons = [ReasonCode.COMPONENT_INVALID]
+            outcome = StageOutcome(
+                "screening",
+                False,
+                reasons,
+                {},
+                {"status": "FAIL", "reasons": [r.value for r in reasons], "static": True,
+                 "detail": "industry_classification_missing"},
+            )  # fmt: skip
+            return EvaluationOutcome(seed, complexity, outcome, None, None, [])
         w1 = windows["W1"]
         first, last = market.window(w1.start, w1.end)
         cuts = probe_cuts((first, last), int(plugin.screening["prefix_probe_dates"]), seed)

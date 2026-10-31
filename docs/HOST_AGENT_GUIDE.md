@@ -58,6 +58,11 @@ iteration history are in-sample; say so whenever you mention one.
   `qfr.dsl.validate`, fix or drop invalid ones and tell the owner which and why. Never
   invent an expression the owner did not ask for.
 - Reference pool entries and versions by id.
+- For a strategy, `strategy_spec` holds top_k, dropout and max_components. Only when the
+  owner asks for them, add `strategy_spec.rules` (Phase 8): `long_short` for a short book
+  of the worst-ranked names (it pays the protocol's borrow cost), `neutralize: industry`
+  to rank within industries, `max_position_weight` and `max_industry_weight` caps. Every
+  draft of the job uses the same rules, and its versions publish as qfr-strategy/2.
 - Choose the deliverable tier with the owner and say the timeline out loud: `w1_pass`
   is fast and weak evidence; `incubated` is slow and strong.
 - Set a budget the owner agreed to (`qfr.config.get` shows the charter defaults to

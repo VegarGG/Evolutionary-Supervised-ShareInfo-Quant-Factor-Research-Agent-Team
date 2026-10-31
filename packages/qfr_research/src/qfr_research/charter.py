@@ -83,7 +83,8 @@ def derive_charter(
         "constraints": brief.constraints.model_dump(mode="json"),
         "strategy_spec": None
         if brief.strategy_spec is None
-        else brief.strategy_spec.model_dump(mode="json"),
+        # Phase 8 rules appear only when the owner asked for them.
+        else brief.strategy_spec.model_dump(mode="json", exclude_none=True),
         "deliverable": brief.deliverable.model_dump(mode="json"),
         "stop": brief.budget.model_dump(mode="json"),
         "priority": brief.priority,

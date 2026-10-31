@@ -25,6 +25,7 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
+from qfr_core.contracts import StrategyRules
 from qfr_core.dsl import ast_diff, canonicalize, parse
 from qfr_core.ids import uuid7
 from sqlalchemy import text
@@ -1692,8 +1693,13 @@ class GenerationRunner:
         payload["inherited_rationale"] = rationales[str(lead.version_id)] | (
             {"hypothesis_id": str(task.hypothesis_id)} if task.hypothesis_id else {}
         )
+        # Phase 8: the job's rules apply to every draft (the owner chose them, not the LLM).
+        rules = StrategyRules.model_validate(spec["rules"]) if spec.get("rules") else None
+        if rules is not None:
+            payload["rules"] = rules.model_dump(mode="json")
+        book = "long-short top" if rules is not None and rules.long_short else "Top"
         payload["title"] = (
-            f"Top-{draft.portfolio.top_k} strategy over {len(draft.components)} factor(s)"
+            f"{book}-{draft.portfolio.top_k} strategy over {len(draft.components)} factor(s)"
         )
         payload["description"] = draft.composition_rationale
         with env.db.transaction() as conn:
@@ -1757,6 +1763,7 @@ class GenerationRunner:
             ],
             draft.portfolio.top_k,
             draft.portfolio.dropout,
+            rules,
         )
         workbench = {
             "visibility": report.visibility,

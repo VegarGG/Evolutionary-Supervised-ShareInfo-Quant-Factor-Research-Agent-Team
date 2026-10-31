@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
-from qfr_core.contracts import FactorManifest, StrategyManifest
+from qfr_core.contracts import FactorManifest, StrategyManifest, StrategyRules
 from qfr_core.dsl import ast_diff, canonicalize, parse
 from qfr_core.ids import uuid7
 from qfr_core.registry_api import VersionRecord
@@ -457,18 +457,7 @@ class Packager:
                 "family_id": None,
                 "name": name,
                 "title": title[:120],
-                "implementation": {
-                    "language": "qfr-strategy/1",
-                    "components": payload["components"],
-                    "combination": "zscore_weighted_sum",
-                    "portfolio": {
-                        "type": "topk_dropout",
-                        "top_k": payload["portfolio"]["top_k"],
-                        "dropout": payload["portfolio"]["dropout"],
-                        "rebalance": "daily",
-                        "long_only": True,
-                    },
-                },
+                "implementation": strategy_implementation(payload),
                 "declared": {"expected_sign": 1, "horizon_days": payload["expected_horizon_days"]},
                 "rationale": rationale
                 | {
@@ -495,3 +484,30 @@ def _dumps(value: Any) -> str:
 
 def new_review_id() -> UUID:
     return uuid7()
+
+
+def strategy_implementation(payload: dict[str, Any]) -> dict[str, Any]:
+    """qfr-strategy/1, or qfr-strategy/2 with the job's Phase 8 rules."""
+    top_k, dropout = payload["portfolio"]["top_k"], payload["portfolio"]["dropout"]
+    rules = payload.get("rules")
+    if not rules:
+        return {
+            "language": "qfr-strategy/1",
+            "components": payload["components"],
+            "combination": "zscore_weighted_sum",
+            "portfolio": {
+                "type": "topk_dropout",
+                "top_k": top_k,
+                "dropout": dropout,
+                "rebalance": "daily",
+                "long_only": True,
+            },
+        }
+    parsed = StrategyRules.model_validate(rules)
+    return {
+        "language": "qfr-strategy/2",
+        "components": payload["components"],
+        "combination": "zscore_weighted_sum",
+        "neutralize": parsed.neutralize,
+        "portfolio": parsed.portfolio(top_k, dropout).model_dump(mode="json"),
+    }
