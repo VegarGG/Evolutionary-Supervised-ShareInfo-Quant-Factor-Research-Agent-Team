@@ -111,6 +111,8 @@ def test_a_backup_dumps_checksums_mirrors_and_logs(tmp_path):
         # An earlier complete backup this month: today's is not the month's first.
         (backups / earlier.isoformat()).mkdir(parents=True)
         (backups / earlier.isoformat() / "COMPLETE").write_text("x")
+        digest = hashlib.sha256(b"x").hexdigest()
+        (backups / earlier.isoformat() / "SHA256SUMS").write_text(f"{digest}  COMPLETE\n")
     env = {
         "QFR_BACKUPS_DIR": str(backups),
         "QFR_LOG_DIR": str(logs / "backup"),
@@ -130,6 +132,20 @@ def test_a_backup_dumps_checksums_mirrors_and_logs(tmp_path):
     assert latest_backup(backups) == folder
     names = {p.name for p in folder.iterdir()}
     assert {"registry_db.dump", "control_db.dump", "SHA256SUMS", "COMPLETE"} <= names
+    # Phase 8: each audited database's chain was sealed and verified before its dump,
+    # and the retained backups were verified afterwards.
+    chains = json.loads((folder / "AUDIT_CHAINS.json").read_text())
+    assert set(chains) == {"registry_db", "control_db"}
+    for chain in chains.values():
+        assert (chain["status"], chain["problem"], chain["unsealed"]) == ("ok", None, 0)
+        assert chain["extends_previous"] is None  # the earlier backup recorded no heads
+    heads = {line.split()[0]: line.split()[1:] for line in
+             (folder / "AUDIT_HEADS").read_text().splitlines()}  # fmt: skip
+    assert heads["control_db"] == [str(chains["control_db"]["head_seq"]),
+                                   chains["control_db"]["head_hash"]]  # fmt: skip
+    verified = json.loads((backups / "VERIFIED.json").read_text())
+    assert (verified["status"], verified["failures"]) == ("PASS", [])
+    assert verified["newest"] == today.isoformat() and verified["archives_listed"] == 2
     assert ("logs.tar.gz" in names) == (earlier == today)
     assert not list(backups.glob(".*.partial"))
     # The drill's checker reads the same sums; it also wants the two other dumps.
@@ -174,6 +190,19 @@ def test_a_backup_dumps_checksums_mirrors_and_logs(tmp_path):
     ]
     last = [line for line in lines if line["event"] == "backup_completed"][-1]
     assert last["payload"]["mirrored"] == {"full": 1, "eval_store": 0, "research": 0}
+    assert last["payload"]["audit_chains_ok"] is True
+    assert "backup_verified" in [line["event"] for line in lines]
+
+    # A retained backup that changed on the backups disk fails the verification, which
+    # ops-nightly turns into the backup alert.
+    with (folder / "registry_db.dump").open("ab") as stream:
+        stream.write(b"bit rot")
+    checked = run(["verify"], **env)
+    assert checked.returncode == 1
+    report = json.loads(checked.stdout)
+    assert report["status"] == "FAIL" and report["failures"][0] == (
+        f"{today.isoformat()}: checksums"
+    )
 
 
 def test_a_failed_dump_leaves_no_dated_folder_and_logs_the_failure(tmp_path):

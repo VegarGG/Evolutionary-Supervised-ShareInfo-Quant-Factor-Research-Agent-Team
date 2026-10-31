@@ -6,7 +6,9 @@ After deployment.yaml's nightly time (02:30 Asia/Shanghai) it runs once per day:
   2. the disk guard: a WARNING line and an operations alert when the volume is over
      logging.yaml's disk_warning_bytes;
   3. the backup check: an operations alert when the newest complete backup under
-     backups/ is older than deployment.yaml's backup.stale_after_days.
+     backups/ is older than deployment.yaml's backup.stale_after_days, or when the
+     backup service's last verification (backups/VERIFIED.json, Phase 8: checksums of
+     every retained backup, readable dumps, intact audit hash chains) failed.
 
 An alert is raised at most once a day and not again while an earlier alert of the same
 kind is unacknowledged. Each run is recorded in control_db's ops_runs, which qfr.status
@@ -46,6 +48,8 @@ PRINCIPAL = "ops-nightly"
 BACKUP_DIR = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # The backup script writes this file last, after every dump and its checksum.
 COMPLETE = "COMPLETE"
+# The backup service's verification of the retained backups (P8.5), replaced atomically.
+VERIFIED = "VERIFIED.json"
 
 
 class Schedule:
@@ -81,13 +85,37 @@ def backup_status(root: Path | None, today: date, stale_after_days: int) -> dict
     latest = complete[-1]
     age = (today - date.fromisoformat(latest)).days
     fresh = age <= stale_after_days
+    verification = verification_status(root)
+    failed = verification["status"] == "FAIL"
     return {
-        "status": "ok" if fresh else "stale",
-        "fresh": fresh,
+        "status": "verification_failed" if failed else ("ok" if fresh else "stale"),
+        "fresh": fresh and not failed,
         "latest": latest,
         "age_days": age,
         "complete": len(complete),
         "stale_after_days": stale_after_days,
+        "verification": verification,
+    }
+
+
+def verification_status(root: Path) -> dict[str, JsonValue]:
+    """The backup service's last verification: PASS or FAIL with what failed. A backups
+    folder written before Phase 8 has none yet; that is reported, not alerted."""
+    path = root / VERIFIED
+    if not path.is_file():
+        return {"status": "none"}
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {"status": "FAIL", "failures": ["VERIFIED.json is unreadable"]}
+    if not isinstance(document, dict) or document.get("status") not in ("PASS", "FAIL"):
+        return {"status": "FAIL", "failures": ["VERIFIED.json has no status"]}
+    failures = document.get("failures")
+    return {
+        "status": document["status"],
+        "at": document.get("at"),
+        "newest": document.get("newest"),
+        "failures": [str(f) for f in failures[:20]] if isinstance(failures, list) else [],
     }
 
 

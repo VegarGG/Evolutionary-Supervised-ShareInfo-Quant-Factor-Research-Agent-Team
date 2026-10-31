@@ -93,8 +93,16 @@ mcp-config:
 backup:
     docker compose --env-file .env -f infra/docker-compose.yml exec -T backup qfr-backup now
 
-# Restore the newest backup into a throwaway Compose project and run BND-01, REG-01 and
-# EVL-04 on it. The report is written to exports/restore-drill/ and logged.
+# Verify the retained backups now (P8.5): every dated folder's checksums, the newest
+# folder's dumps read back, its audit hash chains intact and extending the previous
+# backup's. The backup service also does this after every backup and writes
+# backups/VERIFIED.json, which ops-nightly reads; a failure raises the backup alert.
+verify-backups:
+    docker compose --env-file .env -f infra/docker-compose.yml exec -T backup qfr-backup verify
+
+# Restore the newest backup into a throwaway Compose project and run BND-01, REG-01, the
+# audit chain check and EVL-04 on it. The report is written to exports/restore-drill/
+# and logged.
 restore-drill:
     uv run --locked python scripts/restore_drill.py
 
