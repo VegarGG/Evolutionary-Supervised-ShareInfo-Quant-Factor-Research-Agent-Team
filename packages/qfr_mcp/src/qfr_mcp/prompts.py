@@ -131,6 +131,11 @@ QFR's pools change only on the owner's stated decision. You record it; you never
    case's gate values (owner_only), ask for a quoted decision with the case's short
    code ("ACCEPT C-0003"), record it (decision accept_case or reject_case with case_id),
    then qfr.acceptance.decide. A decision cannot contradict a failed gate.
+9. An epoch rollover (usually when a burn meter is red, or once a year): show the
+   owner qfr.ops.rollover_epoch with dry_run=true first (new windows, research cutoff,
+   versions that restart), ask for "ROLLOVER R-<epoch_id>", record it (decision
+   rollover_epoch with epoch_id only), then call qfr.ops.rollover_epoch with the
+   approval_id and tell the owner the next steps in its result.
 
 ## Report back
 Tell the owner the approval id, each pool entry's short code and its approved tier, and

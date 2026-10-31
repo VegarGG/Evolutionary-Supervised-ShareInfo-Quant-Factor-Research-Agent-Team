@@ -46,7 +46,7 @@ from qfr_core.pyfactor import PythonLimits, check_source, declaration_errors
 from qfr_eval.compute import ComputeResult
 
 STAGES = ("screening", "w1", "w2", "holdout", "simulation")
-Stage = Literal["screening", "w1", "w2", "holdout", "simulation"]
+Stage = Literal["screening", "w1", "w2", "holdout", "simulation", "remeasure"]
 WINDOW_STAGE: dict[str, Stage] = {"W1": "w1", "W2": "w2", "W3": "holdout"}
 
 

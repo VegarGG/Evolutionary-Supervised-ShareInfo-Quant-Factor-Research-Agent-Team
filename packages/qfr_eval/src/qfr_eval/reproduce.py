@@ -15,6 +15,7 @@ import typer
 from qfr_core.config import RuntimeSettings
 from sqlalchemy import text
 
+from qfr_eval import rollover
 from qfr_eval.configs import EvalError, resolved_windows
 from qfr_eval.plugins import StageOutcome, results_hash
 from qfr_eval.runtime import Database, EvalConfig, EvalEnvironment, eval_config
@@ -30,6 +31,8 @@ from qfr_eval.worker import (
 )
 
 app = typer.Typer(no_args_is_help=True, help="Evaluation operations (evaluation side).")
+# `qfr eval epoch propose|plan`: draft the next epoch file and preview a rollover (P8.4).
+app.add_typer(rollover.app, name="epoch")
 
 
 def reproduce(
@@ -97,6 +100,10 @@ def reproduce(
             components=components,
         )
         stage = outcome.screening if record.stage == "screening" else outcome.w1
+        if record.stage == "remeasure":
+            # A library member re-measured after a rollover: its W1 outcome, or its
+            # screening outcome when it no longer reached W1 on the new windows.
+            stage = outcome.w1 if outcome.w1 is not None else outcome.screening
     actual = None if stage is None else results_hash(stage.metrics)
     return {
         "record_id": str(record_id),

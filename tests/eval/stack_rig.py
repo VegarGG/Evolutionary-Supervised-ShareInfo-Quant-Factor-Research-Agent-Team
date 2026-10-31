@@ -55,6 +55,8 @@ def eval_apps(rig: EvalRig) -> tuple[Any, Any]:
         ArtifactStore(rig.env.store_dir),
         eval_logger(rig.tmp_path, "eval-admin-api"),
         rig.clock,
+        epochs_dir=rig.tmp_path / "epochs",
+        full_snapshot_dir=rig.env.full_snapshot_dir,
     )
     feedback = feedback_api.create_app(
         rig.db,

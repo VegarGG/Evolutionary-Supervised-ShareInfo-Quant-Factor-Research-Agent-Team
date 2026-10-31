@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 
 from pydantic import UUID7, AwareDatetime, Field, JsonValue, StringConstraints
 
-from qfr_core.contracts import ApprovalScope, Contract, Hash, ReleasedReport, Tier
+from qfr_core.contracts import ApprovalScope, Contract, EpochId, Hash, ReleasedReport, Tier
 
 ReportType = Literal["intake", "screening", "w1", "w2", "advancement", "sim", "decision", "library"]
 ConfigKind = Literal["protocol", "policy", "quotas"]
@@ -195,3 +195,66 @@ class AlertView(Contract):
 class AlertPage(Contract):
     items: list[AlertView]
     open: int = Field(ge=0)
+
+
+# Epoch rollover (Section 10.6, Phase 8) -------------------------------------------------
+
+
+class RolloverApprovalRef(Contract):
+    """The rollover_epoch approval the front door holds; the evaluator checks that its
+    scope names the epoch."""
+
+    approval_id: UUID7
+    decision: Literal["rollover_epoch"]
+    scope: ApprovalScope
+
+
+class RolloverRequest(Contract):
+    """POST /v1/epochs/rollover. A dry run needs no approval and changes nothing."""
+
+    epoch_id: EpochId
+    dry_run: bool = False
+    approval: RolloverApprovalRef | None = None
+
+
+class EpochWindow(Contract):
+    start: date
+    end: date
+
+
+class RolloverReport(Contract):
+    dry_run: bool
+    from_epoch: str
+    to_epoch: str
+    snapshot_id: Hash
+    windows: dict[str, EpochWindow]
+    old_windows: dict[str, EpochWindow]
+    research_cutoff: date
+    embargo_check: dict[str, JsonValue]
+    problems: list[str]
+    restart: dict[str, int]  # Versions restarting in the new epoch, by their old state.
+    cancelled_jobs: int
+    running_jobs: int
+    refingerprint_jobs: int
+    remeasure_jobs: int
+    restarted_versions: int | None = None
+    protocol_epoch_ref: str
+    protocol_epoch_ref_matches: bool
+    approval_id: UUID7 | None = None
+    applied_at: AwareDatetime | None = None
+
+
+class EpochView(Contract):
+    epoch_id: str
+    version: str
+    status: Literal["active", "retired"]
+    previous_epoch_id: str | None
+    snapshot_id: Hash
+    windows: dict[str, EpochWindow]
+    activated_at: AwareDatetime
+    retired_at: AwareDatetime | None
+    approval_id: UUID7 | None
+
+
+class EpochPage(Contract):
+    items: list[EpochView]

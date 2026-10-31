@@ -50,6 +50,21 @@ data-serve-once *args:
 eval-reproduce record_id:
     docker compose --env-file .env -f infra/docker-compose.yml run --rm eval-worker qfr eval reproduce {{record_id}}
 
+# Draft the next epoch by Section 10.6 into configs/epochs/<epoch_id>.yaml for review: W0
+# runs to the old W2's end, W1 is the old W3, W2 and W3 come from the newer data with the
+# embargoes (e.g. `just epoch-propose epoch_002`). It changes nothing in the database; the
+# rollover itself is qfr.ops.rollover_epoch with the owner's ROLLOVER R-<epoch_id>.
+epoch-propose epoch_id *args:
+    test ! -e configs/epochs/{{epoch_id}}.yaml || { echo "configs/epochs/{{epoch_id}}.yaml exists"; exit 1; }
+    docker compose --env-file .env -f infra/docker-compose.yml run --rm --no-deps -T eval-scheduler qfr eval epoch propose --epoch-id {{epoch_id}} {{args}} > configs/epochs/.{{epoch_id}}.draft
+    mv configs/epochs/.{{epoch_id}}.draft configs/epochs/{{epoch_id}}.yaml
+    cat configs/epochs/{{epoch_id}}.yaml
+
+# What a rollover to configs/epochs/<epoch_id>.yaml would do now (restarts, cancelled jobs,
+# re-measurements, the research cutoff); changes nothing.
+epoch-plan epoch_id:
+    docker compose --env-file .env -f infra/docker-compose.yml run --rm --no-deps -T eval-scheduler qfr eval epoch plan --epoch-id {{epoch_id}}
+
 # Check every configured model: listed, priced, tool and json_object output, thinking, and
 # the Moonshot concurrency and balance. Runs inside research-worker, the only service with
 # provider keys. Each probe call is a small paid request recorded in the budget ledger.

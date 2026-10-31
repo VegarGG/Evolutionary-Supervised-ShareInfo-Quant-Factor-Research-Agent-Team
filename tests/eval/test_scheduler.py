@@ -57,15 +57,18 @@ def test_evl_01_discovery_is_since_seq_polling_with_no_inbound_trigger(rig):
             for route in app.routes
             for method in getattr(route, "methods", set()) - {"GET", "HEAD"}
         }
-        # Only the owner's configuration routes, case decisions and alert
-        # acknowledgements (Phase 7) write; nothing enqueues or evaluates.
+        # Only the owner's configuration routes, case decisions, alert
+        # acknowledgements (Phase 7) and the approved epoch rollover (Phase 8) write;
+        # nothing enqueues or evaluates a version on request.
         owner = (
             "/v1/protocols", "/v1/policies", "/v1/quotas", "/v1/acceptance/cases/",
-            "/v1/alerts/",
+            "/v1/alerts/", "/v1/epochs/",
         )  # fmt: skip
         assert all(path.startswith(owner) for _, path in writes), writes
         alerts = {path for _, path in writes if path.startswith("/v1/alerts/")}
         assert alerts <= {"/v1/alerts/{alert_id}/acknowledge"}, alerts
+        epochs = {path for _, path in writes if path.startswith("/v1/epochs/")}
+        assert epochs <= {"/v1/epochs/rollover"}, epochs
     first = publish(rig, "first", "Mean($close, 5) / Mean($close, 20) - 1")
     rig.scheduler.tick()
     cursor = rig.db.scalar("SELECT last_published_seq FROM eval.intake_cursor")
@@ -230,6 +233,7 @@ def test_queue_is_fair_round_robin_across_families_and_fingerprints_first(rig):
 
     family_a, family_b = uuid7(), uuid7()
     at = rig.clock.now()
+    rig.scheduler.tick()  # jobs belong to the active epoch (Phase 8)
     with rig.db.transaction() as conn:
         a = [queue.enqueue(conn, "evaluate", uuid7(), family_a, {}, at) for _ in range(3)]
         b = queue.enqueue(conn, "evaluate", uuid7(), family_b, {}, at)
@@ -240,7 +244,7 @@ def test_queue_is_fair_round_robin_across_families_and_fingerprints_first(rig):
         again = queue.enqueue(conn, "evaluate", rig.db.scalar(
             "SELECT version_id FROM eval.queue_jobs WHERE queue_job_id = :j", j=b), family_b, {},
             at)  # fmt: skip
-        assert again is None  # one job per (kind, version)
+        assert again is None  # one job per (kind, version, epoch)
         conn.execute(text("UPDATE eval.queue_jobs SET locked_at = :t"), {"t": at})
     rig.clock.advance(hours=2)
     with rig.db.transaction() as conn:

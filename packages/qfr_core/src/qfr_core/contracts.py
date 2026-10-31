@@ -17,6 +17,8 @@ from pydantic import (
 
 Hash = Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
 Slug = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9_-]*$", max_length=64)]
+# An epoch's id as the epoch files name it (configs/epochs/<epoch_id>.yaml).
+EpochId = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9_]*$", max_length=64)]
 ShortText = Annotated[str, StringConstraints(min_length=1, max_length=120)]
 Sign = Literal[-1, 1]
 Horizon = Literal[1, 5, 10, 20]
@@ -617,6 +619,8 @@ class ApprovalScope(Contract):
     tier: Tier | None
     case_id: UUID7 | None
     entry_ids: list[UUID7]
+    # rollover_epoch (Phase 8): the epoch the owner approved rolling over to.
+    epoch_id: EpochId | None = None
 
 
 class ApprovalRecord(Contract):

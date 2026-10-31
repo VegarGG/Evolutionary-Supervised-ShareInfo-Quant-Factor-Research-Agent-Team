@@ -11,6 +11,7 @@ keys and have no network route outside eval_net; measurement uses fixed seeds an
 wall clock.
 """
 
+import dataclasses
 import hashlib
 import os
 import time
@@ -596,6 +597,8 @@ class Worker:
                     self._fingerprint(job)
                 elif job.kind == "evaluate":
                     self._evaluate(job)
+                elif job.kind == "remeasure":
+                    self._remeasure(job)
                 else:
                     self._window(job, "W2" if job.kind == "w2" else "W3")
                 self.log.info(
@@ -622,8 +625,13 @@ class Worker:
                 queue.retry(conn, job, now, delay, type(error).__name__)
             self.log.warning("job_retried", outcome="retried", payload={"delay_seconds": delay})
             return
-        if job.kind == "fingerprint":
+        if job.kind in ("fingerprint", "remeasure"):
             with self.db.transaction() as conn:
+                if self._fenced(conn, job, now):
+                    return
+                if job.kind == "remeasure":
+                    queue.finish(conn, job, now, "failed")
+                    return
                 conn.execute(
                     text(
                         "UPDATE eval.intake SET fingerprint_error = 'INTERNAL_ERROR' "
@@ -648,6 +656,25 @@ class Worker:
         seed = run_seed(int(state.protocol.config["fingerprint"]["seed"]), str(job.version_id))
         result = EvaluationOutcome(seed, None, outcome, None, None, [])
         self._write(job, row, state, result, now, now, failed_state="failed")
+
+    def _fenced(self, conn: Connection, job: queue.Job, at: datetime) -> bool:
+        """The write fence (Section 10.6): a job of an epoch that was rolled over while it
+        ran writes nothing into the retired epoch; it ends cancelled. Every result write
+        runs under the evaluator's lock, so a rollover is either before it or after it."""
+        if not job.epoch_id:
+            return False
+        active = conn.execute(
+            text("SELECT epoch_id FROM eval.epochs WHERE status = 'active'")
+        ).scalar()
+        if active == job.epoch_id:
+            return False
+        queue.finish(conn, job, at, "cancelled")
+        self.log.warning(
+            "job_cancelled_by_rollover",
+            outcome="skipped",
+            payload={"kind": job.kind, "job_epoch": job.epoch_id, "active_epoch": active},
+        )
+        return True
 
     def _refs(self, state: ActiveState) -> dict[str, str]:
         return {
@@ -676,6 +703,8 @@ class Worker:
         if value is not None:
             stored = self.store.write_fingerprint(state.epoch.epoch_id, job.version_id, value)
         with self.db.transaction() as conn:
+            if self._fenced(conn, job, now):
+                return
             if stored is not None:
                 uri, sha, dates_sha = stored
                 conn.execute(
@@ -708,14 +737,18 @@ class Worker:
     ) -> list[LibraryMember]:
         """Effective library entries of one pool with their stored W1 values: factors
         for a factor's library gate, strategies (their composites) for a strategy's."""
+        # After a rollover a member's W1 values come from its re-measurement on the new
+        # W1 ('remeasure'), or from its W1 run if it restarted in the new epoch.
         rows = conn.execute(
             text(
-                "SELECT l.version_id, s.uri, s.sha256 FROM eval.library l "
+                "SELECT DISTINCT ON (l.version_id) l.version_id, s.uri, s.sha256 "
+                "FROM eval.library l "
                 "JOIN eval.official_records r ON r.version_id = l.version_id "
-                "  AND r.stage = 'w1' AND r.epoch_id = :e "
+                "  AND r.stage IN ('w1', 'remeasure') AND r.epoch_id = :e "
                 "JOIN eval.series_files s ON s.run_id = r.run_ids[1] AND s.kind = 'factor_values' "
                 "WHERE l.pool = :pool AND l.status IN ('seed', 'active') "
-                "AND l.effective_from IS NOT NULL AND l.version_id <> :v ORDER BY l.version_id"
+                "AND l.effective_from IS NOT NULL AND l.version_id <> :v "
+                "ORDER BY l.version_id, r.created_at DESC"
             ),
             {"e": epoch_id, "v": version_id, "pool": pool},
         ).all()
@@ -741,6 +774,56 @@ class Worker:
             components=components,
         )
         self._write(job, row, state, outcome, started, self.clock.now())
+
+    def _remeasure(self, job: queue.Job) -> None:
+        """A library member measured on the new epoch's W1 after a rollover (Section
+        10.6): the run, its series and a 'remeasure' record, so the library gate keeps
+        the member. It is not a trial: no ledger row, burn, report or state change, and
+        its own library is empty (it was admitted to the library already)."""
+        state = self._state()
+        row = self._intake(job.version_id)
+        manifest, components = self._manifest(row)
+        started = self.clock.now()
+        result = self.evaluator.evaluate(
+            manifest,
+            str(job.version_id),
+            state.protocol.config,
+            state.epoch.windows,
+            state.epoch.snapshot_id,
+            [],
+            self.config.runner.load_cpu_seconds,
+            components=components,
+        )
+        finished = self.clock.now()
+        measured = result.w1 if result.w1 is not None else result.screening
+        outcome = dataclasses.replace(
+            measured, stage="remeasure", summary=measured.summary | {"remeasure": True}
+        )
+        run_id = uuid7()
+        files: list[tuple[str, str, str, int]] = []
+        if result.w1 is not None:
+            market = self.evaluator.markets.get(
+                state.epoch.snapshot_id, FactorPlugin(state.protocol.config)
+            )
+            w1 = state.epoch.windows["W1"]
+            first, last = market.window(w1.start, w1.end)
+            columns = np.flatnonzero(market.eligible[first : last + 1].any(axis=0))
+            files = self._series(
+                run_id, outcome, result.w1_values, state.epoch.epoch_id, row.version_id, columns
+            )
+        with self.db.transaction() as conn:
+            if self._fenced(conn, job, finished):
+                return
+            status = "succeeded" if result.w1 is not None else "failed"
+            self._run_row(conn, run_id, row, state, outcome, result.seed, started, finished, status)
+            self._series_rows(conn, run_id, files)
+            self._record(conn, run_id, row, state, outcome, result.seed, finished)
+            queue.finish(conn, job, finished, "done")
+        self.log.info(
+            "library_member_remeasured",
+            outcome="ok" if result.w1 is not None else "failed",
+            payload={"epoch_id": state.epoch.epoch_id, "values": result.w1 is not None},
+        )
 
     def _run_row(
         self,
@@ -965,6 +1048,8 @@ class Worker:
             )
         request_id = current()["request_id"]
         with self.db.transaction() as conn:
+            if self._fenced(conn, job, finished):
+                return
             screening = result.screening
             self._run_row(
                 conn, screening_run, row, state, screening, result.seed, started, finished,
@@ -1084,6 +1169,8 @@ class Worker:
         )  # fmt: skip
         request_id = current()["request_id"]
         with self.db.transaction() as conn:
+            if self._fenced(conn, job, finished):
+                return
             self._run_row(
                 conn, run_id, row, state, outcome, result.seed, started, finished, "succeeded",
                 window,
@@ -1232,6 +1319,8 @@ class Worker:
         failed check (Section 9.2); the quota it used stays used."""
         request_id = current()["request_id"]
         with self.db.transaction() as conn:
+            if self._fenced(conn, job, at):
+                return
             if job.kind == "w2":
                 queue_report(
                     conn, "w2", row.version_id,

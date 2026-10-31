@@ -35,6 +35,20 @@
           "title": "Entry Ids",
           "type": "array"
         },
+        "epoch_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "pattern": "^[a-z0-9][a-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Epoch Id"
+        },
         "job_id": {
           "anyOf": [
             {

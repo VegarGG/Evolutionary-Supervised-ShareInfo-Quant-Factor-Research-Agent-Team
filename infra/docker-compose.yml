@@ -1099,7 +1099,8 @@
         "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
         "EVAL_OWNER_TOKEN": "${EVAL_OWNER_TOKEN:?run just init-secrets}",
         "QFR_EVAL_ADMIN_BIND": "0.0.0.0",
-        "QFR_EVAL_STORE_DIR": "/data/eval-store"
+        "QFR_EVAL_STORE_DIR": "/data/eval-store",
+        "QFR_FULL_SNAPSHOT_DIR": "/data/full"
       },
       "volumes": [
         {
@@ -1110,6 +1111,12 @@
           "volume": {
             "subpath": "eval-admin-api"
           }
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_full",
+          "target": "/data/full",
+          "read_only": true
         },
         {
           "type": "bind",

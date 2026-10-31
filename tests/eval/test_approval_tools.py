@@ -87,7 +87,8 @@ def test_a_case_is_decided_and_its_version_curated_through_mcp(full):
     assert mcp.store.list_approvals(10) == []
     for arguments, expected in (
         ({"decision": "accept_case", "owner_confirmation": f"ACCEPT {code}"}, "SCOPE_INVALID"),
-        ({"decision": "rollover_epoch", "owner_confirmation": "ROLL"}, "DECISION_UNSUPPORTED"),
+        # Phase 8: a rollover approval names only the epoch it starts.
+        ({"decision": "rollover_epoch", "owner_confirmation": "ROLL"}, "SCOPE_INVALID"),
         (
             {"decision": "approve", "version_ids": [str(version)],
              "owner_confirmation": "APPROVE"},

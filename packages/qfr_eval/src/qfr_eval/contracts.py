@@ -13,7 +13,7 @@ class OfficialRecord(EvidenceRef):
     family_id: UUID7
     program_id: UUID7 | None
     job_id: UUID7 | None
-    stage: Literal["screening", "w1", "w2", "holdout", "simulation"]
+    stage: Literal["screening", "w1", "w2", "holdout", "simulation", "remeasure"]
     window: Literal["W1", "W2", "W3", "W4"]
     run_ids: list[UUID7] = Field(min_length=1)
     container_image_digest: str
@@ -49,9 +49,12 @@ class GateResult(Contract):
 class WindowEvidence(Contract):
     """One evaluated window of the version: the index the owner reads first."""
 
-    stage: Literal["screening", "w1", "w2", "holdout", "simulation"]
+    stage: Literal["screening", "w1", "w2", "holdout", "simulation", "remeasure"]
     window: Literal["W1", "W2", "W3", "W4"]
     record_id: UUID7
+    # The epoch the window belongs to: after a rollover (Phase 8) a version can have W1
+    # records in two epochs, each on that epoch's own W1 dates.
+    epoch_id: str | None = None
     status: str | None
     created_at: AwareDatetime
     results_hash: Hash

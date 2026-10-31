@@ -430,14 +430,20 @@ def activate_epoch(
     approval_id: UUID | None,
     request_id: str,
     at: datetime,
+    previous_epoch_id: str | None = None,
+    rollover: dict[str, Any] | None = None,
 ) -> ActiveEpoch:
-    """Pin the windows on the snapshot's calendar. Refuses a short embargo (Section 6.4)."""
+    """Pin the windows on the snapshot's calendar. Refuses a short embargo (Section 6.4).
+    A rollover (qfr_eval.rollover) retires the active epoch first and names it here."""
     current = active_epoch(conn)
     if current is not None:
         if current.epoch_id == epoch.epoch_id:
             return current
         raise EvalError(
-            409, "EPOCH_ACTIVE", f"epoch {current.epoch_id} is active; rollover is Phase 8"
+            409,
+            "EPOCH_ACTIVE",
+            f"epoch {current.epoch_id} is active; a new epoch comes only through an "
+            "approved rollover (qfr.ops.rollover_epoch)",
         )
     windows, check = resolve_windows(epoch, calendar, at.date())
     check["protocol_epoch_ref"] = protocol_epoch_ref
@@ -458,10 +464,13 @@ def activate_epoch(
         text(
             "INSERT INTO eval.epochs (epoch_id, version, config, source_sha256, snapshot_id, "
             "embargo_check, status, started_at, activated_at, activated_by, approval_id, "
-            "request_id) VALUES (:e, :v, CAST(:c AS jsonb), :src, :s, CAST(:chk AS jsonb), "
-            "'active', :at, :at, :by, :approval, :r)"
+            "request_id, previous_epoch_id, rollover) VALUES (:e, :v, CAST(:c AS jsonb), "
+            ":src, :s, CAST(:chk AS jsonb), 'active', :at, :at, :by, :approval, :r, :prev, "
+            "CAST(:roll AS jsonb))"
         ),
         {
+            "prev": previous_epoch_id,
+            "roll": None if rollover is None else canonical_json(rollover),
             "e": epoch.epoch_id,
             "v": epoch.version,
             "c": canonical_json(resolved),

@@ -102,6 +102,9 @@ iteration history are in-sample; say so whenever you mention one.
   (`qfr.acceptance.list_cases`, `qfr.acceptance.decide`) follow the same rule: an
   approval record quoting the entry's (E-xxxxxx) or case's (C-nnnn) short code first. A
   case decision cannot contradict a failed gate.
+- An epoch rollover (`qfr.ops.rollover_epoch`) needs the owner's `ROLLOVER R-<epoch_id>`
+  recorded as a `rollover_epoch` approval with that `epoch_id`. Show the dry run
+  (`dry_run=true`) first.
 - Never record an approval the owner did not state. Never approve on your own
   judgement.
 
@@ -134,9 +137,14 @@ iteration history are in-sample; say so whenever you mention one.
 - Evaluator configuration: `qfr.ops.activate_protocol`, `qfr.ops.activate_policy` and
   `qfr.ops.activate_quotas` activate a file the owner placed under `imports/`; only on
   the owner's instruction.
+- Epoch rollover (Section 10.6): when a W1 or W2 burn meter is red, or about once a
+  year, suggest it. The owner drafts the epoch file (`just epoch-propose <epoch_id>`);
+  you show the dry run, record the approval and roll over, then tell the owner the next
+  steps in the result (rebuilding the research snapshot at the new cutoff). Records of
+  the old epoch stay; versions in flight restart in the new one.
 - Things the owner runs on the Mac, not through you: `just doctor`, `just backup`,
   `just restore-drill`, `just export-verify`, `just rotate-mcp-token`,
-  `just llm-probe`.
+  `just llm-probe`, `just epoch-propose`.
 
 ## Never
 

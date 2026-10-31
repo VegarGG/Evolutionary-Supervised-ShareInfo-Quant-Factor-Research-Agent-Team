@@ -4,7 +4,10 @@ Priority is fair round-robin across families and first-in first-out within a fam
 (Section 8.3): a job's priority is its family's count of jobs still waiting, then the
 global enqueue order. Nothing outside the evaluator can set or change a priority.
 Fingerprint jobs (which gate behavioral dedup) are claimed first, then W2 and holdout
-jobs (each is one rationed query), then W1 evaluation jobs.
+jobs (each is one rationed query), then W1 evaluation and library re-measurement jobs.
+
+A job belongs to the epoch it was queued in (Phase 8): a version that restarts in a new
+epoch after a rollover is queued again there, and jobs of a retired epoch end cancelled.
 """
 
 from dataclasses import dataclass
@@ -18,7 +21,9 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
 QUEUE = "eval"
-JobKind = Literal["fingerprint", "evaluate", "w2", "holdout"]
+JobKind = Literal["fingerprint", "evaluate", "w2", "holdout", "remeasure"]
+JobEnd = Literal["done", "failed", "cancelled"]
+ACTIVE_EPOCH = "(SELECT epoch_id FROM eval.epochs WHERE status = 'active')"
 ROUND = 10**12  # Priority = family round x ROUND + enqueue sequence.
 
 
@@ -29,6 +34,7 @@ class Job:
     version_id: UUID
     payload: dict[str, Any]
     attempts: int
+    epoch_id: str = ""
 
 
 def enqueue(
@@ -38,8 +44,10 @@ def enqueue(
     family_id: UUID,
     payload: dict[str, Any],
     at: datetime,
+    epoch_id: str | None = None,
 ) -> UUID | None:
-    """Idempotent per (kind, version). Returns the job id, or None if it already existed."""
+    """Idempotent per (kind, version, epoch); the epoch defaults to the active one.
+    Returns the job id, or None if it already existed."""
     waiting: int = conn.execute(
         text(
             "SELECT count(*) FROM eval.queue_jobs WHERE queue = :q AND kind = :k "
@@ -51,11 +59,13 @@ def enqueue(
     inserted = conn.execute(
         text(
             "INSERT INTO eval.queue_jobs (queue_job_id, queue, kind, version_id, payload, "
-            "priority, state, run_after, created_at) VALUES (:id, :q, :k, :v, "
+            "priority, state, run_after, created_at, epoch_id) VALUES (:id, :q, :k, :v, "
             "CAST(:p AS jsonb), :round * :size + nextval('eval.queue_priority_seq'), "
-            "'queued', :at, :at) ON CONFLICT (kind, version_id) DO NOTHING RETURNING 1"
+            f"'queued', :at, :at, COALESCE(CAST(:e AS text), {ACTIVE_EPOCH})) "
+            "ON CONFLICT (kind, version_id, epoch_id) DO NOTHING RETURNING 1"
         ),
         {
+            "e": epoch_id,
             "id": job_id,
             "q": QUEUE,
             "k": kind,
@@ -76,18 +86,32 @@ def claim(conn: Connection, worker: str, at: datetime) -> Job | None:
             "locked_by = :w, locked_at = :at WHERE queue_job_id = ("
             "  SELECT queue_job_id FROM eval.queue_jobs WHERE queue = :q AND state = 'queued' "
             "  AND run_after <= :at ORDER BY (CASE kind WHEN 'fingerprint' THEN 0 "
-            "  WHEN 'evaluate' THEN 2 ELSE 1 END), priority "
+            "  WHEN 'evaluate' THEN 2 WHEN 'remeasure' THEN 2 ELSE 1 END), priority "
             "  FOR UPDATE SKIP LOCKED LIMIT 1) "
-            "RETURNING queue_job_id, kind, version_id, payload, attempts"
+            "RETURNING queue_job_id, kind, version_id, payload, attempts, epoch_id"
         ),
         {"w": worker, "at": at, "q": QUEUE},
     ).first()
     if row is None:
         return None
-    return Job(row.queue_job_id, row.kind, row.version_id, dict(row.payload), row.attempts)
+    return Job(
+        row.queue_job_id, row.kind, row.version_id, dict(row.payload), row.attempts, row.epoch_id
+    )
 
 
-def finish(conn: Connection, job: Job, at: datetime, state: Literal["done", "failed"]) -> None:
+def cancel_retired(conn: Connection, epoch_id: str, at: datetime) -> int:
+    """Cancel the jobs still queued for an epoch that is being retired (Section 10.6)."""
+    result = conn.execute(
+        text(
+            "UPDATE eval.queue_jobs SET state = 'cancelled', finished_at = :at, "
+            "last_error = 'EPOCH_ROLLED_OVER' WHERE epoch_id = :e AND state = 'queued'"
+        ),
+        {"e": epoch_id, "at": at},
+    )
+    return int(result.rowcount or 0)
+
+
+def finish(conn: Connection, job: Job, at: datetime, state: JobEnd) -> None:
     conn.execute(
         text(
             "UPDATE eval.queue_jobs SET state = :s, finished_at = :at, locked_by = NULL "

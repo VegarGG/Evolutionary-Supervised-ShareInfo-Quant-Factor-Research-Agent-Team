@@ -8,7 +8,9 @@ code of each item:
   J-nnnn S-k for a strategy (research numbers them when it assembles the deliverable);
 - an acceptance case: C-nnnn (the evaluator numbers cases when it opens them);
 - a pool entry: E- and the last six hex digits of the entry id (qfr.pool.list shows it);
-- a job with no item named, for a rejection: J-nnnn.
+- a job with no item named, for a rejection: J-nnnn;
+- an epoch rollover: R- and the new epoch's id, for example R-epoch_002 (Phase 8). The
+  evaluator must accept the epoch file in a dry run before the approval is recorded.
 
 The owner's confirmation must contain every code in scope; a deliverable item's job code
 and item code may appear apart, as in "APPROVE J-0042 F-1 F-2". This guards against an
@@ -24,7 +26,7 @@ from typing import Literal
 from uuid import UUID
 
 from qfr_core.contracts import TIER_ORDER, ApprovalScope, PoolEntry, Tier
-from qfr_core.eval_api import AcceptanceCase
+from qfr_core.eval_api import AcceptanceCase, RolloverRequest
 
 from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
 from qfr_mcp.eval_client import EvalAdminClient
@@ -54,6 +56,10 @@ class Code:
 
 def entry_code(entry_id: UUID) -> str:
     return f"E-{entry_id.hex[-6:]}"
+
+
+def rollover_code(epoch_id: str) -> str:
+    return f"R-{epoch_id}"
 
 
 def item_code(label: str) -> Code:
@@ -103,12 +109,14 @@ class Resolver:
         tier: Tier | None,
         case_id: UUID | None,
         entry_ids: list[UUID],
+        epoch_id: str | None = None,
     ) -> Resolved:
         if decision == "rollover_epoch":
-            raise ApprovalRefused(
-                "DECISION_UNSUPPORTED",
-                "epoch rollover arrives with Phase 8 (qfr.ops.rollover_epoch)",
-            )
+            if job_id or deliverable_id or version_ids or pool or tier or case_id or entry_ids:
+                raise ApprovalRefused("SCOPE_INVALID", "a rollover approval names the epoch only")
+            return await self._rollover(epoch_id)
+        if epoch_id is not None:
+            raise ApprovalRefused("SCOPE_INVALID", "only a rollover approval names an epoch")
         versions = list(dict.fromkeys(version_ids))
         entries_wanted = list(dict.fromkeys(entry_ids))
         try:
@@ -214,6 +222,35 @@ class Resolver:
             entry_ids=entries_wanted,
         )
         return Resolved(scope, codes, kinds)
+
+    async def _rollover(self, epoch_id: str | None) -> Resolved:
+        """The epoch must pass the evaluator's dry run first: an approval is never
+        recorded for an epoch file the rollover would refuse."""
+        if epoch_id is None:
+            raise ApprovalRefused("SCOPE_INVALID", "a rollover approval names the epoch_id")
+        if self.admin is None:
+            raise ApprovalRefused("EVAL_ADMIN_UNCONFIGURED", "EVAL_ADMIN_API_URL is not set")
+        try:
+            request = RolloverRequest(epoch_id=epoch_id, dry_run=True)
+        except ValueError:
+            raise ApprovalRefused("SCOPE_INVALID", "epoch_id is not an epoch id") from None
+        try:
+            plan = await self.admin.rollover(request)
+        except DownstreamRefused as error:
+            raise ApprovalRefused(error.error, error.message) from None
+        except DownstreamUnavailable as error:
+            raise ApprovalRefused(
+                "SCOPE_UNAVAILABLE", f"the evaluator cannot check the epoch now: {error}"
+            ) from None
+        if plan.problems:
+            raise ApprovalRefused(
+                "ROLLOVER_REFUSED", "; ".join(plan.problems), {"problems": list(plan.problems)}
+            )
+        scope = ApprovalScope(
+            job_id=None, deliverable_id=None, version_ids=[], pool=None, tier=None,
+            case_id=None, entry_ids=[], epoch_id=epoch_id,
+        )  # fmt: skip
+        return Resolved(scope, [single(rollover_code(epoch_id))])
 
     async def _deliverable(
         self, job_id: UUID | None, deliverable_id: UUID | None
