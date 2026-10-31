@@ -67,6 +67,9 @@ class AnalystSection(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     reports_per_run: int = Field(gt=0)
     interpretation_review_seed: int
+    # Phase 8: publish each generation's interpretations as a research note, when the
+    # active protocol accepts notes.
+    publish_notes: bool = True
 
 
 class TimelineSection(BaseModel):

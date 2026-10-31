@@ -270,6 +270,12 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
                     approval_id=str(approval_id),
                 )
             version = await downstream(lambda: registry.get_version(version_id))
+            if version.kind == "research_note":
+                raise refused(
+                    "KIND_POOL_CONFLICT",
+                    "a research note never enters a pool",
+                    version_id=str(version_id),
+                )
             pool: Pool = version.kind
             try:
                 request = AddEntryRequest(

@@ -11,11 +11,14 @@ from pydantic import UUID7, AwareDatetime, Field, JsonValue, StringConstraints
 
 from qfr_core.contracts import ApprovalScope, Contract, EpochId, Hash, ReleasedReport, Tier
 
-ReportType = Literal["intake", "screening", "w1", "w2", "advancement", "sim", "decision", "library"]
+ReportType = Literal[
+    "intake", "screening", "w1", "w2", "advancement", "sim", "decision", "library", "note"
+]
 ConfigKind = Literal["protocol", "policy", "quotas"]
 EvidenceTier = Literal[
     "pending", "held", "deferred", "rejected", "duplicate", "screening_fail", "w1_fail",
     "w1_pass", "w2_fail", "w2_expired", "w2_pass", "not_advanced", "advanced", "incubated",
+    "note_passed", "note_failed",
 ]  # fmt: skip
 GateName = Literal[
     "G-W1", "G-W2", "G-HOLDOUT", "G-DSR", "G-PBO", "G-HLZ", "G-FWD", "G-NOVELTY", "G-OPS"

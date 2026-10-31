@@ -1,0 +1,34 @@
+{
+  "schema_version": "1",
+  "kind": "research_note",
+  "family_id": null,
+  "name": "generation-3-note",
+  "title": "Research note, generation 3",
+  "implementation": {
+    "language": "qfr-note/1",
+    "markdown": "# Research note: generation 3\n\nThe reversal factor released a W1 RankIC mean of 0.03.\n",
+    "cited_report_ids": [
+      "01890a5d-ac96-774b-bcce-b302099a8057"
+    ],
+    "claims": [
+      {
+        "report_id": "01890a5d-ac96-774b-bcce-b302099a8057",
+        "field": "RankIC mean",
+        "value": 0.03
+      },
+      {
+        "report_id": "01890a5d-ac96-774b-bcce-b302099a8057",
+        "field": "decay_profile.5",
+        "value": 0.02
+      }
+    ]
+  },
+  "provenance": {
+    "job_id": "01890a5d-ac96-774b-bcce-b302099a8001",
+    "program_id": "01890a5d-ac96-774b-bcce-b302099a8002",
+    "generation_id": "01890a5d-ac96-774b-bcce-b302099a8003",
+    "agent_runs": [],
+    "trace_ref": "01890a5d-ac96-774b-bcce-b302099a8003",
+    "qfr_core_version": "0.1.0"
+  }
+}

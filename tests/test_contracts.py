@@ -6,7 +6,13 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 from pydantic import TypeAdapter, ValidationError
-from qfr_core.contracts import PUBLIC_CONTRACTS, DiagnosticFlag, ReasonCode, ReleasedReport
+from qfr_core.contracts import (
+    PUBLIC_CONTRACTS,
+    DiagnosticFlag,
+    NoteCheckCode,
+    ReasonCode,
+    ReleasedReport,
+)
 from qfr_eval.contracts import PRIVATE_CONTRACTS
 
 CONTRACTS = PUBLIC_CONTRACTS | PRIVATE_CONTRACTS
@@ -31,7 +37,12 @@ def test_every_contract_has_valid_invalid_examples_and_matching_json_schema(name
 
 
 @pytest.mark.parametrize(
-    "name,enum", [("reason_code", ReasonCode), ("diagnostic_flag", DiagnosticFlag)]
+    "name,enum",
+    [
+        ("reason_code", ReasonCode),
+        ("diagnostic_flag", DiagnosticFlag),
+        ("note_check", NoteCheckCode),
+    ],
 )
 def test_enum_examples(name, enum):
     adapter = TypeAdapter(enum)

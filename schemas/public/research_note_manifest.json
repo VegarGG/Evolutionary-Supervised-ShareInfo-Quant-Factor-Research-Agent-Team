@@ -1,0 +1,222 @@
+{
+  "$defs": {
+    "AgentRunRef": {
+      "additionalProperties": false,
+      "properties": {
+        "model_id": {
+          "title": "Model Id",
+          "type": "string"
+        },
+        "prompt_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Prompt Sha256",
+          "type": "string"
+        },
+        "prompt_template_id": {
+          "title": "Prompt Template Id",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "deepseek",
+            "kimi",
+            "glm"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "run_id": {
+          "format": "uuid7",
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "provider",
+        "model_id",
+        "prompt_template_id",
+        "prompt_sha256",
+        "run_id"
+      ],
+      "title": "AgentRunRef",
+      "type": "object"
+    },
+    "NoteClaim": {
+      "additionalProperties": false,
+      "description": "One number the note states, and the released report field it restates.",
+      "properties": {
+        "field": {
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*(\\.[A-Za-z0-9_]+)?$",
+          "title": "Field",
+          "type": "string"
+        },
+        "report_id": {
+          "format": "uuid7",
+          "title": "Report Id",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "report_id",
+        "field",
+        "value"
+      ],
+      "title": "NoteClaim",
+      "type": "object"
+    },
+    "NoteImplementation": {
+      "additionalProperties": false,
+      "properties": {
+        "cited_report_ids": {
+          "items": {
+            "format": "uuid7",
+            "type": "string"
+          },
+          "maxItems": 200,
+          "minItems": 1,
+          "title": "Cited Report Ids",
+          "type": "array"
+        },
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/NoteClaim"
+          },
+          "maxItems": 200,
+          "title": "Claims",
+          "type": "array"
+        },
+        "language": {
+          "const": "qfr-note/1",
+          "title": "Language",
+          "type": "string"
+        },
+        "markdown": {
+          "maxLength": 40000,
+          "minLength": 1,
+          "title": "Markdown",
+          "type": "string"
+        }
+      },
+      "required": [
+        "language",
+        "markdown",
+        "cited_report_ids",
+        "claims"
+      ],
+      "title": "NoteImplementation",
+      "type": "object"
+    },
+    "NoteProvenance": {
+      "additionalProperties": false,
+      "description": "Notes come from research jobs only: no setup import, no operator, no parents. The\nagent runs are the analyst runs whose interpretations the note collects.",
+      "properties": {
+        "agent_runs": {
+          "items": {
+            "$ref": "#/$defs/AgentRunRef"
+          },
+          "title": "Agent Runs",
+          "type": "array"
+        },
+        "generation_id": {
+          "format": "uuid7",
+          "title": "Generation Id",
+          "type": "string"
+        },
+        "job_id": {
+          "format": "uuid7",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "program_id": {
+          "format": "uuid7",
+          "title": "Program Id",
+          "type": "string"
+        },
+        "qfr_core_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Qfr Core Version",
+          "type": "string"
+        },
+        "trace_ref": {
+          "format": "uuid7",
+          "title": "Trace Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "program_id",
+        "generation_id",
+        "agent_runs",
+        "trace_ref",
+        "qfr_core_version"
+      ],
+      "title": "NoteProvenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "family_id": {
+      "anyOf": [
+        {
+          "format": "uuid7",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Family Id"
+    },
+    "implementation": {
+      "$ref": "#/$defs/NoteImplementation"
+    },
+    "kind": {
+      "const": "research_note",
+      "title": "Kind",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "title": "Name",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/NoteProvenance"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "title": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "family_id",
+    "name",
+    "title",
+    "implementation",
+    "provenance"
+  ],
+  "title": "ResearchNoteManifest",
+  "type": "object"
+}

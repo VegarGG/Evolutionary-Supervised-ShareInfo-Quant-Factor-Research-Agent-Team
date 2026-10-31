@@ -383,6 +383,78 @@
       "title": "LibraryContent",
       "type": "object"
     },
+    "NoteCheckCode": {
+      "description": "Why a research note failed its output-quality checks (Section 8.10).",
+      "enum": [
+        "CITATION_UNKNOWN",
+        "CLAIM_FIELD_UNKNOWN",
+        "CLAIM_MISMATCH",
+        "UNDISCLOSED_WINDOW",
+        "LENGTH_LIMIT"
+      ],
+      "title": "NoteCheckCode",
+      "type": "string"
+    },
+    "NoteContent": {
+      "additionalProperties": false,
+      "description": "The output-quality result of a research note: PASS or FAIL, the failed checks, and\nwhich claims (by position in the note's claims list) did not match a released value.",
+      "properties": {
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/NoteCheckCode"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "citations": {
+          "minimum": 0,
+          "title": "Citations",
+          "type": "integer"
+        },
+        "claims": {
+          "minimum": 0,
+          "title": "Claims",
+          "type": "integer"
+        },
+        "claims_matched": {
+          "minimum": 0,
+          "title": "Claims Matched",
+          "type": "integer"
+        },
+        "failed_claims": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 200,
+          "title": "Failed Claims",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "note",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "checks",
+        "citations",
+        "claims",
+        "claims_matched",
+        "failed_claims"
+      ],
+      "title": "NoteContent",
+      "type": "object"
+    },
     "ReasonCode": {
       "enum": [
         "SCHEMA_INVALID",
@@ -416,6 +488,7 @@
               "decision": "#/$defs/DecisionContent",
               "intake": "#/$defs/IntakeContent",
               "library": "#/$defs/LibraryContent",
+              "note": "#/$defs/NoteContent",
               "screening": "#/$defs/IntakeContent",
               "sim": "#/$defs/SimulationContent",
               "w1": "#/$defs/W1Content",
@@ -444,6 +517,9 @@
             },
             {
               "$ref": "#/$defs/LibraryContent"
+            },
+            {
+              "$ref": "#/$defs/NoteContent"
             }
           ],
           "title": "Content"

@@ -1,14 +1,15 @@
 """release-worker: the release engine (PLAN Sections 9.1 to 9.4, INV-12).
 
 Every queued decision becomes a released report on the engine's next tick (every second
-by default): research gets intake, screening, W1, W2, advancement, sim, decision and
-library reports as soon as the evaluator records them, and nothing is held back for a
-batch time. Each report is built only from whitelisted fields (the public ReleasedReport
-contract, extra fields forbidden): W1 values are rounded to the policy granularity, W2
-releases PASS or FAIL and the Ladder's family best only when it improved by eta, the
-holdout releases one bit, and diagnostics are enum codes. There is no mapping for any W3
-metric (INV-6, REL-05). Every report is validated against the public schema before it is
-written. Nothing else in the evaluation zone writes released_reports.
+by default): research gets intake, screening, W1, W2, advancement, sim, decision,
+library and research-note reports as soon as the evaluator records them, and nothing is
+held back for a batch time. Each report is built only from whitelisted fields (the
+public ReleasedReport contract, extra fields forbidden): W1 values are rounded to the
+policy granularity, W2 releases PASS or FAIL and the Ladder's family best only when it
+improved by eta, the holdout releases one bit, and diagnostics are enum codes. There is
+no mapping for any W3 metric (INV-6, REL-05). Every report is validated against the
+public schema before it is written. Nothing else in the evaluation zone writes
+released_reports.
 """
 
 import os
@@ -25,6 +26,7 @@ from qfr_core.contracts import (
     DecisionContent,
     IntakeContent,
     LibraryContent,
+    NoteContent,
     ReleasedReport,
     W1Content,
     W2Content,
@@ -89,6 +91,8 @@ class ReleaseEngine:
             content = release_sim(payload["raw"], state.policy.config)
         elif item.report_type == "decision":
             content = DecisionContent.model_validate(payload["content"])
+        elif item.report_type == "note":
+            content = NoteContent.model_validate(payload["content"])
         else:
             content = FactorPlugin(state.protocol.config).release_w1(
                 payload["raw"], state.policy.config

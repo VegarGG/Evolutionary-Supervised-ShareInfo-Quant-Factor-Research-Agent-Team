@@ -24,6 +24,13 @@
     "ladder": {
       "eta": 0.005
     },
+    "note_checks": [
+      "CITATION_UNKNOWN",
+      "CLAIM_FIELD_UNKNOWN",
+      "CLAIM_MISMATCH",
+      "UNDISCLOSED_WINDOW",
+      "LENGTH_LIMIT"
+    ],
     "policy_id": "default",
     "quotas": {
       "deferral_expiry_days": 7,
@@ -86,6 +93,15 @@
         "type"
       ],
       "library": [
+        "status",
+        "type"
+      ],
+      "note": [
+        "checks",
+        "citations",
+        "claims",
+        "claims_matched",
+        "failed_claims",
         "status",
         "type"
       ],
@@ -248,6 +264,11 @@
       "rebalance": "daily",
       "top_k": 50,
       "type": "topk_dropout"
+    },
+    "research_note": {
+      "max_citations": 100,
+      "max_claims": 100,
+      "max_markdown_chars": 20000
     },
     "strategy_bounds": {
       "dropout": [

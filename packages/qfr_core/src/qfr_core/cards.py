@@ -19,6 +19,8 @@ from qfr_core.contracts import (
     DiagnosticFlag,
     IntakeContent,
     LibraryContent,
+    NoteCheckCode,
+    NoteContent,
     ReasonCode,
     SimulationContent,
     W1Content,
@@ -40,9 +42,10 @@ PROTOCOL_FIELDS = (
     # The research workbench computes the same W0 fingerprints as the evaluator.
     "fingerprint",
 )
-# Phase 8 sections, carried when the protocol has them: the qfr-python/1 limits and the
-# richer strategy rules are what research needs to write a valid artifact.
-OPTIONAL_PROTOCOL_FIELDS = ("python", "strategy_rules")
+# Phase 8 sections, carried when the protocol has them: the qfr-python/1 limits, the
+# richer strategy rules and the research-note limits are what research needs to write a
+# valid artifact.
+OPTIONAL_PROTOCOL_FIELDS = ("python", "strategy_rules", "research_note")
 PUBLIC_GATES = ("w1_factor", "w1_strategy", "w2_factor", "w2_strategy")
 # The Thresholdout parameters are public (Section 9.5); its seed is not, or research could
 # compute the noise it adds.
@@ -57,6 +60,7 @@ REPORT_FIELDS: dict[str, list[str]] = {
     "sim": sorted(SimulationContent.model_fields),
     "decision": sorted(DecisionContent.model_fields),
     "library": sorted(LibraryContent.model_fields),
+    "note": sorted(NoteContent.model_fields),
 }
 
 
@@ -83,6 +87,7 @@ def policy_card(policy: dict[str, Any]) -> dict[str, JsonValue]:
     card["report_fields"] = {k: list(v) for k, v in REPORT_FIELDS.items()}
     card["reason_codes"] = [code.value for code in ReasonCode]
     card["diagnostic_flags"] = [flag.value for flag in DiagnosticFlag]
+    card["note_checks"] = [code.value for code in NoteCheckCode]
     return card
 
 

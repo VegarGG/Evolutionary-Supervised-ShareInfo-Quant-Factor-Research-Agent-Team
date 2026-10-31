@@ -323,6 +323,21 @@ class ScriptedModels:
 
     def _analyst(self, text: str, messages: list[ModelMessage], info: AgentInfo) -> Any:
         ids = list(dict.fromkeys(re.findall(rf'"report_id": "({UUID})"', text)))
+        # Each W1 RankIC mean restated as released becomes a claim of the research note.
+        segment = text.split("Released reports:\n", 1)[-1].split("\n\nParent reports:", 1)[0]
+        try:
+            reports = json.loads(segment)
+        except ValueError:
+            reports = []
+        claims = [
+            {
+                "report_id": r["report_id"],
+                "field": "rankic_mean",
+                "value": r["content"]["rankic_mean"],
+            }
+            for r in (reports if isinstance(reports, list) else [])
+            if r.get("content", {}).get("type") == "w1"
+        ]
         return answer(
             info,
             {
@@ -335,6 +350,7 @@ class ScriptedModels:
                     "next_steps": ["Try a neighbouring horizon."],
                     "confidence": "low",
                     "caveats": CAVEATS,
+                    "claims": claims,
                 },
                 "knowledge_items": [
                     {

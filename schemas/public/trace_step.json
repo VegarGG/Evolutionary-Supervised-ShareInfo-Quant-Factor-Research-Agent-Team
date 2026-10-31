@@ -204,6 +204,7 @@
         "NOT_SELECTED",
         "TRACE_CHECKED",
         "PUBLISHED",
+        "NOTE_PUBLISHED",
         "REPORT_RECEIVED",
         "INTERPRETED",
         "INTERPRETATION_CHALLENGED",

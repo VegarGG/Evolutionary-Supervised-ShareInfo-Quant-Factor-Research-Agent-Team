@@ -127,6 +127,22 @@ def test_offline_brief_to_deliverable_through_mcp(full):
     assert setup["steps"]["providers"]["status"] == "ok"
     assert setup["probe_results"]["ok"] is True
 
+    # Generation 2 collected its interpretations into a research note (Phase 8); the
+    # evaluator checks each claim against the released report and releases the result.
+    (note,) = research.db.rows(
+        "SELECT version_id, outcome, payload FROM trace_steps WHERE step_type = 'NOTE_PUBLISHED'"
+    )
+    assert note.outcome == "ok" and note.payload["claims"] >= 1
+    full.settle()
+    full.eval.release.tick()
+    checked = full.eval.db.rows(
+        "SELECT i.state, r.content FROM eval.intake i JOIN eval.released_reports r ON "
+        "r.version_id = i.version_id WHERE i.version_id = :v AND r.report_type = 'note'",
+        v=note.version_id,
+    )
+    assert [(c.state, c.content["status"]) for c in checked] == [("NoteChecked", "PASS")]
+    assert checked[0].content["claims_matched"] == note.payload["claims"]
+
 
 def test_resources_read_the_job_and_deliverable_without_marking_it_fetched(full):
     _, job_id = run_to_deliverable(full)

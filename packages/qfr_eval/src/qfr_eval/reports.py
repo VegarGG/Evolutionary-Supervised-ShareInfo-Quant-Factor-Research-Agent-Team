@@ -4,15 +4,14 @@ on its next tick. Nothing is held back for a later time.
 """
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any
 from uuid import UUID
 
 from qfr_core.config import canonical_json
+from qfr_core.eval_api import ReportType
 from qfr_core.ids import uuid7
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
-
-ReportType = Literal["intake", "screening", "w1", "w2", "advancement", "sim", "decision", "library"]
 
 
 def queue_report(

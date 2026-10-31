@@ -50,6 +50,8 @@ TIERS = {
     "Accepted": "incubated",
     "Monitoring": "incubated",
     "Retired": "incubated",
+    "NoteChecked": "note_passed",
+    "NoteFailed": "note_failed",
 }
 # The highest pool tier (Section 10.4) a version has reached in each evaluation state:
 # the tier a pool entry records when the owner approves it.

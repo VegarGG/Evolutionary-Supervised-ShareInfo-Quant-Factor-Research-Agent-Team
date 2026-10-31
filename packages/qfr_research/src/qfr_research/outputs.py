@@ -116,6 +116,16 @@ class Implication(Output):
     effect: Literal["supported", "weakened"]
 
 
+class ReportClaim(Output):
+    """A number observed restates: the released report and field it comes from."""
+
+    report_id: UUID
+    field: Annotated[
+        str, StringConstraints(pattern=r"^[a-z][a-z0-9_]*(\.[A-Za-z0-9_]+)?$", max_length=64)
+    ] = Field(description="A released content field, or field.key such as decay_profile.5.")
+    value: float = Field(allow_inf_nan=False)
+
+
 class ReportInterpretation(Output):
     report_ids: list[UUID] = Field(min_length=1)
     what_was_tested: Text
@@ -125,6 +135,9 @@ class ReportInterpretation(Output):
     next_steps: list[Text] = Field(max_length=3)
     confidence: Literal["low", "medium", "high"]
     caveats: list[Text] = Field(min_length=1)
+    # Phase 8: the numbers observed states, each tied to its released field. They become
+    # the research note's claims, which the evaluator checks against the reports.
+    claims: list[ReportClaim] = Field(default_factory=list, max_length=12)
 
     @model_validator(mode="after")
     def acknowledges_limits(self) -> Self:

@@ -17,7 +17,13 @@ from uuid import UUID
 from pydantic import JsonValue
 from qfr_core.composite import normalized_weights, strategy_canonical_hash, strategy_diff
 from qfr_core.config import RegistryConfig, canonical_json
-from qfr_core.contracts import FactorManifest, PoolEntry, PythonImplementation, StrategyManifest
+from qfr_core.contracts import (
+    FactorManifest,
+    PoolEntry,
+    PythonImplementation,
+    ResearchNoteManifest,
+    StrategyManifest,
+)
 from qfr_core.correlation import bind
 from qfr_core.dsl import DslLimits, ast_diff, declaration_mismatches, validate
 from qfr_core.dsl.diff import parse_fragment
@@ -52,6 +58,7 @@ from qfr_registry.auth import Role
 from qfr_registry.db import Database
 
 Pool = Literal["factor", "strategy"]
+Published = FactorManifest | StrategyManifest | ResearchNoteManifest
 
 
 class RegistryError(Exception):
@@ -66,7 +73,7 @@ class RegistryError(Exception):
         self.status, self.code, self.message, self.details = status, code, message, list(details)
 
 
-def content_hash(manifest: FactorManifest | StrategyManifest) -> str:
+def content_hash(manifest: Published) -> str:
     """SHA-256 of the canonical JSON manifest; the request holds no server fields."""
     return hashlib.sha256(canonical_json(manifest.model_dump(mode="json")).encode()).hexdigest()
 
@@ -182,10 +189,19 @@ class RegistryService:
 
     # ------------------------------------------------------------------ publication
 
-    def _analyze(
-        self, manifest: FactorManifest | StrategyManifest
-    ) -> tuple[dict[str, JsonValue], str, str]:
+    def _analyze(self, manifest: Published) -> tuple[dict[str, JsonValue], str, str]:
         """Return (analysis, canonical_hash, payload_text); raise 400 on invalid content."""
+        if isinstance(manifest, ResearchNoteManifest):
+            # A note's quality checks need the released reports, which only the
+            # evaluator holds (Section 8.10); the registry records what the note cites.
+            note = manifest.implementation
+            payload = canonical_json(note.model_dump(mode="json"))
+            counts: dict[str, JsonValue] = {
+                "markdown_chars": len(note.markdown),
+                "citations": len(note.cited_report_ids),
+                "claims": len(note.claims),
+            }
+            return counts, hashlib.sha256(payload.encode()).hexdigest(), payload
         if isinstance(manifest, StrategyManifest):
             impl = manifest.implementation
             weights = normalized_weights([c.weight for c in impl.components])
@@ -228,7 +244,7 @@ class RegistryService:
     def _family(
         self,
         conn: Connection,
-        manifest: FactorManifest | StrategyManifest,
+        manifest: Published,
         principal: Role,
         request_id: str,
         now: datetime,
@@ -289,8 +305,10 @@ class RegistryService:
         return manifest.family_id, False
 
     def _parents(
-        self, conn: Connection, manifest: FactorManifest | StrategyManifest, canonical: str
+        self, conn: Connection, manifest: Published, canonical: str
     ) -> list[dict[str, Any]]:
+        if isinstance(manifest, ResearchNoteManifest):
+            return []  # a note cites reports, not versions; it has no lineage
         ids = manifest.provenance.parent_version_ids
         if len(ids) != len(set(ids)):
             raise RegistryError(
@@ -382,6 +400,9 @@ class RegistryService:
             )
         digest = content_hash(manifest)
         analysis, canonical, payload = self._analyze(manifest)
+        operator = (
+            "note" if isinstance(manifest, ResearchNoteManifest) else manifest.provenance.operator
+        )
         now = datetime.now(UTC)
         with self.db.transaction() as conn:
             existing = (
@@ -479,7 +500,7 @@ class RegistryService:
                     "family_created": created_family,
                     "version_no": version_no,
                     "kind": manifest.kind,
-                    "operator": provenance.operator,
+                    "operator": operator,
                     "content_hash": digest,
                     "canonical_hash": canonical,
                     "publish_key": request.publish_key,
@@ -496,7 +517,7 @@ class RegistryService:
                 payload={
                     "kind": manifest.kind,
                     "version_no": version_no,
-                    "operator": provenance.operator,
+                    "operator": operator,
                     "content_hash": digest,
                     "canonical_hash": canonical,
                     "published_seq": record.published_seq,
@@ -661,7 +682,8 @@ class RegistryService:
                     version_no=r["version_no"],
                     kind=r["kind"],
                     name=r["manifest"]["name"],
-                    operator=r["manifest"]["provenance"]["operator"],
+                    # A research note has no operator and no lineage edges.
+                    operator=r["manifest"]["provenance"].get("operator", "note"),
                     canonical_hash=r["canonical_hash"],
                     distance=distance[r["version_id"]],
                 )

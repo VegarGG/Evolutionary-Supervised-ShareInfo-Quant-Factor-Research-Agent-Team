@@ -35,7 +35,7 @@ from zoneinfo import ZoneInfo
 import httpx
 from pydantic import ValidationError
 from qfr_core.config import QuotaConfig, RuntimeSettings, canonical_json
-from qfr_core.contracts import ReasonCode
+from qfr_core.contracts import ReasonCode, ResearchNoteManifest
 from qfr_core.correlation import bind, current
 from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
@@ -60,6 +60,7 @@ from qfr_eval.configs import (
     snapshot_calendar,
 )
 from qfr_eval.ingest.config import load_yaml
+from qfr_eval.notes import check_note
 from qfr_eval.plugins import IN_FLIGHT_STATES, StrategyPlugin
 from qfr_eval.registry import RegistryReader, RegistryUnavailable
 from qfr_eval.reports import queue_report
@@ -466,6 +467,9 @@ class Scheduler:
                 )
             ).all()
             for row in rows:
+                if row.kind == "research_note":
+                    self._check_note(conn, row, now, state, report)
+                    continue
                 try:
                     manifest = MANIFEST.validate_python(row.manifest.get("manifest"))
                 except ValidationError:
@@ -499,6 +503,67 @@ class Scheduler:
                 ):
                     continue
                 self._fingerprint_job(conn, row, state, now, report)
+
+    def _check_note(
+        self, conn: Connection, row: Any, now: datetime, state: ActiveState, report: TickReport
+    ) -> None:
+        """A research note gets the output-quality checks only (Section 8.10): the result is
+        released as a note report and the note is done. It is never fingerprinted,
+        deduplicated, screened or measured."""
+        try:
+            manifest = ResearchNoteManifest.model_validate(row.manifest.get("manifest"))
+        except ValidationError:
+            self._decide(
+                conn, row, "IntakeRejected", ReasonCode.SCHEMA_INVALID, now, state, report,
+                status="FAIL",
+            )  # fmt: skip
+            return
+        limits = state.protocol.config.get("research_note")
+        if "research_note" not in state.protocol.config["supported_kinds"] or not limits:
+            self._decide(
+                conn, row, "IntakeRejected", ReasonCode.KIND_UNSUPPORTED, now, state, report,
+                status="FAIL",
+            )  # fmt: skip
+            return
+        result = check_note(conn, manifest, limits)
+        new_state = "NoteChecked" if result.passed else "NoteFailed"
+        job_id = conn.execute(
+            text(
+                "UPDATE eval.intake SET state = :s, decided_at = :at, updated_at = :at "
+                "WHERE version_id = :v RETURNING job_id"
+            ),
+            {"s": new_state, "at": now, "v": row.version_id},
+        ).scalar()
+        queue_report(
+            conn,
+            "note",
+            row.version_id,
+            {
+                "content": result.content.model_dump(mode="json"),
+                "refs": _refs(state, self.env.code_version),
+            },
+            now,
+            current()["request_id"],
+        )
+        record_event(
+            conn, now, PRINCIPAL, "note_checked", "intake", str(row.version_id),
+            current()["request_id"],
+            {"state": new_state, "checks": [c.value for c in result.content.checks],
+             "detail": list(result.detail)},
+        )  # fmt: skip
+        report.count(new_state)
+        with bind(version_id=str(row.version_id), job_id=str(job_id) if job_id else None):
+            self.log.info(
+                "note_checked",
+                outcome="ok",
+                payload={
+                    "version_id": str(row.version_id),
+                    "state": new_state,
+                    "checks": [c.value for c in result.content.checks],
+                    "claims": result.content.claims,
+                    "claims_matched": result.content.claims_matched,
+                },
+            )
 
     def _components_ready(
         self,

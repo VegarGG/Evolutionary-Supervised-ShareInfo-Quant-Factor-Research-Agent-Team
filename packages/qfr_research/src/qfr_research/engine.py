@@ -31,6 +31,7 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
+from qfr_core.contracts import FactorManifest
 from qfr_core.dsl import ast_similarity, canonicalize, parse, validate
 from qfr_core.ids import uuid7
 from qfr_core.metrics.fingerprint import behavioral_similarity
@@ -329,8 +330,9 @@ class EvolutionEngine:
                 record = env.registry.version(UUID(version_id))
             except (ServiceRefused, ServiceUnavailable):
                 continue
-            expression = getattr(record.manifest.implementation, "expression", None)
-            if record.kind != "factor" or not expression:
+            manifest = record.manifest
+            expression = getattr(manifest.implementation, "expression", None)
+            if not isinstance(manifest, FactorManifest) or not expression:
                 continue  # strategies compose factors; the population holds factors
             entry = by_version.get(version_id)
             analysis = validate(expression, env.limits).analysis
@@ -340,7 +342,7 @@ class EvolutionEngine:
                 candidate_id=None,
                 source="pool",
                 expression=expression,
-                sign=int(record.manifest.declared.expected_sign),
+                sign=int(manifest.declared.expected_sign),
                 analysis=analysis.model_dump(mode="json") if analysis else {},
                 status="provisional",
             )

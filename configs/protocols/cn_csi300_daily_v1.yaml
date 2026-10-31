@@ -1,7 +1,7 @@
 protocol_id: cn_csi300_daily
 version: '1'
 epoch_ref: epoch_001
-supported_kinds: [factor, strategy]
+supported_kinds: [factor, strategy, research_note]
 universe: {name: csi300, membership: point_in_time}
 eligibility: {listed_days_min: 60, exclude_suspended: true, cross_section_min: 30}
 label: {decision: close_t, execution: close_t_plus_1, end: close_t_plus_1_plus_h, horizons: [1, 5, 10, 20], primary: 1}
@@ -19,6 +19,9 @@ fingerprint: {dates: 40, window: W0, seed: 20261030}
 # and memory limits apply to each sandbox run; max_lookback_days is the DSL's cap. The
 # window probe recomputes the factor on only its declared lookback before each probe cut.
 python: {max_source_chars: 20000, max_ast_nodes: 2000, window_probe_dates: 5}
+# Research notes (Phase 8) get output-quality checks only: these length limits, cited
+# reports that exist, claims that match released values, and no mention of the holdout.
+research_note: {max_markdown_chars: 20000, max_claims: 100, max_citations: 100}
 dsl: {max_nodes: 30, max_depth: 7, max_fields: 4, max_constants: 3, max_lookback_days: 250, max_corr_cov_nesting: 2, windows: [1, 2, 3, 5, 10, 20, 40, 60, 120, 250]}
 screening: {coverage_min: 0.80, prefix_probe_dates: 5, prefix_tolerance: 1.0e-9, cpu_seconds: 120, memory_gb: 4, degenerate_date_fraction_max: 0.10}
 dedup: {behavioral_similarity_min: 0.95}

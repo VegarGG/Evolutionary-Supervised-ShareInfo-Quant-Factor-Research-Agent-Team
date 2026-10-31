@@ -333,6 +333,75 @@ class StrategyManifest(Contract):
 
 Manifest = Annotated[FactorManifest | StrategyManifest, Field(discriminator="kind")]
 
+# Research notes (Phase 8, PLAN Sections 7.6 and 8.10): Markdown plus structured claims
+# that cite released report ids. A note is checked for output quality only: it is never
+# evaluated on a window and never enters a pool.
+NOTE_MARKDOWN_MAX: Final = 40000
+NOTE_CLAIMS_MAX: Final = 200
+NOTE_CITATIONS_MAX: Final = 200
+# A released content field: a top-level name, or name.key inside a keyed map such as
+# decay_profile.5 or yearly_rankic.2021.
+ClaimField = Annotated[
+    str, StringConstraints(pattern=r"^[a-z][a-z0-9_]*(\.[A-Za-z0-9_]+)?$", max_length=64)
+]
+
+
+class NoteClaim(Contract):
+    """One number the note states, and the released report field it restates."""
+
+    report_id: UUID7
+    field: ClaimField
+    value: FiniteFloat
+
+
+class NoteImplementation(Contract):
+    language: Literal["qfr-note/1"]
+    markdown: Annotated[str, StringConstraints(min_length=1, max_length=NOTE_MARKDOWN_MAX)]
+    cited_report_ids: list[UUID7] = Field(min_length=1, max_length=NOTE_CITATIONS_MAX)
+    claims: list[NoteClaim] = Field(max_length=NOTE_CLAIMS_MAX)
+
+    @model_validator(mode="after")
+    def claims_cite(self) -> Self:
+        if len(set(self.cited_report_ids)) != len(self.cited_report_ids):
+            raise ValueError("cited report ids must be distinct")
+        cited = set(self.cited_report_ids)
+        if any(claim.report_id not in cited for claim in self.claims):
+            raise ValueError("every claim's report must be among the cited reports")
+        return self
+
+
+class NoteProvenance(Contract):
+    """Notes come from research jobs only: no setup import, no operator, no parents. The
+    agent runs are the analyst runs whose interpretations the note collects."""
+
+    job_id: UUID7
+    program_id: UUID7
+    generation_id: UUID7
+    agent_runs: list[AgentRunRef]
+    trace_ref: UUID7
+    qfr_core_version: Annotated[str, StringConstraints(pattern=r"^\d+\.\d+\.\d+$")]
+
+    @property
+    def is_setup_import(self) -> bool:
+        return False
+
+
+class ResearchNoteManifest(Contract):
+    schema_version: Literal["1"]
+    kind: Literal["research_note"]
+    family_id: UUID7 | None
+    name: Slug
+    title: ShortText
+    implementation: NoteImplementation
+    provenance: NoteProvenance
+
+
+# Everything the registry publishes. Evaluation plugins take Manifest; a research note
+# has only the output-quality checks.
+AnyManifest = Annotated[
+    FactorManifest | StrategyManifest | ResearchNoteManifest, Field(discriminator="kind")
+]
+
 
 class EvidenceRef(Contract):
     version_id: UUID7
@@ -421,6 +490,29 @@ class LibraryContent(Contract):
     status: Literal["seed", "active", "retired"]
 
 
+class NoteCheckCode(StrEnum):
+    """Why a research note failed its output-quality checks (Section 8.10)."""
+
+    CITATION_UNKNOWN = "CITATION_UNKNOWN"
+    CLAIM_FIELD_UNKNOWN = "CLAIM_FIELD_UNKNOWN"
+    CLAIM_MISMATCH = "CLAIM_MISMATCH"
+    UNDISCLOSED_WINDOW = "UNDISCLOSED_WINDOW"
+    LENGTH_LIMIT = "LENGTH_LIMIT"
+
+
+class NoteContent(Contract):
+    """The output-quality result of a research note: PASS or FAIL, the failed checks, and
+    which claims (by position in the note's claims list) did not match a released value."""
+
+    type: Literal["note"]
+    status: Literal["PASS", "FAIL"]
+    checks: list[NoteCheckCode]
+    citations: int = Field(ge=0)
+    claims: int = Field(ge=0)
+    claims_matched: int = Field(ge=0)
+    failed_claims: list[int] = Field(max_length=NOTE_CLAIMS_MAX)
+
+
 ReleasedContent = Annotated[
     IntakeContent
     | W1Content
@@ -428,7 +520,8 @@ ReleasedContent = Annotated[
     | AdvancementContent
     | SimulationContent
     | DecisionContent
-    | LibraryContent,
+    | LibraryContent
+    | NoteContent,
     Field(discriminator="type"),
 ]
 
@@ -557,6 +650,7 @@ class TraceStep(Contract):
         "NOT_SELECTED",
         "TRACE_CHECKED",
         "PUBLISHED",
+        "NOTE_PUBLISHED",
         "REPORT_RECEIVED",
         "INTERPRETED",
         "INTERPRETATION_CHALLENGED",
@@ -964,6 +1058,7 @@ class ExportBundle(Contract):
 PUBLIC_CONTRACTS: dict[str, type[Contract]] = {
     "factor_manifest": FactorManifest,
     "strategy_manifest": StrategyManifest,
+    "research_note_manifest": ResearchNoteManifest,
     "released_report": ReleasedReport,
     "research_brief": ResearchBrief,
     "deliverable": Deliverable,

@@ -156,12 +156,22 @@ class StrategyRulesConfig(BaseModel):
         return self
 
 
+class ResearchNoteConfig(BaseModel):
+    """The protocol's length limits for research notes (Phase 8, Section 8.10), within
+    the schema's outer bounds."""
+
+    model_config = ConfigDict(extra="forbid")
+    max_markdown_chars: int = Field(ge=1, le=40000)
+    max_claims: int = Field(ge=0, le=200)
+    max_citations: int = Field(ge=1, le=200)
+
+
 class ProtocolConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     protocol_id: str
     version: str
     epoch_ref: str
-    supported_kinds: list[Literal["factor", "strategy"]]
+    supported_kinds: list[Literal["factor", "strategy", "research_note"]]
     universe: dict[str, JsonValue]
     eligibility: dict[str, JsonValue]
     label: dict[str, JsonValue]
@@ -181,11 +191,16 @@ class ProtocolConfig(BaseModel):
     # then refused as an unsupported kind, and strategies keep the v1 rules.
     python: dict[str, JsonValue] | None = None
     strategy_rules: dict[str, JsonValue] | None = None
+    research_note: dict[str, JsonValue] | None = None
 
     @model_validator(mode="after")
     def rules_shape(self) -> Self:
         if self.strategy_rules is not None:
             StrategyRulesConfig.model_validate(self.strategy_rules)
+        if ("research_note" in self.supported_kinds) != (self.research_note is not None):
+            raise ValueError("research_note is a supported kind exactly when it has limits")
+        if self.research_note is not None:
+            ResearchNoteConfig.model_validate(self.research_note)
         return self
 
 
