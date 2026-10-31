@@ -1,7 +1,8 @@
 """release-worker: the release engine (PLAN Sections 9.1 to 9.4, INV-12).
 
-Queued decisions become released reports at their batch time: intake, screening and W1
-reports at the next 6-hour W1 batch, library changes immediately. Each report is built
+Every queued decision becomes a released report on the engine's next tick (every second
+by default): research gets intake, screening, W1 and library reports as soon as the
+evaluator records them, and nothing is held back for a batch time. Each report is built
 only from whitelisted fields (the public ReleasedReport contract, extra fields forbidden),
 W1 values are rounded to the policy granularity, diagnostics are enum codes, and every
 report is validated against the public schema before it is written. Nothing else in the

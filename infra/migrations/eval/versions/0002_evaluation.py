@@ -389,7 +389,7 @@ def upgrade():
         PRIMARY KEY (epoch_id, window_name)
     )""")
 
-    # Release (Section 9.2): queued at record time, released at the batch time.
+    # Release (Section 9.2): queued at record time and released on the next engine tick.
     op.execute("""CREATE TABLE eval.release_queue (
         queue_id uuid PRIMARY KEY,
         report_type text NOT NULL

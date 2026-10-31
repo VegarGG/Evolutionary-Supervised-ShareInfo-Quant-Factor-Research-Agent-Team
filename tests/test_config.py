@@ -25,7 +25,7 @@ def test_secrets_are_environment_only_and_repr_is_hidden(monkeypatch):
 
 
 def test_authoritative_release_and_provider_defaults():
-    assert load_config("policy", Path("configs")).values["batching"]["w1_hours"] == 6
+    assert load_config("policy", Path("configs")).values["release_timing"] == "immediate"
     providers = load_config("providers", Path("configs")).values["providers"]
     assert set(providers) == {"deepseek", "kimi", "glm"}
     assert providers["deepseek"]["models"]["deepseek-flash"]["thinking"] == "off"

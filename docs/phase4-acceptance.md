@@ -13,7 +13,7 @@ No test reaches a provider: every model answer is scripted, and the test session
 
 | Check (plan) | Result | Evidence |
 |---|---|---|
-| Offline end to end: a brief submitted through MCP produces a job and a generation with hypotheses, candidates, reviews and at most 12 publications; reports sync back; interpretations are written; a w1_pass deliverable with an iteration history and owner-grade evidence is fetched through `qfr.deliverable.get` | Pass | `tests/research/test_research_e2e.py::test_offline_brief_to_deliverable_through_mcp`: `qfr.job.submit` → generation 1 (plan, hypothesis, two candidates, reviews, 1 to 12 publications) → the evaluator screens and runs W1 → release at the batch → generation 2 syncs the reports and writes interpretations → the monitor reads w1_pass → `qfr.deliverable.get` returns `deliverable/1` with the manifest, `iteration_history/1`, released reports, caveats, costs, owner-only evidence and the evaluator's tier confirmation; the job becomes DELIVERED |
+| Offline end to end: a brief submitted through MCP produces a job and a generation with hypotheses, candidates, reviews and at most 12 publications; reports sync back; interpretations are written; a w1_pass deliverable with an iteration history and owner-grade evidence is fetched through `qfr.deliverable.get` | Pass | `tests/research/test_research_e2e.py::test_offline_brief_to_deliverable_through_mcp`: `qfr.job.submit` → generation 1 (plan, hypothesis, two candidates, reviews, 1 to 12 publications) → the evaluator screens and runs W1 and releases the reports at once → generation 2 starts because generation 1's feedback is complete, syncs the reports and writes interpretations → the monitor reads w1_pass → `qfr.deliverable.get` returns `deliverable/1` with the manifest, `iteration_history/1`, released reports, caveats, costs, owner-only evidence and the evaluator's tier confirmation; the job becomes DELIVERED |
 | BND-02: the research tool registry matches its snapshot; no tool can affect evaluation, pools or jobs | Pass | `tests/research/test_boundaries.py::test_bnd_02_research_tool_registry_snapshot` (tool → roles snapshot, namespaces, only read, search, validate, explain and evaluate tools reach a model; `registry.publish` is the packager's alone) |
 | BND-05: research holds no evaluation-admin or control access | Pass | `test_boundaries.py::test_bnd_05_research_configuration_holds_no_evaluation_or_control_access` (configs and Compose environments), `::test_bnd_05_research_code_reaches_only_the_registry_and_feedback_api` (no evaluation or control names or URLs in the code, no `qfr_eval` or `qfr_mcp` import) |
 | MCP-01: every MCP call is audited and its request id reaches the backend's log | Pass | `test_research_e2e.py::test_log_03_and_mcp_01_one_job_id_joins_every_service` |
@@ -56,10 +56,10 @@ Nothing is preloaded: no factors, strategies, seeds, sample briefs or prices.
   schema and public-card generation (no diff after regeneration) and the license check
   pass.
 - `pytest -n 4` against PostgreSQL 16 with the Phase 0 roles and all migrations
-  (`QFR_REQUIRE_DB_TESTS=1`): **1055 passed, 0 skipped** in about three and a half
-  minutes; Phase 4 adds 68 tests. research_db, registry_db and eval_db are empty after
+  (`QFR_REQUIRE_DB_TESTS=1`), merged with the Phase 3 branch's immediate release (plan
+  v2.2): **1059 passed, 0 skipped** in about two minutes; Phase 4 adds 75 tests. research_db, registry_db and eval_db are empty after
   the run (control_db keeps the audit row the Phase 0 boundary test writes on purpose).
-- Two Phase 3 tests depended on the release order of reports due in the same batch
+- Two Phase 3 tests depended on the release order of reports due at the same time
   (about one run in four failed). The fix, ties broken by queue id and the
   library-vacuity check on the first W1 record, is part of the Phase 3 branch (Phase 3
   decision 16). Both tests pass repeatedly.

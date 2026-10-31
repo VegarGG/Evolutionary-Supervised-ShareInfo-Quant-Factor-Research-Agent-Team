@@ -60,7 +60,10 @@ def register(server: FastMCP, deps: JobToolDeps, pool_page: PoolPage) -> None:
     @server.resource(
         "qfr://cards/policy",
         name="policy-card",
-        description="The active public release-policy card (batching, rounding, coarsening).",
+        description=(
+            "The active public release-policy card (release timing, rounding, coarsening). "
+            "Reports are released as soon as the evaluator records them."
+        ),
         mime_type=JSON,
     )
     async def policy_card() -> str:

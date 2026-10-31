@@ -15,7 +15,8 @@ research and the evaluator does the measurement.
 ## Before you write
 1. Call qfr.status. If setup is incomplete, follow qfr.setup.status first.
 2. Read qfr://cards/protocol and qfr://cards/policy: the fields, operators, horizons,
-   gates and the release cadence you must respect.
+   gates and the release policy. Reports are released as soon as the evaluator records
+   them.
 3. Read qfr://pools/factors and qfr://pools/strategies. Tell the owner what exists. QFR
    ships no default factors or strategies; an empty pool is a normal start.
 4. Read qfr://schemas/brief for the exact schema.
@@ -42,9 +43,9 @@ research and the evaluator does the measurement.
 - constraints: fields_allowed, operators_allowed, max_nodes, max_lookback_days. They can
   only narrow the protocol card's limits, never widen them.
 - deliverable: choose the tier with the owner and say the timeline out loud.
-  w1_pass is fast and weak evidence (first W1 reports at the next release batch after a
-  publication; a deliverable within a day or two). w2_pass takes at least one to two
-  weeks, advanced at least three weeks, incubated about a quarter. min_count is how many
+  w1_pass is fast and weak evidence (first W1 reports within minutes of a publication;
+  a first deliverable typically within a day). w2_pass typically takes a few days,
+  advanced about a week, incubated about a quarter. min_count is how many
   items the owner wants; max_candidates caps how many items a deliverable may hold.
 - budget: max_cost in CNY, max_generations and max_wall_clock_days, as the owner agreed.
   Read the charter defaults with qfr.config.get and propose them; the owner decides.

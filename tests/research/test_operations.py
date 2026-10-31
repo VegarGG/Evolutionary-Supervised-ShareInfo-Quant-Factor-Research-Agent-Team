@@ -8,11 +8,14 @@ import asyncio
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from qfr_core.contracts import ResearchBrief
+from qfr_core.eval_api import ReportPage
 from qfr_research import queue
 from qfr_research.jobs import JobService
+from qfr_research.monitor import answered
 from qfr_research.probe import run_probe
 from qfr_research.settings import ResearchConfig
 from qfr_research.worker import Worker
@@ -117,28 +120,85 @@ def test_the_generation_cap_waits_for_evaluation_then_the_deadline_closes_best_e
     assert len(items) <= brief()["deliverable"]["max_candidates"]
 
 
+# The cadence -----------------------------------------------------------------------------
+
+
+def report(kind, status=None):
+    """The two fields of a released report the cadence reads."""
+    return SimpleNamespace(content=SimpleNamespace(type=kind, status=status))
+
+
 @pytest.mark.parametrize(
-    ("now", "due"),
+    ("reports", "done"),
     [
-        # Six hours later, then the first W1 batch (every 6 h from 00:00 UTC) at or after
-        # that moment less the margin, plus the 300 s margin.
-        ("2026-01-05T01:00", "2026-01-05T12:05"),
-        ("2026-01-05T06:00", "2026-01-05T12:05"),
-        ("2026-01-05T06:06", "2026-01-05T18:05"),
-        ("2026-01-05T23:00", "2026-01-06T06:05"),
+        ([], False),
+        ([report("intake", "PASS")], False),
+        ([report("intake", "PASS"), report("screening", "PASS")], False),
+        ([report("intake", "PASS"), report("screening", "PASS"), report("w1")], True),
+        ([report("intake", "PASS"), report("screening", "FAIL")], True),
+        ([report("intake", "FAIL")], True),
+        ([report("intake", "DUPLICATE")], True),
+        ([report("intake", "DEFERRED")], True),  # a quota deferral counts as an answer
     ],
 )
-def test_the_next_generation_starts_after_the_next_w1_batch(research, now, due):
+def test_a_version_is_answered_by_a_refusal_a_deferral_a_failed_screening_or_w1(reports, done):
+    assert answered(reports) is done
+
+
+def test_the_next_generation_is_due_at_once_or_after_the_max_wait(research):
     monitor = research.worker.monitor
-    _, policy, ref = monitor.cards()
-    assert ref == "bundled" and policy["batching"]["w1_hours"] == 6
-    charter = {"cadence": {"hours": 6, "after_w1_batch": True}}
-    at = datetime.fromisoformat(now).replace(tzinfo=UTC)
-    assert monitor.next_start(charter, policy, at) == datetime.fromisoformat(due).replace(
-        tzinfo=UTC
-    )
-    plain = {"cadence": {"hours": 6, "after_w1_batch": False}}
-    assert monitor.next_start(plain, policy, at) == at + timedelta(hours=6)
+    at = datetime(2026, 1, 5, 1, tzinfo=UTC)
+    charter = {"cadence": {"after_feedback_complete": True, "max_wait_hours": 6}}
+    assert monitor.next_start(charter, at, waiting=0, failed=False) == at
+    assert monitor.next_start(charter, at, waiting=3, failed=False) == at + timedelta(hours=6)
+    # A failed generation always waits the full time, even with nothing published.
+    assert monitor.next_start(charter, at, waiting=0, failed=True) == at + timedelta(hours=6)
+
+
+def test_the_next_generation_starts_once_the_feedback_is_complete(research, monkeypatch):
+    job_id = submit(research)
+    # No seeds: the first generation is due at once.
+    assert job(research, job_id).next_generation_at == research.clock.now()
+    assert research.tick()["ran"][0]["state"] == "CLOSED"
+    published = [
+        r.version_id for r in research.db.rows("SELECT version_id FROM candidate_versions")
+    ]
+    assert published
+    row = job(research, job_id)
+    assert row.next_generation_at == research.clock.now() + timedelta(hours=6)
+    scheduled = [e.payload for e in events(research, job_id) if e.kind == "generation_scheduled"]
+    assert scheduled[-1]["awaiting_versions"] == len(published)
+
+    # Nothing is answered yet, then all but one version: no generation starts.
+    answers: dict = {}
+    feedback = research.worker.monitor.env.feedback
+
+    def reports(**params):
+        if "version_id" in params:
+            return SimpleNamespace(items=answers.get(params["version_id"], []))
+        return ReportPage(items=[], next_after_id=None)
+
+    monkeypatch.setattr(feedback, "reports", reports)
+    assert research.tick()["generations_started"] == []
+    w1 = [report("intake", "PASS"), report("screening", "PASS"), report("w1")]
+    answers.update({version_id: w1 for version_id in published[:-1]})
+    assert research.tick()["generations_started"] == []
+
+    # The last version's answer completes the feedback: generation 2 starts before the
+    # max wait is over.
+    answers[published[-1]] = [report("intake", "DEFERRED")]
+    assert len(research.tick()["generations_started"]) == 1
+    assert research.clock.now() < row.next_generation_at
+
+
+def test_without_feedback_the_next_generation_starts_after_the_max_wait(research):
+    job_id = submit(research)
+    research.tick()
+    due = job(research, job_id).next_generation_at
+    research.clock.at = due - timedelta(seconds=1)
+    assert research.tick()["generations_started"] == []
+    research.clock.at = due
+    assert len(research.tick()["generations_started"]) == 1
 
 
 # The queue -------------------------------------------------------------------------------

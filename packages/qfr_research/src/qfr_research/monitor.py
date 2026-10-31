@@ -3,7 +3,8 @@
 Deterministic code only. The monitor reads each published version's released reports
 from report_cache, decides which tier research can read from them, assembles a
 deliverable when the brief's criteria are met, applies the stop conditions (generation
-cap, cost cap, wall clock) and schedules the next generation on the charter's cadence.
+cap, cost cap, wall clock) and schedules the next generation on the charter's cadence:
+as soon as the previous generation's feedback is complete, or after `max_wait_hours`.
 
 Research reads the tier from released values with the public gates of the active
 protocol card. Released values are rounded and bucketed, so this reading can differ from
@@ -11,7 +12,6 @@ the evaluator's official decision near a threshold; the front door confirms ever
 against the evaluator's official state when it serves the deliverable (Section 13.4).
 """
 
-import math
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -169,13 +169,46 @@ def read_tier(
     return Reading(version_id, candidate_id, kind, tier, failed, score, w0_score, checks)
 
 
-def next_batch(at: datetime, hours: float) -> datetime:
-    """The first release batch boundary at or after `at` (boundaries every `hours` from
-    00:00 UTC, as the evaluator's release policy defines them)."""
-    period = hours * 3600.0
-    day = datetime(at.year, at.month, at.day, tzinfo=UTC)
-    elapsed = (at.astimezone(UTC) - day).total_seconds()
-    return day + timedelta(seconds=math.ceil(elapsed / period) * period)
+def answered(reports: list[ReleasedReport]) -> bool:
+    """Whether the evaluator has answered one published version: its intake was refused
+    or deferred (a quota deferral counts as an answer), its screening failed, or its W1
+    report is out. Research can then learn everything the next generation needs."""
+    latest: dict[str, Any] = {report.content.type: report.content for report in reports}
+    intake = latest.get("intake")
+    if intake is None:
+        return False
+    if intake.status != "PASS":
+        return True
+    screening = latest.get("screening")
+    if screening is not None and screening.status != "PASS":
+        return True
+    return "w1" in latest
+
+
+def generation_versions(conn: Connection, generation_id: UUID) -> list[UUID]:
+    """The versions one generation published, in publication order. For the seed
+    generation (seq 0) these are the job's seed versions, published or referenced."""
+    row = conn.execute(
+        text(
+            "SELECT g.seq, j.seed_version_ids FROM generations g JOIN programs p ON "
+            "p.program_id = g.program_id JOIN research_jobs j ON j.job_id = p.job_id "
+            "WHERE g.generation_id = :g"
+        ),
+        {"g": generation_id},
+    ).one()
+    if row.seq == 0:
+        return [UUID(str(v)) for v in row.seed_version_ids or []]
+    return [
+        r.version_id
+        for r in conn.execute(
+            text(
+                "SELECT v.version_id FROM candidate_versions v JOIN candidates c ON "
+                "c.candidate_id = v.candidate_id WHERE c.generation_id = :g "
+                "ORDER BY v.published_at, v.version_id"
+            ),
+            {"g": generation_id},
+        ).all()
+    ]
 
 
 def next_utc_day(at: datetime) -> datetime:
@@ -382,8 +415,15 @@ class JobMonitor:
                     {"j": job_id},
                 )
                 return
-            _, policy, _ = self.cards()
-            at = self.next_start(job.charter or {}, policy, now)
+            failed: bool = (
+                conn.execute(
+                    text("SELECT state FROM generations WHERE generation_id = :g"),
+                    {"g": generation_id},
+                ).scalar_one()
+                == "FAILED"
+            )
+            waiting = len(generation_versions(conn, generation_id))
+            at = self.next_start(job.charter or {}, now, waiting=waiting, failed=failed)
             conn.execute(
                 text(
                     "UPDATE research_jobs SET next_generation_at = :at, updated_at = :now "
@@ -396,19 +436,20 @@ class JobMonitor:
                 env.clock,
                 job_id,
                 "generation_scheduled",
-                {"at": at.isoformat(), "generations_run": run},
+                {"at": at.isoformat(), "generations_run": run, "awaiting_versions": waiting},
             )
 
     def next_start(
-        self, charter: dict[str, Any], policy: dict[str, Any], now: datetime
+        self, charter: dict[str, Any], now: datetime, *, waiting: int, failed: bool
     ) -> datetime:
+        """When the next generation is due at the latest. With nothing to wait for it is
+        due now; otherwise after `max_wait_hours`, and earlier once the feedback is
+        complete (see `_feedback_complete`). A failed generation always waits the full
+        time, so a provider outage cannot spend the generation cap in minutes."""
         cadence = charter.get("cadence") or self.env.charter_defaults["cadence"]
-        at = now + timedelta(hours=float(cadence["hours"]))
-        if cadence.get("after_w1_batch"):
-            hours = float(policy["batching"]["w1_hours"])
-            margin = timedelta(seconds=self.env.config.service.worker.after_batch_margin_seconds)
-            at = next_batch(at - margin, hours) + margin
-        return at
+        if waiting == 0 and not failed:
+            return now
+        return now + timedelta(hours=float(cadence["max_wait_hours"]))
 
     def start_generation(self, conn: Connection, job: Any) -> UUID:
         env, now = self.env, self.env.clock.now()
@@ -511,7 +552,7 @@ class JobMonitor:
             return
         if job.daily_wait_until is not None and now < job.daily_wait_until:
             return
-        due = job.next_generation_at <= now or self._report_trigger(job)
+        due = job.next_generation_at <= now or self._feedback_complete(job)
         if not due:
             return
         with env.db.transaction(lock=True) as conn:
@@ -548,23 +589,36 @@ class JobMonitor:
                 return
             result.started.append(self.start_generation(conn, job))
 
-    def _report_trigger(self, job: Any) -> bool:
-        """At least new_reports_trigger released reports since the program's cursor."""
+    def _feedback_complete(self, job: Any) -> bool:
+        """Whether every version the previous generation published (the seeds, for the
+        first generation) has been answered. The released reports are read from
+        feedback-api by version without moving the program's sync cursor, so the next
+        generation's sync still sees and interprets them as new."""
         env = self.env
         cadence = (job.charter or {}).get("cadence") or env.charter_defaults["cadence"]
-        trigger = int(cadence.get("new_reports_trigger") or 0)
-        if env.feedback is None or trigger <= 0:
+        if env.feedback is None or not cadence.get("after_feedback_complete"):
             return False
         with env.db.read() as conn:
-            cursor = conn.execute(
-                text("SELECT last_report_id FROM feedback_cursor WHERE program_id = :p"),
+            last = conn.execute(
+                text(
+                    "SELECT generation_id, state FROM generations WHERE program_id = :p "
+                    "AND state IN ('CLOSED', 'FAILED') ORDER BY seq DESC LIMIT 1"
+                ),
                 {"p": job.program_id},
-            ).scalar()
-        try:
-            page = env.feedback.reports(program_id=job.program_id, after_id=cursor, limit=trigger)
-        except (ServiceUnavailable, ServiceRefused):
-            return False
-        return len(page.items) >= trigger
+            ).first()
+            if last is None or last.state == "FAILED":
+                return False
+            versions = generation_versions(conn, last.generation_id)
+        limit = env.config.service.feedback.page_limit
+        for version_id in versions:
+            # Stop at the first version still waiting: one request per tick while waiting.
+            try:
+                page = env.feedback.reports(version_id=version_id, limit=limit)
+            except (ServiceUnavailable, ServiceRefused):
+                return False
+            if not answered(page.items):
+                return False
+        return True
 
     def _maybe_finish(self, job_id: UUID, result: TickResult) -> None:
         """A stopped job with nothing pending and nothing at the tier closes best effort."""
