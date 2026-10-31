@@ -1,0 +1,15 @@
+# China A-share daily data from chenditc/investment_data releases (PLAN 6.1, 6.2).
+# The archive is verified against the release manifest (SHA-256) before extraction.
+source: investment_data
+version: '1'
+release_url: https://github.com/chenditc/investment_data/releases/download/{tag}
+archive_name: qlib_bin.tar.gz
+manifest_name: qlib_bin.manifest.json
+# The panel holds every name that was in one of these universes at any date.
+universes: [csi300, csi500]
+benchmark_symbol: SH000300
+required_fields: [open, high, low, close, volume, amount, factor]
+optional_fields: [vwap, change]
+max_archive_bytes: 8000000000
+max_extracted_bytes: 40000000000
+download_timeout_seconds: 120

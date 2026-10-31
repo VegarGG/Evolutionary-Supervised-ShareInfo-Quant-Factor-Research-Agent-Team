@@ -58,6 +58,11 @@
       "exclude_suspended": true,
       "listed_days_min": 60
     },
+    "fingerprint": {
+      "dates": 40,
+      "seed": 20261030,
+      "window": "W0"
+    },
     "gates": {
       "w1_factor": {
         "ir_min": 0.12,

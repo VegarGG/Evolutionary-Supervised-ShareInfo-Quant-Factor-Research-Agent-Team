@@ -1,4 +1,4 @@
-"""Build-time, whitelist-only configuration previews. Nothing is activated by Phase 0."""
+"""Build-time, whitelist-only public protocol and policy cards. Nothing is activated here."""
 
 import json
 from pathlib import Path
@@ -22,6 +22,8 @@ public = {
         "reference_strategy",
         "strategy_bounds",
         "dsl",
+        # The research workbench computes the same W0 fingerprints as the evaluator.
+        "fingerprint",
     )
 }
 public["gates"] = {

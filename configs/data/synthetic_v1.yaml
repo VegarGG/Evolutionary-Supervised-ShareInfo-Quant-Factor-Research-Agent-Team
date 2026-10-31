@@ -1,0 +1,48 @@
+# Synthetic market generator (PLAN 6.6). Evaluation side only: the planted signals below
+# are test infrastructure for benchmarks, never a default factor set.
+generator: qfr-synthetic/1
+version: '1'
+epoch: synthetic_001
+seed: 20100104
+calibration_seed: 20100105
+start: '2010-01-04'
+instruments: 300
+trading_days: 2600
+industries: 10
+market_mean: 0.0003
+market_sd: 0.012
+industry_sd: 0.006
+beta: [0.6, 1.4]
+idio_df: 5
+idio_vol: [0.015, 0.035]
+volume_ar: 0.8
+volume_sd: 0.3
+volume_abs_return_corr: 0.5
+log_volume_mean: [13.0, 16.0]
+initial_price: [8.0, 60.0]
+universe: {name: csi300, size: 240, annual_churn: 0.05}
+late_listing_share: 0.10
+delistings: 6
+# Spells of 1 to 3 days starting with this daily probability: about 0.5% of days.
+suspension_start_prob: 0.0025
+suspension_max_days: 3
+price_limit: 0.10
+dividend_prob_per_year: 0.30
+dividend_ratio: [1.005, 1.04]
+split_prob_per_year: 0.02
+split_ratios: [1.5, 2.0]
+calibration: {tolerance: 0.001, max_rounds: 3, max_iterations: 14, alpha_max: 0.01}
+signals:
+  A1:
+    expression: '-Pct($close,5)'
+    target_rankic: 0.035
+    worlds: [planted, decay]
+  A2:
+    expression: 'Clip(Sign($ret)*($volume/Mean($volume,20)-1),-3,3)'
+    target_rankic: 0.025
+    worlds: [planted, decay]
+  A3:
+    expression: '-Std($ret,20)'
+    target_rankic: 0.03
+    worlds: [decay]
+    switch_off: w2_midpoint

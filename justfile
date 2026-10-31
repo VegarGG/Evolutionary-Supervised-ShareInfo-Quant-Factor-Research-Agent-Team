@@ -36,6 +36,9 @@ setup:
 doctor:
     uv run --locked python scripts/doctor.py
 
+data-build *args:
+    docker compose --env-file .env -f infra/docker-compose.yml run --rm data-ingest qfr data build {{args}}
+
 logs *args:
     docker compose --env-file .env -f infra/docker-compose.yml exec -T qfr-mcp qfr logs {{args}}
 

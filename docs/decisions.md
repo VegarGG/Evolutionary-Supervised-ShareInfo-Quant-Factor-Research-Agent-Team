@@ -126,3 +126,119 @@ No stronger configuration or owner acceptance is claimed.
 Implementation references: [official MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk),
 [Compose services](https://docs.docker.com/reference/compose-file/services/),
 [uv workspaces](https://docs.astral.sh/uv/concepts/projects/workspaces/).
+
+# Phase 1 decisions
+
+Phase 1 implements P1.1 to P1.11 only. No factor, strategy, pool entry, research job
+or evaluator run exists, and nothing from Phase 2 onward is started.
+
+1. **One implementation of every measurement.** Metrics, fingerprints, PSR, DSR, PBO,
+   the reference backtester and the composite live in `qfr_core`. P1.11 asks the
+   workbench to use exactly the evaluator's definitions, and Section 5.3 lets both
+   zones import core, so a single implementation is the only way to guarantee it.
+   The import contracts are unchanged. Tests compare the research workbench with the
+   evaluator's path on the full snapshot restricted to W0: the numbers agree to a
+   relative 1e-12, the only difference being summation order across a different
+   number of instrument columns.
+2. **Panel conventions.** Rows are dense from each instrument's first to its last
+   observation. A day is suspended when it has no row, no close or zero volume;
+   market fields are null on suspended rows and the adjustment factor is carried
+   forward. `ret_1d` is measured against the last traded adjusted close.
+   `listed_days` counts the instrument's earlier panel rows. `adv20` is the 20-row
+   mean of amount with the DSL validity rule (16 valid values).
+3. **Limit flags.** The reference price is the last traded adjusted close divided by
+   today's factor, which is the exchange's ex-rights reference. Limit prices are
+   rounded half-up to the 0.01 tick and compared with half a tick of tolerance.
+   STAR (SH688, SH689) is 20%; ChiNext (SZ300, SZ301) is 20% from 2020-08-24 and 10%
+   before; other names are 10%. The release has no ST flag, so the 5% ST limit cannot
+   be applied and ST names are treated as main board. Every manifest records this.
+4. **CN panel scope.** The panel holds every name that was in a configured universe
+   (csi300, csi500) at any date, over its whole listed history, with point-in-time
+   membership flags. The benchmark is the SH000300 close when the release has it,
+   otherwise the equal-weight csi300 return.
+5. **Release checksum.** This sandbox cannot reach GitHub release downloads, so the
+   investment_data manifest format was not inspected. The reader accepts the common
+   shapes (a top-level hash, a name-to-hash map, a list of name and hash entries,
+   nested assets) and fails closed otherwise, in which case the owner passes
+   `--sha256`. Verification always precedes extraction. Extraction refuses path
+   traversal, links, special files and archives over the configured size caps.
+6. **Snapshot identity.** The snapshot id is the SHA-256 of the canonical manifest,
+   which lists the SHA-256 of every file. Beyond Section 6.3's fields the manifest
+   records `files`, `checks`, `research_window` and `parent_snapshot_id`. Parquet
+   bytes depend on the Polars writer, so ids are reproducible under one `uv.lock`
+   (tested by rebuilding) but not across Polars upgrades. Readers verify every file
+   hash and the id before use.
+7. **Snapshot locations.** The plan's `QFR_FULL_SNAPSHOT_DIR` and
+   `QFR_RESEARCH_SNAPSHOT_DIR` name each zone's directory. Each holds one directory
+   per snapshot id and a `current.json` pointer that is replaced atomically. Outside
+   Compose they default to `data/snapshots/full` and `data/snapshots/research`, the
+   plan's repository layout. The plan gives data-ingest read-write raw storage but
+   lists no volume for it, so a `data_raw` named volume, mounted only into
+   data-ingest and located by the new `QFR_RAW_DIR`, holds downloads and extractions.
+8. **Research zone.** The research snapshot is the full data truncated at the W0 end:
+   panel and calendar rows on or before the cutoff, membership intervals clipped at
+   the cutoff, and no extra files. Its manifest names the generator only, never the
+   synthetic world, seed or ground truth, so research cannot tell planted data from
+   null data. BND-06 is checked on the data itself (the latest panel, calendar and
+   membership dates) by the writer, by `qfr data verify --zone research` and on
+   every workbench open; a test forges a manifest to prove it. Compose tests and
+   doctor check that only data-ingest writes snapshots and that research services
+   mount only the research snapshot, read-only.
+9. **Synthetic timing.** The planted signal of decision day t moves the return from
+   close t+1 to close t+2, which is the one-day label under Section 6.5. Section 6.6's
+   "z-score at t" is therefore aligned with the label rather than the same-day return.
+   Prices follow a latent fair value; traded closes are rounded to the tick and held
+   within the limit of the ex-rights reference, so limit-locked names catch up later.
+   Corporate actions move the factor, not the adjusted path. Suspensions are
+   zero-volume rows. All random numbers are drawn once, and each alpha is calibrated
+   by coordinate bisection on a separate calibration seed against the evaluator's own
+   RankIC. Tests check the generator's signals against the DSL evaluation of the
+   ground-truth expressions to 1e-12.
+10. **A3.** The plan gives A3 no target RankIC. It uses 0.03, recorded in
+    `configs/data/synthetic_v1.yaml`. "Halfway through W2" is W2's middle trading day.
+11. **Synthetic epoch.** epoch_001's dates fall outside the 2,600-weekday synthetic
+    calendar (2010-01-04 to 2019-12-20). `configs/epochs/synthetic_001.yaml` defines
+    W0 to W3 on that calendar with 20-day embargoes, for tests and benchmarks only.
+12. **Details the plan leaves open.** Turnover compares with the previous evaluated
+    date, so the first date has none and long-short net returns start on the second.
+    Quintiles are equal-count with ties broken by ascending instrument id. The
+    Newey–West lag is max(h, floor(4(T/100)^(2/9))). Library correlation is absent,
+    not zero, when the library is empty. In the backtester, holdings without a score
+    rank lowest, blocked sells are retried the next day on top of the dropout sells,
+    blocked buys pass to the next candidate, and the average holding period follows
+    Little's law. In the composite a missing component contributes 0; the composite
+    is missing only when every component is.
+13. **Fingerprint seed in the public card.** Section 8.2 puts the fingerprint seed in
+    the protocol, and Section 7.5 says both zones compute fingerprints with the same
+    code on W0. The public card therefore carries the fingerprint block (40 dates,
+    seed, W0). It reveals nothing after W0. Window dates, holdout rules and acceptance
+    thresholds stay out of the card.
+14. **Defaults stay in configuration.** PBO takes the protocol's `pbo_blocks`; ingest
+    URLs, field lists and size caps live in `configs/data`. The ingest batch size
+    (200 names per panel batch) bounds memory and does not affect any result.
+15. **data-ingest resources.** Measured in this sandbox (4 vCPU) on a CN-sized fake
+    release of 1,800 names over 4,800 days (6.9 million panel rows): a one-pass panel
+    build peaked at 3.4 GB. Building per 200-name batch gives identical data (tested)
+    and peaks at 1.7 GB, or 2.3 GB including both snapshot writes, in 24 seconds. The
+    plan's 1 GB limit for other services cannot hold a CN build, so data-ingest gets
+    4 GB, keeping 1 CPU, in Compose and `configs/deployment.yaml`. Limits are caps,
+    not reservations. Docker Desktop stays at 7.75 GiB as the owner instructed; real
+    use is to be measured on the Mac in Phase 3. The default synthetic build peaks at
+    about 0.7 GB in 42 seconds.
+16. **Findings left for Phase 3.** None of these change the owner's configuration.
+    - epoch_001 embargoes: there are 17 SSE trading days between W0's end
+      (2019-12-31) and W1's start (2020-02-04), and 16 between W1's end (2022-12-30)
+      and W2's start (2023-02-01), both because of Spring Festival closures. Both
+      are below `embargo_trading_days: 20`; W2 to W3 has 23. Epoch activation should
+      check embargoes against the real calendar, and the owner decides whether to
+      move the W1 and W2 starts.
+    - A 250-day window operator takes about 13 seconds on a 6 million row panel in
+      this sandbox. With the 120 CPU-second screening limit, expressions that stack
+      several long windows may time out; the Phase 3 benchmark on the Mac settles it.
+    - The eval_db `data_snapshots` table (Section 16.3) arrives with the eval_db
+      domain tables in Phase 3. Phase 1 records snapshots in manifests and pointers.
+    - The first real CN ingest confirms the manifest shape and the raw-price check
+      (at least 99% of raw closes between 0.5 and 5,000 CNY).
+17. **Ignore rule.** Phase 0's `.gitignore` line `data/` also matched
+    `packages/qfr_core/src/qfr_core/data`, `configs/data` and `tests/data`. It is now
+    anchored to the repository root (`/data/`), as the plan's layout intends.

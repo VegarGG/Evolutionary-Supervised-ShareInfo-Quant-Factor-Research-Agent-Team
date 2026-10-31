@@ -1,4 +1,4 @@
-# QFR v2 — Phase 0
+# QFR v2
 
 New, independent implementation of the owner's
 [authoritative plan](docs/QFR-Implementation-Plan-v2.1-EN.html).
@@ -8,9 +8,13 @@ Previous QFR code and PRs are outdated and are not dependencies of this reposito
 This Phase 0 proposal replaces the stale implementation and README while preserving
 their Git history for reference.
 
-Scope: foundation, contracts, logging, database boundaries and five MCP read tools.
-No factors, strategies, research jobs, evaluation runs, provider calls or promotion
-workflows are implemented or preloaded.
+Phase 0 delivered the foundation, contracts, logging, database boundaries and five
+MCP read tools. Phase 1 adds the data layer, the factor DSL and the measurement core:
+dense panels and content-addressed snapshots in a full and a date-truncated research
+zone, synthetic planted, null and decay worlds, CN ingest from investment_data, the
+operator library, metrics, PSR, DSR and PBO, the reference backtester, the strategy
+composite and the W0 research workbench. No factors, strategies, research jobs,
+evaluation runs, provider calls or promotion workflows are implemented or preloaded.
 
 Use Python 3.12, uv, just and Docker Compose v2. Start with `uv sync --locked`,
 `just check`, and `just test`. Run `just init-secrets` once, `just build`, then
@@ -31,7 +35,12 @@ exit cleanly; live downstream tracing is deferred by the owner.
 `just setup`, `just backup` and `just bench` explicitly report their later phases.
 `just mcp-config` prints bearer-bearing client snippets; keep its output private.
 
-Do not proceed to Phase 1 until every Phase 0 acceptance check has passed.
+Phase 1: build snapshots with `uv run --locked qfr data build --source synthetic`
+(written under `data/snapshots/`) or, in Compose, `just data-build --source synthetic`
+or `--source cn --release-tag <tag>`. Check one with `qfr data verify <path> --zone
+research`. Read [the Phase 1 record](docs/phase1-acceptance.md) and the
+[Phase 1 decisions](docs/decisions.md#phase-1-decisions); Phase 2 starts only after
+the owner accepts Phase 1.
 
 ## License and use
 

@@ -1,6 +1,6 @@
 [project]
 name = "qfr-eval"
-version = "0.0.1"
+version = "0.1.0"
 license = "PolyForm-Noncommercial-1.0.0"
 license-files = ["LICENSE", "NOTICE", "ADDITIONAL-PERMISSION.md", "THIRD-PARTY-NOTICES.md"]
 requires-python = ">=3.12,<3.13"
@@ -12,3 +12,6 @@ build-backend = "hatchling.build"
 
 [tool.uv.sources]
 qfr-core = {workspace = true}
+
+[project.entry-points."qfr.commands"]
+data = "qfr_eval.ingest.cli:app"

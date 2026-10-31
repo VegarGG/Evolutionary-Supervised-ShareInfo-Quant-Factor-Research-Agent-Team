@@ -17,7 +17,7 @@ qfr-eval = {workspace = true}
 qfr-mcp = {workspace = true}
 
 [dependency-groups]
-dev = ["ruff>=0.11,<1", "mypy>=1.15,<2", "pytest>=8,<10", "hypothesis>=6,<7", "pytest-xdist>=3,<4", "import-linter>=2,<3", "types-PyYAML", "jsonschema>=4,<5", "types-jsonschema"]
+dev = ["ruff>=0.11,<1", "mypy>=1.15,<2", "pytest>=8,<10", "hypothesis>=6,<7", "pytest-xdist>=3,<4", "import-linter>=2,<3", "types-PyYAML", "jsonschema>=4,<5", "types-jsonschema", "scipy>=1.15,<2"]
 
 [tool.ruff]
 target-version = "py312"
@@ -39,4 +39,5 @@ strict = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
-markers = ["postgres: requires the Phase 0 PostgreSQL roles and migrations", "deployment: requires the running Compose stack"]
+pythonpath = ["."]
+markers = ["postgres: requires the Phase 0 PostgreSQL roles and migrations", "deployment: requires the running Compose stack", "slow: builds a default-size synthetic world (about a minute); deselect with -m 'not slow'"]
