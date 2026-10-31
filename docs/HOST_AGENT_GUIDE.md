@@ -36,7 +36,9 @@ scan the text and refuse a brief that repeats one (`OWNER_ONLY_VALUE`).
 
 Released reports (`qfr.report.list`) are what research saw: rounded, coarsened and
 released as soon as the evaluator records them. Research-side W0 numbers inside an
-iteration history are in-sample; say so whenever you mention one.
+iteration history are in-sample; say so whenever you mention one. A `note` report is the
+evaluator's check of a research note (Phase 8): PASS means its claims restate released
+numbers correctly, not that its conclusions are right; a note is never measured.
 
 ## Before the first brief
 
@@ -45,7 +47,9 @@ iteration history are in-sample; say so whenever you mention one.
   open alerts per zone. A `partial` status names what could not be read.
 - If setup is incomplete, walk the owner through `qfr.setup.status` and, when the owner
   has a raw factor pool file, `qfr.pool.import`. QFR ships no default factors,
-  strategies, seeds or samples; an empty pool is a normal start.
+  strategies, seeds or samples; an empty pool is a normal start. A pool file may hold
+  Python factors (`python: {source, max_lookback_days}`, Phase 8); the import checks
+  them statically, and the evaluator runs them only in its no-network sandbox.
 - Read `qfr://cards/protocol` and `qfr://cards/policy`, then `qfr://pools/factors` and
   `qfr://pools/strategies`. Tell the owner what exists.
 

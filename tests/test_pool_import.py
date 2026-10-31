@@ -277,3 +277,11 @@ def test_python_entries_are_checked_statically_and_become_python_seed_manifests(
     ]}}  # fmt: skip
     checked = validate_entries([PY_FACTOR, REVERSAL, strategy], LIMITS, python)
     assert all(isinstance(r, ValidEntry) for r in checked)
+
+
+def test_the_phase_8_example_import_is_valid():
+    """docs/examples/pool_import_phase8.yaml, which the Phase 8 runbook imports."""
+    path = Path("docs/examples/pool_import_phase8.yaml")
+    raw = parse_import_file(path.name, path.read_bytes())
+    results = validate_entries(raw, LIMITS, public_python_limits(Path("configs")))
+    assert [type(r) for r in results] == [ValidEntry] * 3

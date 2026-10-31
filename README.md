@@ -94,6 +94,20 @@ resource `qfr://docs/host-agent-guide`) and the `qfr.approval` and `qfr.investig
 prompts. Read [the Phase 7 record](docs/phase7-acceptance.md), which ends with the
 on-machine rehearsal, and the [Phase 7 decisions](docs/decisions.md#phase-7-decisions).
 
+Phase 8 hardens QFR and adds the remaining artifact kinds. qfr-python/1 factors run
+only in the eval-sandbox service, which has no network, database, snapshot or secrets.
+qfr-strategy/2 strategies can be long-short, industry neutral and position or industry
+capped; snapshots can carry a point-in-time industry classification. Research notes
+are a third artifact kind whose claims the evaluator checks against released values.
+A release policy can answer W2 with Thresholdout instead of the Ladder. `just
+epoch-propose` and `qfr.ops.rollover_epoch` roll the evaluation over to a new epoch
+with the owner's approval. Monitoring adds a CUSUM decay detector, and
+`qfr.acceptance.override` accepts a case with a failed gate after a written rationale,
+24 hours and a second confirmation. The audit tables are hash-chained, and `just
+verify-backups` checks every retained backup. Read [the Phase 8
+record](docs/phase8-acceptance.md), which ends with the on-machine steps, and the
+[Phase 8 decisions](docs/decisions.md#phase-8-decisions).
+
 ## License and use
 
 Copyright 2026 Ziwei Huang. This is source-available software under the unchanged
