@@ -40,7 +40,7 @@ RUN groupadd --gid 10001 qfr && useradd --uid 10001 --gid qfr --create-home qfr 
     && chown -R qfr:qfr /var/log/qfr /data
 COPY --from=build /app/.venv /app/.venv
 COPY LICENSE NOTICE ADDITIONAL-PERMISSION.md THIRD-PARTY-NOTICES.md /app/
-COPY configs/logging.yaml configs/mcp.yaml /app/configs/
+COPY configs/logging.yaml configs/mcp.yaml configs/registry.yaml /app/configs/
 COPY configs/research /app/configs/research
 COPY configs/public_cards.json /app/configs/public_cards.json
 ENV PATH="/app/.venv/bin:$PATH" QFR_CONFIG_DIR=/app/configs QFR_LOG_DIR=/var/log/qfr \
@@ -48,6 +48,9 @@ ENV PATH="/app/.venv/bin:$PATH" QFR_CONFIG_DIR=/app/configs QFR_LOG_DIR=/var/log
 WORKDIR /app
 USER 10001:10001
 CMD ["python", "-m", "qfr_core.placeholder"]
+
+# registry-api (build with QFR_PACKAGE=qfr-registry).
+FROM runtime AS registry
 
 FROM runtime AS mcp
 COPY schemas/private/owner_evidence.json /app/schemas/owner_evidence.json

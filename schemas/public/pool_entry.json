@@ -1,5 +1,6 @@
 {
   "additionalProperties": false,
+  "description": "One row of pool_current_v: the entry with its current status (latest status event).",
   "properties": {
     "approval_id": {
       "anyOf": [
@@ -43,6 +44,19 @@
       "format": "uuid7",
       "title": "Entry Id",
       "type": "string"
+    },
+    "last_event_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Event At"
     },
     "pool": {
       "enum": [

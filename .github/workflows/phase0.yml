@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [arm64, amd64]
-        target: [postgres, runtime, mcp, eval, migrate]
+        target: [postgres, runtime, registry, mcp, eval, migrate]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -54,6 +54,7 @@ jobs:
           ARCH: ${{ matrix.arch }}
         run: |
           package=qfr-core
+          if [ "$TARGET" = registry ]; then package=qfr-registry; fi
           if [ "$TARGET" = mcp ]; then package=qfr-mcp; fi
           if [ "$TARGET" = eval ]; then package=qfr-eval; fi
           mkdir -p exports/images

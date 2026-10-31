@@ -242,3 +242,105 @@ or evaluator run exists, and nothing from Phase 2 onward is started.
 17. **Ignore rule.** Phase 0's `.gitignore` line `data/` also matched
     `packages/qfr_core/src/qfr_core/data`, `configs/data` and `tests/data`. It is now
     anchored to the repository root (`/data/`), as the plan's layout intends.
+
+# Phase 2 decisions
+
+Phase 2 implements P2.1 to P2.6 only: the registry, the pools, raw pool import and the
+empty start. No research job, evaluator run, provider call or approval workflow exists,
+and nothing from Phase 3 onward is started. It is built on the Phase 1 branch (PR #12),
+which was not yet merged, as the owner asked.
+
+1. **Ordered sequences.** Every registry write runs in one transaction that first takes
+   a transaction-level advisory lock. `published_seq` and `event_seq` are bigserials,
+   and without the lock a later number could commit before an earlier one, so a reader
+   paging with `since_seq` could skip a row for good. One writer at a time is ample at
+   this volume.
+2. **Hashes and idempotency.** `content_hash` is the SHA-256 of the manifest's canonical
+   JSON (sorted keys, compact) after server fields are removed. `canonical_hash` is the
+   DSL canonical hash for factors and the strategy canonical hash (normalized weights)
+   for strategies. Publishing content that already exists returns the existing version
+   with 200. Each publisher's `publish_key` is single-use: reusing it for different
+   content is `PUBLISH_KEY_REUSED` (409).
+3. **Server fields (REG-04).** Client copies of server fields are dropped before
+   validation and logged as `client_server_fields_ignored`. They are never stored.
+4. **Families.** A new name opens a family. A later version of the same name must
+   carry the family id; without it, the registry answers `NAME_CONFLICT` (409) and
+   returns the family id. Kind, name and program must match the family.
+5. **Lineage.** Parent edges store the AST diff (factors) or a strategy diff (component
+   added, removed or changed with weights rounded to 0.01, plus portfolio and
+   combination changes). A strategy's components are stored as `component` edges.
+6. **What publication enforces.** The registry refuses schema, parse and type errors
+   and declared-versus-parsed mismatches (400). Complexity and window-set violations
+   are recorded in `analysis.static_limit_errors` and not refused, because screening
+   (Section 8.4) owns that verdict and a publication is a record. The setup importer
+   and `qfr.dsl.validate` reject them like any agent draft.
+7. **Approvals without control_db.** registry_db has no access to control_db, where
+   approvals live. The pool routes therefore take an approval reference (id, decision
+   and scope: pool, version or entry, tier) from the front door. The registry checks
+   that the scope covers the version and the requested tier (`APPROVAL_SCOPE_MISMATCH`,
+   403) and stores the id; the approval record itself is written by the front door in
+   Phase 6.
+8. **Seed entries.** A seed entry carries the setup reference instead of an approval.
+   Only human_seed versions with no job enter a pool as seeds (`NOT_A_SETUP_IMPORT`).
+   Adding the same seed version again returns the existing entry with 200.
+9. **Current pool state.** `pool_current_v` takes the status and tier from the latest
+   status-bearing event and the tags from the union of all events. Annotations append
+   tags; tags are never removed.
+10. **Setup imports have no research snapshot.** `provenance.research_snapshot_id` is
+    nullable, and only for setup imports (human_seed with no job). An owner's raw-pool
+    factor was not developed on a QFR snapshot, and the front door may not read the
+    research zone.
+11. **Seed manifests.** They are built deterministically from the row: a seed
+    hypothesis whose mechanism is the owner's notes (or a fixed sentence when there
+    are none), fixed summary and falsification texts, `review.verdict_id` set to the
+    DSL_VALIDATED step and `review.rounds` 0, and `trace_ref` set to the seed's
+    candidate id.
+12. **Re-import is idempotent.** Manifests carry fresh ids, so a rebuilt manifest would
+    hash differently. The front door stores each manifest in its DSL_VALIDATED step,
+    keyed by the entry digest (the definition without tags), and reuses it on
+    re-import. The publish key is `seed:<digest>`. A changed definition under the same
+    name becomes the next version of that family, with the earlier seed version as
+    parent. The earlier seed entry stays: retiring it needs an approval
+    (`qfr.pool.set_status`, Phase 6). New tags on an unchanged row are appended with
+    an ANNOTATED event.
+13. **Where setup traces live.** The front door cannot write research_db, so the
+    human_seed trace steps of Section 14.5 (DSL_VALIDATED and SEEDS_PUBLISHED) are
+    stored in a new insert-only control_db table `trace_steps`. The trace export joins
+    them by candidate and version id.
+14. **Setup state.** The pool step records `importing` (its row id is the setup
+    reference on every entry of that import), then `imported` or `failed` with counts,
+    or `empty` when the owner has no pool, with the no-defaults notice. `kept` is
+    recorded when the owner declines an import but the pools already have entries.
+    Phase 2 has no writer for the other steps: `qfr.setup.status` reports providers as
+    deferred to Phase 4, data as deferred to Phase 3, and the token as working because
+    the call authenticated. `setup_complete` stays false until all four are done.
+15. **Refusals.** A whole-request problem (a path outside imports/, a missing,
+    oversized, unreadable or empty file, too many entries, or conflicting arguments)
+    is an MCP tool error. It is audited as failed, logged as `pool_import_rejected`
+    and writes nothing. Invalid rows are reported in a partial result with reason
+    codes and logged as `pool_import_entry_rejected`. Symlinks are resolved before
+    the imports-folder check.
+16. **Summary route.** `GET /v1/summary` (any registry token) gives version, family and
+    pool counts for `qfr.status` and `qfr.setup.status`. It is read-only, so BND-09
+    still has exactly three mutation routes.
+17. **Evaluator fields.** `qfr.pool.list` and `qfr.pool.get` return the evidence tier
+    and released state as null until eval-admin-api exists (Phase 3).
+18. **`qfr setup`.** It is a small JSON-RPC client of the MCP front door, so the CLI
+    and a host agent leave identical records. It reads the owner token from
+    `QFR_MCP_TOKEN` or `.env`, accepts `--pool-file` or `--no-pool` for unattended
+    runs, and prints the data and token commands rather than running them (data
+    builds run a Compose service). It lives in qfr_mcp as a `qfr.commands` plugin; the
+    Phase 0 placeholder in qfr_core is removed.
+19. **Deployment.** registry-api gets its own image target and listens on 0.0.0.0 only
+    inside its container (`QFR_REGISTRY_BIND`), with no host port. Its health check
+    passes only when the database is reachable. qfr-mcp waits for registry-api to
+    start but not to be healthy, so the front door can still report an unhealthy
+    registry. `qfr-registry` now declares uvicorn and `qfr-mcp` declares typer.
+20. **Tests keep the databases empty.** Registry and setup tests run inside an outer
+    transaction that is rolled back, with a savepoint per write, so the fresh-stack
+    check (SET-01) holds in the shared CI database. The REG-01 owner tests use
+    `TRUNCATE ... CASCADE` so that the trigger, not the foreign-key check, refuses.
+21. **SET-01 scope.** Phase 2 checks that a fresh stack is empty and says so. The rest
+    of SET-01 (a job submitted through MCP completes a generation from exploration
+    alone, with the library-correlation gate recorded as vacuous, and zero programs)
+    needs research jobs (Phase 4) and the evaluator (Phase 3).

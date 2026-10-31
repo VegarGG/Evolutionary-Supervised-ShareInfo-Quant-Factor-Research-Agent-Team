@@ -9,3 +9,5 @@ list_max: 2000
 approval_concurrency: 1
 confirmation_pattern: 'J-[0-9]{4}\s+(?:F|S)-[0-9]+'
 downstream_timeout_seconds: 5.0
+import_max_bytes: 1048576
+import_max_entries: 2000

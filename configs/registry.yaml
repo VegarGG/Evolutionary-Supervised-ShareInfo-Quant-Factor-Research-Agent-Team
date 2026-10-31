@@ -1,0 +1,10 @@
+version: '1'
+# Inside Compose the listener binds the container interface (QFR_REGISTRY_BIND=0.0.0.0);
+# registry-api is reachable only on the internal compose networks and publishes no port.
+bind: 127.0.0.1
+port: 8000
+request_body_bytes: 1048576
+list_default: 200
+list_max: 2000
+lineage_depth_default: 1
+lineage_depth_max: 20

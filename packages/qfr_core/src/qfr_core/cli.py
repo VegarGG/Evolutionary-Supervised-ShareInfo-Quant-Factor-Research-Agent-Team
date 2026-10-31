@@ -44,25 +44,5 @@ def correlate(identifier: str, id_kind: str, query: str = "{}") -> None:
     )
 
 
-@app.command("setup")
-def setup() -> None:
-    typer.echo(
-        json.dumps(
-            {
-                "status": "not_implemented_in_phase_0",
-                "setup_complete": False,
-                "next": (
-                    "Pool setup is Phase 2; provider probes are Phase 4. Data snapshots "
-                    "are built with `qfr data build`."
-                ),
-                "provider_calls_made": 0,
-                "default_factors": 0,
-                "default_strategies": 0,
-            }
-        )
-    )
-    raise typer.Exit(2)
-
-
 if __name__ == "__main__":
     app()

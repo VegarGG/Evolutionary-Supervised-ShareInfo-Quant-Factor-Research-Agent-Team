@@ -14,10 +14,11 @@ from uuid import uuid4
 
 from qfr_core.config import MCPConfig
 from qfr_core.correlation import bind, from_headers
+from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from qfr_mcp.audit import AuditStore, MCPCall, uuid7
+from qfr_mcp.audit import AuditStore, MCPCall
 
 _downstream: ContextVar[set[str] | None] = ContextVar("qfr_downstream_requests", default=None)
 

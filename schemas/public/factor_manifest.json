@@ -203,9 +203,16 @@
           "type": "string"
         },
         "research_snapshot_id": {
-          "pattern": "^[a-f0-9]{64}$",
-          "title": "Research Snapshot Id",
-          "type": "string"
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Research Snapshot Id"
         },
         "trace_ref": {
           "format": "uuid7",

@@ -32,15 +32,24 @@ The owner's network and memory decisions are applied. `just doctor` checks curre
 OOM flags; 24 GiB is a planning expectation, not a required allocation. Test the
 host endpoint with `python scripts/smoke_mcp.py --host`. Domain placeholders still
 exit cleanly; live downstream tracing is deferred by the owner.
-`just setup`, `just backup` and `just bench` explicitly report their later phases.
+`just backup` and `just bench` explicitly report their later phases.
 `just mcp-config` prints bearer-bearing client snippets; keep its output private.
 
 Phase 1: build snapshots with `uv run --locked qfr data build --source synthetic`
 (written under `data/snapshots/`) or, in Compose, `just data-build --source synthetic`
 or `--source cn --release-tag <tag>`. Check one with `qfr data verify <path> --zone
 research`. Read [the Phase 1 record](docs/phase1-acceptance.md) and the
-[Phase 1 decisions](docs/decisions.md#phase-1-decisions); Phase 2 starts only after
-the owner accepts Phase 1.
+[Phase 1 decisions](docs/decisions.md#phase-1-decisions).
+
+Phase 2 adds the artifact registry and the pools. registry-api stores immutable factor
+and strategy versions with lineage, and append-only pool entries and events; the
+database refuses updates and deletes. The MCP front door gains `qfr.setup.status`,
+`qfr.pool.import`, `qfr.pool.list`, `qfr.pool.get`, `qfr.dsl.validate` and
+`qfr.artifact.get`. Run `just setup` to import a raw factor pool (pool_import/1 as
+JSON, YAML or CSV, placed under `imports/`) or to start empty, which records the
+no-defaults notice. Read [the Phase 2 record](docs/phase2-acceptance.md) and the
+[Phase 2 decisions](docs/decisions.md#phase-2-decisions). Phase 2 was built on the
+unmerged Phase 1 branch at the owner's request.
 
 ## License and use
 
