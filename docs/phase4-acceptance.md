@@ -60,9 +60,9 @@ Nothing is preloaded: no factors, strategies, seeds, sample briefs or prices.
   minutes; Phase 4 adds 68 tests. research_db, registry_db and eval_db are empty after
   the run (control_db keeps the audit row the Phase 0 boundary test writes on purpose).
 - Two Phase 3 tests depended on the release order of reports due in the same batch
-  (about one run in four failed). The release engine now breaks ties by queue id, so
-  a version's intake, screening and W1 reports are released in that order, and the
-  library-vacuity check uses the first W1 record. Both pass repeatedly.
+  (about one run in four failed). The fix, ties broken by queue id and the
+  library-vacuity check on the first W1 record, is part of the Phase 3 branch (Phase 3
+  decision 16). Both tests pass repeatedly.
 - The research image layout was checked without Docker: with only the files the
   Dockerfile copies, research-api and research-worker build their environments, and
   `qfr llm probe` with no keys and no prices prints a failing report without sending a

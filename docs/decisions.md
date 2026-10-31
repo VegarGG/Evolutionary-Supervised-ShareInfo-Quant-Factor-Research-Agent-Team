@@ -612,8 +612,3 @@ real provider: the one real generation per provider is the owner's on-machine st
 18. **Deferred.** The `qfr://docs/host-agent-guide` resource arrives with the guide in P7.5.
     Per-program feedback tokens (Phase 3 decision 21) are not added: both research
     services are one trust zone, and requests narrow by program.
-19. **Release order within a batch (Phase 3 code).** Reports due at the same time were
-    released in an unspecified order. The release engine now orders by due time,
-    creation time and then queue id (a UUIDv7), so reports are released in the order
-    they were queued; a version's intake, screening and W1 reports keep that order.
-    Two Phase 3 tests that assumed it no longer fail intermittently.
