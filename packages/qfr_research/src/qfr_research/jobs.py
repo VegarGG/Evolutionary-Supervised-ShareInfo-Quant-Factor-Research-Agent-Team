@@ -458,6 +458,11 @@ class JobService:
                 ),
                 {"i": uuid7(), "p": program_id, "k": key, "t": env.config.service.islands[key]},  # type: ignore[index]
             )
+        # The seeds are generation 0: the first generation starts once their feedback is
+        # complete (the monitor checks), at the latest after max_wait_hours; at once
+        # without seeds.
+        wait = timedelta(hours=float(charter["cadence"]["max_wait_hours"]))
+        first = now + wait if seed_ids else now
         conn.execute(
             text(
                 "INSERT INTO generations (generation_id, program_id, seq, state, charter_version, "
@@ -474,9 +479,9 @@ class JobService:
         conn.execute(
             text(
                 "UPDATE research_jobs SET program_id = :p, seed_version_ids = CAST(:s AS jsonb), "
-                "next_generation_at = :now, updated_at = :now WHERE job_id = :j"
+                "next_generation_at = :next, updated_at = :now WHERE job_id = :j"
             ),
-            {"p": program_id, "s": dumps(seed_ids), "now": now, "j": job_id},
+            {"p": program_id, "s": dumps(seed_ids), "next": first, "now": now, "j": job_id},
         )
         ctx = Ctx(job_id=job_id, program_id=program_id, generation_id=generation_id)
         self._record_seeds(conn, ctx, published, now)

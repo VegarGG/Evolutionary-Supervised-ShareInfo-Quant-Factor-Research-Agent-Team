@@ -1,6 +1,6 @@
 charter_id: default
 version: '1'
-cadence: {hours: 6, after_w1_batch: true, new_reports_trigger: 10}
+cadence: {after_feedback_complete: true, max_wait_hours: 6}
 throughput: {publications: 12, candidate_slots_max: 36, concurrency: 4, review_rounds_max: 2, compose_strategy_tasks_max: 2}
 budget: {currency: CNY, generation: 20, daily: 200, job: 500, engineer_requests: 12, engineer_tool_calls: 20}
 context_tokens: 12000

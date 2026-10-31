@@ -2,14 +2,15 @@
 
 A brief submitted with qfr.job.submit produces a job and a generation with hypotheses,
 candidates, reviews and publications; the evaluator measures them on W1 and releases the
-reports at the next batch; the next generation syncs them back and writes
-interpretations; the job monitor reads the w1_pass tier and assembles a deliverable that
-qfr.deliverable.get returns with its iteration history and owner-grade evidence.
+reports at once; the next generation starts because that feedback is complete, syncs the
+reports back and writes interpretations; the job monitor reads the w1_pass tier and
+assembles a deliverable that qfr.deliverable.get returns with its iteration history and
+owner-grade evidence.
 Every model answer is scripted; no provider is reached.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
@@ -39,13 +40,14 @@ def run_to_deliverable(full):
     job_id = submitted["job"]["job_id"]
     research.tick()  # generation 1
     full.settle()  # the evaluator pulls, screens and evaluates on W1
+    full.eval.release.tick()  # the reports are released at once, at the same clock time
     due = research.db.scalar(
         "SELECT next_generation_at FROM research_jobs WHERE job_id = :j", j=job_id
     )
-    assert due is not None
-    full.eval.clock.at = max(full.eval.clock.at, due)
-    full.eval.release.tick()  # the W1 batch is released
-    research.tick()  # generation 2 syncs the reports; the criteria are met
+    assert due is not None and due > research.clock.now()  # the max wait is still ahead
+    # Generation 2 starts because generation 1's feedback is complete; it syncs the
+    # reports and the criteria are met.
+    assert research.tick()["generations_started"]
     return submitted, job_id
 
 
@@ -234,3 +236,21 @@ def test_mcp_03_submit_and_steer_reject_owner_only_values_of_referenced_versions
         "SELECT scan FROM research_jobs WHERE job_id = :j", j=accepted["job"]["job_id"]
     )
     assert scan["referenced_version_ids"] == [version_id] and scan["values_compared"] > 0
+
+    # The seed is generation 0. It is already answered, so the first generation does not
+    # wait for the max wait: it starts at the next tick.
+    seeded = research.db.scalar(
+        "SELECT next_generation_at FROM research_jobs WHERE job_id = :j",
+        j=accepted["job"]["job_id"],
+    )
+    assert seeded == research.clock.now() + timedelta(hours=6)
+    started = research.tick()["generations_started"]
+    assert (
+        research.db.scalar(
+            "SELECT count(*) FROM generations g JOIN programs p ON p.program_id = g.program_id "
+            "WHERE p.job_id = :j AND g.seq = 1",
+            j=accepted["job"]["job_id"],
+        )
+        == len(started)
+        == 1
+    )

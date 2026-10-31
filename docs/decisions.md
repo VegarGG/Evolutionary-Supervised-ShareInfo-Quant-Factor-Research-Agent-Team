@@ -543,11 +543,19 @@ real provider: the one real generation per provider is the owner's on-machine st
    active protocol and policy cards from feedback-api, and fall back to the bundled
    preview cards only when feedback-api does not answer or has no active card. The
    resources label which one they serve (`active` or `preview_not_activated`).
-8. **Cadence.** The next generation is due `cadence.hours` (6) after the last one, then
-   moved to the first W1 batch at or after that time less a margin, plus the margin
-   (`after_batch_margin_seconds`, 300), so a generation starts just after the reports
-   it can learn from are released. Example: a generation at 01:00 UTC makes the next
-   one due at 12:05. Ten new released reports also start one early.
+8. **Cadence (plan v2.2).** Reports are released as soon as the evaluator records them,
+   so the next generation starts as soon as the previous generation's feedback is
+   complete (`cadence.after_feedback_complete`), and at the latest `max_wait_hours` (6)
+   after it closed. A version counts as answered once its intake is refused or deferred
+   (a quota deferral is an answer), its screening fails, or its W1 report is released.
+   The seeds are generation 0: with seeds the first generation waits for their
+   feedback in the same way; without seeds, or after a generation that published
+   nothing, the next one starts at once. After a FAILED generation the next one waits
+   the full `max_wait_hours`, so a provider outage cannot use up the generation cap in
+   minutes. The monitor reads each waiting version's reports from feedback-api by
+   version id without moving the program's sync cursor, so the next generation's sync
+   still interprets them. This replaces the earlier rule (six hours, then just after
+   the next W1 release batch, or ten new reports).
 9. **One generation at a time.** One research-worker runs one generation at a time and
    a program never has two open generations. Tasks inside a generation run with the
    charter's concurrency (4). A queue job that fails is retried after 60, then 300

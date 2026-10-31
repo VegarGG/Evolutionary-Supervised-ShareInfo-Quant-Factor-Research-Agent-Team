@@ -55,7 +55,6 @@ class WorkerSection(BaseModel):
     retry_backoff_seconds: list[int]
     probe_daily_utc: str
     heartbeat_seconds: float = Field(gt=0)
-    after_batch_margin_seconds: int = Field(ge=0)
 
 
 class FeedbackSection(BaseModel):

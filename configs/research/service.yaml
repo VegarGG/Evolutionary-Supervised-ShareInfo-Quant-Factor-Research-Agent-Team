@@ -10,9 +10,6 @@ worker:
   retry_backoff_seconds: [60, 300, 900]
   probe_daily_utc: '00:30'
   heartbeat_seconds: 30
-  # With cadence.after_w1_batch, a generation starts this long after a W1 release batch
-  # boundary, so the release worker has released the batch before feedback sync runs.
-  after_batch_margin_seconds: 300
 feedback: {page_limit: 200, report_types_interpreted: [w1, w2, sim, decision]}
 analyst: {reports_per_run: 4, interpretation_review_seed: 20261031}
 islands:
@@ -34,10 +31,10 @@ island_keywords:
   volume: [I4, I5, I6]
   turnover: [I4, I6]
 timeline:
-  w1_pass: {first_reports: 'first W1 reports at the next 6-hour batch after the first publication', first_deliverable: 'expected first deliverable within 1 to 2 days'}
-  w2_pass: {first_reports: 'first W1 reports at the next 6-hour batch after the first publication', first_deliverable: 'at least 1 to 2 weeks (W2 releases weekly)'}
-  advanced: {first_reports: 'first W1 reports at the next 6-hour batch after the first publication', first_deliverable: 'at least 3 weeks (advancement is delayed at least 7 days)'}
-  incubated: {first_reports: 'first W1 reports at the next 6-hour batch after the first publication', first_deliverable: 'about one quarter (60 trading days of incubation)'}
+  w1_pass: {first_reports: 'first W1 reports within minutes of the first publication', first_deliverable: 'first deliverable typically within a day'}
+  w2_pass: {first_reports: 'first W1 reports within minutes of the first publication', first_deliverable: 'typically a few days'}
+  advanced: {first_reports: 'first W1 reports within minutes of the first publication', first_deliverable: 'typically about a week'}
+  incubated: {first_reports: 'first W1 reports within minutes of the first publication', first_deliverable: 'about one quarter (60 trading days of forward incubation)'}
 # Per-run cost estimate checked against the remaining budget before each call (Section 11.7):
 # the prompt's token count plus max_completion_tokens, priced at the miss and output rates.
 estimate: {chars_per_token: 3}
