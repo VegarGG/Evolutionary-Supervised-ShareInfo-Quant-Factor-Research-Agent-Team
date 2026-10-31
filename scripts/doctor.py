@@ -1,11 +1,15 @@
-"""Inspect the running stack (Phase 3) without changing Docker or host settings."""
+"""`just doctor` (DEP-01, PLAN Section 17.3): inspect the running stack without changing
+Docker or host settings. The report is written to exports/doctor/ and logged by
+ops-nightly."""
 
 import json
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import yaml
+from qfr_mcp.nightly import backup_status
 
 root = Path(__file__).resolve().parents[1]
 compose = [
@@ -18,8 +22,10 @@ compose = [
 ]
 checks = []
 observations = []
-# Long-running services by Phase 6; the rest are one-shot jobs that exit 0.
+# Long-running services by Phase 7; the rest are one-shot jobs that exit 0.
 RUNNING_SERVICES = {
+    "ops-nightly",
+    "backup",
     "postgres",
     "qfr-mcp",
     "registry-api",
@@ -173,6 +179,16 @@ try:
                 run(compose + ["exec", "-T", "feedback-api", "python", "-c", openapi_probe])
             )
             record("BND-03:feedback_get_only", methods == ["get"], methods)
+        log_mounts = [m for m in mounts if m["Destination"].startswith("/var/log/qfr")]
+        if log_mounts and service not in {"init-volumes"} and state["Running"]:
+            # Each service can write its own log folder (Section 15.1).
+            folder = "/var/log/qfr/" + service
+            writable = subprocess.run(
+                compose + ["exec", "-T", service, "sh", "-c", 'test -w "$1"', "sh", folder],
+                capture_output=True,
+                check=False,
+            )
+            record("log_writable:" + service, writable.returncode == 0, folder)
         if service == "qfr-mcp":
             record(
                 "BND-08:qfr-mcp",
@@ -334,12 +350,24 @@ try:
                 "setup_complete": setup["setup_complete"],
             }
         )
+    # Backups are reported, not required: a new installation has none until the first
+    # night (Section 17.5). ops-nightly raises the alert when they go stale.
+    observations.append(
+        {
+            "observation": "backups",
+            **backup_status(
+                root / "backups",
+                datetime.now(ZoneInfo(deployment["timezone"])).date(),
+                int(deployment["backup"]["stale_after_days"]),
+            ),
+        }
+    )
 except (subprocess.CalledProcessError, KeyError, ValueError, IndexError, OSError) as error:
     record("doctor_execution", False, type(error).__name__)
 
 result = {
     "at": datetime.now(UTC).isoformat(),
-    "phase": 6,
+    "phase": 7,
     "status": "PASS" if checks and all(c["status"] == "PASS" for c in checks) else "FAIL",
     "checks": checks,
     "observations": observations,
@@ -354,6 +382,15 @@ result = {
 directory = root / "exports/doctor"
 directory.mkdir(parents=True, exist_ok=True)
 destination = directory / (datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + ".json")
+result["path"] = "exports/doctor/" + destination.name
 destination.write_text(json.dumps(result, indent=2) + "\n")
+logged = subprocess.run(
+    compose + ["exec", "-T", "ops-nightly", "qfr", "ops", "record", "doctor"],
+    input=json.dumps(result),
+    text=True,
+    capture_output=True,
+    check=False,
+)
+result["logged"] = logged.returncode == 0
 print(json.dumps(result, indent=2))
 raise SystemExit(0 if result["status"] == "PASS" else 1)

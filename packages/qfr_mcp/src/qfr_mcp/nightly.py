@@ -14,14 +14,17 @@ reads. The service holds the control role only: it reads the backups folder, nev
 database dump, and it writes nothing but log files and control_db rows.
 """
 
+import json
 import os
 import re
+import sys
 import time
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 from zoneinfo import ZoneInfo
 
+import typer
 import yaml
 from pydantic import JsonValue
 from qfr_core.config import LoggingConfig, RuntimeSettings, logging_config
@@ -237,6 +240,39 @@ def main() -> None:
         beat.parent.mkdir(parents=True, exist_ok=True)
         beat.touch()
         time.sleep(poll)
+
+
+ops_app = typer.Typer(help="Operations records written by ops-nightly.")
+REPORT_KINDS = ("doctor", "restore_drill")
+
+
+@ops_app.command("record")
+def record(
+    kind: Annotated[str, typer.Argument(help="doctor or restore_drill")],
+) -> None:
+    """Log a host-side report read from stdin (`just doctor`, `just restore-drill`), so
+    qfr.logs.search finds it next to the services' lines."""
+    if kind not in REPORT_KINDS:
+        raise typer.BadParameter(f"kind must be one of {', '.join(REPORT_KINDS)}")
+    report = json.loads(sys.stdin.read())
+    settings = RuntimeSettings(service=SERVICE, zone="control")
+    logger = JsonLogger(SERVICE, "control", settings.log_dir, logging_config(settings.config_dir))
+    passed = report.get("status") == "PASS"
+    failed = [c["check"] for c in report.get("checks", []) if c.get("status") == "FAIL"]
+    with bind():
+        (logger.logger.info if passed else logger.logger.warning)(
+            f"{kind}_completed",
+            outcome="ok" if passed else "failed",
+            payload={
+                "status": report.get("status"),
+                "at": report.get("at"),
+                "report": report.get("path"),
+                "failed_checks": failed[:50],
+                "skipped": report.get("skipped", []),
+                "backup": report.get("backup"),
+            },
+        )
+    typer.echo(json.dumps({"logged": f"{kind}_completed", "status": report.get("status")}))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
-"""The host-agent prompts of Phase 4 (PLAN Section 13.8): qfr.brief and qfr.report_deliverable.
+"""The host-agent prompts (PLAN Section 13.8): qfr.brief and qfr.report_deliverable
+(Phase 4), qfr.approval and qfr.investigate (Phase 7).
 
 They tell a host agent how to work with QFR. They hold no factor, strategy, seed or
 sample: everything the agent puts in a brief comes from the owner, the owner's
@@ -90,8 +91,98 @@ in this order, without rounding, dropping or reinterpreting any evaluator number
    changed and why, as the history records it.
 6. Costs and the summary, as given.
 7. The short codes for a decision, for example "J-0042 F-1". Ask the owner for an
-   explicit decision that quotes the short codes. Do not approve, reject or add anything
-   to a pool on your own judgement; approvals arrive in a later phase of QFR.
+   explicit decision that quotes the short codes, then follow the qfr.approval prompt.
+   Do not approve, reject or add anything to a pool on your own judgement.
 
 Never paste owner_evidence numbers into a brief or a steering note.
+"""
+
+APPROVAL = """\
+# Asking for and recording the owner's decision
+
+QFR's pools change only on the owner's stated decision. You record it; you never make it.
+
+## Ask
+1. Present the deliverable first (prompt qfr.report_deliverable): tier, artifact,
+   evidence, caveats verbatim, history, costs.
+2. Ask for an explicit decision that quotes the short codes in scope, for example
+   "APPROVE J-0042 F-1 F-2" or "REJECT J-0042". The owner may approve some items and
+   not others; the short codes say which.
+3. If the owner's answer is ambiguous ("looks good", "go ahead") or lacks a short code,
+   ask again. Do not infer a scope.
+
+## Record
+4. Call qfr.approval.record with decision (approve or reject), the deliverable_id, the
+   version_ids in scope when not every item is approved, owner_confirmation set to the
+   owner's words exactly as you received them, and rationale: your one-paragraph
+   summary of why the owner decided so. The front door refuses a confirmation that lacks
+   a short code in scope (SHORT_CODE_MISSING) and an approval for a tier above the one
+   reached.
+5. For an approval, call qfr.pool.add once per approved item with the approval_id, the
+   version_id, a title in the owner's words and any tags the owner gave. Then close the
+   job with qfr.job.close (decision approved, the approval_id).
+6. For a rejection, record it the same way (decision reject, the owner's words), then
+   call qfr.job.close with decision rejected and that approval_id. A follow-up brief may
+   name the job as parent_job_id and carry the owner's feedback.
+7. Retiring or re-approving a pool entry later (qfr.pool.set_status) needs its own
+   approval record (decision retire or approve, entry_ids and pool) quoting the entry's
+   short code, for example "RETIRE E-3fa9c1".
+8. Acceptance cases follow the same pattern: qfr.acceptance.list_cases, present the
+   case's gate values (owner_only), ask for a quoted decision with the case's short
+   code ("ACCEPT C-0003"), record it (decision accept_case or reject_case with case_id),
+   then qfr.acceptance.decide. A decision cannot contradict a failed gate.
+
+## Report back
+Tell the owner the approval id, each pool entry's short code and its approved tier, and
+that the evaluator syncs approved entries into its library on its next pass.
+
+Never record an approval the owner did not state. Never approve on your own judgement.
+Never paste owner-only evidence into the rationale of a later brief.
+"""
+
+INVESTIGATE = """\
+# Investigating with traces and logs
+
+Answer from QFR's own records: the development trace, the lineage, released reports,
+owner-grade evidence and the JSON logs every service writes. Quote what they say; say
+when a record is missing rather than guessing.
+
+## "How was this factor (or strategy) developed?"
+1. qfr.trace.get for the version: every step from the brief to the publication, with
+   the prompts, tool calls, operators and reviews.
+2. qfr.lineage.get for its parents and children, with AST diffs per hop.
+3. For a file the owner can keep: qfr.trace.export (trace.json and a Markdown history
+   joined with owner-grade evidence, owner_only) or qfr.deliverable.export for a whole
+   deliverable.
+
+## "What happened to job X?"
+1. qfr.job.get for the state, generations, costs and timeline.
+2. qfr.job.events since a cursor for what changed and when.
+3. qfr.logs.correlate with the job id and id_kind "job": every service's lines for the
+   job, ordered, grouped by service. Follow next_cursor for more.
+
+## "Why did version Y fail?"
+1. qfr.report.list for the released reports research saw (reason codes, rounded
+   values).
+2. qfr.evidence.get for the evaluator's records: every window, gate values with their
+   stage and window, series, simulation accounts and acceptance cases (owner_only).
+3. qfr.logs.correlate with the version id and id_kind "version" for the evaluator's
+   lines with reason codes.
+
+## "Is the system healthy?"
+1. qfr.status: services, queues, quotas, data freshness, burn meters, disk, today's
+   costs and open alerts per zone.
+2. qfr.ops.alerts: each alert with its source (evaluation, research, operations).
+3. qfr.logs.search with levels ["ERROR"] over the last 24 hours (the default range);
+   widen with from and to. Compressed older days are searched too.
+4. qfr.logs.tail on one service for live activity.
+
+## Writing it up
+- Lead with the answer, then the evidence with ids and timestamps.
+- Owner-only values stay in your answer to the owner; never put them in a brief or a
+  steering note.
+- When the owner wants the raw lines, qfr.logs.export writes the filtered slice to
+  exports/logs/ and returns its path, line count and SHA-256.
+- For a boundary failure reported by just doctor, suggest qfr.ops.pause_research and
+  say why; pause only when the owner agrees.
 """

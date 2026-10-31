@@ -81,5 +81,25 @@ elif command == "deferred":
         )
     )
     sys.exit(2)
+elif command == "rotate-mcp-token":
+    # Section 13.2: a new owner token in .env; `just rotate-mcp-token` then recreates
+    # qfr-mcp so the old token stops working, and `just mcp-config` prints the new one.
+    target = root / ".env"
+    lines = target.read_text().splitlines()
+    if not any(line.startswith("QFR_MCP_TOKEN=") for line in lines):
+        raise SystemExit("QFR_MCP_TOKEN is not in .env; run just init-secrets first")
+    token = secrets.token_urlsafe()
+    rotated = [
+        f"QFR_MCP_TOKEN={token}" if line.startswith("QFR_MCP_TOKEN=") else line for line in lines
+    ]
+    staging = target.with_name(".env.rotating")
+    fd = os.open(staging, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as stream:
+        stream.write("\n".join(rotated) + "\n")
+    os.replace(staging, target)
+    print(
+        "Rotated QFR_MCP_TOKEN in .env (mode 0600). qfr-mcp is recreated next; then run "
+        "`just mcp-config` and update the host agent's configuration."
+    )
 else:
     raise SystemExit("unknown operation")

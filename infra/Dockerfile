@@ -59,8 +59,14 @@ FROM runtime AS research
 COPY prompts /app/prompts
 ENV QFR_PROMPTS_DIR=/app/prompts
 
+# qfr-mcp and ops-nightly (build with QFR_PACKAGE=qfr-mcp). The host-agent guide is
+# served as qfr://docs/host-agent-guide; ops-nightly reads the nightly schedule and the
+# backup policy from deployment.yaml.
 FROM runtime AS mcp
 COPY schemas/private/owner_evidence.json /app/schemas/owner_evidence.json
+COPY configs/deployment.yaml /app/configs/deployment.yaml
+COPY docs/HOST_AGENT_GUIDE.md /app/docs/HOST_AGENT_GUIDE.md
+ENV QFR_HOST_AGENT_GUIDE=/app/docs/HOST_AGENT_GUIDE.md
 
 # Evaluation-side image (build with QFR_PACKAGE=qfr-eval): data-ingest, eval-scheduler,
 # eval-worker, release-worker, feedback-api and eval-admin-api. Protocols, epochs, release
@@ -68,6 +74,13 @@ COPY schemas/private/owner_evidence.json /app/schemas/owner_evidence.json
 # only the services' own operating parameters and the deployment schedule are.
 FROM runtime AS eval
 COPY configs/eval.yaml configs/deployment.yaml /app/configs/
+
+# The nightly backup service (PLAN Section 17.5): pg_dump from the server's major version.
+# It runs as the qfr user so it can read the log files and snapshot volumes it archives.
+FROM postgres AS backup
+COPY --chmod=0555 infra/backup/backup.sh /usr/local/bin/qfr-backup
+USER 10001:10001
+CMD ["qfr-backup", "serve"]
 
 FROM dependencies AS migration-build
 COPY packages ./packages

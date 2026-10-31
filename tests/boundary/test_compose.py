@@ -165,7 +165,50 @@ def test_the_evaluation_store_is_written_only_by_the_worker():
         "eval-scheduler": False,
         "eval-admin-api": False,
         "sim-engine": False,
+        "backup": False,
     }
+
+
+def test_phase_7_operations_services_hold_only_what_they_need():
+    """ops-nightly: control_db and the logs volume (it compresses and deletes old days)
+    and the backups folder read-only. backup: the migration roles it dumps with, the
+    snapshot and store volumes read-only, its own log folder and the backups folder.
+    Neither has egress, a published port, a provider key or a service token."""
+    deployment = yaml.safe_load(Path("configs/deployment.yaml").read_text())
+    nightly = COMPOSE["services"]["ops-nightly"]
+    assert nightly["command"] == ["python", "-m", "qfr_mcp.nightly"]
+    assert nightly["networks"] == ["control_net"] and "ports" not in nightly
+    assert {k for k in nightly["environment"] if k.endswith(("_URL", "_TOKEN"))} == {
+        "CONTROL_DB_URL"
+    }
+    assert {(v["source"], v["target"], v["read_only"]) for v in nightly["volumes"]} == {
+        ("qfr_logs", "/var/log/qfr", False),
+        ("../backups", "/backups", True),
+    }
+    backup = COMPOSE["services"]["backup"]
+    assert backup["build"]["target"] == "backup" and backup["command"] == ["qfr-backup", "serve"]
+    assert backup["networks"] == ["control_net"] and "ports" not in backup
+    environment = backup["environment"]
+    assert {k for k in environment if k.endswith(("_URL", "_TOKEN"))} == {
+        "REGISTRY_MIGRATION_URL", "RESEARCH_MIGRATION_URL", "EVAL_MIGRATION_URL",
+        "CONTROL_MIGRATION_URL",
+    }  # fmt: skip
+    # The schedule and retention are deployment.yaml's, passed to the script.
+    assert environment["QFR_NIGHTLY_LOCAL"] == deployment["schedule"]["nightly_local"]
+    assert int(environment["QFR_BACKUP_DAILY_RETENTION"]) == deployment["backup"]["daily_retention"]
+    assert (
+        int(environment["QFR_BACKUP_MONTHLY_RETENTION"])
+        == deployment["backup"]["monthly_retention"]
+    )
+    writable = {v["target"] for v in backup["volumes"] if not v["read_only"]}
+    assert writable == {"/backups", "/var/log/qfr/backup"}
+    assert {v["source"] for v in backup["volumes"] if v["target"].startswith("/mirror/")} == {
+        "snapshots_full", "snapshots_research", "eval_store",
+    }  # fmt: skip
+    # Every service that writes logs gets its folder from init-volumes.
+    created = COMPOSE["services"]["init-volumes"]["command"][2]
+    for name in ("ops-nightly", "backup"):
+        assert f"Path('/var/log/qfr/{name}').mkdir" in created
 
 
 def test_feedback_api_reads_released_views_only():

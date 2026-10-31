@@ -9,5 +9,6 @@ backups
 data
 logs
 docs
+!docs/HOST_AGENT_GUIDE.md
 **/__pycache__
 **/.pytest_cache

@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [arm64, amd64]
-        target: [postgres, runtime, registry, mcp, eval, research, migrate]
+        target: [postgres, runtime, registry, mcp, eval, research, migrate, backup]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3

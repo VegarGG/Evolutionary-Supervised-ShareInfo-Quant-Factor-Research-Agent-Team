@@ -19,3 +19,4 @@ qfr-mcp = "qfr_mcp.server:main"
 [project.entry-points."qfr.commands"]
 setup = "qfr_mcp.setup_cli:app"
 export = "qfr_mcp.exports:app"
+ops = "qfr_mcp.nightly:ops_app"

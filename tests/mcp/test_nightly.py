@@ -152,3 +152,56 @@ def test_operations_tables_are_insert_only_and_deduplicated(tmp_path):
                     conn.exec_driver_sql(f"DELETE FROM {table}")
     finally:
         control.close()
+
+
+def test_host_side_reports_are_logged_by_ops_nightly(tmp_path, monkeypatch):
+    """`just doctor` and `just restore-drill` log their result through ops-nightly."""
+    from qfr_mcp.nightly import ops_app
+    from typer.testing import CliRunner
+
+    monkeypatch.setenv("QFR_LOG_DIR", str(tmp_path))
+    report = {
+        "status": "FAIL",
+        "at": "2026-10-31T00:00:00+00:00",
+        "path": "exports/restore-drill/x.json",
+        "backup": "2026-10-30",
+        "checks": [{"check": "BND-01:x", "status": "FAIL"}, {"check": "y", "status": "PASS"}],
+        "skipped": ["EVL-04"],
+    }
+    # A one-command Typer app is invoked without the command name (`qfr ops record` in
+    # the image, where the qfr CLI mounts it as a group).
+    done = CliRunner().invoke(ops_app, ["restore_drill"], input=json.dumps(report))
+    assert done.exit_code == 0, done.output
+    (log,) = (tmp_path / "ops-nightly").glob("*.jsonl")
+    (line,) = [json.loads(x) for x in log.read_text().splitlines()]
+    assert (line["event"], line["level"], line["outcome"]) == (
+        "restore_drill_completed", "WARNING", "failed",
+    )  # fmt: skip
+    assert line["payload"]["failed_checks"] == ["BND-01:x"]
+    assert line["payload"]["skipped"] == ["EVL-04"]
+    refused = CliRunner().invoke(ops_app, ["anything"], input="{}")
+    assert refused.exit_code != 0
+
+
+def test_rotating_the_mcp_token_replaces_only_that_line(tmp_path):
+    import os
+    import shutil
+    import subprocess
+    import sys
+
+    (tmp_path / "scripts").mkdir()
+    shutil.copy("scripts/ops.py", tmp_path / "scripts/ops.py")
+    env_file = tmp_path / ".env"
+    env_file.write_text("A=1\nQFR_MCP_TOKEN=old\nZ=2\n")
+    done = subprocess.run(
+        [sys.executable, str(tmp_path / "scripts/ops.py"), "rotate-mcp-token"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert done.returncode == 0, done.stderr
+    lines = env_file.read_text().splitlines()
+    assert lines[0] == "A=1" and lines[2] == "Z=2"
+    assert lines[1].startswith("QFR_MCP_TOKEN=") and lines[1] != "QFR_MCP_TOKEN=old"
+    assert lines[1].split("=", 1)[1] not in done.stdout  # the token is never printed
+    assert os.stat(env_file).st_mode & 0o777 == 0o600
