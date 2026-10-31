@@ -1,4 +1,6 @@
-"""Run the suite against this project's isolated, disposable PostgreSQL instance."""
+"""Run the suite against this project's isolated, disposable PostgreSQL instance.
+
+Extra arguments go to pytest (`just bench` passes `-m benchmark tests/benchmarks`)."""
 
 import os
 import subprocess
@@ -41,7 +43,7 @@ for name in ("REGISTRY", "RESEARCH", "EVAL", "FEEDBACK", "CONTROL"):
 env["QFR_TEST_CONTROL_MIGRATION_URL"] = env["CONTROL_MIGRATION_URL"]
 env["QFR_TEST_REGISTRY_MIGRATION_URL"] = env["REGISTRY_MIGRATION_URL"]
 result = subprocess.run(
-    [sys.executable, "-m", "pytest", "--junitxml=exports/pytest-postgres.xml"],
+    [sys.executable, "-m", "pytest", "--junitxml=exports/pytest-postgres.xml", *sys.argv[1:]],
     env=env,
     cwd=root,
 )

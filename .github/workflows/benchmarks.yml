@@ -1,0 +1,41 @@
+name: Nightly benchmarks
+# BM-PLANTED and BM-NULL (PLAN Section 18.3) with their fixed seeds, offline with the
+# scripted LLM; the result files are kept as an artifact.
+on:
+  schedule:
+    - cron: '30 18 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmarks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ci-only-disposable-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.11.19'
+          python-version: '3.12'
+      - uses: extractions/setup-just@v3
+      - run: uv sync --locked
+      - run: just init-secrets
+      - run: uv run --locked python scripts/ci_database.py
+        env:
+          CI_POSTGRES_PASSWORD: ci-only-disposable-password
+      - run: just bench
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmarks-${{ github.run_id }}
+          path: exports/benchmarks/
+          retention-days: 90
