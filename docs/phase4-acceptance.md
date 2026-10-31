@@ -56,8 +56,8 @@ Nothing is preloaded: no factors, strategies, seeds, sample briefs or prices.
   schema and public-card generation (no diff after regeneration) and the license check
   pass.
 - `pytest -n 4` against PostgreSQL 16 with the Phase 0 roles and all migrations
-  (`QFR_REQUIRE_DB_TESTS=1`): **1055 passed, 0 skipped** in about three and a half
-  minutes; Phase 4 adds 68 tests. research_db, registry_db and eval_db are empty after
+  (`QFR_REQUIRE_DB_TESTS=1`), merged with the Phase 3 branch's immediate release (plan
+  v2.2): **1059 passed, 0 skipped** in about two minutes; Phase 4 adds 75 tests. research_db, registry_db and eval_db are empty after
   the run (control_db keeps the audit row the Phase 0 boundary test writes on purpose).
 - Two Phase 3 tests depended on the release order of reports due at the same time
   (about one run in four failed). The fix, ties broken by queue id and the
