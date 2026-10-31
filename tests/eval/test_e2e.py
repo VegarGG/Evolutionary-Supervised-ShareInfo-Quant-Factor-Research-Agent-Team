@@ -126,7 +126,13 @@ def test_thirty_seeds_flow_from_import_to_released_reports_and_owner_evidence(fu
         "library_correlation", "coverage",
     }  # fmt: skip
     assert {s["kind"] for s in evidence["series"]} == {"rankic", "ls_returns", "nav"}
-    assert evidence["library_correlation"]["vacuous"] is True  # the first seeds see none
+    # The first seed evaluated sees no library yet. Reports in one batch share a due time,
+    # so the release order is not the evaluation order: take the first W1 record.
+    first = full.eval.db.scalar(
+        "SELECT version_id FROM eval.official_records WHERE stage = 'w1' ORDER BY record_id LIMIT 1"
+    )
+    earliest = full.mcp.ok("qfr.evidence.get", version_id=str(first))["data"]
+    assert earliest["library_correlation"]["vacuous"] is True
 
     # The pool listing now carries evidence tiers and released state.
     listed = full.mcp.ok("qfr.pool.list", pool="factor")["data"]["items"]

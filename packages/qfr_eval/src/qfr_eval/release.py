@@ -102,7 +102,10 @@ class ReleaseEngine:
                     text(
                         "SELECT queue_id, report_type, version_id, record_id, payload "
                         "FROM eval.release_queue WHERE state = 'queued' AND due_at <= :now "
-                        "ORDER BY due_at, created_at LIMIT :n FOR UPDATE SKIP LOCKED"
+                        # queue_id (UUIDv7) breaks ties, so reports due together are
+                        # released in the order they were queued: a version's intake
+                        # before its screening before its W1.
+                        "ORDER BY due_at, created_at, queue_id LIMIT :n FOR UPDATE SKIP LOCKED"
                     ),
                     {"now": now, "n": self.config.release.batch_limit},
                 ).all()
