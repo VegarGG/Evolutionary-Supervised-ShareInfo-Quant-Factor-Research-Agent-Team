@@ -29,6 +29,7 @@ from qfr_core.contracts import PoolName, PoolStatus
 from qfr_core.correlation import bind, current, from_headers
 from qfr_core.dsl import DslLimits
 from qfr_core.logging import JsonLogger, StdlibBridge
+from qfr_core.pyfactor import PythonLimits, public_python_limits
 from qfr_core.registry_api import (
     SERVER_FIELDS,
     AddEntryRequest,
@@ -100,14 +101,21 @@ def strip_server_fields(body: dict[str, Any]) -> tuple[dict[str, Any], list[str]
     return cleaned, ignored
 
 
+def python_limits(config_dir: Path) -> PythonLimits | None:
+    """The qfr-python/1 limits from the public protocol card; None when the shipped
+    protocol has no python section (Python factors are then refused)."""
+    return public_python_limits(config_dir)
+
+
 def create_app(
     db: Database,
     auth: TokenAuth,
     config: RegistryConfig,
     limits: DslLimits,
     logger: JsonLogger,
+    python: PythonLimits | None = None,
 ) -> FastAPI:
-    service = RegistryService(db, limits, config, logger)
+    service = RegistryService(db, limits, config, logger, python)
     app = FastAPI(title="QFR registry-api", version="1", docs_url=None, redoc_url=None)
 
     def roles(*allowed: Role) -> Callable[[Request], Awaitable[Role]]:
@@ -347,7 +355,8 @@ def build(
     logging.getLogger().handlers = [StdlibBridge(logger)]
     logging.getLogger().setLevel(log_config.level)
     limits = DslLimits.from_protocol(public_protocol_section(settings.config_dir, "dsl"))
-    app = create_app(db or Database(url or None), auth, config, limits, logger)
+    python = python_limits(settings.config_dir)
+    app = create_app(db or Database(url or None), auth, config, limits, logger, python)
     logger.logger.info(
         "service_started",
         payload={

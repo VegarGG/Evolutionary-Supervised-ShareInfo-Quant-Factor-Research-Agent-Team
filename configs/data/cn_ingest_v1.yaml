@@ -13,3 +13,12 @@ optional_fields: [vwap, change]
 max_archive_bytes: 8000000000
 max_extracted_bytes: 40000000000
 download_timeout_seconds: 120
+# Phase 8 (P8.6): an optional point-in-time industry classification for industry-neutral
+# strategies. A CSV under the raw data folder (QFR_RAW_DIR, data/raw by default) with
+# columns instrument (SH600000 or 600000.SH), start, end (YYYY-MM-DD; an empty end means
+# still in force) and industry. Set both lines together, for example:
+#   industry_file: industry/sw2021_l1.csv
+#   industry_scheme: sw2021_l1
+# The build fails when the file classifies less than industry_coverage_min of CSI 300
+# member days.
+industry_coverage_min: 0.9

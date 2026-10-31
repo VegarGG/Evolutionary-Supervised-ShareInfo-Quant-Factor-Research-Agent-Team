@@ -37,8 +37,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM python:3.12-slim AS runtime
 RUN groupadd --gid 10001 qfr && useradd --uid 10001 --gid qfr --create-home qfr \
     && mkdir -p /var/log/qfr /app/configs /app/schemas /data/full /data/research /data/raw \
-       /data/eval-store \
-    && chown -R qfr:qfr /var/log/qfr /data
+       /data/eval-store /sandbox \
+    && chown -R qfr:qfr /var/log/qfr /data /sandbox
 COPY --from=build /app/.venv /app/.venv
 COPY LICENSE NOTICE ADDITIONAL-PERMISSION.md THIRD-PARTY-NOTICES.md /app/
 COPY configs/logging.yaml configs/mcp.yaml configs/registry.yaml /app/configs/
@@ -69,9 +69,12 @@ COPY docs/HOST_AGENT_GUIDE.md /app/docs/HOST_AGENT_GUIDE.md
 ENV QFR_HOST_AGENT_GUIDE=/app/docs/HOST_AGENT_GUIDE.md
 
 # Evaluation-side image (build with QFR_PACKAGE=qfr-eval): data-ingest, eval-scheduler,
-# eval-worker, release-worker, feedback-api and eval-admin-api. Protocols, epochs, release
-# policies, quotas and data configs are bind-mounted read-only by Compose, never baked in;
-# only the services' own operating parameters and the deployment schedule are.
+# eval-worker, eval-sandbox, release-worker, feedback-api and eval-admin-api. eval-sandbox
+# runs Python factors with no network, no database and no snapshot: only the /sandbox
+# exchange volume (an empty named volume takes /sandbox's owner, the qfr user).
+# Protocols, epochs, release policies, quotas and data configs are bind-mounted read-only
+# by Compose, never baked in; only the services' own operating parameters and the
+# deployment schedule are.
 FROM runtime AS eval
 COPY configs/eval.yaml configs/deployment.yaml /app/configs/
 

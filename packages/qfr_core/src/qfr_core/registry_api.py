@@ -9,10 +9,10 @@ from typing import Annotated, Literal, Self
 from pydantic import UUID7, AwareDatetime, Field, JsonValue, StringConstraints, model_validator
 
 from qfr_core.contracts import (
+    AnyManifest,
     ApprovalScope,
     Contract,
     Hash,
-    Manifest,
     PoolEntry,
     PoolName,
     PoolStatus,
@@ -21,7 +21,7 @@ from qfr_core.contracts import (
     Tier,
 )
 
-Kind = Literal["factor", "strategy"]
+Kind = Literal["factor", "strategy", "research_note"]
 PublishKey = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9._:-]{1,128}$")]
 Note = Annotated[str, StringConstraints(min_length=1, max_length=2000)]
 
@@ -43,7 +43,7 @@ class PublishRequest(Contract):
     """POST /v1/artifacts. publish_key makes a retried request safe (Section 16.5)."""
 
     publish_key: PublishKey
-    manifest: Manifest
+    manifest: AnyManifest
 
 
 class VersionRecord(Contract):
@@ -60,9 +60,10 @@ class VersionRecord(Contract):
     published_at: AwareDatetime
     publisher: str
     # Server-side analysis: the DSL canonical form, complexity, fields and lookback for
-    # factors; the normalized weights for strategies.
+    # factors; the normalized weights for strategies; the citation and claim counts for
+    # research notes.
     analysis: dict[str, JsonValue]
-    manifest: Manifest
+    manifest: AnyManifest
 
 
 class PublishResponse(Contract):

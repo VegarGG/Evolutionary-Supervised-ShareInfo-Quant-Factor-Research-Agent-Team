@@ -11,7 +11,7 @@ from uuid import UUID
 
 import httpx
 from pydantic import BaseModel, ValidationError
-from qfr_core.contracts import FactorManifest, StrategyManifest
+from qfr_core.contracts import FactorManifest, ResearchNoteManifest, StrategyManifest
 from qfr_core.correlation import to_headers
 from qfr_core.eval_api import Card, ReportPage
 from qfr_core.logging import JsonLogger
@@ -97,7 +97,7 @@ class RegistryClient(_Client):
     backend = "registry-api"
 
     def publish(
-        self, manifest: FactorManifest | StrategyManifest, publish_key: str
+        self, manifest: FactorManifest | StrategyManifest | ResearchNoteManifest, publish_key: str
     ) -> PublishResponse:
         body = {"publish_key": publish_key, "manifest": manifest.model_dump(mode="json")}
         return self._model(PublishResponse, "POST", "/v1/artifacts", body=body)

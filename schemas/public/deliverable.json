@@ -132,7 +132,8 @@
             "gate_failed",
             "owner_rejected",
             "incubation_failed",
-            "gates_passed"
+            "gates_passed",
+            "owner_override"
           ],
           "title": "Reason",
           "type": "string"
@@ -369,7 +370,22 @@
           "title": "Family Id"
         },
         "implementation": {
-          "$ref": "#/$defs/FactorImplementation"
+          "discriminator": {
+            "mapping": {
+              "qfr-dsl/1": "#/$defs/FactorImplementation",
+              "qfr-python/1": "#/$defs/PythonImplementation"
+            },
+            "propertyName": "language"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/FactorImplementation"
+            },
+            {
+              "$ref": "#/$defs/PythonImplementation"
+            }
+          ],
+          "title": "Implementation"
         },
         "kind": {
           "const": "factor",
@@ -749,6 +765,78 @@
       "title": "LibraryContent",
       "type": "object"
     },
+    "NoteCheckCode": {
+      "description": "Why a research note failed its output-quality checks (Section 8.10).",
+      "enum": [
+        "CITATION_UNKNOWN",
+        "CLAIM_FIELD_UNKNOWN",
+        "CLAIM_MISMATCH",
+        "UNDISCLOSED_WINDOW",
+        "LENGTH_LIMIT"
+      ],
+      "title": "NoteCheckCode",
+      "type": "string"
+    },
+    "NoteContent": {
+      "additionalProperties": false,
+      "description": "The output-quality result of a research note: PASS or FAIL, the failed checks, and\nwhich claims (by position in the note's claims list) did not match a released value.",
+      "properties": {
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/NoteCheckCode"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "citations": {
+          "minimum": 0,
+          "title": "Citations",
+          "type": "integer"
+        },
+        "claims": {
+          "minimum": 0,
+          "title": "Claims",
+          "type": "integer"
+        },
+        "claims_matched": {
+          "minimum": 0,
+          "title": "Claims Matched",
+          "type": "integer"
+        },
+        "failed_claims": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 200,
+          "title": "Failed Claims",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "note",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "checks",
+        "citations",
+        "claims",
+        "claims_matched",
+        "failed_claims"
+      ],
+      "title": "NoteContent",
+      "type": "object"
+    },
     "Portfolio": {
       "additionalProperties": false,
       "properties": {
@@ -913,6 +1001,35 @@
       "title": "Provenance",
       "type": "object"
     },
+    "PythonImplementation": {
+      "additionalProperties": false,
+      "description": "A qfr-python/1 module (Phase 8): `factor(...)` over field matrices, run only in the\nevaluator's sandbox. The protocol's python section caps the length; this is the\nschema's outer bound.",
+      "properties": {
+        "entrypoint": {
+          "const": "factor",
+          "title": "Entrypoint",
+          "type": "string"
+        },
+        "language": {
+          "const": "qfr-python/1",
+          "title": "Language",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "language",
+        "source",
+        "entrypoint"
+      ],
+      "title": "PythonImplementation",
+      "type": "object"
+    },
     "Rationale": {
       "additionalProperties": false,
       "properties": {
@@ -996,6 +1113,7 @@
               "decision": "#/$defs/DecisionContent",
               "intake": "#/$defs/IntakeContent",
               "library": "#/$defs/LibraryContent",
+              "note": "#/$defs/NoteContent",
               "screening": "#/$defs/IntakeContent",
               "sim": "#/$defs/SimulationContent",
               "w1": "#/$defs/W1Content",
@@ -1024,6 +1142,9 @@
             },
             {
               "$ref": "#/$defs/LibraryContent"
+            },
+            {
+              "$ref": "#/$defs/NoteContent"
             }
           ],
           "title": "Content"
@@ -1172,6 +1293,75 @@
       "title": "Review",
       "type": "object"
     },
+    "RulesPortfolio": {
+      "additionalProperties": false,
+      "description": "The qfr-strategy/2 portfolio (Phase 8, PLAN 7.8): TopK-dropout with optional\nrules. long_only false adds a short book of the k worst names; max_position_weight\ncaps a name's weight (entries sized at most at the cap, drifted holdings trimmed);\nmax_industry_weight caps one industry's share of a book's names. The protocol's\nstrategy_rules section bounds the values further.",
+      "properties": {
+        "dropout": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Dropout",
+          "type": "integer"
+        },
+        "long_only": {
+          "title": "Long Only",
+          "type": "boolean"
+        },
+        "max_industry_weight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Industry Weight"
+        },
+        "max_position_weight": {
+          "anyOf": [
+            {
+              "maximum": 0.2,
+              "minimum": 0.005,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Position Weight"
+        },
+        "rebalance": {
+          "const": "daily",
+          "title": "Rebalance",
+          "type": "string"
+        },
+        "top_k": {
+          "maximum": 100,
+          "minimum": 20,
+          "title": "Top K",
+          "type": "integer"
+        },
+        "type": {
+          "const": "topk_dropout",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "top_k",
+        "dropout",
+        "rebalance",
+        "long_only"
+      ],
+      "title": "RulesPortfolio",
+      "type": "object"
+    },
     "SimulationContent": {
       "additionalProperties": false,
       "properties": {
@@ -1292,7 +1482,22 @@
           "title": "Family Id"
         },
         "implementation": {
-          "$ref": "#/$defs/StrategyImplementation"
+          "discriminator": {
+            "mapping": {
+              "qfr-strategy/1": "#/$defs/StrategyImplementation",
+              "qfr-strategy/2": "#/$defs/StrategyRulesImplementation"
+            },
+            "propertyName": "language"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/StrategyImplementation"
+            },
+            {
+              "$ref": "#/$defs/StrategyRulesImplementation"
+            }
+          ],
+          "title": "Implementation"
         },
         "kind": {
           "const": "strategy",
@@ -1407,6 +1612,51 @@
         "composition_rationale"
       ],
       "title": "StrategyRationale",
+      "type": "object"
+    },
+    "StrategyRulesImplementation": {
+      "additionalProperties": false,
+      "description": "qfr-strategy/2 (Phase 8): the v1 composite with richer rules. neutralize\n\"industry\" demeans the composite within each industry every day before ranking.\nAt least one Phase 8 rule is used; a plain strategy stays qfr-strategy/1.",
+      "properties": {
+        "combination": {
+          "const": "zscore_weighted_sum",
+          "title": "Combination",
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/Component"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Components",
+          "type": "array"
+        },
+        "language": {
+          "const": "qfr-strategy/2",
+          "title": "Language",
+          "type": "string"
+        },
+        "neutralize": {
+          "enum": [
+            "none",
+            "industry"
+          ],
+          "title": "Neutralize",
+          "type": "string"
+        },
+        "portfolio": {
+          "$ref": "#/$defs/RulesPortfolio"
+        }
+      },
+      "required": [
+        "language",
+        "components",
+        "combination",
+        "neutralize",
+        "portfolio"
+      ],
+      "title": "StrategyRulesImplementation",
       "type": "object"
     },
     "W1Content": {
@@ -1608,6 +1858,34 @@
     "W2Content": {
       "additionalProperties": false,
       "properties": {
+        "answer_budget": {
+          "anyOf": [
+            {
+              "enum": [
+                "open",
+                "exhausted"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Budget"
+        },
+        "answer_rankic": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Rankic"
+        },
         "family_best_rankic": {
           "anyOf": [
             {
@@ -1620,11 +1898,27 @@
           "title": "Family Best Rankic"
         },
         "ladder_status": {
-          "enum": [
-            "IMPROVED",
-            "UNCHANGED"
+          "anyOf": [
+            {
+              "enum": [
+                "IMPROVED",
+                "UNCHANGED"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Ladder Status",
+          "title": "Ladder Status"
+        },
+        "mode": {
+          "default": "ladder",
+          "enum": [
+            "ladder",
+            "thresholdout"
+          ],
+          "title": "Mode",
           "type": "string"
         },
         "status": {

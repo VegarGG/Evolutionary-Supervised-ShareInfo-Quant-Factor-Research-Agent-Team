@@ -4,14 +4,15 @@ The full snapshot holds every row and is mounted only into evaluation containers
 research snapshot is the full data truncated to rows dated on or before the research
 cutoff, the end of W0. Every panel column depends only on the past, so the truncated
 rows equal the full rows; membership intervals are clipped at the cutoff so they reveal
-nothing about later index changes. Research snapshots never carry extra files such as
-the synthetic ground truth.
+nothing about later index changes, and so are industry intervals (Phase 8). Research
+snapshots never carry extra files such as the synthetic ground truth.
 """
 
 from dataclasses import dataclass, replace
 
 import polars as pl
 from qfr_core.config import EpochConfig
+from qfr_core.data.industry import clip
 from qfr_core.data.panel import DATE, sanity_checks
 from qfr_core.data.snapshot import (
     DateRange,
@@ -44,6 +45,7 @@ def truncate(data: SnapshotData, cutoff: DateRange) -> SnapshotData:
         panel=data.panel.filter(pl.col(DATE) <= end),
         membership=membership,
         calendar=data.calendar.filter(pl.col(DATE) <= end),
+        industry=None if data.industry is None else clip(data.industry, end),
     )
 
 

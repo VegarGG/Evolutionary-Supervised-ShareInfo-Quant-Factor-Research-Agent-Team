@@ -13,7 +13,7 @@ from qfr_core.config import logging_config
 from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
 from qfr_mcp.control_store import AlertAck, MemoryControlStore, OpsAlert, PostgresControlStore
-from qfr_mcp.nightly import COMPLETE, Schedule, backup_status, tick
+from qfr_mcp.nightly import COMPLETE, VERIFIED, Schedule, backup_status, tick
 from sqlalchemy.exc import DBAPIError
 
 from tests.mcp.setup_rig import TransactionalControl
@@ -120,6 +120,33 @@ def test_backup_check_reads_complete_dated_folders_only(tmp_path):
     run = tick(store, logger, logs, empty, config, Schedule(DEPLOYMENT), AFTER)
     assert run is not None and run.report["backup"]["status"] == "none"  # type: ignore[index]
     assert [a.kind for a in store.alerts] == ["backup"]
+
+
+def test_a_failed_backup_verification_raises_the_backup_alert(tmp_path):
+    """Phase 8: the backup service verifies the retained backups after each backup and
+    writes VERIFIED.json; a recent backup does not hide a failed verification."""
+    root = tmp_path / "backups"
+    backup(root, date(2026, 7, 2))
+    today = date(2026, 7, 2)
+    assert backup_status(root, today, 2)["verification"] == {"status": "none"}
+    verified = {"status": "PASS", "at": "2026-07-01T18:31:00Z", "newest": "2026-07-02",
+                "checked": 1, "archives_listed": 4, "failures": [], "audit_chains": {}}  # fmt: skip
+    (root / VERIFIED).write_text(json.dumps(verified))
+    status = backup_status(root, today, 2)
+    assert status["status"] == "ok" and status["verification"]["status"] == "PASS"
+    failed = verified | {"status": "FAIL", "failures": ["2026-06-30: checksums",
+                                                        "2026-07-02: audit chain"]}  # fmt: skip
+    (root / VERIFIED).write_text(json.dumps(failed))
+    status = backup_status(root, today, 2)
+    assert (status["status"], status["fresh"]) == ("verification_failed", False)
+    assert status["verification"]["failures"] == failed["failures"]
+    store = MemoryControlStore()
+    logs, config, logger = rig(tmp_path)
+    run = tick(store, logger, logs, root, config, Schedule(DEPLOYMENT), AFTER)
+    assert run is not None and [a.kind for a in store.alerts] == ["backup"]
+    assert store.alerts[0].details["verification"]["failures"] == failed["failures"]
+    (root / VERIFIED).write_text("not json")
+    assert backup_status(root, today, 2)["verification"]["status"] == "FAIL"
 
 
 @pytest.mark.postgres

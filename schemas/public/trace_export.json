@@ -55,7 +55,8 @@
             "gate_failed",
             "owner_rejected",
             "incubation_failed",
-            "gates_passed"
+            "gates_passed",
+            "owner_override"
           ],
           "title": "Reason",
           "type": "string"
@@ -174,6 +175,78 @@
       "title": "LibraryContent",
       "type": "object"
     },
+    "NoteCheckCode": {
+      "description": "Why a research note failed its output-quality checks (Section 8.10).",
+      "enum": [
+        "CITATION_UNKNOWN",
+        "CLAIM_FIELD_UNKNOWN",
+        "CLAIM_MISMATCH",
+        "UNDISCLOSED_WINDOW",
+        "LENGTH_LIMIT"
+      ],
+      "title": "NoteCheckCode",
+      "type": "string"
+    },
+    "NoteContent": {
+      "additionalProperties": false,
+      "description": "The output-quality result of a research note: PASS or FAIL, the failed checks, and\nwhich claims (by position in the note's claims list) did not match a released value.",
+      "properties": {
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/NoteCheckCode"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "citations": {
+          "minimum": 0,
+          "title": "Citations",
+          "type": "integer"
+        },
+        "claims": {
+          "minimum": 0,
+          "title": "Claims",
+          "type": "integer"
+        },
+        "claims_matched": {
+          "minimum": 0,
+          "title": "Claims Matched",
+          "type": "integer"
+        },
+        "failed_claims": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 200,
+          "title": "Failed Claims",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "note",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "status",
+        "checks",
+        "citations",
+        "claims",
+        "claims_matched",
+        "failed_claims"
+      ],
+      "title": "NoteContent",
+      "type": "object"
+    },
     "ReasonCode": {
       "enum": [
         "SCHEMA_INVALID",
@@ -207,6 +280,7 @@
               "decision": "#/$defs/DecisionContent",
               "intake": "#/$defs/IntakeContent",
               "library": "#/$defs/LibraryContent",
+              "note": "#/$defs/NoteContent",
               "screening": "#/$defs/IntakeContent",
               "sim": "#/$defs/SimulationContent",
               "w1": "#/$defs/W1Content",
@@ -235,6 +309,9 @@
             },
             {
               "$ref": "#/$defs/LibraryContent"
+            },
+            {
+              "$ref": "#/$defs/NoteContent"
             }
           ],
           "title": "Content"
@@ -734,6 +811,7 @@
             "NOT_SELECTED",
             "TRACE_CHECKED",
             "PUBLISHED",
+            "NOTE_PUBLISHED",
             "REPORT_RECEIVED",
             "INTERPRETED",
             "INTERPRETATION_CHALLENGED",
@@ -1000,6 +1078,34 @@
     "W2Content": {
       "additionalProperties": false,
       "properties": {
+        "answer_budget": {
+          "anyOf": [
+            {
+              "enum": [
+                "open",
+                "exhausted"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Budget"
+        },
+        "answer_rankic": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Rankic"
+        },
         "family_best_rankic": {
           "anyOf": [
             {
@@ -1012,11 +1118,27 @@
           "title": "Family Best Rankic"
         },
         "ladder_status": {
-          "enum": [
-            "IMPROVED",
-            "UNCHANGED"
+          "anyOf": [
+            {
+              "enum": [
+                "IMPROVED",
+                "UNCHANGED"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Ladder Status",
+          "title": "Ladder Status"
+        },
+        "mode": {
+          "default": "ladder",
+          "enum": [
+            "ladder",
+            "thresholdout"
+          ],
+          "title": "Mode",
           "type": "string"
         },
         "status": {

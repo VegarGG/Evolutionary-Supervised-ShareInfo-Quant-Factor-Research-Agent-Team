@@ -13,6 +13,7 @@ import numpy as np
 import polars as pl
 from numpy.typing import NDArray
 
+from qfr_core.data.industry import IndustryCodes, industry_codes
 from qfr_core.data.panel import DATE, INSTRUMENT
 from qfr_core.eligibility import Eligibility
 
@@ -36,12 +37,18 @@ class Market:
     limit_down: Mask
     benchmark_ret: Array
     minimum: int
+    industry: IndustryCodes | None = None  # Phase 8, when the snapshot carries a table
 
     @classmethod
     def from_panel(
-        cls, panel: pl.DataFrame, eligibility: Eligibility, calendar: pl.DataFrame | None = None
+        cls,
+        panel: pl.DataFrame,
+        eligibility: Eligibility,
+        calendar: pl.DataFrame | None = None,
+        industry: pl.DataFrame | None = None,
     ) -> Self:
-        """Panel sorted by instrument and date; calendar gives dates and benchmark_ret."""
+        """Panel sorted by instrument and date; calendar gives dates and benchmark_ret;
+        industry is the snapshot's point-in-time classification, if any."""
         if calendar is None:
             calendar = (
                 panel.select(DATE).unique().sort(DATE).with_columns(benchmark_ret=pl.lit(None))
@@ -77,6 +84,7 @@ class Market:
             .to_numpy()
             .astype(np.float64),
             minimum=eligibility.cross_section_min,
+            industry=None if industry is None else industry_codes(industry, dates, instruments),
         )
         base.close[rows, cols] = _floats(panel.get_column("close"))
         base.adv20[rows, cols] = _floats(panel.get_column("adv20"))
@@ -100,6 +108,7 @@ class Market:
         limit_up: Mask | None = None,
         limit_down: Mask | None = None,
         benchmark_ret: Array | None = None,
+        industry: IndustryCodes | None = None,
     ) -> Self:
         """A market built directly from matrices (the generator and hand fixtures)."""
         shape = (len(dates), len(instruments))
@@ -119,6 +128,7 @@ class Market:
             limit_down=np.zeros(shape, dtype=bool) if limit_down is None else limit_down,
             benchmark_ret=np.full(shape[0], np.nan) if benchmark_ret is None else benchmark_ret,
             minimum=minimum,
+            industry=industry,
         )
 
     @property

@@ -87,7 +87,8 @@ def test_a_case_is_decided_and_its_version_curated_through_mcp(full):
     assert mcp.store.list_approvals(10) == []
     for arguments, expected in (
         ({"decision": "accept_case", "owner_confirmation": f"ACCEPT {code}"}, "SCOPE_INVALID"),
-        ({"decision": "rollover_epoch", "owner_confirmation": "ROLL"}, "DECISION_UNSUPPORTED"),
+        # Phase 8: a rollover approval names only the epoch it starts.
+        ({"decision": "rollover_epoch", "owner_confirmation": "ROLL"}, "SCOPE_INVALID"),
         (
             {"decision": "approve", "version_ids": [str(version)],
              "owner_confirmation": "APPROVE"},
@@ -257,3 +258,71 @@ def test_ops_alerts_lists_and_acknowledges_the_evaluator_alerts(full):
             .all()
         )
     assert events == [{"by": "owner", "note": "Seen; the factor stays monitored."}]
+
+
+def test_an_owner_override_takes_two_approvals_a_day_apart_through_mcp(full):
+    """P8.7: OVERRIDE C-nnnn with a written rationale, 24 hours, CONFIRM OVERRIDE C-nnnn."""
+    from tests.eval.test_override import RATIONALE
+    from tests.eval.test_validation import UNREACHABLE_DSR
+
+    mcp = full.mcp
+    full.eval.activate_protocol("test-unreachable-dsr", UNREACHABLE_DSR)
+    response = mcp.registry.publish(factor_manifest("reversal", "-Pct($close,5)"))
+    version = UUID(response.json()["version"]["version_id"])
+    run_until(full.eval, version, {"AcceptanceReview"}, days=16)
+    (case,) = mcp.ok("qfr.acceptance.list_cases", state="open")["data"]["items"]
+    code, case_id = case["short_code"], case["case_id"]
+    assert case["recommendation"] == "REJECT" and case["override"] is None
+
+    # The words matter: the code alone is not an override.
+    plain = record(full, decision="override_case", case_id=case_id, owner_confirmation=code)
+    assert "OVERRIDE_WORDS_MISSING" in error_text(plain)
+    first = mcp.ok(
+        "qfr.approval.record", decision="override_case", case_id=case_id,
+        owner_confirmation=f"OVERRIDE {code}", rationale="The owner overrides the DSR gate.",
+    )["data"]  # fmt: skip
+    missing = mcp.error("qfr.acceptance.override", case_id=case_id, step="request",
+                        approval_id=first["approval_id"])  # fmt: skip
+    assert "RATIONALE_REQUIRED" in missing
+    short = mcp.error("qfr.acceptance.override", case_id=case_id, step="request",
+                      approval_id=first["approval_id"], rationale="Because.")  # fmt: skip
+    assert "ARGUMENT_INVALID" in short
+    pending = mcp.ok(
+        "qfr.acceptance.override", case_id=case_id, step="request",
+        approval_id=first["approval_id"], rationale=RATIONALE,
+    )["data"]  # fmt: skip
+    assert pending["state"] == "open" and pending["override"]["state"] == "pending"
+    assert pending["visibility"] == "owner_only"
+
+    # A second override request, and a confirmation inside the cooling period, are refused.
+    again = record(full, decision="override_case", case_id=case_id,
+                   owner_confirmation=f"OVERRIDE {code}")  # fmt: skip
+    assert "OVERRIDE_EXISTS" in error_text(again)
+    words = record(full, decision="confirm_override", case_id=case_id,
+                   owner_confirmation=f"CONFIRM {code}")  # fmt: skip
+    assert "OVERRIDE_WORDS_MISSING" in error_text(words)
+    early = mcp.ok(
+        "qfr.approval.record", decision="confirm_override", case_id=case_id,
+        owner_confirmation=f"CONFIRM OVERRIDE {code}", rationale="Confirmed.",
+    )["data"]  # fmt: skip
+    cooling = mcp.error("qfr.acceptance.override", case_id=case_id, step="confirm",
+                        approval_id=early["approval_id"])  # fmt: skip
+    assert "OVERRIDE_COOLING" in cooling
+    reused = mcp.error("qfr.acceptance.override", case_id=case_id, step="confirm",
+                       approval_id=first["approval_id"])  # fmt: skip
+    assert "APPROVAL_DECISION_MISMATCH" in reused
+
+    full.eval.clock.advance(hours=24)
+    second = mcp.ok(
+        "qfr.approval.record", decision="confirm_override", case_id=case_id,
+        owner_confirmation=f"CONFIRM OVERRIDE {code}", rationale="Confirmed after a day.",
+    )["data"]  # fmt: skip
+    accepted = mcp.ok("qfr.acceptance.override", case_id=case_id, step="confirm",
+                      approval_id=second["approval_id"])["data"]  # fmt: skip
+    assert (accepted["decision"], accepted["reason"], accepted["reason_gate"]) == (
+        "accepted", "owner_override", "G-DSR",
+    )  # fmt: skip
+    assert accepted["approval_id"] == second["approval_id"]
+    assert accepted["override"]["request_approval_id"] == first["approval_id"]
+    decisions = [a.decision for a in mcp.store.list_approvals(10)]
+    assert decisions.count("override_case") == 1 and decisions.count("confirm_override") == 2

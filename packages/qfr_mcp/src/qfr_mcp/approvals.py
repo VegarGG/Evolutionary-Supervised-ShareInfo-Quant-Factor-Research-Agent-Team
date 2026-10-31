@@ -8,7 +8,12 @@ code of each item:
   J-nnnn S-k for a strategy (research numbers them when it assembles the deliverable);
 - an acceptance case: C-nnnn (the evaluator numbers cases when it opens them);
 - a pool entry: E- and the last six hex digits of the entry id (qfr.pool.list shows it);
-- a job with no item named, for a rejection: J-nnnn.
+- a job with no item named, for a rejection: J-nnnn;
+- an epoch rollover: R- and the new epoch's id, for example R-epoch_002 (Phase 8). The
+  evaluator must accept the epoch file in a dry run before the approval is recorded;
+- an owner override of a case with a failed gate (Phase 8): the case's C-nnnn, with the
+  word OVERRIDE in the request ("OVERRIDE C-0003") and CONFIRM OVERRIDE in the second
+  confirmation, which is recorded only after the 24-hour cooling period.
 
 The owner's confirmation must contain every code in scope; a deliverable item's job code
 and item code may appear apart, as in "APPROVE J-0042 F-1 F-2". This guards against an
@@ -20,18 +25,38 @@ every version in scope (its pool tier), or a lower tier the owner names.
 
 import re
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID
 
 from qfr_core.contracts import TIER_ORDER, ApprovalScope, PoolEntry, Tier
-from qfr_core.eval_api import AcceptanceCase
+from qfr_core.eval_api import AcceptanceCase, RolloverRequest
 
 from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
 from qfr_mcp.eval_client import EvalAdminClient
 from qfr_mcp.registry_client import RegistryClient
 from qfr_mcp.research_client import ResearchClient
 
-Decision = Literal["approve", "reject", "retire", "accept_case", "reject_case", "rollover_epoch"]
+Decision = Literal[
+    "approve", "reject", "retire", "accept_case", "reject_case", "rollover_epoch",
+    "override_case", "confirm_override",
+]  # fmt: skip
+CASE_DECISIONS = ("accept_case", "reject_case", "override_case", "confirm_override")
+# Words an override's confirmation must hold besides the case's code.
+OVERRIDE_WORDS: dict[str, tuple[str, ...]] = {
+    "override_case": ("OVERRIDE",),
+    "confirm_override": ("CONFIRM", "OVERRIDE"),
+}
+
+
+def missing_words(decision: str, confirmation: str) -> list[str]:
+    return [
+        word
+        for word in OVERRIDE_WORDS.get(decision, ())
+        if not re.search(rf"(?<![A-Za-z]){word}(?![A-Za-z])", confirmation, re.IGNORECASE)
+    ]
+
+
 Pool = Literal["factor", "strategy"]
 RANK = {tier: i for i, tier in enumerate(TIER_ORDER)}
 
@@ -54,6 +79,10 @@ class Code:
 
 def entry_code(entry_id: UUID) -> str:
     return f"E-{entry_id.hex[-6:]}"
+
+
+def rollover_code(epoch_id: str) -> str:
+    return f"R-{epoch_id}"
 
 
 def item_code(label: str) -> Code:
@@ -103,12 +132,14 @@ class Resolver:
         tier: Tier | None,
         case_id: UUID | None,
         entry_ids: list[UUID],
+        epoch_id: str | None = None,
     ) -> Resolved:
         if decision == "rollover_epoch":
-            raise ApprovalRefused(
-                "DECISION_UNSUPPORTED",
-                "epoch rollover arrives with Phase 8 (qfr.ops.rollover_epoch)",
-            )
+            if job_id or deliverable_id or version_ids or pool or tier or case_id or entry_ids:
+                raise ApprovalRefused("SCOPE_INVALID", "a rollover approval names the epoch only")
+            return await self._rollover(epoch_id)
+        if epoch_id is not None:
+            raise ApprovalRefused("SCOPE_INVALID", "only a rollover approval names an epoch")
         versions = list(dict.fromkeys(version_ids))
         entries_wanted = list(dict.fromkeys(entry_ids))
         try:
@@ -123,7 +154,7 @@ class Resolver:
 
         kinds: dict[UUID, str] = {v: kind for v, (_, kind) in items.items()}
         codes: list[Code] = []
-        if decision in ("accept_case", "reject_case"):
+        if decision in CASE_DECISIONS:
             if case is None:
                 raise ApprovalRefused("SCOPE_INVALID", "a case decision names its case_id")
             if deliverable_id or entries_wanted or pool or tier:
@@ -134,6 +165,7 @@ class Resolver:
                 raise ApprovalRefused("SCOPE_INVALID", "the case is about another version")
             if case.state != "open":
                 raise ApprovalRefused("CASE_DECIDED", f"case {case.short_code} is already decided")
+            self._override_ready(decision, case)
             versions = [case.version_id]
             kinds[case.version_id] = case.kind
             codes.append(single(case.short_code))
@@ -215,6 +247,35 @@ class Resolver:
         )
         return Resolved(scope, codes, kinds)
 
+    async def _rollover(self, epoch_id: str | None) -> Resolved:
+        """The epoch must pass the evaluator's dry run first: an approval is never
+        recorded for an epoch file the rollover would refuse."""
+        if epoch_id is None:
+            raise ApprovalRefused("SCOPE_INVALID", "a rollover approval names the epoch_id")
+        if self.admin is None:
+            raise ApprovalRefused("EVAL_ADMIN_UNCONFIGURED", "EVAL_ADMIN_API_URL is not set")
+        try:
+            request = RolloverRequest(epoch_id=epoch_id, dry_run=True)
+        except ValueError:
+            raise ApprovalRefused("SCOPE_INVALID", "epoch_id is not an epoch id") from None
+        try:
+            plan = await self.admin.rollover(request)
+        except DownstreamRefused as error:
+            raise ApprovalRefused(error.error, error.message) from None
+        except DownstreamUnavailable as error:
+            raise ApprovalRefused(
+                "SCOPE_UNAVAILABLE", f"the evaluator cannot check the epoch now: {error}"
+            ) from None
+        if plan.problems:
+            raise ApprovalRefused(
+                "ROLLOVER_REFUSED", "; ".join(plan.problems), {"problems": list(plan.problems)}
+            )
+        scope = ApprovalScope(
+            job_id=None, deliverable_id=None, version_ids=[], pool=None, tier=None,
+            case_id=None, entry_ids=[], epoch_id=epoch_id,
+        )  # fmt: skip
+        return Resolved(scope, [single(rollover_code(epoch_id))])
+
     async def _deliverable(
         self, job_id: UUID | None, deliverable_id: UUID | None
     ) -> tuple[dict[UUID, tuple[str, str]], UUID | None]:
@@ -244,6 +305,34 @@ class Resolver:
             return (await self.research.job(job_id)).short_code
         except DownstreamRefused as error:
             raise self._refused(error, "JOB_NOT_FOUND", "no such job") from None
+
+    @staticmethod
+    def _override_ready(decision: Decision, case: AcceptanceCase) -> None:
+        """An override is for a case with a failed gate, asked once; its confirmation
+        comes only after the cooling period (the evaluator checks both again)."""
+        override = case.override
+        if decision == "override_case":
+            if case.recommendation == "ACCEPT":
+                raise ApprovalRefused(
+                    "OVERRIDE_UNNEEDED", f"every gate of {case.short_code} passed; accept it"
+                )
+            if override is not None:
+                raise ApprovalRefused(
+                    "OVERRIDE_EXISTS", f"case {case.short_code} already has an override request"
+                )
+        elif decision == "confirm_override":
+            if override is None or override.state != "pending":
+                raise ApprovalRefused(
+                    "OVERRIDE_NOT_REQUESTED",
+                    f"case {case.short_code} has no override waiting for confirmation",
+                )
+            if datetime.now(UTC) < override.eligible_at:
+                raise ApprovalRefused(
+                    "OVERRIDE_COOLING",
+                    f"the cooling period of {case.short_code} ends at "
+                    f"{override.eligible_at.isoformat()}; ask the owner again after it",
+                    {"eligible_at": override.eligible_at.isoformat()},
+                )
 
     async def _case(self, case_id: UUID | None) -> AcceptanceCase | None:
         if case_id is None:

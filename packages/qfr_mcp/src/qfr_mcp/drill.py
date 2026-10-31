@@ -13,7 +13,9 @@ It restores the newest complete backup into a throwaway Compose project and chec
      otherwise);
   5. EVL-04: the newest official record is re-run by eval-worker against the restored
      database, with the snapshot and evaluation-store mirrors from backups/snapshots/
-     copied into the throwaway volumes, and its results hash must match.
+     copied into the throwaway volumes, and its results hash must match;
+  6. AUDIT (Phase 8, P8.5): each restored audit hash chain verifies, and its head is the
+     head the backup service recorded in AUDIT_CHAINS.json when it took the backup.
 
 The project is removed with its volumes afterwards, whatever happened. The report is
 written to exports/restore-drill/ and logged by ops-nightly. Passwords reach psql on
@@ -61,6 +63,8 @@ DRILL_SUBNETS = {
 }
 # Seed the throwaway volumes from the mirrors: (mirror folder, service, mount point).
 SEEDS = (("full", "data-ingest", "/data/full"), ("eval_store", "eval-worker", "/data/eval-store"))
+# The databases with an audit hash chain (P8.5) and the schema that holds it.
+AUDITED = {"registry_db": "public", "eval_db": "eval", "control_db": "public"}
 COPY = (
     "import shutil,sys; shutil.copytree('/seed', sys.argv[1], dirs_exist_ok=True); "
     "print('seeded', sys.argv[1])"
@@ -253,6 +257,38 @@ class Drill:
                 counts[f"{database}.{name}"] = int(output) if code == 0 else output[-200:]
         return counts
 
+    def audit_chains(self, folder: Path) -> None:
+        """Each restored chain verifies and ends where the backup recorded it did. A
+        backup taken before Phase 8 has no AUDIT_CHAINS.json: the check is skipped."""
+        path = folder / "AUDIT_CHAINS.json"
+        if not path.is_file():
+            self.check("AUDIT", None, "the backup predates the audit chains")
+            return
+        recorded = json.loads(path.read_text(encoding="utf-8"))
+        for database, schema in AUDITED.items():
+            expected = recorded.get(database)
+            if not isinstance(expected, dict) or expected.get("status") == "unavailable":
+                self.check(f"AUDIT:{database}", None, "no chain recorded for this database")
+                continue
+            code, output = self.psql(
+                database,
+                "SELECT status, head_seq, head_hash, coalesce(problem, '') "
+                f"FROM {schema}.audit_verify()",
+            )
+            fields = output.split("|")
+            if code != 0 or len(fields) != 4:
+                self.check(f"AUDIT:{database}", False, output[-300:])
+                continue
+            status, head_seq, head_hash, problem = fields
+            self.check(
+                f"AUDIT:{database}",
+                status == "ok"
+                and int(head_seq) == expected.get("head_seq")
+                and head_hash == expected.get("head_hash"),
+                {"status": status, "problem": problem or None, "head_seq": int(head_seq),
+                 "recorded_head_seq": expected.get("head_seq")},
+            )  # fmt: skip
+
     def evl_04(self, backups: Path) -> None:
         code, record = self.psql(
             "eval_db",
@@ -310,7 +346,7 @@ def report(
 ) -> dict[str, Any]:
     return {
         "at": datetime.now(UTC).isoformat(),
-        "phase": 7,
+        "phase": 8,
         "kind": "restore_drill",
         "project": project,
         "backup": None if backup is None else backup.name,

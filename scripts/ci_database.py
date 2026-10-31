@@ -37,3 +37,4 @@ with github_env.open("a") as stream:
         )
     stream.write("QFR_TEST_CONTROL_MIGRATION_URL=" + env["CONTROL_MIGRATION_URL"] + "\n")
     stream.write("QFR_TEST_REGISTRY_MIGRATION_URL=" + env["REGISTRY_MIGRATION_URL"] + "\n")
+    stream.write("QFR_TEST_EVAL_MIGRATION_URL=" + env["EVAL_MIGRATION_URL"] + "\n")

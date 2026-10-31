@@ -18,7 +18,7 @@ from qfr_core.config import logging_config, public_protocol_section, registry_co
 from qfr_core.dsl import DslLimits, validate
 from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
-from qfr_registry.app import create_app
+from qfr_registry.app import create_app, python_limits
 from qfr_registry.auth import TokenAuth
 from qfr_registry.db import WRITE_LOCK, Database
 from sqlalchemy import create_engine, text
@@ -96,7 +96,10 @@ def registry_rig(tmp_path: Path) -> Iterator[RegistryRig]:
         stdout=io.StringIO(),
         secrets=list(TOKENS.values()),
     )
-    app = create_app(db, TokenAuth(TOKENS), registry_config(Path("configs")), LIMITS, logger)
+    app = create_app(
+        db, TokenAuth(TOKENS), registry_config(Path("configs")), LIMITS, logger,
+        python_limits(Path("configs")),
+    )  # fmt: skip
     try:
         with TestClient(app, base_url="http://registry-api:8000") as client:
             yield RegistryRig(client, db, tmp_path)
@@ -159,6 +162,34 @@ def factor_manifest(
         "provenance": provenance,
         "review": {"verdict_id": str(uuid7()), "rounds": 1},
     }
+
+
+MOMENTUM_PY = '''"""Twenty-day momentum, in qfr-python/1."""
+import numpy as np
+
+
+def factor(close):
+    out = np.full_like(close, np.nan)
+    out[20:] = close[20:] / close[:-20] - 1
+    return out
+'''
+
+
+def python_manifest(
+    name: str = "momentum_py",
+    source: str = MOMENTUM_PY,
+    *,
+    fields: list[str] | None = None,
+    lookback: int = 20,
+    sign: int = 1,
+    parents: list[str] | None = None,
+) -> dict[str, Any]:
+    """A qfr-python/1 factor manifest (Phase 8): an owner import, not a research one."""
+    manifest = factor_manifest(name, parents=parents, sign=sign)
+    manifest["implementation"] = {"language": "qfr-python/1", "source": source,
+                                  "entrypoint": "factor"}  # fmt: skip
+    manifest["declared"] |= {"fields_used": fields or ["close"], "max_lookback_days": lookback}
+    return manifest
 
 
 def strategy_manifest(

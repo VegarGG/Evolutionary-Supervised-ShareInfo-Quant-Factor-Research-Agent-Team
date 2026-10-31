@@ -25,6 +25,7 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
+from qfr_core.contracts import FactorManifest, StrategyRules
 from qfr_core.dsl import ast_diff, canonicalize, parse
 from qfr_core.ids import uuid7
 from sqlalchemy import text
@@ -1633,7 +1634,7 @@ class GenerationRunner:
         for version_id in parents[:40]:
             manifest = env.registry.version(UUID(version_id)).manifest
             expression = getattr(manifest.implementation, "expression", None)
-            if expression:
+            if expression and isinstance(manifest, FactorManifest):
                 # The prompt promises each component with its released report digests.
                 components.append(
                     {
@@ -1692,8 +1693,13 @@ class GenerationRunner:
         payload["inherited_rationale"] = rationales[str(lead.version_id)] | (
             {"hypothesis_id": str(task.hypothesis_id)} if task.hypothesis_id else {}
         )
+        # Phase 8: the job's rules apply to every draft (the owner chose them, not the LLM).
+        rules = StrategyRules.model_validate(spec["rules"]) if spec.get("rules") else None
+        if rules is not None:
+            payload["rules"] = rules.model_dump(mode="json")
+        book = "long-short top" if rules is not None and rules.long_short else "Top"
         payload["title"] = (
-            f"Top-{draft.portfolio.top_k} strategy over {len(draft.components)} factor(s)"
+            f"{book}-{draft.portfolio.top_k} strategy over {len(draft.components)} factor(s)"
         )
         payload["description"] = draft.composition_rationale
         with env.db.transaction() as conn:
@@ -1757,6 +1763,7 @@ class GenerationRunner:
             ],
             draft.portfolio.top_k,
             draft.portfolio.dropout,
+            rules,
         )
         workbench = {
             "visibility": report.visibility,
@@ -2016,7 +2023,18 @@ class GenerationRunner:
         # Published factors join their island as provisional members until their W1
         # report arrives (Section 12.1).
         joined = self.engine.add_published(gen.ref, published)
-        summary = self.summary(gen) | {"population_joined": joined}
+        note = None
+        if self.env.config.service.analyst.publish_notes:
+            protocol = (
+                self.monitor.cards()[0]
+                if self.monitor is not None
+                else dict(self.env.public_cards["protocol"])
+            )
+            note = self.packager.publish_note(gen.ctx, gen.seq, protocol)
+        summary = self.summary(gen) | {
+            "population_joined": joined,
+            "note_version_id": None if note is None else str(note.version_id),
+        }
         with self.env.db.transaction() as conn:
             conn.execute(
                 text("UPDATE generations SET summary = CAST(:s AS jsonb) WHERE generation_id = :g"),

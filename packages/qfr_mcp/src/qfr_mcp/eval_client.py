@@ -17,11 +17,15 @@ from qfr_core.eval_api import (
     ArtifactStatus,
     Card,
     CaseDecisionRequest,
+    CaseOverrideRequest,
     CasePage,
     ConfigKind,
     ConfigVersionView,
     CreateVersionRequest,
+    EpochPage,
     ReportPage,
+    RolloverReport,
+    RolloverRequest,
     SimulationView,
     VersionStatePage,
 )
@@ -76,6 +80,10 @@ class EvalAdminClient(ApiClient):
         path = f"/v1/acceptance/cases/{case_id}/decision"
         return await self._model(AcceptanceCase, "POST", path, body=request.model_dump(mode="json"))
 
+    async def override(self, case_id: UUID, request: CaseOverrideRequest) -> AcceptanceCase:
+        path = f"/v1/acceptance/cases/{case_id}/override"
+        return await self._model(AcceptanceCase, "POST", path, body=request.model_dump(mode="json"))
+
     async def simulation(self, sim_id: UUID) -> SimulationView:
         return await self._model(SimulationView, "GET", f"/v1/sim/{sim_id}")
 
@@ -94,6 +102,13 @@ class EvalAdminClient(ApiClient):
     async def burn(self) -> dict[str, JsonValue]:
         _, data = await self._call("GET", "/v1/burn")
         return dict(data)
+
+    async def epochs(self) -> EpochPage:
+        return await self._model(EpochPage, "GET", "/v1/epochs")
+
+    async def rollover(self, request: RolloverRequest) -> RolloverReport:
+        body = request.model_dump(mode="json")
+        return await self._model(RolloverReport, "POST", "/v1/epochs/rollover", body=body)
 
     async def quota_usage(self) -> dict[str, JsonValue]:
         _, data = await self._call("GET", "/v1/quotas/usage")

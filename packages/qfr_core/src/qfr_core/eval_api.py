@@ -9,13 +9,16 @@ from typing import Annotated, Literal
 
 from pydantic import UUID7, AwareDatetime, Field, JsonValue, StringConstraints
 
-from qfr_core.contracts import ApprovalScope, Contract, Hash, ReleasedReport, Tier
+from qfr_core.contracts import ApprovalScope, Contract, EpochId, Hash, ReleasedReport, Tier
 
-ReportType = Literal["intake", "screening", "w1", "w2", "advancement", "sim", "decision", "library"]
+ReportType = Literal[
+    "intake", "screening", "w1", "w2", "advancement", "sim", "decision", "library", "note"
+]
 ConfigKind = Literal["protocol", "policy", "quotas"]
 EvidenceTier = Literal[
     "pending", "held", "deferred", "rejected", "duplicate", "screening_fail", "w1_fail",
     "w1_pass", "w2_fail", "w2_expired", "w2_pass", "not_advanced", "advanced", "incubated",
+    "note_passed", "note_failed",
 ]  # fmt: skip
 GateName = Literal[
     "G-W1", "G-W2", "G-HOLDOUT", "G-DSR", "G-PBO", "G-HLZ", "G-FWD", "G-NOVELTY", "G-OPS"
@@ -127,6 +130,21 @@ class CaseGate(Contract):
     detail: dict[str, JsonValue]
 
 
+class CaseOverride(Contract):
+    """The owner override of a case with a failed gate (Phase 8): requested with a
+    written rationale, eligible for confirmation 24 hours later."""
+
+    state: Literal["pending", "confirmed", "withdrawn"]
+    requested_at: AwareDatetime
+    eligible_at: AwareDatetime
+    rationale: str
+    failing_gates: list[GateName]
+    request_approval_id: UUID7
+    confirm_approval_id: UUID7 | None
+    confirmed_at: AwareDatetime | None
+    withdrawn_at: AwareDatetime | None
+
+
 class AcceptanceCase(Contract):
     """One acceptance case with its gate values (owner only)."""
 
@@ -143,11 +161,39 @@ class AcceptanceCase(Contract):
     gates: list[CaseGate]
     state: Literal["open", "decided"]
     decision: Literal["accepted", "rejected"] | None
-    reason: Literal["gate_failed", "owner_rejected", "incubation_failed", "gates_passed"] | None
+    reason: (
+        Literal[
+            "gate_failed", "owner_rejected", "incubation_failed", "gates_passed",
+            "owner_override",
+        ]
+        | None
+    )  # fmt: skip
     reason_gate: GateName | None
     rationale: str | None
     approval_id: UUID7 | None
     decided_at: AwareDatetime | None
+    override: CaseOverride | None = None
+
+
+OverrideRationale = Annotated[str, StringConstraints(min_length=200, max_length=4000)]
+
+
+class OverrideApprovalRef(Contract):
+    """The approval for one step of an override: override_case to request it,
+    confirm_override (a separate approval, recorded after the cooling period) to confirm."""
+
+    approval_id: UUID7
+    decision: Literal["override_case", "confirm_override"]
+    scope: ApprovalScope
+
+
+class CaseOverrideRequest(Contract):
+    """POST /v1/acceptance/cases/{case_id}/override. The request carries the owner's
+    written rationale; the confirmation carries none."""
+
+    step: Literal["request", "confirm"]
+    rationale: OverrideRationale | None = None
+    approval: OverrideApprovalRef
 
 
 class CasePage(Contract):
@@ -195,3 +241,66 @@ class AlertView(Contract):
 class AlertPage(Contract):
     items: list[AlertView]
     open: int = Field(ge=0)
+
+
+# Epoch rollover (Section 10.6, Phase 8) -------------------------------------------------
+
+
+class RolloverApprovalRef(Contract):
+    """The rollover_epoch approval the front door holds; the evaluator checks that its
+    scope names the epoch."""
+
+    approval_id: UUID7
+    decision: Literal["rollover_epoch"]
+    scope: ApprovalScope
+
+
+class RolloverRequest(Contract):
+    """POST /v1/epochs/rollover. A dry run needs no approval and changes nothing."""
+
+    epoch_id: EpochId
+    dry_run: bool = False
+    approval: RolloverApprovalRef | None = None
+
+
+class EpochWindow(Contract):
+    start: date
+    end: date
+
+
+class RolloverReport(Contract):
+    dry_run: bool
+    from_epoch: str
+    to_epoch: str
+    snapshot_id: Hash
+    windows: dict[str, EpochWindow]
+    old_windows: dict[str, EpochWindow]
+    research_cutoff: date
+    embargo_check: dict[str, JsonValue]
+    problems: list[str]
+    restart: dict[str, int]  # Versions restarting in the new epoch, by their old state.
+    cancelled_jobs: int
+    running_jobs: int
+    refingerprint_jobs: int
+    remeasure_jobs: int
+    restarted_versions: int | None = None
+    protocol_epoch_ref: str
+    protocol_epoch_ref_matches: bool
+    approval_id: UUID7 | None = None
+    applied_at: AwareDatetime | None = None
+
+
+class EpochView(Contract):
+    epoch_id: str
+    version: str
+    status: Literal["active", "retired"]
+    previous_epoch_id: str | None
+    snapshot_id: Hash
+    windows: dict[str, EpochWindow]
+    activated_at: AwareDatetime
+    retired_at: AwareDatetime | None
+    approval_id: UUID7 | None
+
+
+class EpochPage(Contract):
+    items: list[EpochView]

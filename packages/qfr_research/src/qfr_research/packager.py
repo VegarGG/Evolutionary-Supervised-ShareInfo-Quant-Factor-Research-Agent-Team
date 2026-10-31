@@ -19,7 +19,13 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
-from qfr_core.contracts import FactorManifest, StrategyManifest
+from pydantic import ValidationError
+from qfr_core.contracts import (
+    FactorManifest,
+    ResearchNoteManifest,
+    StrategyManifest,
+    StrategyRules,
+)
 from qfr_core.dsl import ast_diff, canonicalize, parse
 from qfr_core.ids import uuid7
 from qfr_core.registry_api import VersionRecord
@@ -28,6 +34,7 @@ from sqlalchemy.engine import Connection
 
 from qfr_research.clients import ServiceRefused, ServiceUnavailable
 from qfr_research.env import QFR_CORE_VERSION, ResearchEnv
+from qfr_research.notes import Interpretation, NoteLimits, build_note
 from qfr_research.store import Ctx
 from qfr_research.tools import require_write
 
@@ -275,6 +282,118 @@ class Packager:
         )
         return version
 
+    def publish_note(self, ctx: Ctx, seq: int, protocol: dict[str, Any]) -> VersionRecord | None:
+        """Publish the generation's research note (Phase 8): its final interpretations as
+        Markdown, with the analyst's claims. Nothing is published when the active protocol
+        accepts no notes or the generation interpreted nothing."""
+        env = self.env
+        limits = NoteLimits.from_card(protocol)
+        if limits is None or ctx.generation_id is None or ctx.program_id is None:
+            return None
+        with env.db.read() as conn:
+            rows = conn.execute(
+                text(
+                    "SELECT interpretation_id, status, COALESCE(final_payload, payload) AS body, "
+                    "run_id FROM interpretations WHERE generation_id = :g AND status IN "
+                    "('final', 'amended') ORDER BY created_at, interpretation_id"
+                ),
+                {"g": ctx.generation_id},
+            ).all()
+            items = [Interpretation(str(r.interpretation_id), r.status, r.body) for r in rows]
+            implementation = build_note(seq, items, limits)
+            if implementation is None:
+                return None
+            runs = conn.execute(
+                text(
+                    "SELECT run_id, role, provider, model_id, prompt_template_id, prompt_sha256 "
+                    "FROM agent_runs WHERE status = 'ok' AND run_id = ANY(:r) ORDER BY created_at"
+                ),
+                {"r": [r.run_id for r in rows if r.run_id is not None]},
+            ).all()
+            job_id: UUID = conn.execute(
+                text("SELECT job_id FROM programs WHERE program_id = :p"), {"p": ctx.program_id}
+            ).scalar_one()
+        key = f"note:{ctx.generation_id}"
+        try:
+            manifest = ResearchNoteManifest.model_validate(
+                {
+                    "schema_version": "1",
+                    "kind": "research_note",
+                    "family_id": None,
+                    "name": f"generation-{seq}-note",
+                    "title": f"Research note, generation {seq}",
+                    "implementation": implementation,
+                    "provenance": {
+                        "job_id": str(job_id),
+                        "program_id": str(ctx.program_id),
+                        "generation_id": str(ctx.generation_id),
+                        "agent_runs": [
+                            {
+                                "role": r.role,
+                                "provider": r.provider,
+                                "model_id": r.model_id,
+                                "prompt_template_id": r.prompt_template_id,
+                                "prompt_sha256": r.prompt_sha256,
+                                "run_id": str(r.run_id),
+                            }
+                            for r in runs
+                        ],
+                        "trace_ref": str(ctx.generation_id),
+                        "qfr_core_version": QFR_CORE_VERSION,
+                    },
+                }
+            )
+            response = env.registry.publish(manifest, key)
+        except (ValidationError, ServiceRefused, ServiceUnavailable) as error:
+            with env.db.transaction() as conn:
+                env.trace.step(
+                    conn,
+                    "NOTE_PUBLISHED",
+                    ctx,
+                    actor="packager",
+                    inputs={"publish_key": key},
+                    payload={"error": str(error)[:500]},
+                    outcome="failed",
+                )
+            env.logger.logger.error(
+                "note_publication_failed",
+                outcome="failed",
+                payload={"error": str(error)[:300]},
+                **ctx.log_ids(),
+            )
+            return None
+        version = response.version
+        with env.db.transaction() as conn:
+            require_write(env, "packager", "publication_link", ctx)
+            env.trace.step(
+                conn,
+                "NOTE_PUBLISHED",
+                ctx,
+                actor="packager",
+                version_id=version.version_id,
+                inputs={
+                    "publish_key": key,
+                    "created": response.created,
+                    "interpretation_ids": [i.interpretation_id for i in items],
+                },
+                payload={
+                    "version_id": str(version.version_id),
+                    "family_id": str(version.family_id),
+                    "content_hash": version.content_hash,
+                    "citations": len(implementation["cited_report_ids"]),
+                    "claims": len(implementation["claims"]),
+                },
+            )
+        env.logger.logger.info(
+            "note_published",
+            outcome="ok",
+            version_id=str(version.version_id),
+            family_id=str(version.family_id),
+            payload={"created": response.created, "claims": len(implementation["claims"])},
+            **ctx.log_ids(),
+        )
+        return version
+
     def _lineage(self, conn: Connection, ctx: Ctx, row: Any, version_id: UUID) -> None:
         parents = [UUID(p) for p in row.payload.get("parent_version_ids", [])]
         if not parents:
@@ -457,18 +576,7 @@ class Packager:
                 "family_id": None,
                 "name": name,
                 "title": title[:120],
-                "implementation": {
-                    "language": "qfr-strategy/1",
-                    "components": payload["components"],
-                    "combination": "zscore_weighted_sum",
-                    "portfolio": {
-                        "type": "topk_dropout",
-                        "top_k": payload["portfolio"]["top_k"],
-                        "dropout": payload["portfolio"]["dropout"],
-                        "rebalance": "daily",
-                        "long_only": True,
-                    },
-                },
+                "implementation": strategy_implementation(payload),
                 "declared": {"expected_sign": 1, "horizon_days": payload["expected_horizon_days"]},
                 "rationale": rationale
                 | {
@@ -495,3 +603,30 @@ def _dumps(value: Any) -> str:
 
 def new_review_id() -> UUID:
     return uuid7()
+
+
+def strategy_implementation(payload: dict[str, Any]) -> dict[str, Any]:
+    """qfr-strategy/1, or qfr-strategy/2 with the job's Phase 8 rules."""
+    top_k, dropout = payload["portfolio"]["top_k"], payload["portfolio"]["dropout"]
+    rules = payload.get("rules")
+    if not rules:
+        return {
+            "language": "qfr-strategy/1",
+            "components": payload["components"],
+            "combination": "zscore_weighted_sum",
+            "portfolio": {
+                "type": "topk_dropout",
+                "top_k": top_k,
+                "dropout": dropout,
+                "rebalance": "daily",
+                "long_only": True,
+            },
+        }
+    parsed = StrategyRules.model_validate(rules)
+    return {
+        "language": "qfr-strategy/2",
+        "components": payload["components"],
+        "combination": "zscore_weighted_sum",
+        "neutralize": parsed.neutralize,
+        "portfolio": parsed.portfolio(top_k, dropout).model_dump(mode="json"),
+    }

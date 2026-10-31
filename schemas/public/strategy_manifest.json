@@ -298,6 +298,75 @@
       "title": "Review",
       "type": "object"
     },
+    "RulesPortfolio": {
+      "additionalProperties": false,
+      "description": "The qfr-strategy/2 portfolio (Phase 8, PLAN 7.8): TopK-dropout with optional\nrules. long_only false adds a short book of the k worst names; max_position_weight\ncaps a name's weight (entries sized at most at the cap, drifted holdings trimmed);\nmax_industry_weight caps one industry's share of a book's names. The protocol's\nstrategy_rules section bounds the values further.",
+      "properties": {
+        "dropout": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Dropout",
+          "type": "integer"
+        },
+        "long_only": {
+          "title": "Long Only",
+          "type": "boolean"
+        },
+        "max_industry_weight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Industry Weight"
+        },
+        "max_position_weight": {
+          "anyOf": [
+            {
+              "maximum": 0.2,
+              "minimum": 0.005,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Position Weight"
+        },
+        "rebalance": {
+          "const": "daily",
+          "title": "Rebalance",
+          "type": "string"
+        },
+        "top_k": {
+          "maximum": 100,
+          "minimum": 20,
+          "title": "Top K",
+          "type": "integer"
+        },
+        "type": {
+          "const": "topk_dropout",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "top_k",
+        "dropout",
+        "rebalance",
+        "long_only"
+      ],
+      "title": "RulesPortfolio",
+      "type": "object"
+    },
     "StrategyDeclaration": {
       "additionalProperties": false,
       "properties": {
@@ -415,6 +484,51 @@
       ],
       "title": "StrategyRationale",
       "type": "object"
+    },
+    "StrategyRulesImplementation": {
+      "additionalProperties": false,
+      "description": "qfr-strategy/2 (Phase 8): the v1 composite with richer rules. neutralize\n\"industry\" demeans the composite within each industry every day before ranking.\nAt least one Phase 8 rule is used; a plain strategy stays qfr-strategy/1.",
+      "properties": {
+        "combination": {
+          "const": "zscore_weighted_sum",
+          "title": "Combination",
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/Component"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Components",
+          "type": "array"
+        },
+        "language": {
+          "const": "qfr-strategy/2",
+          "title": "Language",
+          "type": "string"
+        },
+        "neutralize": {
+          "enum": [
+            "none",
+            "industry"
+          ],
+          "title": "Neutralize",
+          "type": "string"
+        },
+        "portfolio": {
+          "$ref": "#/$defs/RulesPortfolio"
+        }
+      },
+      "required": [
+        "language",
+        "components",
+        "combination",
+        "neutralize",
+        "portfolio"
+      ],
+      "title": "StrategyRulesImplementation",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -435,7 +549,22 @@
       "title": "Family Id"
     },
     "implementation": {
-      "$ref": "#/$defs/StrategyImplementation"
+      "discriminator": {
+        "mapping": {
+          "qfr-strategy/1": "#/$defs/StrategyImplementation",
+          "qfr-strategy/2": "#/$defs/StrategyRulesImplementation"
+        },
+        "propertyName": "language"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/StrategyImplementation"
+        },
+        {
+          "$ref": "#/$defs/StrategyRulesImplementation"
+        }
+      ],
+      "title": "Implementation"
     },
     "kind": {
       "const": "strategy",

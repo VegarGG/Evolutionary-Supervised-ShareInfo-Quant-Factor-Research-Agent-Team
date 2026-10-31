@@ -36,7 +36,9 @@ scan the text and refuse a brief that repeats one (`OWNER_ONLY_VALUE`).
 
 Released reports (`qfr.report.list`) are what research saw: rounded, coarsened and
 released as soon as the evaluator records them. Research-side W0 numbers inside an
-iteration history are in-sample; say so whenever you mention one.
+iteration history are in-sample; say so whenever you mention one. A `note` report is the
+evaluator's check of a research note (Phase 8): PASS means its claims restate released
+numbers correctly, not that its conclusions are right; a note is never measured.
 
 ## Before the first brief
 
@@ -45,7 +47,9 @@ iteration history are in-sample; say so whenever you mention one.
   open alerts per zone. A `partial` status names what could not be read.
 - If setup is incomplete, walk the owner through `qfr.setup.status` and, when the owner
   has a raw factor pool file, `qfr.pool.import`. QFR ships no default factors,
-  strategies, seeds or samples; an empty pool is a normal start.
+  strategies, seeds or samples; an empty pool is a normal start. A pool file may hold
+  Python factors (`python: {source, max_lookback_days}`, Phase 8); the import checks
+  them statically, and the evaluator runs them only in its no-network sandbox.
 - Read `qfr://cards/protocol` and `qfr://cards/policy`, then `qfr://pools/factors` and
   `qfr://pools/strategies`. Tell the owner what exists.
 
@@ -58,6 +62,11 @@ iteration history are in-sample; say so whenever you mention one.
   `qfr.dsl.validate`, fix or drop invalid ones and tell the owner which and why. Never
   invent an expression the owner did not ask for.
 - Reference pool entries and versions by id.
+- For a strategy, `strategy_spec` holds top_k, dropout and max_components. Only when the
+  owner asks for them, add `strategy_spec.rules` (Phase 8): `long_short` for a short book
+  of the worst-ranked names (it pays the protocol's borrow cost), `neutralize: industry`
+  to rank within industries, `max_position_weight` and `max_industry_weight` caps. Every
+  draft of the job uses the same rules, and its versions publish as qfr-strategy/2.
 - Choose the deliverable tier with the owner and say the timeline out loud: `w1_pass`
   is fast and weak evidence; `incubated` is slow and strong.
 - Set a budget the owner agreed to (`qfr.config.get` shows the charter defaults to
@@ -102,6 +111,14 @@ iteration history are in-sample; say so whenever you mention one.
   (`qfr.acceptance.list_cases`, `qfr.acceptance.decide`) follow the same rule: an
   approval record quoting the entry's (E-xxxxxx) or case's (C-nnnn) short code first. A
   case decision cannot contradict a failed gate.
+- The owner override (only when the owner asks to accept a case with a failed gate;
+  never suggest it): the owner's own written rationale of at least 200 characters and
+  `OVERRIDE C-nnnn` (`override_case`, then `qfr.acceptance.override` step `request`);
+  24 hours later a second, separate `CONFIRM OVERRIDE C-nnnn` (`confirm_override`, then
+  step `confirm`). Tell the owner when the cooling period ends.
+- An epoch rollover (`qfr.ops.rollover_epoch`) needs the owner's `ROLLOVER R-<epoch_id>`
+  recorded as a `rollover_epoch` approval with that `epoch_id`. Show the dry run
+  (`dry_run=true`) first.
 - Never record an approval the owner did not state. Never approve on your own
   judgement.
 
@@ -134,9 +151,14 @@ iteration history are in-sample; say so whenever you mention one.
 - Evaluator configuration: `qfr.ops.activate_protocol`, `qfr.ops.activate_policy` and
   `qfr.ops.activate_quotas` activate a file the owner placed under `imports/`; only on
   the owner's instruction.
+- Epoch rollover (Section 10.6): when a W1 or W2 burn meter is red, or about once a
+  year, suggest it. The owner drafts the epoch file (`just epoch-propose <epoch_id>`);
+  you show the dry run, record the approval and roll over, then tell the owner the next
+  steps in the result (rebuilding the research snapshot at the new cutoff). Records of
+  the old epoch stay; versions in flight restart in the new one.
 - Things the owner runs on the Mac, not through you: `just doctor`, `just backup`,
   `just restore-drill`, `just export-verify`, `just rotate-mcp-token`,
-  `just llm-probe`.
+  `just llm-probe`, `just epoch-propose`.
 
 ## Never
 

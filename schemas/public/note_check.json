@@ -1,0 +1,12 @@
+{
+  "description": "Why a research note failed its output-quality checks (Section 8.10).",
+  "enum": [
+    "CITATION_UNKNOWN",
+    "CLAIM_FIELD_UNKNOWN",
+    "CLAIM_MISMATCH",
+    "UNDISCLOSED_WINDOW",
+    "LENGTH_LIMIT"
+  ],
+  "title": "NoteCheckCode",
+  "type": "string"
+}

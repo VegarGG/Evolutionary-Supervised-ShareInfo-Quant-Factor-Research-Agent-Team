@@ -50,6 +50,8 @@ TIERS = {
     "Accepted": "incubated",
     "Monitoring": "incubated",
     "Retired": "incubated",
+    "NoteChecked": "note_passed",
+    "NoteFailed": "note_failed",
 }
 # The highest pool tier (Section 10.4) a version has reached in each evaluation state:
 # the tier a pool entry records when the owner approves it.
@@ -156,6 +158,7 @@ def owner_evidence(conn: Connection, version_id: UUID) -> OwnerEvidence:
                 stage=record.stage,
                 window=record.window,
                 record_id=record.record_id,
+                epoch_id=record.epoch_id,
                 status=status if isinstance(status, str) else None,
                 created_at=record.created_at,
                 results_hash=record.results_hash,

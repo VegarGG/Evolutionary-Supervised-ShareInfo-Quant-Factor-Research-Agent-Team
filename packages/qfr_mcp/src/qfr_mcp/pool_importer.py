@@ -41,6 +41,7 @@ from qfr_core.pool_import import (
     strategy_seed_manifest,
     validate_entries,
 )
+from qfr_core.pyfactor import PythonAnalysis, PythonLimits
 from qfr_core.registry_api import (
     AddEntryRequest,
     AppendEventRequest,
@@ -115,8 +116,10 @@ class PoolImporter:
         config: MCPConfig,
         imports_dir: Path | None,
         logger: JsonLogger,
+        python: PythonLimits | None = None,
     ) -> None:
         self.registry, self.control, self.limits = registry, control, limits
+        self.python = python  # qfr-python/1 entries (Phase 8); None refuses them.
         self.config, self.imports_dir, self.logger = config, imports_dir, logger
         # One import at a time: digest lookups and family resolution assume no
         # concurrent import is publishing the same names.
@@ -152,7 +155,7 @@ class PoolImporter:
                     "TOO_MANY_ENTRIES",
                     f"{len(raw)} entries exceed the limit of {self.config.import_max_entries}",
                 )
-            return await self._import(validate_entries(raw, self.limits), source)
+            return await self._import(validate_entries(raw, self.limits, self.python), source)
 
     def read_file(self, name: str) -> tuple[bytes, dict[str, JsonValue]]:
         """Read one file under the imports folder; nothing outside it is reachable."""
@@ -380,11 +383,15 @@ class PoolImporter:
             previous_version = previous.version_id if previous else None
             ids = SeedIds(candidate_id=uuid7(), hypothesis_id=uuid7(), validation_id=uuid7())
             manifest = self._manifest(valid, components, ids, family_id, previous_version)
-            checks: JsonValue = (
-                valid.analysis.model_dump(mode="json")
-                if valid.analysis is not None
-                else {"components": {n: str(v) for n, v in (components or {}).items()}}
-            )
+            checks: JsonValue
+            if isinstance(valid.analysis, PythonAnalysis):
+                checks = valid.analysis.as_dict() | {
+                    "canonical_hash": valid.analysis.canonical_hash
+                }
+            elif valid.analysis is not None:
+                checks = valid.analysis.model_dump(mode="json")
+            else:
+                checks = {"components": {n: str(v) for n, v in (components or {}).items()}}
             await self._trace(
                 ids.validation_id,
                 "DSL_VALIDATED",

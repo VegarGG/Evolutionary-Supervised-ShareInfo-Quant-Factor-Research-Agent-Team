@@ -43,6 +43,7 @@ SYNTHETIC_CONVENTIONS: dict[str, JsonValue] = {
     "ret_1d": "adjusted close over the last traded adjusted close, minus 1",
     "limits": "10% of the ex-rights reference, half-up 0.01 tick",
     "benchmark": "equal_weight_csi300",
+    "industry": "scheme synthetic: each name's return-driving sector over its listed life",
 }
 
 
@@ -91,7 +92,11 @@ def _synthetic(
     result = generate(config, world, epoch, settings, minimum)
     truth = json.dumps(result.ground_truth, sort_keys=True, indent=2).encode() + b"\n"
     data = SnapshotData(
-        result.panel, result.membership, result.calendar, {"ground_truth.json": truth}
+        result.panel,
+        result.membership,
+        result.calendar,
+        {"ground_truth.json": truth},
+        industry=result.industry,
     )
     config_hash = hashlib.sha256(canonical_json(config.model_dump(mode="json")).encode())
     checks = sanity_checks(result.panel)

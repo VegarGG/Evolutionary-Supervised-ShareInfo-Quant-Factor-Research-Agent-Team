@@ -90,7 +90,7 @@ def test_mcp_01_status_tail_are_audited_and_request_id_reaches_downstream(rig):
     assert audit.calls[-1].downstream_request_ids == []
 
 
-def test_mcp_02_catalog_is_the_phase_seven_catalog(rig):
+def test_mcp_02_catalog_is_the_phase_eight_catalog(rig):
     client, _, headers, _ = rig
     response = call(client, headers, "tools/list")
     tools = {tool["name"] for tool in response.json()["result"]["tools"]}
@@ -139,6 +139,8 @@ def test_mcp_02_catalog_is_the_phase_seven_catalog(rig):
         "qfr.ops.resume_research",
         "qfr.logs.export",
         "qfr.deliverable.export",
+        "qfr.ops.rollover_epoch",
+        "qfr.acceptance.override",
     }
     annotations = {
         t["name"]: t.get("annotations") or {} for t in response.json()["result"]["tools"]
@@ -165,11 +167,14 @@ def test_mcp_02_catalog_is_the_phase_seven_catalog(rig):
         "qfr.ops.resume_research",
         "qfr.logs.export",
         "qfr.deliverable.export",
+        "qfr.ops.rollover_epoch",
+        "qfr.acceptance.override",
     }
     # The approval-gated tools (Section 13.7) are marked destructive.
     destructive = {name for name, a in annotations.items() if a.get("destructiveHint")}
     assert destructive == {
         "qfr.pool.add", "qfr.pool.set_status", "qfr.job.close", "qfr.acceptance.decide",
+        "qfr.ops.rollover_epoch", "qfr.acceptance.override",
     }  # fmt: skip
     # No tool publishes, runs research tools, writes official records or alters the
     # evaluator's runs and queues (MCP-02, INV-14). qfr.approval.record writes the
@@ -286,7 +291,7 @@ def test_dsl_validate_returns_canonical_form_complexity_and_explanation(rig):
 def test_registry_tools_fail_explicitly_when_the_registry_is_not_configured(rig):
     client, audit, headers, _ = rig
     status = structured(client, headers, "qfr.status")["structuredContent"]["data"]
-    assert status["phase"] == 7
+    assert status["phase"] == 8
     assert status["services"]["registry-api"] == {"status": "not_configured"}
     assert status["pool_counts"] is None and status["notice"] is None
     setup = structured(client, headers, "qfr.setup.status")["structuredContent"]["data"]

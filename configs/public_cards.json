@@ -24,6 +24,13 @@
     "ladder": {
       "eta": 0.005
     },
+    "note_checks": [
+      "CITATION_UNKNOWN",
+      "CLAIM_FIELD_UNKNOWN",
+      "CLAIM_MISMATCH",
+      "UNDISCLOSED_WINDOW",
+      "LENGTH_LIMIT"
+    ],
     "policy_id": "default",
     "quotas": {
       "deferral_expiry_days": 7,
@@ -89,6 +96,15 @@
         "status",
         "type"
       ],
+      "note": [
+        "checks",
+        "citations",
+        "claims",
+        "claims_matched",
+        "failed_claims",
+        "status",
+        "type"
+      ],
       "screening": [
         "duplicate_of",
         "reasons",
@@ -125,8 +141,11 @@
         "yearly_rankic"
       ],
       "w2": [
+        "answer_budget",
+        "answer_rankic",
         "family_best_rankic",
         "ladder_status",
+        "mode",
         "status",
         "type"
       ]
@@ -233,6 +252,11 @@
       "winsor_upper": 0.99
     },
     "protocol_id": "cn_csi300_daily",
+    "python": {
+      "max_ast_nodes": 2000,
+      "max_source_chars": 20000,
+      "window_probe_dates": 5
+    },
     "quantiles": 5,
     "reference_strategy": {
       "dropout": 5,
@@ -240,6 +264,11 @@
       "rebalance": "daily",
       "top_k": 50,
       "type": "topk_dropout"
+    },
+    "research_note": {
+      "max_citations": 100,
+      "max_claims": 100,
+      "max_markdown_chars": 20000
     },
     "strategy_bounds": {
       "dropout": [
@@ -250,6 +279,24 @@
       "top_k": [
         20,
         100
+      ]
+    },
+    "strategy_rules": {
+      "long_short": {
+        "allowed": true,
+        "borrow_bps_annual": 800
+      },
+      "max_industry_weight": [
+        0.1,
+        1.0
+      ],
+      "max_position_weight": [
+        0.01,
+        0.1
+      ],
+      "neutralize": [
+        "none",
+        "industry"
       ]
     },
     "universe": {

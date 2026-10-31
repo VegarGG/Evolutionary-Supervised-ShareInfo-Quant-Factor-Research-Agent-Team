@@ -15,6 +15,7 @@ import typer
 from qfr_core.config import RuntimeSettings
 from sqlalchemy import text
 
+from qfr_eval import rollover
 from qfr_eval.configs import EvalError, resolved_windows
 from qfr_eval.plugins import StageOutcome, results_hash
 from qfr_eval.runtime import Database, EvalConfig, EvalEnvironment, eval_config
@@ -24,11 +25,14 @@ from qfr_eval.worker import (
     Evaluator,
     LibraryMember,
     MarketCache,
+    make_python_runner,
     make_runner,
     read_components,
 )
 
 app = typer.Typer(no_args_is_help=True, help="Evaluation operations (evaluation side).")
+# `qfr eval epoch propose|plan`: draft the next epoch file and preview a rollover (P8.4).
+app.add_typer(rollover.app, name="epoch")
 
 
 def reproduce(
@@ -64,7 +68,12 @@ def reproduce(
     library = [LibraryMember(m["version_id"], m["uri"], m["sha256"]) for m in library_spec]
     if evaluator is None:
         store = ArtifactStore(env.store_dir)
-        evaluator = Evaluator(env, make_runner(config, store), MarketCache(env.full_snapshot_dir))
+        evaluator = Evaluator(
+            env,
+            make_runner(config, store),
+            MarketCache(env.full_snapshot_dir),
+            make_python_runner(config, env),
+        )
     stage: StageOutcome | None
     if record.stage in ("w2", "holdout"):
         stage = evaluator.run_window(
@@ -91,6 +100,10 @@ def reproduce(
             components=components,
         )
         stage = outcome.screening if record.stage == "screening" else outcome.w1
+        if record.stage == "remeasure":
+            # A library member re-measured after a rollover: its W1 outcome, or its
+            # screening outcome when it no longer reached W1 on the new windows.
+            stage = outcome.w1 if outcome.w1 is not None else outcome.screening
     actual = None if stage is None else results_hash(stage.metrics)
     return {
         "record_id": str(record_id),

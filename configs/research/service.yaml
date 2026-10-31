@@ -11,7 +11,8 @@ worker:
   probe_daily_utc: '00:30'
   heartbeat_seconds: 30
 feedback: {page_limit: 200, report_types_interpreted: [w1, w2, sim, decision]}
-analyst: {reports_per_run: 4, interpretation_review_seed: 20261031}
+# publish_notes (Phase 8): each generation's interpretations become one research note.
+analyst: {reports_per_run: 4, interpretation_review_seed: 20261031, publish_notes: true}
 islands:
   I1: momentum and trend
   I2: reversal and mean reversion

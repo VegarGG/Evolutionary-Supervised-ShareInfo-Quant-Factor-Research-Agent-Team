@@ -32,6 +32,30 @@
       "title": "ImportComponent",
       "type": "object"
     },
+    "ImportPython": {
+      "additionalProperties": false,
+      "description": "A qfr-python/1 factor in a pool import (Phase 8): the module and its declared\nlookback, which the evaluator's window probe checks.",
+      "properties": {
+        "max_lookback_days": {
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Max Lookback Days",
+          "type": "integer"
+        },
+        "source": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "max_lookback_days"
+      ],
+      "title": "ImportPython",
+      "type": "object"
+    },
     "ImportStrategy": {
       "additionalProperties": false,
       "properties": {
@@ -51,6 +75,17 @@
         },
         "portfolio": {
           "$ref": "#/$defs/Portfolio"
+        },
+        "rules": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRules"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -63,7 +98,7 @@
     },
     "PoolImportEntry": {
       "additionalProperties": false,
-      "description": "One raw-pool row: a factor (expression) or a strategy over factor rows (strategy).",
+      "description": "One raw-pool row: a factor (a DSL expression or a qfr-python/1 module) or a\nstrategy over factor rows.",
       "properties": {
         "expected_sign": {
           "enum": [
@@ -116,6 +151,17 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "python": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImportPython"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "strategy": {
           "anyOf": [
@@ -192,6 +238,52 @@
         "long_only"
       ],
       "title": "Portfolio",
+      "type": "object"
+    },
+    "StrategyRules": {
+      "additionalProperties": false,
+      "description": "The Phase 8 rules an owner can ask for (a job's strategy_spec or a pool import):\na short book, industry neutralization, and position and industry caps. A strategy\nwith rules is published as qfr-strategy/2.",
+      "properties": {
+        "long_short": {
+          "default": false,
+          "title": "Long Short",
+          "type": "boolean"
+        },
+        "max_industry_weight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Industry Weight"
+        },
+        "max_position_weight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Position Weight"
+        },
+        "neutralize": {
+          "default": "none",
+          "enum": [
+            "none",
+            "industry"
+          ],
+          "title": "Neutralize",
+          "type": "string"
+        }
+      },
+      "title": "StrategyRules",
       "type": "object"
     }
   },

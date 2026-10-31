@@ -5,13 +5,15 @@ every automated gate computed from the evaluator's own records: the W1, W2 and h
 gates, the deflated Sharpe ratio with N_eff from the trial ledger, PBO on the version's
 cohort, the Harvey-Liu-Zhu hurdle over W1 to W3, the forward incubation gate, novelty
 against the library on W3, and operations. The recommendation is ACCEPT only when
-every gate passes. The owner decides through MCP with an approval record; in v1 a case
-with a failed gate can never be accepted, which the table also enforces. Gate values
-are owner-only; research receives the decision and a reason category.
+every gate passes. The owner decides through MCP with an approval record; a case with a
+failed gate is accepted only through the owner override (Phase 8): a request with a
+written rationale, a 24-hour cooling period and a second, separate confirmation, which
+the tables also enforce. Gate values are owner-only; research receives the decision and
+a reason category.
 """
 
 import math
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, Final, cast
 from uuid import UUID
 
@@ -19,7 +21,7 @@ import numpy as np
 from pydantic import JsonValue
 from qfr_core.config import canonical_json
 from qfr_core.correlation import current
-from qfr_core.eval_api import CaseDecisionRequest
+from qfr_core.eval_api import CaseDecisionRequest, CaseOverrideRequest
 from qfr_core.ids import uuid7
 from qfr_core.metrics.factor import sharpe
 from sqlalchemy import text
@@ -34,6 +36,10 @@ from qfr_eval.trials import (
     deflated_sharpe,
     hlz_hurdle,
 )
+
+# The owner override (Phase 8, Section 10.3): the cooling period between the request and
+# the confirmation. The table refuses a shorter one.
+OVERRIDE_COOLING: Final = timedelta(hours=24)
 
 GATES: Final = (
     "G-W1", "G-W2", "G-HOLDOUT", "G-DSR", "G-PBO", "G-HLZ", "G-FWD", "G-NOVELTY", "G-OPS"
@@ -357,7 +363,7 @@ def open_case(
     return case_id, short_code
 
 
-def case_view(row: Any) -> dict[str, Any]:
+def case_view(row: Any, override: dict[str, Any] | None = None) -> dict[str, Any]:
     return {
         "visibility": "owner_only",
         "case_id": row.case_id,
@@ -377,7 +383,32 @@ def case_view(row: Any) -> dict[str, Any]:
         "rationale": row.rationale,
         "approval_id": row.approval_id,
         "decided_at": row.decided_at,
+        "override": override,
     }
+
+
+def _override_view(row: Any) -> dict[str, Any]:
+    return {
+        "state": row.state,
+        "requested_at": row.requested_at,
+        "eligible_at": row.eligible_at,
+        "rationale": row.rationale,
+        "failing_gates": list(row.failing_gates),
+        "request_approval_id": row.request_approval_id,
+        "confirm_approval_id": row.confirm_approval_id,
+        "confirmed_at": row.confirmed_at,
+        "withdrawn_at": row.withdrawn_at,
+    }
+
+
+def _override(conn: Connection, case_id: UUID, lock: bool = False) -> Any:
+    return conn.execute(
+        text(
+            "SELECT * FROM eval.acceptance_overrides WHERE case_id = :c"
+            + (" FOR UPDATE" if lock else "")
+        ),
+        {"c": case_id},
+    ).first()
 
 
 def list_cases(
@@ -394,7 +425,14 @@ def list_cases(
         ),
         {"s": state, "v": version_id, "c": case_id},
     ).all()
-    return [case_view(r) for r in rows]
+    overrides = {
+        o.case_id: _override_view(o)
+        for o in conn.execute(
+            text("SELECT * FROM eval.acceptance_overrides WHERE case_id = ANY(:ids)"),
+            {"ids": [r.case_id for r in rows]},
+        ).all()
+    }
+    return [case_view(r, overrides.get(r.case_id)) for r in rows]
 
 
 def decide_case(
@@ -432,7 +470,8 @@ def decide_case(
         raise EvalError(
             409,
             "GATE_FAILED",
-            "in v1 a case with a failed gate cannot be accepted",
+            "a case with a failed gate is accepted only through the owner override: a "
+            "request with a written rationale, 24 hours of cooling, then a confirmation",
             {"failing_gates": list(row.failing_gates)},
         )
     sim = conn.execute(
@@ -465,6 +504,14 @@ def decide_case(
             "c": case_id,
         },
     ).first()
+    # A rejection withdraws an override still cooling.
+    conn.execute(
+        text(
+            "UPDATE eval.acceptance_overrides SET state = 'withdrawn', withdrawn_at = :at "
+            "WHERE case_id = :c AND state = 'pending'"
+        ),
+        {"c": case_id, "at": at},
+    )
     conn.execute(
         text("UPDATE eval.intake SET state = :s, updated_at = :at WHERE version_id = :v"),
         {"s": "Accepted" if decision == "accepted" else "Rejected", "at": at, "v": row.version_id},
@@ -483,4 +530,151 @@ def decide_case(
         conn, at, principal, "case_decided", "acceptance_case", str(case_id), request_id,
         {"decision": decision, "reason": reason, "approval_id": str(approval.approval_id)},
     )  # fmt: skip
-    return case_view(updated)
+    override = _override(conn, case_id)
+    return case_view(updated, None if override is None else _override_view(override))
+
+
+def _uuid7_time(value: UUID) -> datetime:
+    """When a UUIDv7 was made (its first 48 bits are Unix milliseconds)."""
+    return datetime.fromtimestamp((value.int >> 80) / 1000, tz=UTC)
+
+
+def override_case(
+    conn: Connection,
+    state: ActiveState,
+    case_id: UUID,
+    request: CaseOverrideRequest,
+    principal: str,
+    at: datetime,
+    request_id: str,
+    code_version: str,
+) -> dict[str, Any]:
+    """The owner override (Phase 8, Section 10.3). The request records the owner's
+    written rationale and starts the cooling period; the confirmation, with a separate
+    approval recorded after the period, accepts the case over its failed gates."""
+    row = conn.execute(
+        text("SELECT * FROM eval.acceptance_cases WHERE case_id = :c FOR UPDATE"),
+        {"c": case_id},
+    ).first()
+    if row is None:
+        raise EvalError(404, "CASE_NOT_FOUND", "no acceptance case with this id")
+    if row.state != "open":
+        raise EvalError(409, "CASE_DECIDED", "the case is already decided")
+    approval = request.approval
+    expected = "override_case" if request.step == "request" else "confirm_override"
+    scope = approval.scope
+    if (
+        approval.decision != expected
+        or scope.case_id != case_id
+        or (scope.version_ids and row.version_id not in scope.version_ids)
+    ):
+        raise EvalError(
+            403,
+            "APPROVAL_SCOPE_MISMATCH",
+            f"the {request.step} needs a {expected} approval that names the case",
+        )
+    if row.recommendation == "ACCEPT":
+        raise EvalError(409, "OVERRIDE_UNNEEDED", "every gate passed; accept the case instead")
+    sim = conn.execute(
+        text("SELECT status FROM eval.sim_accounts WHERE sim_id = :s"), {"s": row.sim_id}
+    ).scalar()
+    if sim == "failed":
+        raise EvalError(409, "INCUBATION_FAILED", "an incubation that failed cannot be overridden")
+    existing = _override(conn, case_id, lock=True)
+    if request.step == "request":
+        if existing is not None:
+            raise EvalError(
+                409, "OVERRIDE_EXISTS", "the case already has an override request",
+                {"override": cast(JsonValue, json_view(_override_view(existing)))},
+            )  # fmt: skip
+        if request.rationale is None:
+            raise EvalError(
+                400, "RATIONALE_REQUIRED", "an override needs the owner's written rationale"
+            )
+        eligible = at + OVERRIDE_COOLING
+        conn.execute(
+            text(
+                "INSERT INTO eval.acceptance_overrides (case_id, requested_at, eligible_at, "
+                "rationale, failing_gates, request_approval_id, requested_by, state, "
+                "request_id) VALUES (:c, :at, :el, :rat, :gates, :a, :p, 'pending', :r)"
+            ),
+            {
+                "c": case_id, "at": at, "el": eligible, "rat": request.rationale,
+                "gates": list(row.failing_gates), "a": approval.approval_id, "p": principal,
+                "r": request_id,
+            },
+        )  # fmt: skip
+        record_event(
+            conn, at, principal, "override_requested", "acceptance_case", str(case_id),
+            request_id,
+            {"approval_id": str(approval.approval_id), "eligible_at": eligible.isoformat(),
+             "failing_gates": list(row.failing_gates)},
+        )  # fmt: skip
+        return case_view(row, _override_view(_override(conn, case_id)))
+
+    if existing is None or existing.state != "pending":
+        raise EvalError(
+            409, "OVERRIDE_NOT_REQUESTED", "request the override first; the case has none pending"
+        )
+    if at < existing.eligible_at:
+        raise EvalError(
+            409, "OVERRIDE_COOLING",
+            f"the cooling period ends at {existing.eligible_at.isoformat()}",
+            {"eligible_at": existing.eligible_at.isoformat()},
+        )  # fmt: skip
+    if approval.approval_id == existing.request_approval_id:
+        raise EvalError(
+            409, "OVERRIDE_SAME_APPROVAL", "the confirmation needs a second, separate approval"
+        )
+    if _uuid7_time(approval.approval_id) < existing.eligible_at:
+        raise EvalError(
+            409, "OVERRIDE_CONFIRMED_EARLY",
+            "the confirming approval was recorded before the cooling period ended; ask the "
+            "owner to confirm again now",
+            {"eligible_at": existing.eligible_at.isoformat()},
+        )  # fmt: skip
+    conn.execute(
+        text(
+            "UPDATE eval.acceptance_overrides SET state = 'confirmed', confirm_approval_id = :a, "
+            "confirmed_by = :p, confirmed_at = :at WHERE case_id = :c"
+        ),
+        {"a": approval.approval_id, "p": principal, "at": at, "c": case_id},
+    )
+    gate = next(name for name in GATES if name in row.failing_gates)
+    updated = conn.execute(
+        text(
+            "UPDATE eval.acceptance_cases SET state = 'decided', decision = 'accepted', "
+            "reason = 'owner_override', reason_gate = :gate, rationale = :rat, "
+            "approval_id = :a, decided_by = :p, decided_at = :at WHERE case_id = :c RETURNING *"
+        ),
+        {
+            "gate": gate, "rat": existing.rationale, "a": approval.approval_id, "p": principal,
+            "at": at, "c": case_id,
+        },
+    ).first()  # fmt: skip
+    conn.execute(
+        text("UPDATE eval.intake SET state = 'Accepted', updated_at = :at WHERE version_id = :v"),
+        {"at": at, "v": row.version_id},
+    )
+    content: dict[str, JsonValue] = {
+        "type": "decision",
+        "status": "ACCEPTED",
+        "reason": "owner_override",
+        "gate": gate,
+    }
+    queue_report(
+        conn, "decision", row.version_id,
+        {"content": content, "refs": refs(state, code_version)}, at, request_id,
+    )  # fmt: skip
+    record_event(
+        conn, at, principal, "case_decided", "acceptance_case", str(case_id), request_id,
+        {"decision": "accepted", "reason": "owner_override", "gate": gate,
+         "request_approval_id": str(existing.request_approval_id),
+         "approval_id": str(approval.approval_id)},
+    )  # fmt: skip
+    return case_view(updated, _override_view(_override(conn, case_id)))
+
+
+def json_view(view: dict[str, Any]) -> dict[str, Any]:
+    return {k: v.isoformat() if isinstance(v, datetime) else str(v) if isinstance(v, UUID)
+            else v for k, v in view.items()}  # fmt: skip

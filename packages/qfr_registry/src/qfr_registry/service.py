@@ -17,12 +17,19 @@ from uuid import UUID
 from pydantic import JsonValue
 from qfr_core.composite import normalized_weights, strategy_canonical_hash, strategy_diff
 from qfr_core.config import RegistryConfig, canonical_json
-from qfr_core.contracts import FactorManifest, PoolEntry, StrategyManifest
+from qfr_core.contracts import (
+    FactorManifest,
+    PoolEntry,
+    PythonImplementation,
+    ResearchNoteManifest,
+    StrategyManifest,
+)
 from qfr_core.correlation import bind
 from qfr_core.dsl import DslLimits, ast_diff, declaration_mismatches, validate
 from qfr_core.dsl.diff import parse_fragment
 from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
+from qfr_core.pyfactor import PythonLimits, check_source, declaration_errors
 from qfr_core.registry_api import (
     AddEntryRequest,
     AddEntryResponse,
@@ -51,6 +58,7 @@ from qfr_registry.auth import Role
 from qfr_registry.db import Database
 
 Pool = Literal["factor", "strategy"]
+Published = FactorManifest | StrategyManifest | ResearchNoteManifest
 
 
 class RegistryError(Exception):
@@ -65,7 +73,7 @@ class RegistryError(Exception):
         self.status, self.code, self.message, self.details = status, code, message, list(details)
 
 
-def content_hash(manifest: FactorManifest | StrategyManifest) -> str:
+def content_hash(manifest: Published) -> str:
     """SHA-256 of the canonical JSON manifest; the request holds no server fields."""
     return hashlib.sha256(canonical_json(manifest.model_dump(mode="json")).encode()).hexdigest()
 
@@ -128,16 +136,72 @@ EVENT_COLUMNS = """pe.event_id, pe.event_seq, pe.entry_id, e.pool, e.version_id,
 
 class RegistryService:
     def __init__(
-        self, db: Database, limits: DslLimits, config: RegistryConfig, logger: JsonLogger
+        self,
+        db: Database,
+        limits: DslLimits,
+        config: RegistryConfig,
+        logger: JsonLogger,
+        python: PythonLimits | None = None,
     ) -> None:
         self.db, self.limits, self.config, self.logger = db, limits, config, logger
+        self.python = python
+
+    def _analyze_python(
+        self, manifest: FactorManifest, implementation: PythonImplementation
+    ) -> tuple[dict[str, JsonValue], str, str]:
+        """qfr-python/1 (Phase 8): the module must parse, keep to the language and name its
+        fields; the size cap is screening's to enforce and is recorded here. The registry
+        never runs the code."""
+        if self.python is None:
+            raise RegistryError(
+                400, "KIND_UNSUPPORTED", "this deployment does not accept qfr-python/1 factors"
+            )
+        check = check_source(implementation.source, self.python)
+        refusing = [e for e in check.errors if e.code != "COMPLEXITY_LIMIT"]
+        if check.analysis is None or refusing:
+            errors = refusing or check.errors
+            raise RegistryError(
+                400,
+                errors[0].code,
+                errors[0].message,
+                [{"field": "manifest.implementation.source", **e.as_dict()} for e in errors],
+            )
+        mismatches = declaration_errors(
+            check.analysis,
+            list(manifest.declared.fields_used),
+            manifest.declared.max_lookback_days,
+            self.python.max_lookback_days,
+        )
+        declared = [e for e in mismatches if e.code == "DECLARATION_MISMATCH"]
+        if declared:
+            raise RegistryError(
+                400,
+                "DECLARATION_MISMATCH",
+                "declared fields differ from the factor() parameters",
+                [{"field": "manifest.declared", **e.as_dict()} for e in declared],
+            )
+        analysis: dict[str, JsonValue] = check.analysis.as_dict() | {
+            "static_limit_errors": [
+                e.as_dict() for e in check.errors + mismatches if e.code == "COMPLEXITY_LIMIT"
+            ]
+        }
+        return analysis, check.analysis.canonical_hash, implementation.source
 
     # ------------------------------------------------------------------ publication
 
-    def _analyze(
-        self, manifest: FactorManifest | StrategyManifest
-    ) -> tuple[dict[str, JsonValue], str, str]:
+    def _analyze(self, manifest: Published) -> tuple[dict[str, JsonValue], str, str]:
         """Return (analysis, canonical_hash, payload_text); raise 400 on invalid content."""
+        if isinstance(manifest, ResearchNoteManifest):
+            # A note's quality checks need the released reports, which only the
+            # evaluator holds (Section 8.10); the registry records what the note cites.
+            note = manifest.implementation
+            payload = canonical_json(note.model_dump(mode="json"))
+            counts: dict[str, JsonValue] = {
+                "markdown_chars": len(note.markdown),
+                "citations": len(note.cited_report_ids),
+                "claims": len(note.claims),
+            }
+            return counts, hashlib.sha256(payload.encode()).hexdigest(), payload
         if isinstance(manifest, StrategyManifest):
             impl = manifest.implementation
             weights = normalized_weights([c.weight for c in impl.components])
@@ -149,6 +213,8 @@ class RegistryService:
             }
             payload = canonical_json(impl.model_dump(mode="json"))
             return analysis, strategy_canonical_hash(impl), payload
+        if isinstance(manifest.implementation, PythonImplementation):
+            return self._analyze_python(manifest, manifest.implementation)
         expression = manifest.implementation.expression
         check = validate(expression, self.limits)
         if check.analysis is None:
@@ -178,7 +244,7 @@ class RegistryService:
     def _family(
         self,
         conn: Connection,
-        manifest: FactorManifest | StrategyManifest,
+        manifest: Published,
         principal: Role,
         request_id: str,
         now: datetime,
@@ -239,8 +305,10 @@ class RegistryService:
         return manifest.family_id, False
 
     def _parents(
-        self, conn: Connection, manifest: FactorManifest | StrategyManifest, canonical: str
+        self, conn: Connection, manifest: Published, canonical: str
     ) -> list[dict[str, Any]]:
+        if isinstance(manifest, ResearchNoteManifest):
+            return []  # a note cites reports, not versions; it has no lineage
         ids = manifest.provenance.parent_version_ids
         if len(ids) != len(set(ids)):
             raise RegistryError(
@@ -252,8 +320,8 @@ class RegistryService:
         rows = {
             row["version_id"]: row
             for row in conn.execute(
-                text("""SELECT version_id, kind, manifest, analysis FROM artifact_versions
-                        WHERE version_id = ANY(:ids)"""),
+                text("""SELECT version_id, kind, manifest, analysis, canonical_hash
+                        FROM artifact_versions WHERE version_id = ANY(:ids)"""),
                 {"ids": list(ids)},
             ).mappings()
         }
@@ -270,12 +338,22 @@ class RegistryService:
             )
         edges: list[dict[str, Any]] = []
         if isinstance(manifest, FactorManifest):
-            child = parse_fragment(canonical)
+            python = isinstance(manifest.implementation, PythonImplementation)
+            child = None if python else parse_fragment(canonical)
             for version_id in ids:
                 parent = rows[version_id]
                 if parent["kind"] != "factor":
                     raise RegistryError(409, "KIND_CONFLICT", "a factor's parents are factors")
-                diff = ast_diff(parse_fragment(parent["analysis"]["canonical"]), child)
+                parent_canonical = (parent["analysis"] or {}).get("canonical")
+                if child is None or not isinstance(parent_canonical, str):
+                    # A Python module on either side: the edge names the two module hashes
+                    # (the DSL's AST diff does not apply).
+                    before = parent_canonical or parent["canonical_hash"]
+                    diff: Any = [
+                        {"op": "replace_module", "path": [], "from": before, "to": canonical}
+                    ]
+                else:
+                    diff = ast_diff(parse_fragment(parent_canonical), child)
                 edges.append({"parent": version_id, "relation": "parent", "diff": diff})
             return edges
         components = {c.version_id for c in manifest.implementation.components}
@@ -322,6 +400,9 @@ class RegistryService:
             )
         digest = content_hash(manifest)
         analysis, canonical, payload = self._analyze(manifest)
+        operator = (
+            "note" if isinstance(manifest, ResearchNoteManifest) else manifest.provenance.operator
+        )
         now = datetime.now(UTC)
         with self.db.transaction() as conn:
             existing = (
@@ -357,7 +438,7 @@ class RegistryService:
                     [{"field": "publish_key", "version_id": str(reused)}],
                 )
             family_id, created_family = self._family(conn, manifest, principal, request_id, now)
-            edges = self._parents(conn, manifest, str(analysis.get("canonical", "")))
+            edges = self._parents(conn, manifest, str(analysis.get("canonical") or canonical))
             version_no: int = conn.execute(
                 text(
                     "SELECT COALESCE(max(version_no), 0) + 1 FROM artifact_versions "
@@ -419,7 +500,7 @@ class RegistryService:
                     "family_created": created_family,
                     "version_no": version_no,
                     "kind": manifest.kind,
-                    "operator": provenance.operator,
+                    "operator": operator,
                     "content_hash": digest,
                     "canonical_hash": canonical,
                     "publish_key": request.publish_key,
@@ -436,7 +517,7 @@ class RegistryService:
                 payload={
                     "kind": manifest.kind,
                     "version_no": version_no,
-                    "operator": provenance.operator,
+                    "operator": operator,
                     "content_hash": digest,
                     "canonical_hash": canonical,
                     "published_seq": record.published_seq,
@@ -601,7 +682,8 @@ class RegistryService:
                     version_no=r["version_no"],
                     kind=r["kind"],
                     name=r["manifest"]["name"],
-                    operator=r["manifest"]["provenance"]["operator"],
+                    # A research note has no operator and no lineage edges.
+                    operator=r["manifest"]["provenance"].get("operator", "note"),
                     canonical_hash=r["canonical_hash"],
                     distance=distance[r["version_id"]],
                 )

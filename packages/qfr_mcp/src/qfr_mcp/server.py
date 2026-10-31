@@ -34,6 +34,7 @@ from qfr_core.log_maintenance import measure
 from qfr_core.log_reader import LogQuery, LogReader
 from qfr_core.logging import JsonLogger, StdlibBridge, env_secrets
 from qfr_core.pool_import import NO_DEFAULTS_NOTICE
+from qfr_core.pyfactor import public_python_limits
 from qfr_core.registry_api import RegistrySummary
 from qfr_core.research_api import ResearchSummary
 
@@ -55,7 +56,7 @@ from qfr_mcp.research_client import ResearchClient
 from qfr_mcp.resources import register as register_resources
 from qfr_mcp.results import ToolResult, owner_grade
 
-PHASE = 7
+PHASE = 8
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
 WRITE = ToolAnnotations(
     readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
@@ -160,7 +161,15 @@ def create_app(
     )
     imports = os.environ.get("QFR_IMPORTS_DIR")
     importer = (
-        PoolImporter(registry, store, limits, config, Path(imports) if imports else None, logger)
+        PoolImporter(
+            registry,
+            store,
+            limits,
+            config,
+            Path(imports) if imports else None,
+            logger,
+            public_python_limits(settings.config_dir),
+        )  # fmt: skip
         if registry is not None
         else None
     )

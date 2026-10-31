@@ -1,0 +1,39 @@
+# A pool import that exercises Phase 8 (runbook step 3 of docs/phase8-acceptance.md):
+# a qfr-python/1 factor, a DSL factor, and a long-short, industry-neutral strategy with a
+# position cap built from both. Copy it into imports/ and ask the host agent to import it
+# into the raw pool with qfr.pool.import. These are test entries, not recommendations.
+schema_version: pool_import/1
+entries:
+  - name: momentum_py
+    title: Twenty-day momentum in Python
+    expected_sign: 1
+    horizon_days: 5
+    python:
+      max_lookback_days: 20
+      source: |
+        """Twenty-day momentum, in qfr-python/1."""
+        import numpy as np
+
+
+        def factor(close):
+            out = np.full_like(close, np.nan)
+            out[20:] = close[20:] / close[:-20] - 1
+            return out
+  - name: reversal_5
+    title: Five-day reversal
+    expression: -Delta($close, 5) / Ref($close, 5)
+    expected_sign: 1
+    horizon_days: 5
+  - name: momentum_reversal_ls
+    title: Momentum plus reversal, long-short and industry neutral
+    expected_sign: 1
+    horizon_days: 5
+    strategy:
+      components:
+        - {name: momentum_py, sign: 1, weight: 0.5}
+        - {name: reversal_5, sign: 1, weight: 0.5}
+      combination: zscore_weighted_sum
+      portfolio: {type: topk_dropout, top_k: 30, dropout: 3, rebalance: daily, long_only: true}
+      # portfolio is the v1 long book; the rules add the short book of the 30 worst names
+      # and make it qfr-strategy/2.
+      rules: {long_short: true, neutralize: industry, max_position_weight: 0.05}

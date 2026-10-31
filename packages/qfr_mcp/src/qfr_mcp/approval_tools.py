@@ -20,13 +20,27 @@ from mcp.types import ToolAnnotations
 from pydantic import JsonValue, ValidationError
 from qfr_core.contracts import ApprovalRecord, PoolEntry, Tier, TraceStep
 from qfr_core.correlation import bind, current
-from qfr_core.eval_api import CaseApprovalRef, CaseDecisionRequest
+from qfr_core.eval_api import (
+    CaseApprovalRef,
+    CaseDecisionRequest,
+    CaseOverrideRequest,
+    OverrideApprovalRef,
+    RolloverApprovalRef,
+    RolloverRequest,
+)
 from qfr_core.ids import uuid7
 from qfr_core.registry_api import AddEntryRequest, AppendEventRequest, ApprovalRef
 from qfr_core.research_api import CloseRequest
 
 from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
-from qfr_mcp.approvals import ApprovalRefused, Decision, Resolver, entry_code, match
+from qfr_mcp.approvals import (
+    ApprovalRefused,
+    Decision,
+    Resolver,
+    entry_code,
+    match,
+    missing_words,
+)
 from qfr_mcp.control_store import ControlStore
 from qfr_mcp.job_tools import JobToolDeps
 from qfr_mcp.results import ToolResult, owner_grade
@@ -115,15 +129,18 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
         description=(
             "Record the owner's decision from their own words (read the qfr.approval prompt "
             "when available). Arguments: decision (approve, reject, retire, accept_case, "
-            "reject_case), owner_confirmation (the owner's words exactly as received, at "
-            "most 2,000 characters), rationale (your one-paragraph summary of why, as "
-            "discussed with the owner) and the scope: job_id and deliverable_id for a "
+            "reject_case, override_case, confirm_override, rollover_epoch), "
+            "owner_confirmation (the owner's words exactly as "
+            "received, at most 2,000 characters), rationale (your one-paragraph summary of "
+            "why, as discussed with the owner) and the scope: job_id and deliverable_id for a "
             "deliverable, version_ids (default: every item of the deliverable), pool, tier "
-            "(default: the tier the evaluator confirms), case_id for a case decision, and "
-            "entry_ids with pool for pool entries. The confirmation must contain the short "
-            "code of every item in scope (for example APPROVE J-0042 F-1 F-2, ACCEPT C-0003, "
-            "RETIRE E-3fa9c1). Never record an approval the owner did not state. Returns the "
-            "approval id that the approval-gated tools require."
+            "(default: the tier the evaluator confirms), case_id for a case decision, "
+            "entry_ids with pool for pool entries, and epoch_id alone for a rollover. The "
+            "confirmation must contain the short code of every item in scope (for example "
+            "APPROVE J-0042 F-1 F-2, ACCEPT C-0003, OVERRIDE C-0004, RETIRE E-3fa9c1, ROLLOVER "
+            "R-epoch_002). "
+            "Never record an approval the owner did not state. Returns the approval id that "
+            "the approval-gated tools require."
         ),
         annotations=WRITE,
     )
@@ -138,6 +155,7 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
         tier: Tier | None = None,
         case_id: UUID | None = None,
         entry_ids: list[UUID] | None = None,
+        epoch_id: str | None = None,
     ) -> ToolResult:
         async with lock:
             try:
@@ -150,6 +168,7 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
                     tier=tier,
                     case_id=case_id,
                     entry_ids=list(entry_ids or []),
+                    epoch_id=epoch_id,
                 )
             except ApprovalRefused as error:
                 raise refused(error.code, error.message) from None
@@ -161,6 +180,14 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
                     f"in scope; missing: {', '.join(missing)}. Ask the owner to confirm with "
                     "the codes.",
                     missing=list(missing),
+                )
+            words = missing_words(decision, owner_confirmation)
+            if words:
+                raise refused(
+                    "OVERRIDE_WORDS_MISSING",
+                    f"an override is confirmed in so many words; missing: {', '.join(words)} "
+                    "(for example OVERRIDE C-0003, then CONFIRM OVERRIDE C-0003)",
+                    missing=list(words),
                 )
             context = current()
             try:
@@ -243,6 +270,12 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
                     approval_id=str(approval_id),
                 )
             version = await downstream(lambda: registry.get_version(version_id))
+            if version.kind == "research_note":
+                raise refused(
+                    "KIND_POOL_CONFLICT",
+                    "a research note never enters a pool",
+                    version_id=str(version_id),
+                )
             pool: Pool = version.kind
             try:
                 request = AddEntryRequest(
@@ -420,9 +453,10 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
         description=(
             "Accept or reject an acceptance case. Arguments: case_id, decision (accept or "
             "reject), approval_id (an accept_case or reject_case approval naming the case) "
-            "and an optional rationale (default: the approval's). In v1 a case with a "
-            "failed gate cannot be accepted. Accepting releases the decision report; add "
-            "the version to its pool with qfr.pool.add and an approve approval."
+            "and an optional rationale (default: the approval's). A case with a failed gate "
+            "is accepted only through qfr.acceptance.override. Accepting releases the "
+            "decision report; add the version to its pool with qfr.pool.add and an approve "
+            "approval."
         ),
         annotations=GATED,
     )
@@ -468,3 +502,138 @@ def register(server: FastMCP, deps: JobToolDeps, control: ControlStore) -> None:
                 },
             )
             return result(owner_grade(case.model_dump(mode="json")))
+
+    @server.tool(
+        name="qfr.acceptance.override",
+        description=(
+            "The owner override of an acceptance case with a failed gate (Phase 8), in two "
+            "steps. step=request: an override_case approval (the owner writes OVERRIDE "
+            "C-nnnn) and rationale, the owner's own written reason of at least 200 "
+            "characters; this starts a 24-hour cooling period. step=confirm, after the "
+            "period: a second, separate confirm_override approval (CONFIRM OVERRIDE C-nnnn) "
+            "accepts the case with the reason owner_override. Rejecting the case meanwhile "
+            "withdraws the request. Never suggest an override; present it only when the "
+            "owner asks."
+        ),
+        annotations=GATED,
+    )
+    async def acceptance_override(
+        case_id: UUID,
+        step: Literal["request", "confirm"],
+        approval_id: UUID,
+        rationale: str | None = None,
+    ) -> ToolResult:
+        admin = deps.admin
+        if admin is None:
+            raise RuntimeError("EVAL_ADMIN_UNCONFIGURED: EVAL_ADMIN_API_URL is not set")
+        async with lock:
+            wanted: Literal["override_case", "confirm_override"] = (
+                "override_case" if step == "request" else "confirm_override"
+            )
+            record = await approval_for(approval_id, (wanted,))
+            if record.scope.case_id != case_id:
+                raise refused(
+                    "APPROVAL_SCOPE_MISMATCH",
+                    "the approval does not name this case",
+                    approval_id=str(approval_id),
+                )
+            if step == "request" and rationale is None:
+                raise refused(
+                    "RATIONALE_REQUIRED",
+                    "an override needs the owner's written rationale (at least 200 characters)",
+                )
+            try:
+                request = CaseOverrideRequest(
+                    step=step,
+                    rationale=rationale if step == "request" else None,
+                    approval=OverrideApprovalRef(
+                        approval_id=approval_id, decision=wanted, scope=record.scope
+                    ),
+                )
+            except ValidationError as error:
+                raise ValueError(f"ARGUMENT_INVALID: {error.errors(include_url=False)}") from None
+            case = await downstream(lambda: admin.override(case_id, request))
+            logger.info(
+                "case_override_sent",
+                outcome="ok",
+                version_id=str(case.version_id),
+                payload={
+                    "case_id": str(case_id),
+                    "step": step,
+                    "decision": case.decision,
+                    "approval_id": str(approval_id),
+                },
+            )
+            return result(owner_grade(case.model_dump(mode="json")))
+
+    # ---------------------------------------------------------------- epoch rollover
+
+    @server.tool(
+        name="qfr.ops.rollover_epoch",
+        description=(
+            "Roll the evaluation over to a new epoch (Section 10.6), usually when a W1 or "
+            "W2 burn meter is red or once a year. The owner first saves the proposed epoch "
+            "file (just epoch-propose <epoch_id>) under configs/epochs/. Call with "
+            "dry_run=true to show the owner the new windows, the research cutoff and how "
+            "many in-flight versions restart; no approval is needed for that. To roll over, "
+            "record a rollover_epoch approval with epoch_id (the owner confirms with "
+            "ROLLOVER R-<epoch_id>) and call again with approval_id. The old epoch is "
+            "retired with every record still linked to it; the next steps (rebuilding the "
+            "research snapshot at the new cutoff) are in the result."
+        ),
+        annotations=GATED,
+    )
+    async def rollover_epoch(
+        epoch_id: str, approval_id: UUID | None = None, dry_run: bool = False
+    ) -> ToolResult:
+        admin = deps.admin
+        if admin is None:
+            raise RuntimeError("EVAL_ADMIN_UNCONFIGURED: EVAL_ADMIN_API_URL is not set")
+        async with lock:
+            approval = None
+            if not dry_run:
+                if approval_id is None:
+                    raise refused(
+                        "APPROVAL_REQUIRED", "a rollover needs a rollover_epoch approval_id"
+                    )
+                record = await approval_for(approval_id, ("rollover_epoch",))
+                if record.scope.epoch_id != epoch_id:
+                    raise refused(
+                        "APPROVAL_SCOPE_MISMATCH",
+                        "the approval does not name this epoch",
+                        approval_id=str(approval_id),
+                    )
+                approval = RolloverApprovalRef(
+                    approval_id=approval_id, decision="rollover_epoch", scope=record.scope
+                )
+            try:
+                request = RolloverRequest(epoch_id=epoch_id, dry_run=dry_run, approval=approval)
+            except ValidationError as error:
+                raise ValueError(f"ARGUMENT_INVALID: {error.errors(include_url=False)}") from None
+            report = await downstream(lambda: admin.rollover(request))
+            data = report.model_dump(mode="json")
+            if not dry_run:
+                # The owner's trace already holds the APPROVAL_RECORDED step; the rollover
+                # itself is recorded in the evaluation zone (the new epoch's rollover
+                # report and the epoch_rolled_over event).
+                data["next_steps"] = [
+                    f"Rebuild the research snapshot at the new cutoff "
+                    f"({report.research_cutoff}): just data-build --zones research "
+                    f"--epoch {epoch_id} (with the source the stack uses), then restart "
+                    "research-api and research-worker.",
+                    "Optionally activate a protocol version whose epoch_ref names "
+                    f"{epoch_id} (protocol_epoch_ref_matches is "
+                    f"{str(report.protocol_epoch_ref_matches).lower()}).",
+                    "Watch qfr.status: restarted versions, re-fingerprinting and library "
+                    "re-measurement run in the evaluation queue.",
+                ]
+            logger.info(
+                "epoch_rollover_planned" if dry_run else "epoch_rollover_sent",
+                outcome="ok",
+                payload={
+                    "epoch_id": epoch_id,
+                    "problems": list(report.problems),
+                    "approval_id": None if approval_id is None else str(approval_id),
+                },
+            )
+            return result(owner_grade(data))

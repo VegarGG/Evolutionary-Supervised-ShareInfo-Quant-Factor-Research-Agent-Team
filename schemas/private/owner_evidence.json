@@ -274,7 +274,8 @@
             "w1",
             "w2",
             "holdout",
-            "simulation"
+            "simulation",
+            "remeasure"
           ],
           "title": "Stage",
           "type": "string"
@@ -508,6 +509,18 @@
           "title": "Created At",
           "type": "string"
         },
+        "epoch_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Epoch Id"
+        },
         "record_id": {
           "format": "uuid7",
           "title": "Record Id",
@@ -536,7 +549,8 @@
             "w1",
             "w2",
             "holdout",
-            "simulation"
+            "simulation",
+            "remeasure"
           ],
           "title": "Stage",
           "type": "string"

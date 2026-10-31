@@ -3,7 +3,8 @@
 Steps: fetch the qlib_bin.tar.gz release archive (or take a local copy), verify its
 SHA-256 against the release manifest or an owner-supplied value before extraction,
 extract it safely, read the Qlib binary format, build the canonical panel restricted to
-names that were ever in a configured universe, and run the sanity checks.
+names that were ever in a configured universe, and run the sanity checks. From Phase 8 an
+owner-provided industry classification file can be attached (configs/data, P8.6).
 """
 
 import json
@@ -11,13 +12,15 @@ import shutil
 import tarfile
 import urllib.request
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import polars as pl
 from pydantic import JsonValue
+from qfr_core.data.industry import IndustryError, industry_codes, read_industry_csv
 from qfr_core.data.panel import DATE, INSTRUMENT, build_panel, equal_weight_benchmark, sanity_checks
 from qfr_core.data.qlib import QlibDirectory, QlibError
 from qfr_core.data.snapshot import SnapshotData, SnapshotSource, file_sha256
@@ -257,6 +260,52 @@ def read_release(
     return data, source
 
 
+def attach_industry(
+    data: SnapshotData, source: SnapshotSource, path: Path, scheme: str, coverage_min: float
+) -> tuple[SnapshotData, SnapshotSource]:
+    """Add the owner's industry classification (P8.6). Names outside the panel are
+    dropped; the build fails when too few CSI 300 member days are classified, which
+    almost always means the file uses other instrument ids."""
+    if not path.is_file():
+        raise IngestError(f"the configured industry file {path.name} is missing")
+    last_day = data.calendar.get_column(DATE).max()
+    assert isinstance(last_day, date)
+    try:
+        table = read_industry_csv(path, scheme, last_day)
+    except IndustryError as error:
+        raise IngestError(f"industry file: {error}") from None
+    names = set(data.panel.get_column(INSTRUMENT).unique().to_list())
+    table = table.filter(pl.col(INSTRUMENT).is_in(sorted(names)))
+    if table.is_empty():
+        raise IngestError("the industry file classifies no instrument of the panel")
+    members = data.panel.filter(pl.col("in_csi300")).select(INSTRUMENT, DATE)
+    dates = data.calendar.get_column(DATE).to_list()
+    instruments = sorted(names)
+    codes = industry_codes(table, dates, instruments)
+    mask = np.zeros(codes.codes.shape, dtype=bool)
+    day_index = {d: i for i, d in enumerate(dates)}
+    column = {n: j for j, n in enumerate(instruments)}
+    for name, day in members.iter_rows():
+        if day in day_index:
+            mask[day_index[day], column[name]] = True
+    coverage = codes.coverage(mask)
+    if coverage is None or coverage < coverage_min:
+        raise IngestError(
+            f"the industry file classifies {coverage or 0:.1%} of CSI 300 member days; "
+            f"at least {coverage_min:.0%} is required"
+        )
+    checks = dict(source.checks) | {
+        "industry_scheme": scheme,
+        "industry_count": len(codes.names),
+        "industry_coverage_csi300": round(coverage, 6),
+    }
+    conventions = dict(source.conventions) | {
+        "industry": f"scheme {scheme}: owner-provided point-in-time intervals; open "
+        "intervals end at the last date of the data",
+    }
+    return replace(data, industry=table), replace(source, checks=checks, conventions=conventions)
+
+
 def ingest_cn(
     config: CnIngestConfig,
     raw_dir: Path,
@@ -293,6 +342,11 @@ def ingest_cn(
         finally:
             shutil.rmtree(staging, ignore_errors=True)
     data, source = read_release(QlibDirectory.locate(extracted), config, release)
+    if config.industry_file is not None and config.industry_scheme is not None:
+        data, source = attach_industry(
+            data, source, raw_dir / config.industry_file, config.industry_scheme,
+            config.industry_coverage_min,
+        )  # fmt: skip
     if log is not None:
         log.info("data_checks_passed", outcome="ok", payload={"checks": source.checks})
     return data, source

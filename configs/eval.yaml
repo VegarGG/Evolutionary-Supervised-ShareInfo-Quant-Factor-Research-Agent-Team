@@ -40,3 +40,9 @@ simulation:
   interval_seconds: 60
   mode: forward
   replay_days_per_tick: 1
+sandbox:
+  # Python factors (Phase 8) run only in the eval-sandbox service: eval-worker, sim-engine
+  # and reproduce write each job to the exchange volume and wait for its result. local
+  # runs the same child processes in the calling process (tests only).
+  mode: exchange
+  poll_seconds: 0.2

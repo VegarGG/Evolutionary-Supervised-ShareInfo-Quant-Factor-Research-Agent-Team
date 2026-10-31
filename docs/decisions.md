@@ -1190,3 +1190,171 @@ card), and nothing has reached a real provider.
     snapshots are kept because official records pin them, so nothing prunes them.
     Instead `qfr.status` shows the free space on the Docker disk every volume shares, and
     `just doctor` checks its headroom.
+
+# Phase 8 decisions
+
+Phase 8 implements P8.1 to P8.7: Python factors in a sandbox service, long-short,
+industry-neutral and capped strategies, research notes with output-quality checks, the
+optional Thresholdout mode for W2, epoch rollover with a synthetic dry run, hash-chained
+audit logs with automatic backup verification, the industry classification data and the
+market adapter interface, and CUSUM decay monitoring with the owner's acceptance
+override. It is built on the Phase 7 branch (PR #18), stacked on PR #17, #16, #15 and
+#14; none was merged. eval_db gains migrations 0004 to 0009, registry_db 0003 and 0004,
+control_db 0005 and 0006. Nothing here depends on the open owner decisions (the DSR
+calibration, the BM-DECAY bound, provisional members, the safeguards card), every report
+still releases as soon as it is recorded (plan v2.2), and nothing has reached a real
+provider.
+
+1. **Shipped v1 configs are edited in place, and every Phase 8 setting is optional.**
+   As in Phase 3 decision 16 and Phase 6 decision 1, the new settings go into the v1
+   files: the protocol gains `python`, `strategy_rules`, `research_note`,
+   `research_note` in `supported_kinds` and `monitoring.cusum`; `eval.yaml` gains
+   `sandbox`; `mcp.yaml` accepts `R-<epoch_id>` codes; the CN ingest config gains
+   `industry_coverage_min`; research's `service.yaml` gains `analyst.publish_notes`.
+   Unlike Phase 6, nothing requires them: an evaluation database that stored the earlier
+   v1 protocol keeps working, and each feature stays off there (Python factors are
+   refused, qfr-strategy/2 rules fail screening as COMPONENT_INVALID, notes are refused
+   as KIND_UNSUPPORTED, and only the v1 decay rule runs). To turn them on in such a
+   database, the owner activates the protocol file under a new version string with
+   `qfr.ops.activate_protocol` (runbook step 6).
+2. **gVisor is unavailable, so the sandbox is layered (P8.1).** Docker Desktop for Mac
+   cannot run gVisor (runsc). Section 17.2's other controls are the isolation, in four
+   layers: (a) the static check (`qfr_core.pyfactor`), shared by the registry, the owner
+   pool import and the evaluator, which allows only numpy (as np) and math, a short list
+   of builtins and names, and refuses classes, try blocks, globals, underscore
+   attributes, file and buffer methods, randomness and source or AST size above the
+   protocol's caps; (b) the evaluator never runs the code itself: eval-worker,
+   sim-engine and reproduce write the input matrices to the `sandbox_exchange` volume
+   and read back the result; (c) the `eval-sandbox` service has no network
+   (`network_mode: none`), no database, no snapshot, no secrets, a read-only root, no
+   capabilities, no-new-privileges, a noexec tmpfs and CPU, memory and process limits;
+   (d) each pass runs in a fresh child interpreter with CPU, address-space, file-size
+   and process limits and an audit hook that refuses imports, file opens, sockets,
+   subprocesses, ctypes and any further exec or compile. What gVisor would add is a
+   second kernel boundary: a Linux kernel bug reachable through numpy from inside the
+   child is not contained by these layers, only by the Docker Desktop VM. The residual
+   risk is small because the code cannot reach the network, a secret or a date, and is
+   recorded here.
+3. **No dates, no identifiers, and two probes (P8.1).** The factor receives dates x
+   instruments float matrices only, with the instrument columns in a seeded order that
+   only the evaluator can undo. Prefix invariance is mandatory: each prefix-probe cut is
+   recomputed on the rows up to the cut (EVL-03), and a window probe recomputes each cut
+   on only the declared lookback, which checks the lookback and that the value does not
+   depend on absolute row position. A failure is an enum code; nothing the code prints
+   or raises is kept (INV-12).
+4. **Strategy rules (P8.2).** qfr-strategy/2 manifests carry optional rules within the
+   protocol's `strategy_rules` bounds; v1 strategies keep their exact behaviour, hashes
+   and pinned settings. Long-short shorts the k worst names with the same dropout (never
+   a name in the long top k), sizes both books at NAV / k a name and charges the
+   protocol's borrow cost (800 bps a year, an owner's value) daily on the short book.
+   Shorts are stored as negative shares (eval migration 0007). A long-short book's IR
+   and excess returns are measured against cash, since it holds no net market position.
+   A position cap sizes entries at min(NAV / k, cap x NAV) and trims a holding that
+   drifts more than 10% of the cap above it. An industry cap allows max(1, floor(cap x
+   k)) names of one industry per book. Industry neutralization demeans each day's
+   composite score within each industry, so unclassified names drop out; a strategy that
+   asks for industry rules on a snapshot without a classification fails screening. The
+   rules live in `qfr_core.portfolio`, shared by the backtester and the sim-engine.
+5. **Research notes are a third artifact kind (P8.2).** A note is Markdown plus
+   structured claims (report id, released field, value) citing released reports. The
+   registry publishes it with no lineage and no pool. The evaluator checks it at intake,
+   deterministically and from released values only: LENGTH_LIMIT (the protocol's
+   `research_note` limits), CITATION_UNKNOWN (a cited report was never released to
+   research), CLAIM_FIELD_UNKNOWN (no such released number), CLAIM_MISMATCH (further than
+   half the rounding step the value was released at, per the report's own policy_ref)
+   and UNDISCLOSED_WINDOW ("W3", "holdout" or "hold-out" in the title or Markdown). The
+   window check uses words, not dates: comparing the note's dates with private window
+   dates would turn the check into an oracle for them. The result (NoteChecked or
+   NoteFailed) is released at once as a `note` report; a note is never screened,
+   measured or made an official record.
+6. **Research writes one note per generation (P8.2).** The analyst prompt (analyst/2)
+   asks for a claim for each released number an interpretation restates; research
+   collects a generation's final interpretations into one note and publishes it only
+   when the active protocol card lists `research_note` (`analyst.publish_notes` turns
+   it off).
+7. **Thresholdout replaces the Ladder's release, not the gate (P8.3).** With `w2_mode:
+   thresholdout` in the release policy, each W2 query releases PASS or FAIL and one
+   Thresholdout answer for s x RankIC_mean, as Section 9.5 defines it (T 0.01, sigma
+   0.002, budget 50 in `docs/examples/release_policy_thresholdout.yaml`). PASS or FAIL
+   is still the true W2 gate: it is what the pipeline acts on, and the W2 quota bounds
+   it. The W0 value is measured by the evaluator on W0 itself. The state is per epoch
+   and pinned at the epoch's first query, so activating another policy cannot refill
+   the budget. Every Laplace draw comes from (seed, epoch, draw number) and is logged
+   insert-only with its query (eval migration 0006); the seed is private and left out
+   of the policy card. A spent budget releases no number until the next epoch and
+   raises a burn alert. The shipped policy stays in Ladder mode.
+8. **Rollover is one transaction behind one approval (P8.4).** `just epoch-propose`
+   drafts the next epoch file by Section 10.6 (W0 to the old W2's end, W1 = the old W3,
+   W2 and W3 from newer data with the embargoes); `just epoch-plan` and
+   `qfr.ops.rollover_epoch dry_run=true` preview it. The rollover itself needs a
+   rollover_epoch approval quoting `R-<epoch_id>`. eval-admin-api retires the old epoch
+   with every record, run, series file, ledger row, report and trace step still linked
+   to it; in-flight versions restart from Discovered; jobs queued for the old epoch are
+   cancelled and the worker fences a running one; admitted versions are fingerprinted
+   again on the new W0 and library members re-measured on the new W1 (`remeasure`
+   records, not trials). Queue jobs belong to an epoch (eval migration 0004). The
+   research snapshot is rebuilt at the new cutoff by the owner afterwards. The synthetic
+   dry run checks that everything made before the rollover is unchanged, still resolves
+   and still reproduces.
+9. **CUSUM runs next to the v1 rule (P8.7).** Monitoring simulations run a one-sided
+   lower CUSUM on the daily forward s x RankIC against the version's W1 measurement
+   (its re-measurement after a rollover): k = 0.5 x that mean, alarm at h = 12 standard
+   deviations of the daily RankIC (`monitoring.cusum`). k = mean / 2 tunes it to a
+   complete loss of signal. For a factor with a daily IR of 0.3 that keeps its level,
+   h = 12 gives an average of about 1,040 trading days between false alarms (about one
+   year in five sees one), and a full decay is found in about three months
+   (`tests/eval/test_monitoring.py`); the owner can trade these off in the protocol.
+   Both detectors raise their own alert. On BM-DECAY the CUSUM fires 18
+   trading days after the switch-off and the v1 rule 69; the benchmark records both, and
+   its pass bound stays the open decision 12 of Phase 6.
+10. **The override takes two approvals a day apart (P8.7).** A case with a failed gate
+    is accepted only through `qfr.acceptance.override`: step `request` takes an
+    override_case approval ("OVERRIDE C-nnnn") and the owner's rationale of at least
+    200 characters, and starts a 24-hour cooling period; step `confirm` takes a second,
+    separate confirm_override approval ("CONFIRM OVERRIDE C-nnnn") recorded after the
+    request. The case is then accepted with the reason owner_override and the gates it
+    overrides. A rejection withdraws a pending request. eval migration 0005 and control
+    migration 0005 enforce the order, the cooling period and the rationale length in
+    the tables as well.
+11. **Industry data and the US adapter (P8.6).** A snapshot may carry a point-in-time
+    industry table (`industry.parquet`) in both zones; the research copy is clipped at
+    the cutoff like the index membership, and BND-06 checks it. The synthetic generator
+    publishes the sectors that drive its returns. For China A-shares the owner provides
+    the classification as a CSV (`industry_file` and `industry_scheme` in
+    `configs/data/cn_ingest_v1.yaml`; no free point-in-time source exists), and the
+    build fails below `industry_coverage_min` (0.9 of CSI 300 member days). The market
+    adapter interface wraps CN ingest; the US-equities adapter states what a vendor feed
+    must provide and the panel changes US data needs (universe flags and price-limit
+    rules are A-share specific), and refuses to build until both exist.
+12. **Audit chains are sealed, not triggered (P8.5).** registry_events, eval.events,
+    mcp_calls and approvals were insert-only already. Each database now holds an
+    `audit_chain` table (registry 0004, eval 0009, control 0006): `audit_seal()` links
+    the rows not yet linked, in order of their time stamps, each link the SHA-256 of the
+    previous link and the row's digest; `audit_verify()` recomputes every link and every
+    row digest, with the time zone and float format pinned, and names the first broken
+    link (row_changed, row_missing, link_broken). Sealing in batches avoids a lock on
+    every insert, which a per-row trigger chain would need to keep the order. The backup
+    service seals each database as its migration role before dumping it, so every
+    backup covers a sealed chain. The application roles cannot read or change the chain.
+    A table owner who disables the insert-only triggers can edit a row, and the chain
+    shows it at that row's link; one who also rewrites the chain is caught by the next
+    backup (decision 13).
+13. **Backups verify themselves (P8.5).** Each backup records `AUDIT_CHAINS.json`
+    (status and head of each chain) and checks that each chain extends the head the
+    previous backup recorded, so a rewritten history fails even when the new chain is
+    internally consistent. `just verify-backups` (also run after every backup)
+    re-checks the checksums of every retained backup, lists the newest dumps with
+    `pg_restore --list` and writes `backups/VERIFIED.json`. ops-nightly raises a backup
+    alert when the last verification failed; a backups folder from before Phase 8 has no
+    VERIFIED.json yet, which the nightly run reports without an alert. The restore drill
+    adds an AUDIT check: every restored chain verifies and its head equals the one the
+    backup recorded (a backup from before Phase 8 skips it).
+14. **Postgres stays one instance (P8.5).** Splitting research and evaluation into
+    separate Postgres instances on separate networks is optional in the plan and is not
+    done: each instance costs the Mac Studio's Docker memory budget (7.75 GiB today),
+    while most of the separation it would add is already in place: separate databases,
+    roles and credentials per zone, no network shared by research and evaluation
+    services, and BND-01, which checks that no role connects to another zone's
+    database. A split would add a separate server process, so a Postgres bug or a
+    superuser mistake could not cross zones. It can be done later by changing Compose
+    and the connection URLs only.

@@ -63,7 +63,8 @@ class ProbeResult(BaseModel):
 
 class ComputeResult(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    status: Literal["ok", "dsl_error", "runtime_limit", "error"]
+    # refused: the sandbox refused a Python factor's code or output (error_code says why).
+    status: Literal["ok", "dsl_error", "runtime_limit", "error", "refused"]
     error_code: str | None = None
     error_type: str | None = None
     limit: Literal["cpu", "memory", "wall_clock"] | None = None
@@ -71,7 +72,10 @@ class ComputeResult(BaseModel):
     probe_cpu_seconds: float | None = None
     peak_rss_bytes: int | None = None
     probes: list[ProbeResult] = Field(default_factory=list)
+    # Python factors: the window probe (the declared lookback only, before each cut).
+    window_probes: list[ProbeResult] = Field(default_factory=list)
     instruments: int | None = None
+    sandbox: dict[str, float | int] | None = None
 
 
 @dataclass(frozen=True)

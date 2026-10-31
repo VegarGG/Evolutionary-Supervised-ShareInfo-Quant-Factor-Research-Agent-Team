@@ -12,11 +12,14 @@ from pydantic import (
     FiniteFloat,
     JsonValue,
     StringConstraints,
+    ValidationError,
     model_validator,
 )
 
 Hash = Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
 Slug = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9_-]*$", max_length=64)]
+# An epoch's id as the epoch files name it (configs/epochs/<epoch_id>.yaml).
+EpochId = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9_]*$", max_length=64)]
 ShortText = Annotated[str, StringConstraints(min_length=1, max_length=120)]
 Sign = Literal[-1, 1]
 Horizon = Literal[1, 5, 10, 20]
@@ -133,6 +136,19 @@ class FactorImplementation(Contract):
     expression: Annotated[str, StringConstraints(min_length=1, max_length=1000)]
 
 
+class PythonImplementation(Contract):
+    """A qfr-python/1 module (Phase 8): `factor(...)` over field matrices, run only in the
+    evaluator's sandbox. The protocol's python section caps the length; this is the
+    schema's outer bound."""
+
+    language: Literal["qfr-python/1"]
+    source: Annotated[str, StringConstraints(min_length=1, max_length=50000)]
+    entrypoint: Literal["factor"]
+
+
+FactorCode = Annotated[FactorImplementation | PythonImplementation, Field(discriminator="language")]
+
+
 class Declaration(Contract):
     expected_sign: Sign
     horizon_days: Horizon
@@ -149,7 +165,7 @@ class FactorManifest(Contract):
     family_id: UUID7 | None
     name: Slug
     title: ShortText
-    implementation: FactorImplementation
+    implementation: FactorCode
     declared: FactorDeclaration
     rationale: Rationale
     provenance: Provenance
@@ -191,6 +207,103 @@ class StrategyImplementation(Contract):
         return self
 
 
+class RulesPortfolio(Contract):
+    """The qfr-strategy/2 portfolio (Phase 8, PLAN 7.8): TopK-dropout with optional
+    rules. long_only false adds a short book of the k worst names; max_position_weight
+    caps a name's weight (entries sized at most at the cap, drifted holdings trimmed);
+    max_industry_weight caps one industry's share of a book's names. The protocol's
+    strategy_rules section bounds the values further."""
+
+    type: Literal["topk_dropout"]
+    top_k: int = Field(ge=20, le=100)
+    dropout: int = Field(ge=1, le=20)
+    rebalance: Literal["daily"]
+    long_only: bool
+    max_position_weight: float | None = Field(default=None, ge=0.005, le=0.2)
+    max_industry_weight: float | None = Field(default=None, ge=0.05, le=1.0)
+
+    @model_validator(mode="after")
+    def granular(self) -> Self:
+        for value, digits in ((self.max_position_weight, 3), (self.max_industry_weight, 2)):
+            if value is not None and round(value, digits) != value:
+                raise ValueError(f"portfolio caps have at most {digits} decimals")
+        return self
+
+
+class StrategyRules(Contract):
+    """The Phase 8 rules an owner can ask for (a job's strategy_spec or a pool import):
+    a short book, industry neutralization, and position and industry caps. A strategy
+    with rules is published as qfr-strategy/2."""
+
+    long_short: bool = False
+    neutralize: Literal["none", "industry"] = "none"
+    max_position_weight: float | None = None
+    max_industry_weight: float | None = None
+
+    @model_validator(mode="after")
+    def used(self) -> Self:
+        if (
+            not self.long_short
+            and self.neutralize == "none"
+            and self.max_position_weight is None
+            and self.max_industry_weight is None
+        ):
+            raise ValueError("strategy rules need at least one Phase 8 rule")
+        return self
+
+    def portfolio(self, top_k: int, dropout: int) -> "RulesPortfolio":
+        """The qfr-strategy/2 portfolio these rules give; raises ValueError when a cap is
+        out of range."""
+        try:
+            return RulesPortfolio(
+                type="topk_dropout",
+                top_k=top_k,
+                dropout=dropout,
+                rebalance="daily",
+                long_only=not self.long_short,
+                max_position_weight=self.max_position_weight,
+                max_industry_weight=self.max_industry_weight,
+            )
+        except ValidationError as error:
+            raise ValueError(error.errors()[0]["msg"]) from None
+
+
+class StrategyRulesImplementation(Contract):
+    """qfr-strategy/2 (Phase 8): the v1 composite with richer rules. neutralize
+    "industry" demeans the composite within each industry every day before ranking.
+    At least one Phase 8 rule is used; a plain strategy stays qfr-strategy/1."""
+
+    language: Literal["qfr-strategy/2"]
+    components: list[Component] = Field(min_length=1, max_length=8)
+    combination: Literal["zscore_weighted_sum"]
+    neutralize: Literal["none", "industry"]
+    portfolio: RulesPortfolio
+
+    @model_validator(mode="after")
+    def rules(self) -> Self:
+        ids = [c.version_id for c in self.components]
+        if len(ids) != len(set(ids)):
+            raise ValueError("components must name distinct versions")
+        p = self.portfolio
+        if (
+            self.neutralize == "none"
+            and p.long_only
+            and p.max_position_weight is None
+            and p.max_industry_weight is None
+        ):
+            raise ValueError("qfr-strategy/2 uses at least one Phase 8 rule; else use /1")
+        return self
+
+    @property
+    def needs_industry(self) -> bool:
+        return self.neutralize == "industry" or self.portfolio.max_industry_weight is not None
+
+
+StrategyCode = Annotated[
+    StrategyImplementation | StrategyRulesImplementation, Field(discriminator="language")
+]
+
+
 class StrategyDeclaration(Declaration):
     expected_sign: Literal[1]
 
@@ -201,7 +314,7 @@ class StrategyManifest(Contract):
     family_id: UUID7 | None
     name: Slug
     title: ShortText
-    implementation: StrategyImplementation
+    implementation: StrategyCode
     declared: StrategyDeclaration
     rationale: StrategyRationale
     provenance: Provenance
@@ -219,6 +332,75 @@ class StrategyManifest(Contract):
 
 
 Manifest = Annotated[FactorManifest | StrategyManifest, Field(discriminator="kind")]
+
+# Research notes (Phase 8, PLAN Sections 7.6 and 8.10): Markdown plus structured claims
+# that cite released report ids. A note is checked for output quality only: it is never
+# evaluated on a window and never enters a pool.
+NOTE_MARKDOWN_MAX: Final = 40000
+NOTE_CLAIMS_MAX: Final = 200
+NOTE_CITATIONS_MAX: Final = 200
+# A released content field: a top-level name, or name.key inside a keyed map such as
+# decay_profile.5 or yearly_rankic.2021.
+ClaimField = Annotated[
+    str, StringConstraints(pattern=r"^[a-z][a-z0-9_]*(\.[A-Za-z0-9_]+)?$", max_length=64)
+]
+
+
+class NoteClaim(Contract):
+    """One number the note states, and the released report field it restates."""
+
+    report_id: UUID7
+    field: ClaimField
+    value: FiniteFloat
+
+
+class NoteImplementation(Contract):
+    language: Literal["qfr-note/1"]
+    markdown: Annotated[str, StringConstraints(min_length=1, max_length=NOTE_MARKDOWN_MAX)]
+    cited_report_ids: list[UUID7] = Field(min_length=1, max_length=NOTE_CITATIONS_MAX)
+    claims: list[NoteClaim] = Field(max_length=NOTE_CLAIMS_MAX)
+
+    @model_validator(mode="after")
+    def claims_cite(self) -> Self:
+        if len(set(self.cited_report_ids)) != len(self.cited_report_ids):
+            raise ValueError("cited report ids must be distinct")
+        cited = set(self.cited_report_ids)
+        if any(claim.report_id not in cited for claim in self.claims):
+            raise ValueError("every claim's report must be among the cited reports")
+        return self
+
+
+class NoteProvenance(Contract):
+    """Notes come from research jobs only: no setup import, no operator, no parents. The
+    agent runs are the analyst runs whose interpretations the note collects."""
+
+    job_id: UUID7
+    program_id: UUID7
+    generation_id: UUID7
+    agent_runs: list[AgentRunRef]
+    trace_ref: UUID7
+    qfr_core_version: Annotated[str, StringConstraints(pattern=r"^\d+\.\d+\.\d+$")]
+
+    @property
+    def is_setup_import(self) -> bool:
+        return False
+
+
+class ResearchNoteManifest(Contract):
+    schema_version: Literal["1"]
+    kind: Literal["research_note"]
+    family_id: UUID7 | None
+    name: Slug
+    title: ShortText
+    implementation: NoteImplementation
+    provenance: NoteProvenance
+
+
+# Everything the registry publishes. Evaluation plugins take Manifest; a research note
+# has only the output-quality checks.
+AnyManifest = Annotated[
+    FactorManifest | StrategyManifest | ResearchNoteManifest, Field(discriminator="kind")
+]
 
 
 class EvidenceRef(Contract):
@@ -264,8 +446,15 @@ class W1Content(Contract):
 class W2Content(Contract):
     type: Literal["w2"]
     status: Literal["PASS", "FAIL"]
-    ladder_status: Literal["IMPROVED", "UNCHANGED"]
+    # Ladder mode (the default): IMPROVED with the family best rounded to the Ladder step,
+    # or UNCHANGED. Thresholdout mode (Phase 8, Section 9.5) has no Ladder status: it
+    # releases one answer for s x RankIC_mean, rounded to the policy's RankIC step, or
+    # nothing once the epoch's budget is spent.
+    ladder_status: Literal["IMPROVED", "UNCHANGED"] | None
     family_best_rankic: FiniteFloat | None
+    mode: Literal["ladder", "thresholdout"] = "ladder"
+    answer_rankic: FiniteFloat | None = None
+    answer_budget: Literal["open", "exhausted"] | None = None
 
 
 class AdvancementContent(Contract):
@@ -283,7 +472,11 @@ class SimulationContent(Contract):
 class DecisionContent(Contract):
     type: Literal["decision"]
     status: Literal["ACCEPTED", "REJECTED"]
-    reason: Literal["gate_failed", "owner_rejected", "incubation_failed", "gates_passed"]
+    # owner_override (Phase 8): accepted by the owner over the named failed gate, after a
+    # written rationale, a 24-hour cooling period and a second confirmation.
+    reason: Literal[
+        "gate_failed", "owner_rejected", "incubation_failed", "gates_passed", "owner_override"
+    ]
     gate: (
         Literal[
             "G-W1", "G-W2", "G-HOLDOUT", "G-DSR", "G-PBO", "G-HLZ", "G-FWD", "G-NOVELTY", "G-OPS"
@@ -297,6 +490,29 @@ class LibraryContent(Contract):
     status: Literal["seed", "active", "retired"]
 
 
+class NoteCheckCode(StrEnum):
+    """Why a research note failed its output-quality checks (Section 8.10)."""
+
+    CITATION_UNKNOWN = "CITATION_UNKNOWN"
+    CLAIM_FIELD_UNKNOWN = "CLAIM_FIELD_UNKNOWN"
+    CLAIM_MISMATCH = "CLAIM_MISMATCH"
+    UNDISCLOSED_WINDOW = "UNDISCLOSED_WINDOW"
+    LENGTH_LIMIT = "LENGTH_LIMIT"
+
+
+class NoteContent(Contract):
+    """The output-quality result of a research note: PASS or FAIL, the failed checks, and
+    which claims (by position in the note's claims list) did not match a released value."""
+
+    type: Literal["note"]
+    status: Literal["PASS", "FAIL"]
+    checks: list[NoteCheckCode]
+    citations: int = Field(ge=0)
+    claims: int = Field(ge=0)
+    claims_matched: int = Field(ge=0)
+    failed_claims: list[int] = Field(max_length=NOTE_CLAIMS_MAX)
+
+
 ReleasedContent = Annotated[
     IntakeContent
     | W1Content
@@ -304,7 +520,8 @@ ReleasedContent = Annotated[
     | AdvancementContent
     | SimulationContent
     | DecisionContent
-    | LibraryContent,
+    | LibraryContent
+    | NoteContent,
     Field(discriminator="type"),
 ]
 
@@ -346,6 +563,14 @@ class StrategySpec(Contract):
     top_k: int = Field(ge=20, le=100)
     dropout: int = Field(ge=1, le=20)
     max_components: int = Field(ge=1, le=8)
+    # Phase 8: rules every draft of the job uses (deterministic, not chosen by the LLM).
+    rules: StrategyRules | None = None
+
+    @model_validator(mode="after")
+    def rules_fit(self) -> Self:
+        if self.rules is not None:
+            self.rules.portfolio(self.top_k, self.dropout)
+        return self
 
 
 class DeliverableCriteria(Contract):
@@ -425,6 +650,7 @@ class TraceStep(Contract):
         "NOT_SELECTED",
         "TRACE_CHECKED",
         "PUBLISHED",
+        "NOTE_PUBLISHED",
         "REPORT_RECEIVED",
         "INTERPRETED",
         "INTERPRETATION_CHALLENGED",
@@ -604,13 +830,18 @@ class ApprovalScope(Contract):
     tier: Tier | None
     case_id: UUID7 | None
     entry_ids: list[UUID7]
+    # rollover_epoch (Phase 8): the epoch the owner approved rolling over to.
+    epoch_id: EpochId | None = None
 
 
 class ApprovalRecord(Contract):
     schema_version: Literal["approval/1"]
     approval_id: UUID7
     created_at: AwareDatetime
-    decision: Literal["approve", "reject", "retire", "accept_case", "reject_case", "rollover_epoch"]
+    decision: Literal[
+        "approve", "reject", "retire", "accept_case", "reject_case", "rollover_epoch",
+        "override_case", "confirm_override",
+    ]  # fmt: skip
     scope: ApprovalScope
     owner_confirmation: Annotated[str, StringConstraints(min_length=1, max_length=2000)]
     rationale: Annotated[str, StringConstraints(min_length=1)]
@@ -662,6 +893,7 @@ class ImportStrategy(Contract):
     components: list[ImportComponent] = Field(min_length=1, max_length=8)
     combination: Literal["zscore_weighted_sum"]
     portfolio: Portfolio
+    rules: StrategyRules | None = None
 
     @model_validator(mode="after")
     def unique_components(self) -> Self:
@@ -670,13 +902,29 @@ class ImportStrategy(Contract):
             raise ValueError("components must name distinct factor entries")
         return self
 
+    @model_validator(mode="after")
+    def phase8_rules(self) -> Self:
+        if self.rules is not None:
+            self.rules.portfolio(self.portfolio.top_k, self.portfolio.dropout)
+        return self
+
+
+class ImportPython(Contract):
+    """A qfr-python/1 factor in a pool import (Phase 8): the module and its declared
+    lookback, which the evaluator's window probe checks."""
+
+    source: Annotated[str, StringConstraints(min_length=1, max_length=50000)]
+    max_lookback_days: int = Field(ge=0, le=10000)
+
 
 class PoolImportEntry(Contract):
-    """One raw-pool row: a factor (expression) or a strategy over factor rows (strategy)."""
+    """One raw-pool row: a factor (a DSL expression or a qfr-python/1 module) or a
+    strategy over factor rows."""
 
     name: Slug
     title: ShortText
     expression: Annotated[str, StringConstraints(min_length=1, max_length=1000)] | None = None
+    python: ImportPython | None = None
     expected_sign: Sign
     horizon_days: Horizon
     tags: list[Tag] = Field(default_factory=list)
@@ -686,15 +934,18 @@ class PoolImportEntry(Contract):
 
     @model_validator(mode="after")
     def one_kind(self) -> Self:
-        if (self.expression is None) == (self.strategy is None):
-            raise ValueError("an entry needs exactly one of expression (factor) or strategy")
+        given = [self.expression is not None, self.python is not None, self.strategy is not None]
+        if given.count(True) != 1:
+            raise ValueError(
+                "an entry needs exactly one of expression or python (factor) or strategy"
+            )
         if self.strategy is not None and self.expected_sign != 1:
             raise ValueError("a strategy's direction is always +1 after component signs")
         return self
 
     @property
     def kind(self) -> Literal["factor", "strategy"]:
-        return "factor" if self.expression is not None else "strategy"
+        return "strategy" if self.strategy is not None else "factor"
 
 
 class PoolImport(Contract):
@@ -706,7 +957,7 @@ class PoolImport(Contract):
         names = [entry.name for entry in self.entries]
         if len(names) != len(set(names)):
             raise ValueError("import names must be unique")
-        factors = {entry.name for entry in self.entries if entry.expression is not None}
+        factors = {entry.name for entry in self.entries if entry.kind == "factor"}
         for entry in self.entries:
             if entry.strategy and any(c.name not in factors for c in entry.strategy.components):
                 raise ValueError("import strategy references an unknown factor entry")
@@ -807,6 +1058,7 @@ class ExportBundle(Contract):
 PUBLIC_CONTRACTS: dict[str, type[Contract]] = {
     "factor_manifest": FactorManifest,
     "strategy_manifest": StrategyManifest,
+    "research_note_manifest": ResearchNoteManifest,
     "released_report": ReleasedReport,
     "research_brief": ResearchBrief,
     "deliverable": Deliverable,

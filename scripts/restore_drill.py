@@ -1,5 +1,6 @@
 """`just restore-drill`: restore the newest backup into a throwaway Compose project and run
-BND-01, REG-01 and EVL-04 on it (PLAN Section 17.5). See qfr_mcp.drill for the steps.
+BND-01, REG-01, the audit chain check and EVL-04 on it (PLAN Section 17.5). See
+qfr_mcp.drill for the steps.
 
 The running stack is never touched: the drill uses its own project name, volumes and
 network subnets, starts only postgres (plus one-off init-volumes, data-ingest and
@@ -50,6 +51,7 @@ try:
             ) and drill.restore(backup):
                 drill.bnd_01()
                 drill.reg_01()
+                drill.audit_chains(backup)
                 observations["row_counts"] = drill.row_counts()
                 drill.evl_04(backups)
 finally:

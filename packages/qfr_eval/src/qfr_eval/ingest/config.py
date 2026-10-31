@@ -108,6 +108,21 @@ class CnIngestConfig(_Strict):
     max_archive_bytes: int = Field(gt=0)
     max_extracted_bytes: int = Field(gt=0)
     download_timeout_seconds: float = Field(gt=0)
+    # Phase 8 (P8.6): an owner-provided point-in-time industry classification CSV under
+    # the raw data folder, and the name of its scheme. Both or neither.
+    industry_file: str | None = None
+    industry_scheme: str | None = None
+    industry_coverage_min: float = Field(default=0.9, gt=0, le=1)
+
+    @model_validator(mode="after")
+    def industry_pair(self) -> Self:
+        if (self.industry_file is None) != (self.industry_scheme is None):
+            raise ValueError("industry_file and industry_scheme are set together")
+        if self.industry_file is not None and (
+            Path(self.industry_file).is_absolute() or ".." in Path(self.industry_file).parts
+        ):
+            raise ValueError("industry_file is a path inside the raw data folder")
+        return self
 
 
 def load_yaml(path: Path) -> dict[str, object]:

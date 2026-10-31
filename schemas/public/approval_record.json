@@ -35,6 +35,20 @@
           "title": "Entry Ids",
           "type": "array"
         },
+        "epoch_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "pattern": "^[a-z0-9][a-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Epoch Id"
+        },
         "job_id": {
           "anyOf": [
             {
@@ -120,7 +134,9 @@
         "retire",
         "accept_case",
         "reject_case",
-        "rollover_epoch"
+        "rollover_epoch",
+        "override_case",
+        "confirm_override"
       ],
       "title": "Decision",
       "type": "string"

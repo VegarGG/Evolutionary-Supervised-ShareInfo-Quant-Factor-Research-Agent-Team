@@ -4,6 +4,7 @@ The drill itself runs on the Mac against Docker (`just restore-drill`); these te
 what it checks, which commands it runs and that no password reaches a command line."""
 
 import hashlib
+import json
 import subprocess
 from pathlib import Path
 
@@ -153,3 +154,32 @@ def test_a_failed_check_fails_the_drill_and_no_checks_is_a_failure():
     assert report(None, drill.checks, {}, "p")["status"] == "PASS"
     drill.check("c", False, "broken")
     assert report(None, drill.checks, {}, "p")["status"] == "FAIL"
+
+
+def test_restored_audit_chains_must_verify_and_end_at_the_recorded_head(tmp_path):
+    folder = backup(tmp_path, "2026-10-30")
+    drill = Drill(env=ENV, compose=["docker", "compose", "-p", "qfr-drill-x"], run=Recorder())
+    drill.audit_chains(folder)
+    assert [(c.name, c.status) for c in drill.checks] == [("AUDIT", "SKIP")]  # pre-Phase 8
+
+    head = "ab" * 32
+    recorded = {
+        "registry_db": {"status": "ok", "head_seq": 4, "head_hash": head},
+        "eval_db": {"status": "ok", "head_seq": 4, "head_hash": head},
+        "control_db": {"status": "unavailable"},
+    }
+    (folder / "AUDIT_CHAINS.json").write_text(json.dumps(recorded))
+    answers = {"registry_db": f"ok|4|{head}|", "eval_db": f"broken|3|{'cd' * 32}|row_changed"}
+
+    def restored(args, stdin):
+        database = args[args.index("-d") + 1]
+        assert "audit_verify()" in args[-1]
+        return Recorder.done(0, answers[database] + "\n", "")
+
+    drill = Drill(env=ENV, compose=["docker", "compose", "-p", "qfr-drill-x"], run=restored)
+    drill.audit_chains(folder)
+    statuses = {c.name: c.status for c in drill.checks}
+    assert statuses == {"AUDIT:registry_db": "PASS", "AUDIT:eval_db": "FAIL",
+                        "AUDIT:control_db": "SKIP"}  # fmt: skip
+    failed = next(c for c in drill.checks if c.name == "AUDIT:eval_db")
+    assert failed.detail["problem"] == "row_changed"

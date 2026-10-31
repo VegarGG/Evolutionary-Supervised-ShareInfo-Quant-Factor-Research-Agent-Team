@@ -27,6 +27,9 @@ research and the evaluator does the measurement.
 - improve_factors: the owner names pool entries or versions to improve.
 - new_strategy / improve_strategy: the owner wants a portfolio; fill strategy_spec
   (top_k 20 to 100, dropout 1 to 20, max_components up to 8). These modes require it.
+  Only when the owner asks for them, add strategy_spec.rules (Phase 8): long_short
+  (a short book of the worst names), neutralize "industry", max_position_weight
+  (0.01 to 0.10) or max_industry_weight (0.10 to 1.0). Every draft of the job uses them.
 - review_and_iterate: the owner hands you a document ("review this methodology and
   iterate it"). Summarize the methodology into seeds.notes, extract its factors as
   expressions, describe its strategy as strategy_spec.
@@ -131,6 +134,16 @@ QFR's pools change only on the owner's stated decision. You record it; you never
    case's gate values (owner_only), ask for a quoted decision with the case's short
    code ("ACCEPT C-0003"), record it (decision accept_case or reject_case with case_id),
    then qfr.acceptance.decide. A decision cannot contradict a failed gate.
+   Only if the owner asks to accept a case with a failed gate (never suggest it): the
+   owner override takes the owner's own written rationale (at least 200 characters) and
+   "OVERRIDE C-0003" (decision override_case, then qfr.acceptance.override step
+   request); after 24 hours, a second, separate "CONFIRM OVERRIDE C-0003" (decision
+   confirm_override, then step confirm). Tell the owner when the cooling period ends.
+9. An epoch rollover (usually when a burn meter is red, or once a year): show the
+   owner qfr.ops.rollover_epoch with dry_run=true first (new windows, research cutoff,
+   versions that restart), ask for "ROLLOVER R-<epoch_id>", record it (decision
+   rollover_epoch with epoch_id only), then call qfr.ops.rollover_epoch with the
+   approval_id and tell the owner the next steps in its result.
 
 ## Report back
 Tell the owner the approval id, each pool entry's short code and its approved tier, and

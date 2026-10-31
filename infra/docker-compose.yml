@@ -641,7 +641,8 @@
         "QFR_EVAL_STORE_DIR": "/data/eval-store",
         "QFR_HEARTBEAT_FILE": "/tmp/heartbeat",
         "QFR_GIT_SHA": "${QFR_GIT_SHA:-}",
-        "QFR_IMAGE_DIGEST": "${QFR_EVAL_IMAGE_DIGEST:-}"
+        "QFR_IMAGE_DIGEST": "${QFR_EVAL_IMAGE_DIGEST:-}",
+        "QFR_SANDBOX_DIR": "/sandbox"
       },
       "volumes": [
         {
@@ -664,6 +665,12 @@
           "source": "eval_store",
           "target": "/data/eval-store",
           "read_only": false
+        },
+        {
+          "type": "volume",
+          "source": "sandbox_exchange",
+          "target": "/sandbox",
+          "read_only": false
         }
       ],
       "depends_on": {
@@ -675,6 +682,9 @@
         },
         "migrate": {
           "condition": "service_completed_successfully"
+        },
+        "eval-sandbox": {
+          "condition": "service_started"
         }
       },
       "networks": [
@@ -685,6 +695,86 @@
         "-m",
         "qfr_eval.worker"
       ]
+    },
+    "eval-sandbox": {
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001"
+      ],
+      "restart": "no",
+      "deploy": {
+        "resources": {
+          "limits": {
+            "cpus": "4",
+            "memory": "6G"
+          }
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/heartbeat') < 180 else 1)"
+        ],
+        "interval": "5s",
+        "timeout": "3s",
+        "retries": 30
+      },
+      "build": {
+        "context": "..",
+        "dockerfile": "infra/Dockerfile",
+        "target": "eval",
+        "args": {
+          "QFR_PACKAGE": "qfr-eval"
+        }
+      },
+      "image": "qfr-v2-eval:phase3",
+      "platform": "${QFR_PLATFORM:-linux/arm64}",
+      "environment": {
+        "QFR_ENV": "prod",
+        "QFR_SERVICE": "eval-sandbox",
+        "QFR_ZONE": "eval",
+        "TZ": "Asia/Shanghai",
+        "QFR_SANDBOX_DIR": "/sandbox",
+        "QFR_HEARTBEAT_FILE": "/tmp/heartbeat"
+      },
+      "volumes": [
+        {
+          "type": "volume",
+          "source": "qfr_logs",
+          "target": "/var/log/qfr/eval-sandbox",
+          "read_only": false,
+          "volume": {
+            "subpath": "eval-sandbox"
+          }
+        },
+        {
+          "type": "volume",
+          "source": "sandbox_exchange",
+          "target": "/sandbox",
+          "read_only": false
+        }
+      ],
+      "depends_on": {
+        "init-volumes": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "command": [
+        "python",
+        "-m",
+        "qfr_eval.sandbox"
+      ],
+      "network_mode": "none",
+      "pids_limit": 64
     },
     "release-worker": {
       "user": "10001:10001",
@@ -820,7 +910,8 @@
         "QFR_SCRATCH_DIR": "/tmp/scratch",
         "QFR_HEARTBEAT_FILE": "/tmp/heartbeat",
         "QFR_GIT_SHA": "${QFR_GIT_SHA:-}",
-        "QFR_IMAGE_DIGEST": "${QFR_EVAL_IMAGE_DIGEST:-}"
+        "QFR_IMAGE_DIGEST": "${QFR_EVAL_IMAGE_DIGEST:-}",
+        "QFR_SANDBOX_DIR": "/sandbox"
       },
       "volumes": [
         {
@@ -843,6 +934,12 @@
           "source": "eval_store",
           "target": "/data/eval-store",
           "read_only": true
+        },
+        {
+          "type": "volume",
+          "source": "sandbox_exchange",
+          "target": "/sandbox",
+          "read_only": false
         }
       ],
       "depends_on": {
@@ -854,6 +951,9 @@
         },
         "migrate": {
           "condition": "service_completed_successfully"
+        },
+        "eval-sandbox": {
+          "condition": "service_started"
         }
       },
       "networks": [
@@ -999,7 +1099,8 @@
         "EVAL_DB_URL": "${EVAL_DB_URL:?run just init-secrets}",
         "EVAL_OWNER_TOKEN": "${EVAL_OWNER_TOKEN:?run just init-secrets}",
         "QFR_EVAL_ADMIN_BIND": "0.0.0.0",
-        "QFR_EVAL_STORE_DIR": "/data/eval-store"
+        "QFR_EVAL_STORE_DIR": "/data/eval-store",
+        "QFR_FULL_SNAPSHOT_DIR": "/data/full"
       },
       "volumes": [
         {
@@ -1010,6 +1111,12 @@
           "volume": {
             "subpath": "eval-admin-api"
           }
+        },
+        {
+          "type": "volume",
+          "source": "snapshots_full",
+          "target": "/data/full",
+          "read_only": true
         },
         {
           "type": "bind",
@@ -1502,7 +1609,7 @@
       "command": [
         "python",
         "-c",
-        "from pathlib import Path; Path('/var/log/qfr/qfr-mcp').mkdir(exist_ok=True); Path('/var/log/qfr/research-api').mkdir(exist_ok=True); Path('/var/log/qfr/research-worker').mkdir(exist_ok=True); Path('/var/log/qfr/registry-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-scheduler').mkdir(exist_ok=True); Path('/var/log/qfr/eval-worker').mkdir(exist_ok=True); Path('/var/log/qfr/release-worker').mkdir(exist_ok=True); Path('/var/log/qfr/sim-engine').mkdir(exist_ok=True); Path('/var/log/qfr/feedback-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-admin-api').mkdir(exist_ok=True); Path('/var/log/qfr/data-ingest').mkdir(exist_ok=True); Path('/var/log/qfr/migrate').mkdir(exist_ok=True); Path('/var/log/qfr/ops-nightly').mkdir(exist_ok=True); Path('/var/log/qfr/backup').mkdir(exist_ok=True)"
+        "from pathlib import Path; Path('/var/log/qfr/qfr-mcp').mkdir(exist_ok=True); Path('/var/log/qfr/research-api').mkdir(exist_ok=True); Path('/var/log/qfr/research-worker').mkdir(exist_ok=True); Path('/var/log/qfr/registry-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-scheduler').mkdir(exist_ok=True); Path('/var/log/qfr/eval-worker').mkdir(exist_ok=True); Path('/var/log/qfr/eval-sandbox').mkdir(exist_ok=True); Path('/var/log/qfr/release-worker').mkdir(exist_ok=True); Path('/var/log/qfr/sim-engine').mkdir(exist_ok=True); Path('/var/log/qfr/feedback-api').mkdir(exist_ok=True); Path('/var/log/qfr/eval-admin-api').mkdir(exist_ok=True); Path('/var/log/qfr/data-ingest').mkdir(exist_ok=True); Path('/var/log/qfr/migrate').mkdir(exist_ok=True); Path('/var/log/qfr/ops-nightly').mkdir(exist_ok=True); Path('/var/log/qfr/backup').mkdir(exist_ok=True)"
       ]
     }
   },
@@ -1512,7 +1619,8 @@
     "snapshots_research": {},
     "data_raw": {},
     "qfr_logs": {},
-    "eval_store": {}
+    "eval_store": {},
+    "sandbox_exchange": {}
   },
   "networks": {
     "control_net": {

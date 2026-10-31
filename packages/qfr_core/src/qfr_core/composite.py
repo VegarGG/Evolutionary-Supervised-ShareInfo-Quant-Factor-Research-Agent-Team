@@ -7,7 +7,7 @@ composite is missing only where every component is missing.
 """
 
 import hashlib
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import date
 from typing import Literal
@@ -16,7 +16,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, JsonValue
 
 from qfr_core.config import canonical_json
-from qfr_core.contracts import StrategyImplementation
+from qfr_core.contracts import StrategyImplementation, StrategyRulesImplementation
 from qfr_core.metrics.factor import MetricSettings, preprocess, rank_ic_series
 from qfr_core.metrics.matrix import Array, Market
 
@@ -64,13 +64,16 @@ def contribution_table(
     start: date,
     end: date,
     settings: MetricSettings,
+    transform: Callable[[Array], Array] | None = None,
 ) -> tuple[float | None, list[ContributionRow]]:
-    """Full-composite RankIC_mean and the leave-one-out table (PLAN 8.6)."""
+    """Full-composite RankIC_mean and the leave-one-out table (PLAN 8.6). transform is
+    applied to every composite first (a qfr-strategy/2 industry neutralization)."""
 
     def rankic(selection: Sequence[CompositePart]) -> float | None:
-        series = rank_ic_series(
-            composite(selection, market, settings), market, start, end, settings
-        )
+        combined = composite(selection, market, settings)
+        if transform is not None:
+            combined = transform(combined)
+        series = rank_ic_series(combined, market, start, end, settings)
         finite = series[np.isfinite(series)]
         return float(finite.mean()) if finite.size else None
 
@@ -86,9 +89,12 @@ def contribution_table(
     return full, rows
 
 
-def strategy_canonical_hash(implementation: StrategyImplementation) -> str:
+StrategyCode = StrategyImplementation | StrategyRulesImplementation
+
+
+def strategy_canonical_hash(implementation: StrategyCode) -> str:
     """SHA-256 over sorted (version id, sign, normalized weight rounded to 0.01) and the
-    portfolio parameters (PLAN 7.8)."""
+    portfolio parameters (PLAN 7.8); a qfr-strategy/2 hash also covers neutralize."""
     weights = normalized_weights([c.weight for c in implementation.components])
     components = sorted(
         (str(c.version_id), int(c.sign), round(w, 2))
@@ -100,18 +106,18 @@ def strategy_canonical_hash(implementation: StrategyImplementation) -> str:
         "components": [{"version_id": v, "sign": s, "weight": w} for v, s, w in components],
         "portfolio": implementation.portfolio.model_dump(mode="json"),
     }
+    if isinstance(implementation, StrategyRulesImplementation):
+        payload["neutralize"] = implementation.neutralize
     return hashlib.sha256(canonical_json(payload).encode()).hexdigest()
 
 
-def strategy_diff(
-    parent: StrategyImplementation, child: StrategyImplementation
-) -> list[dict[str, JsonValue]]:
+def strategy_diff(parent: StrategyCode, child: StrategyCode) -> list[dict[str, JsonValue]]:
     """Deterministic edit script between two strategies, the strategy analogue of the
     AST diff stored on lineage edges: components removed, added or reweighted (signs
     and normalized weights rounded to 0.01, as in the canonical hash) and portfolio
     parameter changes. Sorted by version id, then by field."""
 
-    def components(impl: StrategyImplementation) -> dict[str, dict[str, JsonValue]]:
+    def components(impl: StrategyCode) -> dict[str, dict[str, JsonValue]]:
         weights = normalized_weights([c.weight for c in impl.components])
         return {
             str(c.version_id): {"sign": int(c.sign), "weight": round(w, 2)}
@@ -132,18 +138,24 @@ def strategy_diff(
             )
     old_portfolio = parent.portfolio.model_dump(mode="json")
     new_portfolio = child.portfolio.model_dump(mode="json")
-    for key in sorted(old_portfolio):
-        if old_portfolio[key] != new_portfolio[key]:
+    for key in sorted(set(old_portfolio) | set(new_portfolio)):
+        if old_portfolio.get(key) != new_portfolio.get(key):
             edits.append(
                 {
                     "op": "portfolio_changed",
                     "field": key,
-                    "from": old_portfolio[key],
-                    "to": new_portfolio[key],
+                    "from": old_portfolio.get(key),
+                    "to": new_portfolio.get(key),
                 }
             )
     if parent.combination != child.combination:
         edits.append(
             {"op": "combination_changed", "from": parent.combination, "to": child.combination}
         )
+    if parent.language != child.language:
+        edits.append({"op": "language_changed", "from": parent.language, "to": child.language})
+    before_n = getattr(parent, "neutralize", "none")
+    after_n = getattr(child, "neutralize", "none")
+    if before_n != after_n:
+        edits.append({"op": "neutralize_changed", "from": before_n, "to": after_n})
     return edits

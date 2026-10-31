@@ -18,6 +18,7 @@ from pydantic import BaseModel, ConfigDict, JsonValue
 
 from qfr_core.backtest import BacktestMetrics, BacktestSettings, run_backtest
 from qfr_core.composite import CompositePart, ContributionRow, composite, contribution_table
+from qfr_core.contracts import StrategyRules
 from qfr_core.data.snapshot import DateRange, Snapshot, open_research_snapshot
 from qfr_core.dsl import DslAnalysis, DslLimits, compile_expression
 from qfr_core.eligibility import Eligibility
@@ -25,6 +26,7 @@ from qfr_core.metrics.factor import FactorMetrics, MetricSettings, evaluate_fact
 from qfr_core.metrics.fingerprint import Fingerprint, fingerprint, fingerprint_dates
 from qfr_core.metrics.matrix import Array, Market
 from qfr_core.operators import evaluate
+from qfr_core.portfolio import neutralize
 
 VISIBILITY: Literal["research_non_official"] = "research_non_official"
 
@@ -80,7 +82,9 @@ class Workbench:
         self.settings = MetricSettings.from_protocol(protocol)
         self.protocol = protocol
         self.panel = self.snapshot.panel()
-        self.market = Market.from_panel(self.panel, self.eligibility, self.snapshot.calendar())
+        self.market = Market.from_panel(
+            self.panel, self.eligibility, self.snapshot.calendar(), self.snapshot.industry()
+        )
         self._fingerprint_dates: list[date] | None = None
 
     def values(self, expression: str) -> tuple[Array, DslAnalysis]:
@@ -88,11 +92,40 @@ class Workbench:
         factor = evaluate(self.panel, compiled.tree, self.eligibility)
         return self.market.matrix(factor), compiled.analysis
 
-    def _backtest(self, scores: Array, top_k: int | None, dropout: int | None) -> BacktestMetrics:
+    def _backtest(
+        self,
+        scores: Array,
+        top_k: int | None,
+        dropout: int | None,
+        rules: StrategyRules | None = None,
+    ) -> BacktestMetrics:
         settings = BacktestSettings.from_protocol(self.protocol, top_k, dropout)
+        if rules is not None:
+            card = self.protocol.get("strategy_rules")
+            long_short = card.get("long_short") if isinstance(card, dict) else None
+            borrow = long_short.get("borrow_bps_annual", 0) if isinstance(long_short, dict) else 0
+            assert isinstance(borrow, int | float)
+            settings = BacktestSettings.model_validate(
+                settings.model_dump()
+                | {
+                    "long_only": not rules.long_short,
+                    "max_position_weight": rules.max_position_weight,
+                    "max_industry_weight": rules.max_industry_weight,
+                    "borrow_bps": float(borrow) if rules.long_short else 0.0,
+                }
+            )
         return run_backtest(
             scores, self.market, self.window.start, self.window.end, settings
         ).metrics
+
+    def _neutral(self, scores: Array, rules: StrategyRules | None) -> Array:
+        """The composite as the evaluator ranks it: demeaned within industries when the
+        rules ask for it (no score at all without an industry table)."""
+        if rules is None or rules.neutralize == "none":
+            return scores
+        if self.market.industry is None:
+            return np.full(scores.shape, np.nan)
+        return neutralize(scores, self.market.industry.codes)
 
     def factor(
         self, expression: str, sign: Literal[1, -1], library: dict[str, str] | None = None
@@ -117,15 +150,18 @@ class Workbench:
         components: list[ComponentInput],
         top_k: int | None = None,
         dropout: int | None = None,
+        rules: StrategyRules | None = None,
     ) -> CompositeReport:
         parts = [
             CompositePart(f"c{i + 1}", c.sign, c.weight, self.values(c.expression)[0])
             for i, c in enumerate(components)
         ]
-        scores = composite(parts, self.market, self.settings)
+        scores = self._neutral(composite(parts, self.market, self.settings), rules)
         start, end = self.window.start, self.window.end
         result = evaluate_factor(scores, self.market, start, end, 1, self.settings)
-        _, contributions = contribution_table(parts, self.market, start, end, self.settings)
+        _, contributions = contribution_table(
+            parts, self.market, start, end, self.settings, lambda c: self._neutral(c, rules)
+        )
         return CompositeReport(
             visibility=VISIBILITY,
             window="W0",
@@ -136,7 +172,7 @@ class Workbench:
             ],
             metrics=result.metrics,
             contributions=contributions,
-            reference_strategy=self._backtest(scores, top_k, dropout),
+            reference_strategy=self._backtest(scores, top_k, dropout, rules),
         )
 
     def fingerprint_dates(self) -> list[date]:

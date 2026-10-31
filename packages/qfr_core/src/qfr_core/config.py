@@ -4,7 +4,7 @@ import hashlib
 import json
 from datetime import date
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, SecretStr, model_validator
@@ -132,12 +132,46 @@ class ConfigDocument(BaseModel):
     sha256: str
 
 
+class LongShortRules(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    allowed: bool
+    borrow_bps_annual: float = Field(ge=0, le=5000)
+
+
+class StrategyRulesConfig(BaseModel):
+    """The protocol's bounds for qfr-strategy/2 (Phase 8, P8.2). Each cap is a [low,
+    high] range a manifest's value must fall in; neutralize lists the allowed modes."""
+
+    model_config = ConfigDict(extra="forbid")
+    long_short: LongShortRules
+    max_position_weight: tuple[float, float]
+    max_industry_weight: tuple[float, float]
+    neutralize: list[Literal["none", "industry"]] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def ranges(self) -> Self:
+        for low, high in (self.max_position_weight, self.max_industry_weight):
+            if not 0 < low <= high <= 1:
+                raise ValueError("cap ranges are 0 < low <= high <= 1")
+        return self
+
+
+class ResearchNoteConfig(BaseModel):
+    """The protocol's length limits for research notes (Phase 8, Section 8.10), within
+    the schema's outer bounds."""
+
+    model_config = ConfigDict(extra="forbid")
+    max_markdown_chars: int = Field(ge=1, le=40000)
+    max_claims: int = Field(ge=0, le=200)
+    max_citations: int = Field(ge=1, le=200)
+
+
 class ProtocolConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     protocol_id: str
     version: str
     epoch_ref: str
-    supported_kinds: list[Literal["factor", "strategy"]]
+    supported_kinds: list[Literal["factor", "strategy", "research_note"]]
     universe: dict[str, JsonValue]
     eligibility: dict[str, JsonValue]
     label: dict[str, JsonValue]
@@ -153,6 +187,32 @@ class ProtocolConfig(BaseModel):
     gates: dict[str, dict[str, JsonValue]]
     simulation: dict[str, JsonValue]
     monitoring: dict[str, JsonValue]
+    # Phase 8 sections. A protocol activated before Phase 8 has none: Python factors are
+    # then refused as an unsupported kind, and strategies keep the v1 rules.
+    python: dict[str, JsonValue] | None = None
+    strategy_rules: dict[str, JsonValue] | None = None
+    research_note: dict[str, JsonValue] | None = None
+
+    @model_validator(mode="after")
+    def rules_shape(self) -> Self:
+        if self.strategy_rules is not None:
+            StrategyRulesConfig.model_validate(self.strategy_rules)
+        if ("research_note" in self.supported_kinds) != (self.research_note is not None):
+            raise ValueError("research_note is a supported kind exactly when it has limits")
+        if self.research_note is not None:
+            ResearchNoteConfig.model_validate(self.research_note)
+        return self
+
+
+class ThresholdoutConfig(BaseModel):
+    """Thresholdout for W2 (PLAN Section 9.5): threshold T, noise scale sigma, budget B
+    and the private seed of the noise generator."""
+
+    model_config = ConfigDict(extra="forbid")
+    threshold: float = Field(gt=0)
+    sigma: float = Field(gt=0)
+    budget: int = Field(ge=1)
+    seed: int = Field(ge=0)
 
 
 class PolicyConfig(BaseModel):
@@ -167,6 +227,10 @@ class PolicyConfig(BaseModel):
     # first and second edge, between the second and third, and above the third.
     sim_rankic_buckets: list[float] = Field(min_length=3, max_length=3)
     release_w3_metrics: Literal[False]
+    # Phase 8: W2 releases the Ladder's family best (the default) or, in thresholdout
+    # mode, one Thresholdout answer per query (Section 9.5).
+    w2_mode: Literal["ladder", "thresholdout"] = "ladder"
+    thresholdout: ThresholdoutConfig | None = None
     flags: dict[
         Literal[
             "high_turnover_above",
@@ -193,6 +257,8 @@ class PolicyConfig(BaseModel):
             raise ValueError("sim RankIC bucket edges must be strictly increasing")
         if "eta" not in self.ladder or not self.ladder["eta"] > 0:
             raise ValueError("the Ladder needs a positive eta")
+        if self.w2_mode == "thresholdout" and self.thresholdout is None:
+            raise ValueError("thresholdout mode needs its threshold, sigma, budget and seed")
         if "ladder_best" not in self.rounding:
             raise ValueError("rounding needs ladder_best for the W2 family best")
         return self

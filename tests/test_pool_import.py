@@ -4,10 +4,11 @@ import csv
 import io
 import json
 import re
+from pathlib import Path
 from uuid import UUID
 
 import pytest
-from qfr_core.contracts import FactorManifest, ReasonCode, StrategyManifest
+from qfr_core.contracts import FactorManifest, PoolImportEntry, ReasonCode, StrategyManifest
 from qfr_core.ids import uuid7
 from qfr_core.pool_import import (
     NO_DEFAULTS_NOTICE,
@@ -22,8 +23,9 @@ from qfr_core.pool_import import (
     strategy_seed_manifest,
     validate_entries,
 )
+from qfr_core.pyfactor import public_python_limits
 
-from tests.registry_rig import LIMITS
+from tests.registry_rig import LIMITS, MOMENTUM_PY
 
 FACTOR = {
     "name": "ma_cross_20_60",
@@ -230,3 +232,56 @@ def test_strategy_seed_manifest_references_its_component_versions():
     assert manifest.provenance.operator == "human_seed"
     assert "weight 0.6" in manifest.rationale.composition_rationale
     assert isinstance(manifest.provenance.trace_ref, UUID)
+
+
+PY_FACTOR = {
+    "name": "momentum_py",
+    "title": "Twenty-day momentum in Python",
+    "python": {"source": MOMENTUM_PY, "max_lookback_days": 20},
+    "expected_sign": 1,
+    "horizon_days": 5,
+}
+
+
+def test_python_entries_are_checked_statically_and_become_python_seed_manifests():
+    """Phase 8: the owner imports qfr-python/1 factors like DSL ones (JSON or YAML)."""
+    python = public_python_limits(Path("configs"))
+    assert python is not None
+    bad = PY_FACTOR | {"name": "bad", "python": {"source": "import os\n", "max_lookback_days": 0}}
+    both = PY_FACTOR | {"name": "both", "expression": "Mean($close, 5)"}
+    results = validate_entries([PY_FACTOR, bad, both], LIMITS, python)
+    valid, refused, schema = results
+    assert isinstance(valid, ValidEntry) and valid.entry.kind == "factor"
+    assert isinstance(refused, InvalidEntry)
+    assert refused.errors[0].reason_code == ReasonCode.FORBIDDEN_CONSTRUCT
+    assert isinstance(schema, InvalidEntry)
+    assert schema.errors[0].reason_code == ReasonCode.SCHEMA_INVALID
+    # Without the protocol's python section, Python entries are refused by name.
+    unsupported = validate_entries([PY_FACTOR], LIMITS)[0]
+    assert isinstance(unsupported, InvalidEntry)
+    assert unsupported.errors[0].reason_code == ReasonCode.KIND_UNSUPPORTED
+    assert valid.analysis is not None
+    manifest = factor_seed_manifest(
+        valid.entry, valid.analysis, ids(), None, None, qfr_core_version()
+    )
+    FactorManifest.model_validate(manifest.model_dump(mode="json"))
+    assert manifest.implementation.language == "qfr-python/1"
+    assert manifest.declared.fields_used == ["close"]
+    assert manifest.declared.max_lookback_days == 20
+    changed = PY_FACTOR | {"python": {"source": MOMENTUM_PY, "max_lookback_days": 21}}
+    assert entry_digest(valid.entry) != entry_digest(PoolImportEntry.model_validate(changed))
+    # A strategy may combine Python and DSL entries of the same import.
+    strategy = STRATEGY | {"strategy": STRATEGY["strategy"] | {"components": [
+        {"name": "momentum_py", "sign": 1, "weight": 0.5},
+        {"name": "reversal_5", "sign": 1, "weight": 0.5},
+    ]}}  # fmt: skip
+    checked = validate_entries([PY_FACTOR, REVERSAL, strategy], LIMITS, python)
+    assert all(isinstance(r, ValidEntry) for r in checked)
+
+
+def test_the_phase_8_example_import_is_valid():
+    """docs/examples/pool_import_phase8.yaml, which the Phase 8 runbook imports."""
+    path = Path("docs/examples/pool_import_phase8.yaml")
+    raw = parse_import_file(path.name, path.read_bytes())
+    results = validate_entries(raw, LIMITS, public_python_limits(Path("configs")))
+    assert [type(r) for r in results] == [ValidEntry] * 3

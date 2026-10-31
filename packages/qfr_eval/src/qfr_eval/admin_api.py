@@ -4,7 +4,11 @@ Called only by qfr-mcp with the eval-owner token. It creates and activates proto
 policy and quota versions, and serves intake, runs, official records, owner-grade
 evidence, series files, burn meters, quota usage, the library, private configuration,
 simulations, acceptance cases with their gate values, the owner's case decisions (each
-with a rationale and an approval id) and alerts. Epoch rollover arrives with Phase 8.
+with a rationale and an approval id) and alerts. Phase 8 adds the epochs and the epoch
+rollover (Section 10.6): a dry run any time, the rollover itself only with a
+rollover_epoch approval whose scope names the epoch; and the owner override of a case
+with a failed gate (Section 10.3): a request with a written rationale, then 24 hours
+later a confirmation with a second approval.
 """
 
 import importlib.metadata
@@ -25,10 +29,15 @@ from qfr_core.eval_api import (
     AlertPage,
     AlertView,
     CaseDecisionRequest,
+    CaseOverrideRequest,
     CasePage,
     ConfigKind,
     ConfigVersionView,
     CreateVersionRequest,
+    EpochPage,
+    EpochView,
+    RolloverReport,
+    RolloverRequest,
     SimulationView,
     VersionState,
     VersionStatePage,
@@ -38,8 +47,15 @@ from qfr_core.registry_api import Health
 from sqlalchemy import text
 from starlette.concurrency import run_in_threadpool
 
-from qfr_eval import acceptance, alerts, evidence
-from qfr_eval.configs import TABLES, EvalError, activate_version, active_state, create_version
+from qfr_eval import acceptance, alerts, evidence, rollover
+from qfr_eval.configs import (
+    TABLES,
+    EvalError,
+    activate_version,
+    active_state,
+    create_version,
+    resolved_windows,
+)
 from qfr_eval.contracts import OfficialRecord, OwnerEvidence
 from qfr_eval.http import ERROR_RESPONSES, install, serve
 from qfr_eval.runtime import ApiConfig, Clock, Database, SystemClock, eval_config, service_logger
@@ -76,6 +92,8 @@ def create_app(
     logger: JsonLogger,
     clock: Clock | None = None,
     code_version: str | None = None,
+    epochs_dir: Path | None = None,
+    full_snapshot_dir: Path | None = None,
 ) -> FastAPI:
     app = FastAPI(title="QFR eval-admin-api", version="1", docs_url=None, redoc_url=None)
     code_version = code_version or f"qfr-eval-{importlib.metadata.version('qfr-eval')}"
@@ -365,6 +383,41 @@ def create_app(
         )
         return result
 
+    @app.post(
+        "/v1/acceptance/cases/{case_id}/override",
+        response_model=AcceptanceCase,
+        responses=ERROR_RESPONSES,
+    )
+    async def override(case_id: UUID, body: CaseOverrideRequest) -> AcceptanceCase:
+        """The owner override (Phase 8): step request, then step confirm 24 hours later
+        with a second approval."""
+
+        def write() -> AcceptanceCase:
+            with db.transaction() as conn:
+                state = active_state(conn)
+                if state is None:
+                    raise EvalError(409, "NOT_READY", "no active configuration")
+                view = acceptance.override_case(
+                    conn, state, case_id, body, PRINCIPAL, clock.now(),
+                    current()["request_id"], code_version,
+                )  # fmt: skip
+            return AcceptanceCase.model_validate(view)
+
+        result = await run_in_threadpool(write)
+        log.info(
+            "case_override_requested" if body.step == "request" else "case_override_confirmed",
+            outcome="ok",
+            payload={
+                "case_id": str(case_id),
+                "decision": result.decision,
+                "eligible_at": None
+                if result.override is None
+                else result.override.eligible_at.isoformat(),
+                "approval_id": str(body.approval.approval_id),
+            },
+        )
+        return result
+
     @app.get("/v1/alerts", response_model=AlertPage, responses=ERROR_RESPONSES)
     async def alert_list(
         state: str | None = None, kind: str | None = None, limit: int = limit_query
@@ -393,6 +446,82 @@ def create_app(
         log.info("alert_acknowledged", outcome="ok", payload={"alert_id": str(alert_id)})
         return result
 
+    @app.get("/v1/epochs", response_model=EpochPage, responses=ERROR_RESPONSES)
+    async def epochs() -> EpochPage:
+        def read() -> EpochPage:
+            with db.read() as conn:
+                rows = conn.execute(
+                    text(
+                        "SELECT epoch_id, version, status, previous_epoch_id, snapshot_id, "
+                        "config, activated_at, retired_at, approval_id FROM eval.epochs "
+                        "ORDER BY activated_at"
+                    )
+                ).all()
+            return EpochPage(
+                items=[
+                    EpochView(
+                        epoch_id=r.epoch_id,
+                        version=r.version,
+                        status=r.status,
+                        previous_epoch_id=r.previous_epoch_id,
+                        snapshot_id=r.snapshot_id,
+                        windows={
+                            n: {"start": w.start, "end": w.end}  # type: ignore[misc]
+                            for n, w in resolved_windows(r.config).items()
+                        },
+                        activated_at=r.activated_at,
+                        retired_at=r.retired_at,
+                        approval_id=r.approval_id,
+                    )  # fmt: skip
+                    for r in rows
+                ]
+            )
+
+        return await run_in_threadpool(read)
+
+    @app.post("/v1/epochs/rollover", response_model=RolloverReport, responses=ERROR_RESPONSES)
+    async def epoch_rollover(body: RolloverRequest) -> RolloverReport:
+        if epochs_dir is None or full_snapshot_dir is None:
+            raise EvalError(
+                409, "ROLLOVER_UNCONFIGURED", "eval-admin-api has no epochs or snapshot folder"
+            )
+        approval = body.approval
+        if not body.dry_run:
+            if approval is None:
+                raise EvalError(400, "APPROVAL_REQUIRED", "a rollover needs its approval")
+            if approval.scope.epoch_id != body.epoch_id:
+                raise EvalError(
+                    409, "APPROVAL_SCOPE_MISMATCH", "the approval does not name this epoch"
+                )
+        epochs_root, full_root = epochs_dir, full_snapshot_dir
+
+        def run() -> RolloverReport:
+            # Under the evaluator's write lock, so no worker or scheduler write is half
+            # done across the switch. A dry run writes at most the current snapshot's
+            # registration, which the scheduler makes on every tick anyway.
+            with db.transaction() as conn:
+                report = rollover.rollover_from_file(
+                    conn, epochs_root, full_root, body.epoch_id, PRINCIPAL,
+                    None if approval is None else approval.approval_id,
+                    current()["request_id"], clock.now(), body.dry_run,
+                )  # fmt: skip
+            return RolloverReport.model_validate(report)
+
+        result = await run_in_threadpool(run)
+        log.info(
+            "epoch_rollover_planned" if body.dry_run else "epoch_rolled_over",
+            outcome="ok",
+            payload={
+                "from_epoch": result.from_epoch,
+                "to_epoch": result.to_epoch,
+                "problems": result.problems,
+                "restarted_versions": result.restarted_versions,
+                "cancelled_jobs": result.cancelled_jobs,
+                "approval_id": None if approval is None else str(approval.approval_id),
+            },
+        )
+        return result
+
     @app.get("/v1/summary", responses=ERROR_RESPONSES)
     async def summary() -> dict[str, JsonValue]:
         def read() -> dict[str, JsonValue]:
@@ -413,8 +542,12 @@ def build(
     logger = service_logger(SERVICE, settings, [url, token])
     store = ArtifactStore(Path(environ.get("QFR_EVAL_STORE_DIR") or "data/eval-store"))
     code_version = environ.get("QFR_GIT_SHA") or None
-    app = create_app(db or Database(url), token, config, store, logger, code_version=code_version)
-    logger.logger.info("service_started", payload={"phase": 6})
+    full = environ.get("QFR_FULL_SNAPSHOT_DIR")
+    app = create_app(
+        db or Database(url), token, config, store, logger, code_version=code_version,
+        epochs_dir=settings.config_dir / "epochs", full_snapshot_dir=Path(full) if full else None,
+    )  # fmt: skip
+    logger.logger.info("service_started", payload={"phase": 8})
     return app
 
 

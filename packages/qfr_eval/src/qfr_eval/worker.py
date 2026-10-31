@@ -11,6 +11,9 @@ keys and have no network route outside eval_net; measurement uses fixed seeds an
 wall clock.
 """
 
+import dataclasses
+import hashlib
+import math
 import os
 import time
 import traceback
@@ -25,7 +28,13 @@ import numpy as np
 import polars as pl
 from pydantic import TypeAdapter
 from qfr_core.config import RuntimeSettings, canonical_json
-from qfr_core.contracts import FactorManifest, Manifest, ReasonCode, StrategyManifest
+from qfr_core.contracts import (
+    FactorManifest,
+    Manifest,
+    PythonImplementation,
+    ReasonCode,
+    StrategyManifest,
+)
 from qfr_core.correlation import bind, current
 from qfr_core.data.snapshot import read_snapshot
 from qfr_core.dsl import DslError, compile_expression
@@ -33,10 +42,12 @@ from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
 from qfr_core.metrics.fingerprint import fingerprint_dates, fingerprint_rows
 from qfr_core.metrics.matrix import Array, Market
+from qfr_core.pyfactor import check_source
 from sqlalchemy import bindparam, text
 from sqlalchemy.engine import Connection
 
-from qfr_eval import queue
+from qfr_eval import queue, thresholdout
+from qfr_eval.alerts import raise_alert
 from qfr_eval.compute import (
     ComputeOutput,
     ComputeRequest,
@@ -71,6 +82,12 @@ from qfr_eval.runtime import (
     service_logger,
     start_heartbeat,
 )
+from qfr_eval.sandbox import (
+    ExchangeTransport,
+    LocalTransport,
+    PythonComputeRequest,
+    PythonRunner,
+)
 from qfr_eval.store import ArtifactStore
 
 SERVICE = "eval-worker"
@@ -89,12 +106,15 @@ class LibraryMember:
 
 @dataclass(frozen=True)
 class Component:
-    """A strategy component as the evaluator knows it: its own copy of the expression."""
+    """A strategy component as the evaluator knows it: its own copy of the expression, or
+    of a Python factor's module."""
 
     version_id: str
     kind: str
     state: str
     expression: str | None
+    python: PythonImplementation | None = None
+    lookback: int = 0
 
 
 @dataclass(frozen=True)
@@ -130,7 +150,7 @@ class MarketCache:
         if self._key != key or self._market is None:
             snapshot = read_snapshot(self.full_dir / snapshot_id)
             self._market = Market.from_panel(
-                snapshot.panel(), plugin.eligibility, snapshot.calendar()
+                snapshot.panel(), plugin.eligibility, snapshot.calendar(), snapshot.industry()
             )
             self._key = key
         return self._market
@@ -150,12 +170,18 @@ def read_components(conn: Connection, manifest: Manifest) -> dict[str, Component
     out = {}
     for row in rows:
         body = (row.manifest or {}).get("manifest") or {}
-        expression = (body.get("implementation") or {}).get("expression")
+        implementation = body.get("implementation") or {}
+        expression = implementation.get("expression")
+        python = None
+        if implementation.get("language") == "qfr-python/1":
+            python = PythonImplementation.model_validate(implementation)
         out[str(row.version_id)] = Component(
             str(row.version_id),
             row.kind,
             row.state,
             expression if isinstance(expression, str) else None,
+            python,
+            int((body.get("declared") or {}).get("max_lookback_days") or 0),
         )
     return out
 
@@ -191,9 +217,52 @@ class Evaluator:
     """The measurement itself; used by the worker, the simulation engine and
     `qfr eval reproduce`."""
 
-    def __init__(self, env: EvalEnvironment, runner: Runner, markets: MarketCache) -> None:
-        self.env, self.runner, self.markets = env, runner, markets
+    def __init__(
+        self,
+        env: EvalEnvironment,
+        runner: Runner,
+        markets: MarketCache,
+        python: PythonRunner | None = None,
+    ) -> None:
+        self.env, self.runner, self.markets, self.python = env, runner, markets, python
         self.store = ArtifactStore(env.store_dir)
+
+    def _python(
+        self,
+        plugin: FactorPlugin,
+        snapshot_id: str,
+        implementation: PythonImplementation,
+        lookback: int,
+        rows: list[int],
+        cuts: list[int],
+    ) -> ComputeOutput:
+        """A Python factor's values, computed in the sandbox (P8.1)."""
+        if self.python is None or plugin.python is None:
+            raise RuntimeError("no sandbox is configured for Python factors")
+        check = check_source(implementation.source, plugin.python)
+        if check.analysis is None:
+            return ComputeOutput(
+                ComputeResult(status="refused", error_code=ReasonCode.FORBIDDEN_CONSTRUCT.value),
+                None,
+            )
+        screening = plugin.screening
+        protocol_seed = int(plugin.protocol["fingerprint"]["seed"])
+        digest = hashlib.sha256(f"{protocol_seed}:{check.analysis.canonical_hash}".encode())
+        request = PythonComputeRequest(
+            snapshot_path=str(self.env.full_snapshot_dir / snapshot_id),
+            source=implementation.source,
+            parameters=check.analysis.parameters,
+            limits=plugin.python,
+            eligibility=plugin.eligibility,
+            rows=rows,
+            probe_cuts=cuts,
+            lookback=lookback,
+            tolerance=float(screening["prefix_tolerance"]),
+            cpu_seconds=float(screening["cpu_seconds"]),
+            memory_bytes=int(float(screening["memory_gb"]) * GB),
+            seed=int.from_bytes(digest.digest()[:4], "big"),
+        )
+        return self.python.run(request)
 
     def _request(
         self,
@@ -235,9 +304,12 @@ class Evaluator:
         from their expressions and combined; the second item holds each component's
         values on the whole market (rows filled), for the contribution table."""
         if isinstance(manifest, FactorManifest):
+            implementation = manifest.implementation
+            if isinstance(implementation, PythonImplementation):
+                lookback = manifest.declared.max_lookback_days
+                return self._python(plugin, snapshot_id, implementation, lookback, rows, cuts), {}
             request = self._request(
-                plugin, snapshot_id, manifest.implementation.expression, rows, cuts,
-                load_cpu_seconds,
+                plugin, snapshot_id, implementation.expression, rows, cuts, load_cpu_seconds,
             )  # fmt: skip
             return self.runner.run(request), {}
         assert isinstance(manifest, StrategyManifest) and isinstance(plugin, StrategyPlugin)
@@ -245,12 +317,17 @@ class Evaluator:
         values: dict[str, Array] = {}
         for item in manifest.implementation.components:
             component = components.get(str(item.version_id))
-            if component is None or component.expression is None:
-                raise RuntimeError("a strategy component has no expression in intake")
-            request = self._request(
-                plugin, snapshot_id, component.expression, rows, cuts, load_cpu_seconds
-            )
-            output = self.runner.run(request)
+            if component is not None and component.python is not None:
+                output = self._python(
+                    plugin, snapshot_id, component.python, component.lookback, rows, cuts
+                )
+            else:
+                if component is None or component.expression is None:
+                    raise RuntimeError("a strategy component has no expression in intake")
+                request = self._request(
+                    plugin, snapshot_id, component.expression, rows, cuts, load_cpu_seconds
+                )
+                output = self.runner.run(request)
             if output.result.status != "ok" or output.values is None:
                 return output, {}
             results.append(output.result)
@@ -271,6 +348,8 @@ class Evaluator:
     ) -> tuple[Any, str | None]:
         plugin = plugin_for(protocol, manifest)
         market = self.markets.get(snapshot_id, plugin)
+        if isinstance(plugin, StrategyPlugin) and plugin.industry_missing(market):
+            return None, ReasonCode.COMPONENT_INVALID.value
         spec = protocol["fingerprint"]
         w0 = [d for d in market.dates if windows["W0"].start <= d <= windows["W0"].end]
         dates = fingerprint_dates(w0, int(spec["dates"]), int(spec["seed"]))
@@ -299,6 +378,14 @@ class Evaluator:
             return reasons, None
         complexity = 0
         for component in components.values():
+            if component.python is not None:
+                if plugin.python is None:
+                    return [ReasonCode.COMPONENT_INVALID], None
+                check = check_source(component.python.source, plugin.python)
+                if not check.ok or check.analysis is None:
+                    return [ReasonCode.COMPONENT_INVALID], None
+                complexity += check.analysis.node_count
+                continue
             try:
                 compiled = compile_expression(component.expression or "", plugin.limits)
             except DslError:
@@ -332,6 +419,18 @@ class Evaluator:
             )
             return EvaluationOutcome(seed, complexity, outcome, None, None, [])
         market = self.markets.get(snapshot_id, plugin)
+        if isinstance(plugin, StrategyPlugin) and plugin.industry_missing(market):
+            # Industry rules need the snapshot's classification (Phase 8).
+            reasons = [ReasonCode.COMPONENT_INVALID]
+            outcome = StageOutcome(
+                "screening",
+                False,
+                reasons,
+                {},
+                {"status": "FAIL", "reasons": [r.value for r in reasons], "static": True,
+                 "detail": "industry_classification_missing"},
+            )  # fmt: skip
+            return EvaluationOutcome(seed, complexity, outcome, None, None, [])
         w1 = windows["W1"]
         first, last = market.window(w1.start, w1.end)
         cuts = probe_cuts((first, last), int(plugin.screening["prefix_probe_dates"]), seed)
@@ -419,6 +518,28 @@ class Evaluator:
         columns = np.flatnonzero(market.eligible[first : last + 1].any(axis=0))
         return WindowOutcome(seed, outcome, values, columns)
 
+    def window_statistic(
+        self,
+        manifest: Manifest,
+        protocol: dict[str, Any],
+        window: Window,
+        snapshot_id: str,
+        load_cpu_seconds: float,
+        components: Mapping[str, Component] | None = None,
+    ) -> float | None:
+        """s x RankIC_mean of a version on one window: Thresholdout's W0 value."""
+        plugin = plugin_for(protocol, manifest)
+        market, first, last, values = self.window_values(
+            manifest, protocol, snapshot_id, window, load_cpu_seconds, components
+        )
+        scores = np.full(market.shape, np.nan)
+        scores[first : last + 1] = values
+        sign = 1 if isinstance(manifest, StrategyManifest) else manifest.declared.expected_sign
+        rankic = plugin.measure(scores, sign, market, window.start, window.end).metrics.get(
+            "rankic_mean"
+        )
+        return None if rankic is None or not math.isfinite(rankic) else sign * float(rankic)
+
 
 def make_runner(config: EvalConfig, store: ArtifactStore, scratch: Path | None = None) -> Runner:
     """The configured runner. A service that only reads the store (the sim engine) gives
@@ -426,6 +547,20 @@ def make_runner(config: EvalConfig, store: ArtifactStore, scratch: Path | None =
     if config.runner.mode == "inline":
         return InlineRunner()
     return SubprocessRunner(config.runner.wall_clock_factor, scratch or store.scratch())
+
+
+def make_python_runner(
+    config: EvalConfig, env: EvalEnvironment, scratch: Path | None = None
+) -> PythonRunner | None:
+    """The sandbox runner for Python factors: the eval-sandbox exchange volume in
+    production, local children in tests. None when no exchange volume is mounted: a
+    Python factor then fails as an internal error and is retried, never run here."""
+    factor = config.runner.wall_clock_factor
+    if config.sandbox.mode == "local":
+        return PythonRunner(LocalTransport(scratch or Path(env.store_dir) / "sandbox"), factor)
+    if env.sandbox_dir is None:
+        return None
+    return PythonRunner(ExchangeTransport(env.sandbox_dir, config.sandbox.poll_seconds), factor)
 
 
 class Worker:
@@ -443,7 +578,10 @@ class Worker:
         self.clock = clock or SystemClock()
         self.store = ArtifactStore(env.store_dir)
         self.evaluator = Evaluator(
-            env, runner or make_runner(config, self.store), MarketCache(env.full_snapshot_dir)
+            env,
+            runner or make_runner(config, self.store),
+            MarketCache(env.full_snapshot_dir),
+            make_python_runner(config, env),
         )
 
     # Shared ------------------------------------------------------------------------
@@ -497,6 +635,8 @@ class Worker:
                     self._fingerprint(job)
                 elif job.kind == "evaluate":
                     self._evaluate(job)
+                elif job.kind == "remeasure":
+                    self._remeasure(job)
                 else:
                     self._window(job, "W2" if job.kind == "w2" else "W3")
                 self.log.info(
@@ -523,8 +663,13 @@ class Worker:
                 queue.retry(conn, job, now, delay, type(error).__name__)
             self.log.warning("job_retried", outcome="retried", payload={"delay_seconds": delay})
             return
-        if job.kind == "fingerprint":
+        if job.kind in ("fingerprint", "remeasure"):
             with self.db.transaction() as conn:
+                if self._fenced(conn, job, now):
+                    return
+                if job.kind == "remeasure":
+                    queue.finish(conn, job, now, "failed")
+                    return
                 conn.execute(
                     text(
                         "UPDATE eval.intake SET fingerprint_error = 'INTERNAL_ERROR' "
@@ -549,6 +694,25 @@ class Worker:
         seed = run_seed(int(state.protocol.config["fingerprint"]["seed"]), str(job.version_id))
         result = EvaluationOutcome(seed, None, outcome, None, None, [])
         self._write(job, row, state, result, now, now, failed_state="failed")
+
+    def _fenced(self, conn: Connection, job: queue.Job, at: datetime) -> bool:
+        """The write fence (Section 10.6): a job of an epoch that was rolled over while it
+        ran writes nothing into the retired epoch; it ends cancelled. Every result write
+        runs under the evaluator's lock, so a rollover is either before it or after it."""
+        if not job.epoch_id:
+            return False
+        active = conn.execute(
+            text("SELECT epoch_id FROM eval.epochs WHERE status = 'active'")
+        ).scalar()
+        if active == job.epoch_id:
+            return False
+        queue.finish(conn, job, at, "cancelled")
+        self.log.warning(
+            "job_cancelled_by_rollover",
+            outcome="skipped",
+            payload={"kind": job.kind, "job_epoch": job.epoch_id, "active_epoch": active},
+        )
+        return True
 
     def _refs(self, state: ActiveState) -> dict[str, str]:
         return {
@@ -577,6 +741,8 @@ class Worker:
         if value is not None:
             stored = self.store.write_fingerprint(state.epoch.epoch_id, job.version_id, value)
         with self.db.transaction() as conn:
+            if self._fenced(conn, job, now):
+                return
             if stored is not None:
                 uri, sha, dates_sha = stored
                 conn.execute(
@@ -609,14 +775,18 @@ class Worker:
     ) -> list[LibraryMember]:
         """Effective library entries of one pool with their stored W1 values: factors
         for a factor's library gate, strategies (their composites) for a strategy's."""
+        # After a rollover a member's W1 values come from its re-measurement on the new
+        # W1 ('remeasure'), or from its W1 run if it restarted in the new epoch.
         rows = conn.execute(
             text(
-                "SELECT l.version_id, s.uri, s.sha256 FROM eval.library l "
+                "SELECT DISTINCT ON (l.version_id) l.version_id, s.uri, s.sha256 "
+                "FROM eval.library l "
                 "JOIN eval.official_records r ON r.version_id = l.version_id "
-                "  AND r.stage = 'w1' AND r.epoch_id = :e "
+                "  AND r.stage IN ('w1', 'remeasure') AND r.epoch_id = :e "
                 "JOIN eval.series_files s ON s.run_id = r.run_ids[1] AND s.kind = 'factor_values' "
                 "WHERE l.pool = :pool AND l.status IN ('seed', 'active') "
-                "AND l.effective_from IS NOT NULL AND l.version_id <> :v ORDER BY l.version_id"
+                "AND l.effective_from IS NOT NULL AND l.version_id <> :v "
+                "ORDER BY l.version_id, r.created_at DESC"
             ),
             {"e": epoch_id, "v": version_id, "pool": pool},
         ).all()
@@ -642,6 +812,56 @@ class Worker:
             components=components,
         )
         self._write(job, row, state, outcome, started, self.clock.now())
+
+    def _remeasure(self, job: queue.Job) -> None:
+        """A library member measured on the new epoch's W1 after a rollover (Section
+        10.6): the run, its series and a 'remeasure' record, so the library gate keeps
+        the member. It is not a trial: no ledger row, burn, report or state change, and
+        its own library is empty (it was admitted to the library already)."""
+        state = self._state()
+        row = self._intake(job.version_id)
+        manifest, components = self._manifest(row)
+        started = self.clock.now()
+        result = self.evaluator.evaluate(
+            manifest,
+            str(job.version_id),
+            state.protocol.config,
+            state.epoch.windows,
+            state.epoch.snapshot_id,
+            [],
+            self.config.runner.load_cpu_seconds,
+            components=components,
+        )
+        finished = self.clock.now()
+        measured = result.w1 if result.w1 is not None else result.screening
+        outcome = dataclasses.replace(
+            measured, stage="remeasure", summary=measured.summary | {"remeasure": True}
+        )
+        run_id = uuid7()
+        files: list[tuple[str, str, str, int]] = []
+        if result.w1 is not None:
+            market = self.evaluator.markets.get(
+                state.epoch.snapshot_id, FactorPlugin(state.protocol.config)
+            )
+            w1 = state.epoch.windows["W1"]
+            first, last = market.window(w1.start, w1.end)
+            columns = np.flatnonzero(market.eligible[first : last + 1].any(axis=0))
+            files = self._series(
+                run_id, outcome, result.w1_values, state.epoch.epoch_id, row.version_id, columns
+            )
+        with self.db.transaction() as conn:
+            if self._fenced(conn, job, finished):
+                return
+            status = "succeeded" if result.w1 is not None else "failed"
+            self._run_row(conn, run_id, row, state, outcome, result.seed, started, finished, status)
+            self._series_rows(conn, run_id, files)
+            self._record(conn, run_id, row, state, outcome, result.seed, finished)
+            queue.finish(conn, job, finished, "done")
+        self.log.info(
+            "library_member_remeasured",
+            outcome="ok" if result.w1 is not None else "failed",
+            payload={"epoch_id": state.epoch.epoch_id, "values": result.w1 is not None},
+        )
 
     def _run_row(
         self,
@@ -866,6 +1086,8 @@ class Worker:
             )
         request_id = current()["request_id"]
         with self.db.transaction() as conn:
+            if self._fenced(conn, job, finished):
+                return
             screening = result.screening
             self._run_row(
                 conn, screening_run, row, state, screening, result.seed, started, finished,
@@ -975,6 +1197,14 @@ class Worker:
             self.config.runner.load_cpu_seconds,
             components=components,
         )
+        # Thresholdout (Section 9.5) compares W2 with the same statistic on W0.
+        params = thresholdout.Params.from_policy(state.policy.config) if window == "W2" else None
+        w0 = None
+        if params is not None:
+            w0 = self.evaluator.window_statistic(
+                manifest, state.protocol.config, state.epoch.windows["W0"],
+                state.epoch.snapshot_id, self.config.runner.load_cpu_seconds, components,
+            )  # fmt: skip
         finished = self.clock.now()
         run_id = uuid7()
         outcome = result.outcome
@@ -985,6 +1215,8 @@ class Worker:
         )  # fmt: skip
         request_id = current()["request_id"]
         with self.db.transaction() as conn:
+            if self._fenced(conn, job, finished):
+                return
             self._run_row(
                 conn, run_id, row, state, outcome, result.seed, started, finished, "succeeded",
                 window,
@@ -994,7 +1226,9 @@ class Worker:
             self._ledger(conn, row, state, record, outcome.raw["ledger"], window, finished)
             self._query_burn(conn, state, window, finished)
             if window == "W2":
-                self._w2_decision(conn, row, state, record, outcome, finished, request_id)
+                self._w2_decision(
+                    conn, row, state, record, outcome, finished, request_id, params, w0
+                )
             else:
                 self._holdout_decision(conn, row, state, record, outcome, finished, request_id)
             queue.finish(conn, job, finished, "done")
@@ -1025,9 +1259,13 @@ class Worker:
         outcome: StageOutcome,
         at: datetime,
         request_id: str,
+        params: thresholdout.Params | None = None,
+        w0: float | None = None,
     ) -> None:
         """The Ladder (Section 9.2, REL-06): the family best moves, and is released rounded
-        to the Ladder step, only when the W2 value beats it by at least eta."""
+        to the Ladder step, only when the W2 value beats it by at least eta. In Thresholdout
+        mode (Section 9.5) the Ladder keeps its books but the release is the query's
+        answer."""
         policy = state.policy.config
         eta = float(policy["ladder"]["eta"])
         previous = conn.execute(
@@ -1076,11 +1314,27 @@ class Worker:
                     "at": at,
                 },
             )
-        raw = {
+        raw: dict[str, Any] = {
             "passed": outcome.passed,
             "improved": step.improved,
             "released_best": released if step.improved else None,
         }
+        if params is not None:
+            answer = thresholdout.query(
+                conn, params, state.epoch.epoch_id, state.policy_ref, record.record_id,
+                row.version_id, w0, outcome.raw.get("ladder_value"), at,
+            )  # fmt: skip
+            raw = {
+                "passed": outcome.passed, "improved": False, "released_best": None,
+                "mode": "thresholdout", "answer": answer.value, "source": answer.source,
+            }  # fmt: skip
+            if answer.budget_after < 1:
+                raise_alert(
+                    conn, "burn", f"burn:{state.epoch.epoch_id}:thresholdout",
+                    {"window": "W2", "rule": "thresholdout_budget_exhausted",
+                     "budget": params.budget},
+                    at, SERVICE, request_id, logger=self.logger,
+                )  # fmt: skip
         queue_report(
             conn, "w2", row.version_id, {"raw": raw, "refs": self._refs(state)}, at, request_id,
             record.record_id,
@@ -1133,11 +1387,14 @@ class Worker:
         failed check (Section 9.2); the quota it used stays used."""
         request_id = current()["request_id"]
         with self.db.transaction() as conn:
+            if self._fenced(conn, job, at):
+                return
             if job.kind == "w2":
+                failed: dict[str, Any] = {"passed": False, "improved": False, "released_best": None}
+                if thresholdout.Params.from_policy(state.policy.config) is not None:
+                    failed |= {"mode": "thresholdout", "answer": None, "source": "missing"}
                 queue_report(
-                    conn, "w2", row.version_id,
-                    {"raw": {"passed": False, "improved": False, "released_best": None},
-                     "refs": self._refs(state)},
+                    conn, "w2", row.version_id, {"raw": failed, "refs": self._refs(state)},
                     at, request_id,
                 )  # fmt: skip
                 new_state, column = "W2Failed", "w2_passed"

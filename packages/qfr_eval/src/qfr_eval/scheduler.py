@@ -35,7 +35,7 @@ from zoneinfo import ZoneInfo
 import httpx
 from pydantic import ValidationError
 from qfr_core.config import QuotaConfig, RuntimeSettings, canonical_json
-from qfr_core.contracts import ReasonCode
+from qfr_core.contracts import ReasonCode, ResearchNoteManifest
 from qfr_core.correlation import bind, current
 from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
@@ -60,9 +60,11 @@ from qfr_eval.configs import (
     snapshot_calendar,
 )
 from qfr_eval.ingest.config import load_yaml
+from qfr_eval.notes import check_note
 from qfr_eval.plugins import IN_FLIGHT_STATES, StrategyPlugin
 from qfr_eval.registry import RegistryReader, RegistryUnavailable
 from qfr_eval.reports import queue_report
+from qfr_eval.rollover import RESTART_STATES
 from qfr_eval.runtime import (
     Clock,
     Database,
@@ -130,7 +132,8 @@ class Scheduler:
         self.clock = clock or SystemClock()
         self.store = ArtifactStore(env.store_dir)
         self.epoch_override = epoch_override
-        self._fingerprints: dict[UUID, Fingerprint] = {}
+        # By version and epoch: a rollover draws the fingerprint dates again.
+        self._fingerprints: dict[tuple[UUID, str], Fingerprint] = {}
         deployment = load_yaml(env.config_dir / "deployment.yaml")
         self.tz = ZoneInfo(str(deployment["timezone"]))
         schedule = deployment["schedule"]
@@ -321,13 +324,34 @@ class Scheduler:
         previous = conn.execute(
             text("SELECT status FROM eval.library WHERE version_id = :v"), {"v": version_id}
         ).scalar()
+        # Effective from its first W1 measurement, in any epoch (Section 10.6: a member
+        # measured before a rollover keeps its place and is re-measured on the new W1).
         effective = conn.execute(
             text(
-                "SELECT created_at FROM eval.official_records WHERE version_id = :v "
-                "AND stage = 'w1' AND epoch_id = :e"
+                "SELECT min(created_at) FROM eval.official_records WHERE version_id = :v "
+                "AND stage = 'w1'"
+            ),
+            {"v": version_id},
+        ).scalar()
+        measured_here = conn.execute(
+            text(
+                "SELECT 1 FROM eval.official_records WHERE version_id = :v "
+                "AND stage IN ('w1', 'remeasure') AND epoch_id = :e LIMIT 1"
             ),
             {"v": version_id, "e": state.epoch.epoch_id},
-        ).scalar()
+        ).first()
+        if status != "retired" and effective is not None and measured_here is None:
+            intake = conn.execute(
+                text("SELECT state, family_id FROM eval.intake WHERE version_id = :v"),
+                {"v": version_id},
+            ).first()
+            if intake is not None and intake.state not in RESTART_STATES:
+                payload = {"epoch_id": state.epoch.epoch_id, "version_id": str(version_id)}
+                queue.enqueue(
+                    conn, "remeasure", version_id, intake.family_id,
+                    payload | {"snapshot_id": state.epoch.snapshot_id, "correlation": current()},
+                    now, state.epoch.epoch_id,
+                )  # fmt: skip
         conn.execute(
             text(
                 "INSERT INTO eval.library (version_id, pool, entry_id, status, approved_tier, "
@@ -443,6 +467,9 @@ class Scheduler:
                 )
             ).all()
             for row in rows:
+                if row.kind == "research_note":
+                    self._check_note(conn, row, now, state, report)
+                    continue
                 try:
                     manifest = MANIFEST.validate_python(row.manifest.get("manifest"))
                 except ValidationError:
@@ -476,6 +503,67 @@ class Scheduler:
                 ):
                     continue
                 self._fingerprint_job(conn, row, state, now, report)
+
+    def _check_note(
+        self, conn: Connection, row: Any, now: datetime, state: ActiveState, report: TickReport
+    ) -> None:
+        """A research note gets the output-quality checks only (Section 8.10): the result is
+        released as a note report and the note is done. It is never fingerprinted,
+        deduplicated, screened or measured."""
+        try:
+            manifest = ResearchNoteManifest.model_validate(row.manifest.get("manifest"))
+        except ValidationError:
+            self._decide(
+                conn, row, "IntakeRejected", ReasonCode.SCHEMA_INVALID, now, state, report,
+                status="FAIL",
+            )  # fmt: skip
+            return
+        limits = state.protocol.config.get("research_note")
+        if "research_note" not in state.protocol.config["supported_kinds"] or not limits:
+            self._decide(
+                conn, row, "IntakeRejected", ReasonCode.KIND_UNSUPPORTED, now, state, report,
+                status="FAIL",
+            )  # fmt: skip
+            return
+        result = check_note(conn, manifest, limits)
+        new_state = "NoteChecked" if result.passed else "NoteFailed"
+        job_id = conn.execute(
+            text(
+                "UPDATE eval.intake SET state = :s, decided_at = :at, updated_at = :at "
+                "WHERE version_id = :v RETURNING job_id"
+            ),
+            {"s": new_state, "at": now, "v": row.version_id},
+        ).scalar()
+        queue_report(
+            conn,
+            "note",
+            row.version_id,
+            {
+                "content": result.content.model_dump(mode="json"),
+                "refs": _refs(state, self.env.code_version),
+            },
+            now,
+            current()["request_id"],
+        )
+        record_event(
+            conn, now, PRINCIPAL, "note_checked", "intake", str(row.version_id),
+            current()["request_id"],
+            {"state": new_state, "checks": [c.value for c in result.content.checks],
+             "detail": list(result.detail)},
+        )  # fmt: skip
+        report.count(new_state)
+        with bind(version_id=str(row.version_id), job_id=str(job_id) if job_id else None):
+            self.log.info(
+                "note_checked",
+                outcome="ok",
+                payload={
+                    "version_id": str(row.version_id),
+                    "state": new_state,
+                    "checks": [c.value for c in result.content.checks],
+                    "claims": result.content.claims,
+                    "claims_matched": result.content.claims_matched,
+                },
+            )
 
     def _components_ready(
         self,
@@ -551,6 +639,7 @@ class Scheduler:
                 "correlation": current(),
             },
             now,
+            state.epoch.epoch_id,
         )
         conn.execute(
             text(
@@ -562,8 +651,8 @@ class Scheduler:
         report.count("Fingerprinting")
 
     def _fingerprint(self, conn: Connection, version_id: UUID, epoch_id: str) -> Fingerprint | None:
-        if version_id in self._fingerprints:
-            return self._fingerprints[version_id]
+        if (version_id, epoch_id) in self._fingerprints:
+            return self._fingerprints[(version_id, epoch_id)]
         row = conn.execute(
             text(
                 "SELECT uri, sha256 FROM eval.fingerprints WHERE version_id = :v AND epoch_id = :e"
@@ -573,7 +662,7 @@ class Scheduler:
         if row is None:
             return None
         value = self.store.read_fingerprint(row.uri, row.sha256)
-        self._fingerprints[version_id] = value
+        self._fingerprints[(version_id, epoch_id)] = value
         return value
 
     def process_fingerprinted(self, report: TickReport, state: ActiveState) -> None:
@@ -584,13 +673,28 @@ class Scheduler:
         threshold = float(state.protocol.config["dedup"]["behavioral_similarity_min"])
         epoch_id = state.epoch.epoch_id
         with self.db.transaction() as conn:
+            # After a rollover, admitted versions are fingerprinted again on the new W0;
+            # new versions wait for them so they are compared with every admitted one.
+            pending: int = conn.execute(
+                text(
+                    "SELECT count(*) FROM eval.queue_jobs q JOIN eval.intake i "
+                    "ON i.version_id = q.version_id WHERE q.kind = 'fingerprint' "
+                    "AND q.epoch_id = :e AND q.state IN ('queued', 'running') "
+                    "AND i.state <> 'Fingerprinting'"
+                ),
+                {"e": epoch_id},
+            ).scalar_one()
+            if pending:
+                report.note = f"waiting for {pending} admitted versions to be fingerprinted again"
+                return
             rows = conn.execute(
                 text(
                     "SELECT i.version_id, i.published_seq, i.family_id, i.program_id, i.kind, "
                     "q.state AS job_state FROM eval.intake i LEFT JOIN eval.queue_jobs q "
                     "ON q.version_id = i.version_id AND q.kind = 'fingerprint' "
-                    "WHERE i.state = 'Fingerprinting' ORDER BY i.published_seq"
-                )
+                    "AND q.epoch_id = :e WHERE i.state = 'Fingerprinting' ORDER BY i.published_seq"
+                ),
+                {"e": epoch_id},
             ).all()
             admitted = [
                 (r.version_id, r.kind)
@@ -722,6 +826,7 @@ class Scheduler:
                 "correlation": current(),
             },
             now,
+            state.epoch.epoch_id,
         )
         self._decide(
             conn, row, "Screening", None, now, state, report, status="PASS",
@@ -863,8 +968,9 @@ class Scheduler:
                     break
                 self._use(conn, scopes, "W2", row.version_id, state, now)
                 queue.enqueue(
-                    conn, "w2", row.version_id, row.family_id, self._job_payload(row, state), now
-                )
+                    conn, "w2", row.version_id, row.family_id, self._job_payload(row, state), now,
+                    epoch_id,
+                )  # fmt: skip
                 conn.execute(
                     text(
                         "UPDATE eval.intake SET w2_admitted_at = :at, updated_at = :at "
@@ -900,7 +1006,7 @@ class Scheduler:
                 self._use(conn, [("global", epoch_id)], "W3", row.version_id, state, now)
                 queue.enqueue(
                     conn, "holdout", row.version_id, row.family_id,
-                    self._job_payload(row, state), now,
+                    self._job_payload(row, state), now, epoch_id,
                 )  # fmt: skip
                 conn.execute(
                     text(

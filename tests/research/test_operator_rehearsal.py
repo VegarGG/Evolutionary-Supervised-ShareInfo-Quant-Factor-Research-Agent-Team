@@ -46,7 +46,7 @@ def test_the_operator_rehearsal_runs_through_the_front_door(full, tmp_path):
 
     # Before work starts: the status view answers every question of Section 13.7.
     status = mcp.ok("qfr.status")["data"]
-    assert status["phase"] == 7
+    assert status["phase"] == 8
     for key in ("queues", "quotas", "burn_meters", "data_freshness", "disk", "alerts",
                 "costs_today", "budgets"):  # fmt: skip
         assert key in status, key
