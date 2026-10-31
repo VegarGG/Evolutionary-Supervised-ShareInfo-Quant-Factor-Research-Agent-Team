@@ -229,6 +229,14 @@ class GenerationRunner:
                 await self._interpret(gen, version_id, reports[start : start + size])
         if self.monitor is not None:
             self.monitor.evaluate(gen.job_id)
+            with env.db.read() as conn:
+                state = conn.execute(
+                    text("SELECT state FROM research_jobs WHERE job_id = :j"), {"j": gen.job_id}
+                ).scalar_one()
+            if state != "RUNNING":
+                # The deliverable criteria are met (or research was stopped): no new LLM
+                # work; what is already approved is still selected and published.
+                raise Stop("criteria_met" if state == "DELIVERABLE_READY" else "job_stopped")
 
     async def _interpret(self, gen: Generation, version_id: UUID, reports: list[Any]) -> None:
         env = self.env

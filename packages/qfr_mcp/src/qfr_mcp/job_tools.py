@@ -20,8 +20,10 @@ from mcp.types import ToolAnnotations
 from pydantic import JsonValue, ValidationError
 from qfr_core.config import MCPConfig
 from qfr_core.contracts import ResearchBrief
+from qfr_core.correlation import bind
 from qfr_core.logging import JsonLogger
 from qfr_core.research_api import (
+    BriefScan,
     DeliverableView,
     JobState,
     SteerRequest,
@@ -33,6 +35,7 @@ from qfr_mcp.eval_client import EvalAdminClient, FeedbackClient
 from qfr_mcp.evidence_validation import validate_owner_evidence
 from qfr_mcp.registry_client import RegistryClient
 from qfr_mcp.research_client import ResearchClient
+from qfr_mcp.results import ToolResult
 from qfr_mcp.scan import OwnerValueInText, text_of_brief, verdict
 
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
@@ -42,7 +45,7 @@ WRITE = ToolAnnotations(
 CONTROL = ToolAnnotations(
     readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
 )
-Result = Callable[..., Any]
+Result = Callable[..., ToolResult]
 
 
 @dataclass
@@ -78,7 +81,7 @@ class JobToolDeps:
         cards = json.loads((self.config_dir / "public_cards.json").read_text())
         return dict(cards["policy"]["rounding"])
 
-    async def scan(self, text: str, referenced: list[UUID]) -> Any:
+    async def scan(self, text: str, referenced: list[UUID]) -> BriefScan:
         """Compare the text with every referenced version's owner-only values."""
         evidence: dict[str, dict[str, Any]] = {}
         if referenced:
@@ -120,9 +123,7 @@ class JobToolDeps:
                 states = {str(s.version_id): s for s in page.items}
                 for version_id in ids:
                     document = await self.admin.evidence(version_id)
-                    await asyncio.to_thread(
-                        validate_owner_evidence, document, self.evidence_schema
-                    )
+                    await asyncio.to_thread(validate_owner_evidence, document, self.evidence_schema)
                     evidence[str(version_id)] = document
             except (DownstreamUnavailable, DownstreamRefused):
                 status = "evaluator_unavailable"
@@ -154,11 +155,20 @@ class JobToolDeps:
 def register(server: FastMCP, deps: JobToolDeps) -> None:
     result = deps.result
 
-    async def call(fn: Callable[[], Awaitable[Any]]) -> Any:
-        try:
-            return await fn()
-        except DownstreamRefused as error:
-            raise ValueError(f"{error.error}: {error.message}") from None
+    async def call(fn: Callable[[], Awaitable[Any]], job_id: UUID | None = None) -> Any:
+        """Run a downstream call; with a job id, the id travels in X-QFR-Job-Id."""
+        with bind(job_id=None if job_id is None else str(job_id)):
+            try:
+                return await fn()
+            except DownstreamRefused as error:
+                raise ValueError(f"{error.error}: {error.message}") from None
+
+    def noted(tool: str, job_id: UUID, **payload: JsonValue) -> None:
+        """One qfr-mcp line per job tool call carrying the job id (LOG-03)."""
+        with bind(job_id=str(job_id)):
+            deps.logger.logger.info(
+                "job_tool_completed", outcome="ok", payload={"tool": tool} | payload
+            )
 
     @server.tool(
         name="qfr.job.submit",
@@ -172,7 +182,7 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         ),
         annotations=WRITE,
     )
-    async def job_submit(brief: dict[str, Any]) -> Any:
+    async def job_submit(brief: dict[str, Any]) -> ToolResult:
         client = deps.require_research()
         try:
             parsed = ResearchBrief.model_validate(brief)
@@ -183,7 +193,7 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
             for entry_id in parsed.seeds.pool_entry_ids:
                 for pool in ("factor", "strategy"):
                     try:
-                        detail = await deps.registry.pool_entry(pool, entry_id)  # type: ignore[arg-type]
+                        detail = await deps.registry.pool_entry(pool, entry_id)
                         referenced.append(detail.entry.version_id)
                         break
                     except DownstreamRefused:
@@ -191,6 +201,7 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         referenced = list(dict.fromkeys(referenced))
         scan = await deps.scan(text_of_brief(parsed.model_dump(mode="json")), referenced)
         response = await call(lambda: client.submit(SubmitJobRequest(brief=parsed, scan=scan)))
+        noted("qfr.job.submit", response.job.job_id, created=response.created)
         return result(response.model_dump(mode="json"))
 
     @server.tool(
@@ -203,7 +214,7 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
     )
     async def job_list(
         state: JobState | None = None, limit: int | None = None, cursor: UUID | None = None
-    ) -> Any:
+    ) -> ToolResult:
         page = await call(lambda: deps.require_research().jobs(state, deps.size(limit), cursor))
         return result(page.model_dump(mode="json"))
 
@@ -215,14 +226,15 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         ),
         annotations=READ,
     )
-    async def job_get(job_id: UUID) -> Any:
+    async def job_get(job_id: UUID) -> ToolResult:
         client = deps.require_research()
-        job = await call(lambda: client.job(job_id))
+        job = await call(lambda: client.job(job_id), job_id)
         generations = (
-            await call(lambda: client.generations(job.program_id))
+            await call(lambda: client.generations(job.program_id), job_id)
             if job.program_id is not None
             else None
         )
+        noted("qfr.job.get", job_id, state=job.state)
         return result(
             {
                 "job": job.model_dump(mode="json"),
@@ -237,10 +249,11 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         description="A job's events in order, after after_seq (default 0); limit up to 2000.",
         annotations=READ,
     )
-    async def job_events(job_id: UUID, after_seq: int = 0, limit: int | None = None) -> Any:
+    async def job_events(job_id: UUID, after_seq: int = 0, limit: int | None = None) -> ToolResult:
         page = await call(
-            lambda: deps.require_research().events(job_id, after_seq, deps.size(limit))
+            lambda: deps.require_research().events(job_id, after_seq, deps.size(limit)), job_id
         )
+        noted("qfr.job.events", job_id, events=len(page.items))
         return result(page.model_dump(mode="json"))
 
     @server.tool(
@@ -251,12 +264,15 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         ),
         annotations=READ,
     )
-    async def job_wait(job_id: UUID, timeout_s: float = 60.0, state: JobState | None = None) -> Any:
+    async def job_wait(
+        job_id: UUID, timeout_s: float = 60.0, state: JobState | None = None
+    ) -> ToolResult:
         if not 0 <= timeout_s <= deps.config.long_poll_seconds:
             raise ValueError(
                 f"TIMEOUT_INVALID: timeout_s must be between 0 and {deps.config.long_poll_seconds}"
             )
-        waited = await call(lambda: deps.require_research().wait(job_id, timeout_s, state))
+        waited = await call(lambda: deps.require_research().wait(job_id, timeout_s, state), job_id)
+        noted("qfr.job.wait", job_id, changed=waited.changed)
         return result(waited.model_dump(mode="json"))
 
     @server.tool(
@@ -268,20 +284,23 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         ),
         annotations=WRITE,
     )
-    async def job_steer(job_id: UUID, note: str) -> Any:
+    async def job_steer(job_id: UUID, note: str) -> ToolResult:
         client = deps.require_research()
-        referenced = await call(lambda: client.versions(job_id))
-        scan = await deps.scan(note, referenced)
+        referenced = await call(lambda: client.versions(job_id), job_id)
+        with bind(job_id=str(job_id)):
+            scan = await deps.scan(note, referenced)
         try:
             request = SteerRequest(note=note, scan=scan)
         except ValidationError as error:
             raise ValueError(f"NOTE_INVALID: {error.errors(include_url=False)}") from None
-        job = await call(lambda: client.steer(job_id, request))
+        job = await call(lambda: client.steer(job_id, request), job_id)
+        noted("qfr.job.steer", job_id)
         return result(job.model_dump(mode="json"))
 
     def control(action: Literal["pause", "resume", "cancel"], text: str) -> None:
-        async def tool(job_id: UUID) -> Any:
-            job = await call(lambda: deps.require_research().control(job_id, action))
+        async def tool(job_id: UUID) -> ToolResult:
+            job = await call(lambda: deps.require_research().control(job_id, action), job_id)
+            noted(f"qfr.job.{action}", job_id, state=job.state)
             return result(job.model_dump(mode="json"))
 
         server.tool(name=f"qfr.job.{action}", description=text, annotations=CONTROL)(tool)
@@ -307,11 +326,12 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         ),
         annotations=READ,
     )
-    async def deliverable_list(job_id: UUID) -> Any:
-        page = await call(lambda: deps.require_research().deliverables(job_id))
+    async def deliverable_list(job_id: UUID) -> ToolResult:
+        page = await call(lambda: deps.require_research().deliverables(job_id), job_id)
         items: list[JsonValue] = []
         for view in page.items:
-            composed = await deps.compose(view)
+            with bind(job_id=str(job_id)):
+                composed = await deps.compose(view)
             document = view.deliverable
             items.append(
                 {
@@ -329,6 +349,7 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
                     "tier_confirmation": composed["tier_confirmation"],
                 }
             )  # fmt: skip
+        noted("qfr.deliverable.list", job_id, deliverables=len(items))
         return result({"job_id": str(job_id), "items": items})
 
     @server.tool(
@@ -342,9 +363,13 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         ),
         annotations=READ,
     )
-    async def deliverable_get(deliverable_id: UUID) -> Any:
+    async def deliverable_get(deliverable_id: UUID) -> ToolResult:
         view = await call(lambda: deps.require_research().deliverable(deliverable_id, True))
-        return result(await deps.compose(view))
+        job_id = view.deliverable.job_id
+        with bind(job_id=str(job_id)):
+            composed = await deps.compose(view)
+        noted("qfr.deliverable.get", job_id, deliverable_id=str(deliverable_id))
+        return result(composed)
 
     @server.tool(
         name="qfr.trace.get",
@@ -357,7 +382,9 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         ),
         annotations=READ,
     )
-    async def trace_get(version_id: UUID | None = None, candidate_id: UUID | None = None) -> Any:
+    async def trace_get(
+        version_id: UUID | None = None, candidate_id: UUID | None = None
+    ) -> ToolResult:
         if (version_id is None) == (candidate_id is None):
             raise ValueError("ARGUMENT_INVALID: give exactly one of version_id or candidate_id")
         view = await call(lambda: deps.require_research().trace(version_id, candidate_id))
@@ -371,7 +398,7 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         ),
         annotations=READ,
     )
-    async def lineage_get(version_id: UUID, depth: int = 5) -> Any:
+    async def lineage_get(version_id: UUID, depth: int = 5) -> ToolResult:
         data: dict[str, JsonValue] = {"version_id": str(version_id)}
         if deps.registry is not None:
             graph = await call(lambda: deps.registry.lineage(version_id, depth))  # type: ignore[union-attr]
@@ -398,7 +425,7 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
         group_by: list[Literal["job", "generation", "provider", "model", "role", "day"]]
         | None = None,
         job_id: UUID | None = None,
-    ) -> Any:
-        groups = list(group_by) if group_by else None
+    ) -> ToolResult:
+        groups: list[str] | None = [str(g) for g in group_by] if group_by else None
         report = await call(lambda: deps.require_research().costs(start, end, groups, job_id))
         return result(report.model_dump(mode="json"))

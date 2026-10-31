@@ -42,6 +42,7 @@ def test_setup_without_a_pool_records_the_empty_start(rig):
         "qfr.status",
         "qfr.pool.import",
         "qfr.setup.status",
+        "qfr.setup.status",
     ]
 
 

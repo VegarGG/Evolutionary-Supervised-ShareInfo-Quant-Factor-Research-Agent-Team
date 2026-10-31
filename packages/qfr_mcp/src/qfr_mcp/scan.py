@@ -112,7 +112,11 @@ def matches(text: str, evidence: dict[str, Any], rounding: dict[str, Any]) -> tu
 
 def text_of_brief(brief: dict[str, Any]) -> str:
     seeds = brief.get("seeds") or {}
-    parts = [str(brief.get("title", "")), str(brief.get("objective", "")), str(seeds.get("notes", ""))]
+    parts = [
+        str(brief.get("title", "")),
+        str(brief.get("objective", "")),
+        str(seeds.get("notes", "")),
+    ]
     for seed in seeds.get("expressions") or []:
         parts += [str(seed.get("name", "")), str(seed.get("expression", "")),
                   str(seed.get("rationale", ""))]  # fmt: skip

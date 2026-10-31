@@ -178,6 +178,18 @@ class ReleaseEngine:
                 ),
                 {"n": released_value_count(released.content), "at": at, "e": state.epoch.epoch_id},
             )
+        owner = conn.execute(
+            text("SELECT job_id FROM eval.intake WHERE version_id = :v"),
+            {"v": released.version_id},
+        ).scalar()
+        with bind(
+            version_id=str(released.version_id),
+            report_id=str(released.report_id),
+            job_id=None if owner is None else str(owner),
+        ):
+            self.log.info(
+                "report_released", outcome="ok", payload={"report_type": item.report_type}
+            )
         record_event(
             conn, at, SERVICE, "report_released", "released_report", str(released.report_id),
             current()["request_id"],

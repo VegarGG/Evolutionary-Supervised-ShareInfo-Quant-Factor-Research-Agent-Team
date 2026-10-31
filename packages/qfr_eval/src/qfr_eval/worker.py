@@ -273,6 +273,13 @@ class Worker:
             return False
         correlation = job.payload.get("correlation") or {}
         ids = {k: v for k, v in correlation.items() if k in ("request_id",)}
+        with self.db.read() as conn:
+            owner = conn.execute(
+                text("SELECT job_id FROM eval.intake WHERE version_id = :v"),
+                {"v": job.version_id},
+            ).scalar()
+        if owner is not None:
+            ids["job_id"] = str(owner)
         with bind(**ids, version_id=str(job.version_id)):
             started = time.monotonic()
             self.log.info("job_started", payload={"kind": job.kind, "attempt": job.attempts})

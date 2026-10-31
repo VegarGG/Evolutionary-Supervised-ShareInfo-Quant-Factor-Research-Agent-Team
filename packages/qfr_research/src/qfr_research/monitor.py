@@ -654,24 +654,6 @@ class JobMonitor:
                 }
             )
             items.append(item)
-            conn.execute(
-                text(
-                    "INSERT INTO deliverable_items (item_id, deliverable_id, ordinal, version_id, "
-                    "kind, tier_reached, iteration_history, trace_hash, short_code) VALUES (:i, "
-                    ":d, :o, :v, :k, :t, CAST(:h AS jsonb), :th, :sc)"
-                ),
-                {
-                    "i": uuid7(),
-                    "d": deliverable_id,
-                    "o": offset,
-                    "v": pick.version_id,
-                    "k": pick.kind,
-                    "t": pick.tier,
-                    "h": dumps(history.model_dump(mode="json")),
-                    "th": item.trace_hash,
-                    "sc": code,
-                },
-            )
         costs = self._costs(conn, job, stats)
         document = Deliverable(
             schema_version="deliverable/1",
@@ -701,6 +683,25 @@ class JobMonitor:
                 "now": now,
             },
         )
+        for ordinal, (item, code) in enumerate(zip(items, codes, strict=True), 1):
+            conn.execute(
+                text(
+                    "INSERT INTO deliverable_items (item_id, deliverable_id, ordinal, version_id, "
+                    "kind, tier_reached, iteration_history, trace_hash, short_code) VALUES (:i, "
+                    ":d, :o, :v, :k, :t, CAST(:h AS jsonb), :th, :sc)"
+                ),
+                {
+                    "i": uuid7(),
+                    "d": deliverable_id,
+                    "o": ordinal,
+                    "v": item.version_id,
+                    "k": item.kind,
+                    "t": item.tier_reached,
+                    "h": dumps(item.iteration_history.model_dump(mode="json")),
+                    "th": item.trace_hash,
+                    "sc": code.split(" ", 1)[1],
+                },
+            )
         ctx = Ctx(job_id=job.job_id, program_id=job.program_id)
         env.trace.step(
             conn,

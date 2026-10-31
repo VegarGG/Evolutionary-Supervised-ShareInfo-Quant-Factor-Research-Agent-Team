@@ -121,10 +121,14 @@ def run_setup(
         echo(report["notice"])
 
     echo("\n2/4 Providers")
-    echo(
-        "  The provider probe (qfr llm probe) arrives in Phase 4. Setup cannot finish "
-        "before it passes. No provider was called."
-    )
+    providers = door.call("qfr.setup.status")["data"]["steps"]["providers"]
+    echo(f"  Latest provider probe: {providers['status']}.")
+    if providers["status"] != "ok":
+        echo(
+            "  Run `just llm-probe` (research-worker holds the provider keys; the front door "
+            "never does). Setup cannot finish before every role has a usable model."
+        )
+    echo("  No provider was called by this setup.")
     echo("\n3/4 Data")
     echo(
         "  Build snapshots with `just data-build --source synthetic` for a dry run, or "

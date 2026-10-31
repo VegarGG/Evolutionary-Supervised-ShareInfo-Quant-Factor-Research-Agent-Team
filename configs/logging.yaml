@@ -4,7 +4,9 @@ rotate_bytes: 536870912
 compress_after_days: 7
 delete_after_days: 180
 disk_warning_bytes: 21474836480
-sensitive_field_pattern: '(?i)(api_key|token|authorization|password|secret|cookie)'
+# A key names a credential when it is or ends in "token" (QFR_MCP_TOKEN, access_token);
+# token counts (tokens_in, input_tokens) are measurements and stay readable.
+sensitive_field_pattern: '(?i)(api_key|(^|[_-])token$|^token[_-]|authorization|password|secret|cookie)'
 secret_value_patterns:
   - 'sk-[A-Za-z0-9_-]{20,}'
   - '(?i)Bearer\s+[A-Za-z0-9._~+/-]+'

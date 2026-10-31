@@ -28,6 +28,8 @@ from qfr_core.research_api import (
 from qfr_mcp.api_client import ApiClient
 
 Control = Literal["pause", "resume", "cancel"]
+# Submitting publishes the seed expressions through registry-api before it answers.
+SUBMIT_TIMEOUT_SECONDS = 60.0
 
 
 class ResearchClient(ApiClient):
@@ -35,7 +37,9 @@ class ResearchClient(ApiClient):
 
     async def submit(self, request: SubmitJobRequest) -> SubmitJobResponse:
         body = request.model_dump(mode="json")
-        return await self._model(SubmitJobResponse, "POST", "/v1/jobs", body=body)
+        return await self._model(
+            SubmitJobResponse, "POST", "/v1/jobs", body=body, timeout=SUBMIT_TIMEOUT_SECONDS
+        )
 
     async def jobs(self, state: str | None, limit: int, cursor: UUID | None) -> JobPage:
         params = {"state": state, "limit": limit, "cursor": cursor}

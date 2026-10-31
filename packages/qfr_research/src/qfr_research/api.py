@@ -628,6 +628,8 @@ def build_env(settings: RuntimeSettings, environ: dict[str, str], mode: Mode) ->
         feedback = FeedbackClient(
             environ["FEEDBACK_API_URL"], environ.get("FEEDBACK_READER_TOKEN", ""), logger
         )
+    if mode == "worker" and feedback is None:
+        raise ValueError("research-worker needs FEEDBACK_API_URL: generations sync reports")
     snapshot = environ.get("QFR_RESEARCH_SNAPSHOT_DIR")
     # Only research-worker reads provider keys; research-api gets an empty environment
     # for them, so a model built there would fail before any request (BND-07).
