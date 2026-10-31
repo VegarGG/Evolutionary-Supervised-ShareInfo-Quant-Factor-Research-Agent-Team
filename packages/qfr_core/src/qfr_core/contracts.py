@@ -402,6 +402,7 @@ class TraceStep(Contract):
         "SEEDS_PUBLISHED",
         "CHARTER_DERIVED",
         "GENERATION_STARTED",
+        "GENERATION_STATE_CHANGED",
         "PROPOSAL_EMITTED",
         "PLAN_WRITTEN",
         "PLAN_VALIDATED",
@@ -436,6 +437,7 @@ class TraceStep(Contract):
         "DELIVERED",
         "STEERING_ADDED",
         "JOB_STATE_CHANGED",
+        "TOOL_CALLED",
         "APPROVAL_RECORDED",
         "POOL_EVENT",
     ]
@@ -464,6 +466,60 @@ class TraceStep(Contract):
             )
         ):
             raise ValueError("LLM steps require complete provider and prompt attribution")
+        return self
+
+
+class TraceAgentRun(Contract):
+    """One agent_runs row inlined in a trace export (Section 14.3)."""
+
+    run_id: UUID7
+    step_id: UUID7 | None
+    role: str
+    provider: Literal["deepseek", "kimi", "glm"] | None
+    model_id: str
+    prompt_template_id: str
+    prompt_sha256: Hash
+    request_messages: list[JsonValue]
+    response_text: str
+    response_json: JsonValue
+    usage: dict[str, JsonValue]
+    settings: dict[str, JsonValue]
+    status: Literal["ok", "failed", "fallback"]
+    latency_ms: float = Field(ge=0)
+
+
+class TraceLineageEdge(Contract):
+    child_version_id: UUID7
+    parent_version_id: UUID7
+    relation: str
+    operator: str
+    ast_diff: list[dict[str, JsonValue]] | None
+
+
+class TraceExport(Contract):
+    """trace/1: every step for a version and its ancestors, ordered by (at, step_id), with
+    agent runs inlined, lineage edges and the released reports research saw (Section 14.5).
+
+    The research export never holds owner-grade evidence; the front door's owner export
+    adds official records under owner_records (labelled owner_only). trace_hash is the
+    SHA-256 of the canonical JSON of the export without owner_records.
+    """
+
+    schema_version: Literal["trace/1"]
+    version_id: UUID7 | None
+    candidate_id: UUID7 | None
+    job_id: UUID7 | None
+    ancestors: list[UUID7]
+    steps: list[TraceStep]
+    agent_runs: list[TraceAgentRun]
+    lineage: list[TraceLineageEdge]
+    released_reports: list[ReleasedReport]
+    owner_records: dict[str, JsonValue] | None = None
+
+    @model_validator(mode="after")
+    def subject(self) -> Self:
+        if self.version_id is None and self.candidate_id is None:
+            raise ValueError("a trace export names a version or a candidate")
         return self
 
 
@@ -685,6 +741,7 @@ PUBLIC_CONTRACTS: dict[str, type[Contract]] = {
     "deliverable": Deliverable,
     "iteration_history": IterationHistory,
     "trace_step": TraceStep,
+    "trace_export": TraceExport,
     "approval_record": ApprovalRecord,
     "pool_entry": PoolEntry,
     "pool_import": PoolImport,

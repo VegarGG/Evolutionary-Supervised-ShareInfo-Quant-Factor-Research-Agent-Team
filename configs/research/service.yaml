@@ -1,0 +1,40 @@
+# research-api and research-worker operating parameters (PLAN Sections 11, 13.3 and 16.7).
+# Research behaviour (cadence, budgets, throughput, pre-screen) lives in charter_default.yaml;
+# providers, prices and roles live in providers.yaml and roles.yaml.
+version: '1'
+api: {bind: 127.0.0.1, port: 8000, list_default: 200, list_max: 2000, wait_max_seconds: 600, wait_poll_seconds: 2.0}
+worker:
+  tick_seconds: 30
+  lease_seconds: 3600
+  max_attempts: 3
+  retry_backoff_seconds: [60, 300, 900]
+  probe_daily_utc: '00:30'
+  heartbeat_seconds: 30
+feedback: {page_limit: 200, report_types_interpreted: [w1, w2, sim, decision]}
+analyst: {reports_per_run: 4, interpretation_review_seed: 20261031}
+islands:
+  I1: momentum and trend
+  I2: reversal and mean reversion
+  I3: volatility and risk
+  I4: liquidity and volume
+  I5: price-volume interaction
+  I6: open exploration
+# Deterministic island selection for islands=auto (Section 11.1): tag or keyword -> islands.
+island_keywords:
+  momentum: [I1, I5, I6]
+  trend: [I1, I6]
+  reversal: [I2, I6]
+  mean reversion: [I2, I6]
+  volatility: [I3, I6]
+  risk: [I3, I6]
+  liquidity: [I4, I6]
+  volume: [I4, I5, I6]
+  turnover: [I4, I6]
+timeline:
+  w1_pass: {first_reports: 'first W1 reports at the next 6-hour batch after the first publication', first_deliverable: 'expected first deliverable within 1 to 2 days'}
+  w2_pass: {first_reports: 'first W1 reports at the next 6-hour batch after the first publication', first_deliverable: 'at least 1 to 2 weeks (W2 releases weekly)'}
+  advanced: {first_reports: 'first W1 reports at the next 6-hour batch after the first publication', first_deliverable: 'at least 3 weeks (advancement is delayed at least 7 days)'}
+  incubated: {first_reports: 'first W1 reports at the next 6-hour batch after the first publication', first_deliverable: 'about one quarter (60 trading days of incubation)'}
+# Per-run cost estimate checked against the remaining budget before each call (Section 11.7):
+# the prompt's token count plus max_completion_tokens, priced at the miss and output rates.
+estimate: {chars_per_token: 3}
