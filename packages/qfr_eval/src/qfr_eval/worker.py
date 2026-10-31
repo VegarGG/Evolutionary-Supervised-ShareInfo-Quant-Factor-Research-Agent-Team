@@ -43,7 +43,7 @@ from qfr_eval.plugins import (
     results_hash,
     run_seed,
 )
-from qfr_eval.reports import next_w1_batch, queue_report
+from qfr_eval.reports import queue_report
 from qfr_eval.runtime import (
     Clock,
     Database,
@@ -568,8 +568,6 @@ class Worker:
         finished: datetime,
         failed_state: str = "done",
     ) -> None:
-        policy = state.policy.config
-        due = next_w1_batch(finished, float(policy["batching"]["w1_hours"]))
         refs = {
             "protocol_id": state.protocol.id,
             "protocol_version": state.protocol.version,
@@ -612,7 +610,6 @@ class Worker:
                     },
                     "refs": refs,
                 },
-                due,
                 finished,
                 request_id,
                 screening_record.record_id,
@@ -664,7 +661,7 @@ class Worker:
                 )
                 raw = {k: v for k, v in outcome.raw.items() if k != "ledger"}
                 queue_report(
-                    conn, "w1", row.version_id, {"raw": raw, "refs": refs}, due, finished,
+                    conn, "w1", row.version_id, {"raw": raw, "refs": refs}, finished,
                     request_id, record.record_id,
                 )  # fmt: skip
                 conn.execute(

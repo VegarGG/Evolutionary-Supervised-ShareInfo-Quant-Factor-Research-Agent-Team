@@ -1,5 +1,5 @@
-"""release-worker (P3.5): REL-01 rounding, REL-02 batch-time visibility, REL-04 schema and
-whitelist; library changes are released immediately."""
+"""release-worker (P3.5): REL-01 rounding, REL-02 immediate release, REL-04 schema and
+whitelist; library changes are released immediately too."""
 
 import json
 from datetime import UTC, datetime, timedelta
@@ -10,7 +10,7 @@ import pytest
 from jsonschema import Draft202012Validator
 from qfr_core.contracts import ReleasedReport
 from qfr_eval.plugins import quantize
-from qfr_eval.reports import next_w1_batch
+from qfr_eval.runtime import eval_config
 from starlette.testclient import TestClient
 
 from tests.eval.stack_rig import eval_apps
@@ -39,44 +39,32 @@ def test_rel_01_values_round_half_away_from_zero_to_the_policy_step(value, step,
     assert (Decimal(repr(released)) / Decimal(repr(step))) % 1 == 0
 
 
-@pytest.mark.parametrize(
-    ("decided", "batch"),
-    [
-        ("2026-01-05T01:00:00", "2026-01-05T06:00:00"),
-        ("2026-01-05T06:00:00", "2026-01-05T12:00:00"),  # strictly after the decision
-        ("2026-01-05T05:59:59", "2026-01-05T06:00:00"),
-        ("2026-01-05T23:10:00", "2026-01-06T00:00:00"),
-    ],
-)
-def test_w1_batches_are_the_next_six_hour_boundary_in_utc(decided, batch):
-    at = datetime.fromisoformat(decided).replace(tzinfo=UTC)
-    assert next_w1_batch(at, 6) == datetime.fromisoformat(batch).replace(tzinfo=UTC)
-
-
 @pytest.mark.postgres
-def test_rel_02_reports_become_visible_only_at_their_batch_time(rig):
+def test_rel_02_reports_are_released_as_soon_as_the_evaluator_records_them(rig):
     _, feedback_app = eval_apps(rig)
     version = rig.registry.publish(factor_manifest("timed", "Pct($close, 20)")).json()["version"]
-    rig.cycle()  # decided at 01:00; the batch is 06:00
+    rig.cycle()  # pulled, screened and evaluated on W1 at 01:00
+    queued = rig.db.rows("SELECT due_at, created_at FROM eval.release_queue")
+    assert len(queued) == 3 and all(r.due_at == r.created_at for r in queued)
     with TestClient(feedback_app, base_url="http://feedback-api:8000") as client:
         client.headers["Authorization"] = f"Bearer {EVAL_TOKENS['feedback-api']}"
-        assert rig.release.tick().released == 0
-        rig.clock.advance(hours=4, minutes=59)
-        assert rig.release.tick().released == 0
-        assert client.get("/v1/reports").json()["items"] == []
-        assert client.get(f"/v1/artifacts/{version['version_id']}/status").status_code == 404
-        rig.clock.advance(minutes=1)
-        released = rig.release.tick()
-        assert released.released == 3  # intake, screening, w1
+        released = rig.release.tick()  # the next tick, with no clock movement
+        assert released.released == 3 and released.waiting == 0  # intake, screening, w1
         items = client.get("/v1/reports").json()["items"]
         assert [i["content"]["type"] for i in items] == ["intake", "screening", "w1"]
-        assert {i["released_at"] for i in items} == {"2026-01-05T06:00:00Z"}
+        assert {i["released_at"] for i in items} == {"2026-01-05T01:00:00Z"}
         status = client.get(f"/v1/artifacts/{version['version_id']}/status").json()
         assert status["report_type"] == "w1" and len(status["timeline"]) == 3
+        assert rig.release.tick().released == 0  # each report is released once
+
+
+def test_the_release_engine_looks_for_new_reports_every_second():
+    assert eval_config(Path("configs")).release.interval_seconds <= 1
 
 
 @pytest.mark.postgres
-def test_rel_02_a_report_dated_in_the_future_stays_hidden_from_feedback(rig):
+def test_a_report_stamped_in_the_future_stays_hidden_from_feedback(rig):
+    # A guard in the feedback views (released_at <= now()); nothing is stamped ahead now.
     _, feedback_app = eval_apps(rig)
     rig.registry.publish(factor_manifest("future", "Pct($close, 10)"))
     rig.cycle()
@@ -95,7 +83,6 @@ def test_rel_04_every_released_report_validates_and_carries_only_whitelisted_fie
                              ("dup", "Pct($close,20)")):  # fmt: skip
         rig.registry.publish(factor_manifest(name, expression))
     rig.cycle()
-    rig.clock.advance(hours=6)
     rig.release.tick()
     rows = rig.db.rows("SELECT report_type, report FROM eval.released_reports")
     assert {r.report_type for r in rows} == {"intake", "screening", "w1"}

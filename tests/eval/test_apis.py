@@ -46,7 +46,6 @@ def test_bnd_03_feedback_serves_only_released_reports(rig, clients):
     queued = rig.db.scalar("SELECT count(*) FROM eval.release_queue WHERE state = 'queued'")
     assert queued == 3
     assert feedback.get("/v1/reports").json() == {"items": [], "next_after_id": None}
-    rig.clock.advance(hours=6)
     rig.release.tick()
     items = feedback.get("/v1/reports").json()["items"]
     stored = {
