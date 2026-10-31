@@ -434,6 +434,8 @@ memory is not changed.
     6-hour UTC boundary strictly after the decision (00, 06, 12, 18). The release
     engine writes `released_at` = the batch time; the feedback views also filter on
     `released_at <= now()`, so a report written ahead of its time stays hidden (REL-02).
+    Reports due in the same batch are released in the order they were queued (the
+    UUIDv7 queue id breaks ties), so a version's intake precedes its screening and W1.
 17. **Rounding.** Released values are rounded half away from zero to the policy step
     in decimal arithmetic (`Decimal(repr(x))`), so 0.0125 at step 0.005 is 0.015, not
     the binary-float 0.01. Negative zero is released as 0.0.
