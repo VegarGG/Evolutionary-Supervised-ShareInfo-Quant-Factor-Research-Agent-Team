@@ -38,3 +38,11 @@ def small_zones(tmp_path_factory):
     from tests.synthetic_fixtures import build_small_zones
 
     return build_small_zones(tmp_path_factory.mktemp("snapshots"), "planted")
+
+
+@pytest.fixture(scope="session")
+def replay_zones(tmp_path_factory):
+    """The 800-day planted world with a replay tail after W3 (Phase 6 incubation)."""
+    from tests.synthetic_fixtures import build_small_zones
+
+    return build_small_zones(tmp_path_factory.mktemp("replay-snapshots"), "planted", replay=True)

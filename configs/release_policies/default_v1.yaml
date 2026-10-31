@@ -5,6 +5,8 @@ release_timing: immediate
 rounding: {rankic: 0.005, ir: 0.02, sharpe: 0.25, shares: 0.05, correlations: 0.05, ladder_best: 0.01}
 t_buckets: [1, 2, 3]
 ladder: {eta: 0.005}
+# Forward RankIC bucket edges of the sim report: negative, 0 to 0.01, 0.01 to 0.03, above.
+sim_rankic_buckets: [0.0, 0.01, 0.03]
 release_w3_metrics: false
 # Diagnostic flag rules (PLAN 9.2). SIGN_MISMATCH (realized sign opposite to the declared
 # sign), UNSTABLE_YEARLY (yearly RankIC means change sign) and LOW_COVERAGE (coverage

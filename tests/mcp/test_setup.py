@@ -47,7 +47,7 @@ def rig(tmp_path, monkeypatch):
 
 def test_set_01_a_fresh_stack_is_empty_and_says_so(rig):
     status = rig.ok("qfr.status")["data"]
-    assert status["phase"] == 4
+    assert status["phase"] == 6
     assert status["services"]["registry-api"]["status"] == "ok"
     assert status["services"]["control_db"] == {"healthy": True}
     assert status["pool_counts"] == {"factor": ZERO, "strategy": ZERO}

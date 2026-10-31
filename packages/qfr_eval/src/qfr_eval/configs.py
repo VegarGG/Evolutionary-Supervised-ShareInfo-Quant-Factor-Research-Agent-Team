@@ -85,6 +85,8 @@ class ActiveEpoch:
     windows: dict[str, Window]
     snapshot_id: str
     embargo_check: dict[str, Any]
+    # The reserved historical tail replay mode plays as if live (tests and benchmarks).
+    replay_start: date | None = None
 
 
 @dataclass(frozen=True)
@@ -399,6 +401,12 @@ def resolve_windows(
                 "EPOCH_OUTSIDE_SNAPSHOT",
                 f"{name} {window.start}..{window.end} is outside the snapshot {first}..{last}",
             )
+    if epoch.replay is not None and not any(d >= epoch.replay.start for d in calendar):
+        raise EvalError(
+            409,
+            "EPOCH_OUTSIDE_SNAPSHOT",
+            f"the replay tail from {epoch.replay.start} has no trading dates in the snapshot",
+        )
     gaps: dict[str, int] = {}
     for earlier, later in zip(WINDOWS, WINDOWS[1:], strict=False):
         gap = sum(1 for d in calendar if windows[earlier].end < d < windows[later].start)
@@ -479,7 +487,14 @@ def activate_epoch(
             ),
             {"e": epoch.epoch_id, "w": name, "at": at},
         )
-    return ActiveEpoch(epoch.epoch_id, epoch.version, windows, snapshot_id, check)
+    return ActiveEpoch(
+        epoch.epoch_id,
+        epoch.version,
+        windows,
+        snapshot_id,
+        check,
+        None if epoch.replay is None else epoch.replay.start,
+    )
 
 
 def active_epoch(conn: Connection) -> ActiveEpoch | None:
@@ -492,7 +507,15 @@ def active_epoch(conn: Connection) -> ActiveEpoch | None:
     if row is None:
         return None
     windows = resolved_windows(row.config)
-    return ActiveEpoch(row.epoch_id, row.version, windows, row.snapshot_id, dict(row.embargo_check))
+    replay = (row.config.get("replay") or {}).get("start")
+    return ActiveEpoch(
+        row.epoch_id,
+        row.version,
+        windows,
+        row.snapshot_id,
+        dict(row.embargo_check),
+        None if replay is None else date.fromisoformat(str(replay)),
+    )
 
 
 def resolved_windows(config: dict[str, Any]) -> dict[str, Window]:

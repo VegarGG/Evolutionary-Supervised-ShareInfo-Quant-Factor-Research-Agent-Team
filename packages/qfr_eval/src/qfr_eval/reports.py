@@ -12,7 +12,7 @@ from qfr_core.ids import uuid7
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
-ReportType = Literal["intake", "screening", "w1", "library"]
+ReportType = Literal["intake", "screening", "w1", "w2", "advancement", "sim", "decision", "library"]
 
 
 def queue_report(

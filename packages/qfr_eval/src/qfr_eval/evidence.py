@@ -33,6 +33,35 @@ TIERS = {
     "ScreenFailed": "screening_fail",
     "W1GateFailed": "w1_fail",
     "W1Evaluated": "w1_pass",
+    "W2Queued": "w1_pass",
+    "W2Failed": "w2_fail",
+    "W2Expired": "w2_expired",
+    "HoldoutCheck": "w2_pass",
+    "NotAdvanced": "not_advanced",
+    "AwaitingSlot": "advanced",
+    "Incubating": "advanced",
+    "AcceptanceReview": "advanced",
+    "Rejected": "advanced",
+    "Accepted": "incubated",
+    "Monitoring": "incubated",
+    "Retired": "incubated",
+}
+# The highest pool tier (Section 10.4) a version has reached in each evaluation state:
+# the tier a pool entry records when the owner approves it.
+POOL_TIERS = {
+    "W1Evaluated": "w1_pass",
+    "W2Queued": "w1_pass",
+    "W2Failed": "w1_pass",
+    "W2Expired": "w1_pass",
+    "HoldoutCheck": "w2_pass",
+    "NotAdvanced": "w2_pass",
+    "AwaitingSlot": "advanced",
+    "Incubating": "advanced",
+    "AcceptanceReview": "advanced",
+    "Rejected": "advanced",
+    "Accepted": "incubated",
+    "Monitoring": "incubated",
+    "Retired": "incubated",
 }
 
 
@@ -146,7 +175,7 @@ def version_states(conn: Connection, version_ids: list[UUID]) -> list[dict[str, 
             "SELECT i.version_id, i.state, i.reason_code, r.status AS released_state, "
             "r.released_at FROM eval.intake i LEFT JOIN LATERAL (SELECT content ->> 'status' "
             "AS status, report_type, released_at FROM eval.released_reports x "
-            "WHERE x.version_id = i.version_id AND x.report_type IN ('intake', 'screening', 'w1') "
+            "WHERE x.version_id = i.version_id AND x.report_type <> 'library' "
             "ORDER BY release_seq DESC LIMIT 1) r ON TRUE WHERE i.version_id IN :ids"
         ).bindparams(bindparam("ids", expanding=True)),
         {"ids": version_ids},
@@ -155,6 +184,7 @@ def version_states(conn: Connection, version_ids: list[UUID]) -> list[dict[str, 
         {
             "version_id": r.version_id,
             "evidence_tier": TIERS.get(r.state, "pending"),
+            "pool_tier": POOL_TIERS.get(r.state),
             "intake_state": r.state,
             "reason_code": r.reason_code,
             "released_state": r.released_state
@@ -164,6 +194,89 @@ def version_states(conn: Connection, version_ids: list[UUID]) -> list[dict[str, 
         }
         for r in rows
     ]
+
+
+def _json_row(row: Any, skip: tuple[str, ...] = ()) -> dict[str, JsonValue]:
+    out: dict[str, JsonValue] = {}
+    for key, value in row._mapping.items():
+        if key in skip:
+            continue
+        if isinstance(value, UUID):
+            out[key] = str(value)
+        elif hasattr(value, "isoformat"):
+            out[key] = value.isoformat()
+        else:
+            out[key] = value
+    return out
+
+
+def sim_view(conn: Connection, sim_id: UUID) -> dict[str, Any]:
+    """A simulation's state, checkpoints, events, NAV and latest positions (owner only)."""
+    sim = conn.execute(
+        text("SELECT * FROM eval.sim_accounts WHERE sim_id = :s"), {"s": sim_id}
+    ).first()
+    if sim is None:
+        raise EvalError(404, "SIM_NOT_FOUND", "no simulation with this id")
+    events = conn.execute(
+        text("SELECT * FROM eval.sim_events WHERE sim_id = :s ORDER BY at, event_id"),
+        {"s": sim_id},
+    ).all()
+    nav = conn.execute(
+        text("SELECT * FROM eval.sim_nav WHERE sim_id = :s ORDER BY day"), {"s": sim_id}
+    ).all()
+    positions = conn.execute(
+        text(
+            "SELECT instrument, shares, price, value, adjustment FROM eval.sim_positions "
+            "WHERE sim_id = :s AND day = :d ORDER BY instrument"
+        ),
+        {"s": sim_id, "d": sim.last_day},
+    ).all()
+    rankic = [
+        r.value
+        for r in conn.execute(
+            text("SELECT value FROM eval.sim_rankic WHERE sim_id = :s AND value IS NOT NULL"),
+            {"s": sim_id},
+        ).all()
+    ]
+    navs = [r.nav for r in nav]
+    peak, drawdown = 0.0, 0.0
+    for value in navs:
+        peak = max(peak, value)
+        drawdown = max(drawdown, 1.0 - value / peak if peak > 0 else 0.0)
+    sign = int(dict(sim.settings).get("sign", 1))
+    metrics: dict[str, float | None] = {
+        "final_nav": navs[-1] if navs else None,
+        "cumulative_return": navs[-1] / sim.capital - 1.0 if navs else None,
+        "max_drawdown": drawdown if navs else None,
+        "rankic_mean": sign * sum(rankic) / len(rankic) if rankic else None,
+        "rankic_days": float(len(rankic)),
+        "complete_share": sum(1 for r in nav if r.complete) / len(nav) if nav else None,
+    }
+    return {
+        "visibility": "owner_only",
+        "sim_id": sim.sim_id,
+        "version_id": sim.version_id,
+        "kind": sim.kind,
+        "purpose": sim.purpose,
+        "mode": sim.mode,
+        "status": sim.status,
+        "not_before": sim.not_before,
+        "start_date": sim.start_date,
+        "last_day": sim.last_day,
+        "days_done": sim.days_done,
+        "required_days": sim.required_days,
+        "capital": sim.capital,
+        "cash": sim.cash,
+        "error_code": sim.error_code,
+        "settings": dict(sim.settings),
+        "metrics": metrics,
+        "checkpoints": [
+            _json_row(e, ("sim_id", "request_id")) for e in events if e.kind == "CHECKPOINT"
+        ],
+        "events": [_json_row(e, ("sim_id", "request_id")) for e in events],
+        "nav": [_json_row(r, ("sim_id", "snapshot_id")) for r in nav],
+        "positions": [_json_row(p) for p in positions],
+    }
 
 
 def private_config(conn: Connection) -> dict[str, JsonValue]:
@@ -238,6 +351,24 @@ def summary(conn: Connection) -> dict[str, JsonValue]:
         text("SELECT count(*) FROM eval.release_queue WHERE state = 'queued'")
     ).scalar_one()
     released: int = conn.execute(text("SELECT count(*) FROM eval.released_reports")).scalar_one()
+    open_alerts: int = conn.execute(
+        text("SELECT count(*) FROM eval.alerts WHERE state = 'open'")
+    ).scalar_one()
+    sims = {
+        f"{r.purpose}:{r.status}": int(r.n)
+        for r in conn.execute(
+            text(
+                "SELECT purpose, status, count(*) AS n FROM eval.sim_accounts "
+                "GROUP BY purpose, status"
+            )
+        ).all()
+    }
+    cases = {
+        r.state: int(r.n)
+        for r in conn.execute(
+            text("SELECT state, count(*) AS n FROM eval.acceptance_cases GROUP BY state")
+        ).all()
+    }
     return {
         "ready": state is not None,
         "active": None
@@ -253,6 +384,9 @@ def summary(conn: Connection) -> dict[str, JsonValue]:
         "queue": queue,  # type: ignore[dict-item]
         "burn_meters": burn,  # type: ignore[dict-item]
         "release": {"queued": int(pending_release), "released": int(released)},
+        "open_alerts": int(open_alerts),
+        "simulations": sims,  # type: ignore[dict-item]
+        "acceptance_cases": cases,  # type: ignore[dict-item]
         "data_freshness": None
         if latest is None
         else {

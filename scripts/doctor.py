@@ -18,7 +18,7 @@ compose = [
 ]
 checks = []
 observations = []
-# Long-running services by Phase 3; the rest are placeholders that exit 0.
+# Long-running services by Phase 6; the rest are one-shot jobs that exit 0.
 RUNNING_SERVICES = {
     "postgres",
     "qfr-mcp",
@@ -28,6 +28,7 @@ RUNNING_SERVICES = {
     "eval-scheduler",
     "eval-worker",
     "release-worker",
+    "sim-engine",
     "feedback-api",
     "eval-admin-api",
     "data-ingest",
@@ -338,12 +339,11 @@ except (subprocess.CalledProcessError, KeyError, ValueError, IndexError, OSError
 
 result = {
     "at": datetime.now(UTC).isoformat(),
-    "phase": 4,
+    "phase": 6,
     "status": "PASS" if checks and all(c["status"] == "PASS" for c in checks) else "FAIL",
     "checks": checks,
     "observations": observations,
     "limitations": [
-        "sim-engine is a successful placeholder until Phase 5.",
         "Provider readiness is the latest `qfr llm probe` result in qfr.setup.status; the "
         "doctor itself never calls a provider.",
         "Container memory is a point-in-time docker stats sample, not a peak.",

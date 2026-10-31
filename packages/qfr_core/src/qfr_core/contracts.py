@@ -23,6 +23,8 @@ Horizon = Literal[1, 5, 10, 20]
 # JSON object keys are strings, so released horizon-keyed maps use the string forms.
 HorizonKey = Literal["1", "5", "10", "20"]
 Tier = Literal["w1_pass", "w2_pass", "advanced", "incubated"]
+# Evidence tiers from weakest to strongest (Section 13.4).
+TIER_ORDER: tuple[Tier, ...] = ("w1_pass", "w2_pass", "advanced", "incubated")
 Operator = Literal[
     "explore", "llm_mutation", "syntactic_mutation", "crossover", "repair", "human_seed"
 ]

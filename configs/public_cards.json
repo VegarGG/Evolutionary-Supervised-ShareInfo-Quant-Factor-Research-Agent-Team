@@ -31,7 +31,8 @@
         "w1_count": 3,
         "w1_hours": 24,
         "w2_count": 1,
-        "w2_days": 7
+        "w2_days": 7,
+        "w2_wait_days": 28
       },
       "global": {
         "simulation_slots": 40,
@@ -68,6 +69,16 @@
     "release_timing": "immediate",
     "release_w3_metrics": false,
     "report_fields": {
+      "advancement": [
+        "status",
+        "type"
+      ],
+      "decision": [
+        "gate",
+        "reason",
+        "status",
+        "type"
+      ],
       "intake": [
         "duplicate_of",
         "reasons",
@@ -81,6 +92,12 @@
       "screening": [
         "duplicate_of",
         "reasons",
+        "status",
+        "type"
+      ],
+      "sim": [
+        "forward_rankic_bucket",
+        "forward_sharpe_bucket",
         "status",
         "type"
       ],
@@ -106,6 +123,12 @@
         "top_turnover",
         "type",
         "yearly_rankic"
+      ],
+      "w2": [
+        "family_best_rankic",
+        "ladder_status",
+        "status",
+        "type"
       ]
     },
     "rounding": {
@@ -116,6 +139,11 @@
       "shares": 0.05,
       "sharpe": 0.25
     },
+    "sim_rankic_buckets": [
+      0.0,
+      0.01,
+      0.03
+    ],
     "t_buckets": [
       1,
       2,

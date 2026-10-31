@@ -1,12 +1,14 @@
 """release-worker: the release engine (PLAN Sections 9.1 to 9.4, INV-12).
 
 Every queued decision becomes a released report on the engine's next tick (every second
-by default): research gets intake, screening, W1 and library reports as soon as the
-evaluator records them, and nothing is held back for a batch time. Each report is built
-only from whitelisted fields (the public ReleasedReport contract, extra fields forbidden),
-W1 values are rounded to the policy granularity, diagnostics are enum codes, and every
-report is validated against the public schema before it is written. Nothing else in the
-evaluation zone writes released_reports.
+by default): research gets intake, screening, W1, W2, advancement, sim, decision and
+library reports as soon as the evaluator records them, and nothing is held back for a
+batch time. Each report is built only from whitelisted fields (the public ReleasedReport
+contract, extra fields forbidden): W1 values are rounded to the policy granularity, W2
+releases PASS or FAIL and the Ladder's family best only when it improved by eta, the
+holdout releases one bit, and diagnostics are enum codes. There is no mapping for any W3
+metric (INV-6, REL-05). Every report is validated against the public schema before it is
+written. Nothing else in the evaluation zone writes released_reports.
 """
 
 import os
@@ -18,7 +20,15 @@ from typing import Any, cast
 
 from pydantic import JsonValue
 from qfr_core.config import RuntimeSettings
-from qfr_core.contracts import IntakeContent, LibraryContent, ReleasedReport, W1Content
+from qfr_core.contracts import (
+    AdvancementContent,
+    DecisionContent,
+    IntakeContent,
+    LibraryContent,
+    ReleasedReport,
+    W1Content,
+    W2Content,
+)
 from qfr_core.correlation import bind, current
 from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
@@ -26,7 +36,7 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
 from qfr_eval.configs import ActiveState, active_state, record_event
-from qfr_eval.plugins import FactorPlugin, released_value_count
+from qfr_eval.plugins import FactorPlugin, release_sim, release_w2, released_value_count
 from qfr_eval.runtime import (
     Clock,
     Database,
@@ -71,6 +81,14 @@ class ReleaseEngine:
             content: Any = IntakeContent.model_validate(payload["content"])
         elif item.report_type == "library":
             content = LibraryContent.model_validate(payload["content"])
+        elif item.report_type == "w2":
+            content = release_w2(payload["raw"], state.policy.config)
+        elif item.report_type == "advancement":
+            content = AdvancementContent.model_validate(payload["content"])
+        elif item.report_type == "sim":
+            content = release_sim(payload["raw"], state.policy.config)
+        elif item.report_type == "decision":
+            content = DecisionContent.model_validate(payload["content"])
         else:
             content = FactorPlugin(state.protocol.config).release_w1(
                 payload["raw"], state.policy.config
@@ -173,14 +191,18 @@ class ReleaseEngine:
             ),
             {"r": released.report_id, "q": item.queue_id},
         )
-        if item.report_type == "w1":
-            assert isinstance(released.content, W1Content)
+        if isinstance(released.content, W1Content | W2Content):
             conn.execute(
                 text(
                     "UPDATE eval.burn_meters SET released_values = released_values + :n, "
-                    "updated_at = :at WHERE epoch_id = :e AND window_name = 'W1'"
+                    "updated_at = :at WHERE epoch_id = :e AND window_name = :w"
                 ),
-                {"n": released_value_count(released.content), "at": at, "e": state.epoch.epoch_id},
+                {
+                    "n": released_value_count(released.content),
+                    "at": at,
+                    "e": state.epoch.epoch_id,
+                    "w": "W1" if isinstance(released.content, W1Content) else "W2",
+                },
             )
         owner = conn.execute(
             text("SELECT job_id FROM eval.intake WHERE version_id = :v"),
@@ -209,7 +231,7 @@ def main() -> None:
     logger = service_logger(SERVICE, settings, [url])
     engine = ReleaseEngine(Database(url), config, logger)
     beat = Path(os.environ.get("QFR_HEARTBEAT_FILE") or "/tmp/heartbeat")
-    logger.logger.info("service_started", payload={"phase": 3})
+    logger.logger.info("service_started", payload={"phase": 6})
     while True:
         try:
             engine.tick()

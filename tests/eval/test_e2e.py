@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pytest
 from jsonschema import Draft202012Validator
+from qfr_eval.scheduler import ADMITTED
 
 from tests.eval.stack_rig import stack
 from tests.registry_rig import factor_manifest
@@ -51,6 +52,9 @@ SEEDS = [
     ("wma_gap_10", "WMA($close, 10) / $close - 1", -1),
     ("volume_change_z", "Zscore(Delta($volume, 5))", 1),
 ]
+# Every state a version reaches once its W1 record exists (Phase 6 moves W1 passes on to
+# W2 at once, so the end state of a seed may be W2Failed or later).
+PAST_W1 = set(ADMITTED) - {"Deferred", "Screening", "ScreenFailed"}
 REPORTS = Draft202012Validator(json.loads(Path("schemas/public/released_report.json").read_text()))
 
 
@@ -80,7 +84,7 @@ def test_thirty_seeds_flow_from_import_to_released_reports_and_owner_evidence(fu
     full.settle()
     states = full.eval.state_counts()
     assert sum(states.values()) == 30, states
-    evaluated = states.get("W1Evaluated", 0) + states.get("W1GateFailed", 0)
+    evaluated = sum(n for state, n in states.items() if state in PAST_W1)
     assert evaluated + states.get("ScreenFailed", 0) == 30, states
     assert evaluated >= 25, states
 
@@ -113,7 +117,7 @@ def test_thirty_seeds_flow_from_import_to_released_reports_and_owner_evidence(fu
     w1_version = by_type["w1"][0]["version_id"]
     evidence = full.mcp.ok("qfr.evidence.get", version_id=w1_version)["data"]
     assert evidence["visibility"] == "owner_only"
-    assert evidence["evaluation"]["state"] in ("W1Evaluated", "W1GateFailed")
+    assert evidence["evaluation"]["state"] in PAST_W1
     record = next(r for r in evidence["official_records"] if r["stage"] == "w1")
     released = by_type["w1"][0]["content"]
     assert record["metrics"]["rankic_mean"] != released["rankic_mean"]  # not rounded
@@ -133,7 +137,10 @@ def test_thirty_seeds_flow_from_import_to_released_reports_and_owner_evidence(fu
 
     # The pool listing now carries evidence tiers and released state.
     listed = full.mcp.ok("qfr.pool.list", pool="factor")["data"]["items"]
-    assert {i["evidence_tier"] for i in listed} <= {"w1_pass", "w1_fail", "screening_fail"}
+    assert {i["evidence_tier"] for i in listed} <= {
+        "w1_pass", "w1_fail", "screening_fail", "w2_pass", "w2_fail", "w2_expired",
+        "not_advanced", "advanced",
+    }  # fmt: skip
     assert all(i["released_state"] for i in listed)
 
     # The seeds with W1 records are the correlation library now.

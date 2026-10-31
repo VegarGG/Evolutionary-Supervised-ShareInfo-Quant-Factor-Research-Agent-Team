@@ -1,6 +1,7 @@
 """MCP front door: Phase 0 reads, the Phase 2 setup, pool, DSL and artifact tools, the
-Phase 3 evidence, report and evaluator-configuration tools, and the Phase 4 job,
-deliverable, trace, lineage and cost tools with their resources and prompts."""
+Phase 3 evidence, report and evaluator-configuration tools, the Phase 4 job,
+deliverable, trace, lineage and cost tools with their resources and prompts, and the
+Phase 6 approval, pool-curation, job-close, acceptance and alert tools."""
 
 import asyncio
 import logging
@@ -25,6 +26,7 @@ from qfr_core.contracts import PoolStatus
 from qfr_core.correlation import current
 from qfr_core.dsl import DslLimits, canonicalize, parse, validate
 from qfr_core.dsl.explain import explain
+from qfr_core.eval_api import ReportType
 from qfr_core.log_reader import LogQuery, LogReader
 from qfr_core.logging import JsonLogger, StdlibBridge, env_secrets
 from qfr_core.pool_import import NO_DEFAULTS_NOTICE
@@ -32,6 +34,8 @@ from qfr_core.registry_api import RegistrySummary
 from qfr_core.research_api import ResearchSummary
 
 from qfr_mcp.api_client import DownstreamRefused, DownstreamUnavailable
+from qfr_mcp.approval_tools import register as register_approval_tools
+from qfr_mcp.approvals import entry_code
 from qfr_mcp.audit import AuditStore, PostgresAudit
 from qfr_mcp.boundary import MCPBoundary
 from qfr_mcp.control_store import SETUP_STEPS, ControlStore, PostgresControlStore, SetupState
@@ -46,7 +50,7 @@ from qfr_mcp.research_client import ResearchClient
 from qfr_mcp.resources import register as register_resources
 from qfr_mcp.results import ToolResult
 
-PHASE = 4
+PHASE = 6
 READ = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
 WRITE = ToolAnnotations(
     readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
@@ -344,7 +348,9 @@ def create_app(
                 },
                 "data_freshness": None if evaluation is None else evaluation.get("data_freshness"),
                 "burn_meters": None if evaluation is None else evaluation.get("burn_meters"),
-                "alerts": None,
+                "alerts": None
+                if evaluation is None
+                else {"open": evaluation.get("open_alerts"), "tool": "qfr.ops.alerts"},
                 "notice": notice_for(summary, states.get("pool")),
             },
             "partial",
@@ -466,6 +472,7 @@ def create_app(
         items: list[JsonValue] = [
             item.model_dump(mode="json")
             | {
+                "short_code": entry_code(item.entry_id),
                 "evidence_tier": known.get(str(item.version_id), {}).get("evidence_tier"),
                 "released_state": known.get(str(item.version_id), {}).get("released_state"),
             }
@@ -495,7 +502,8 @@ def create_app(
         )
         return result(
             {
-                "entry": detail.entry.model_dump(mode="json"),
+                "entry": detail.entry.model_dump(mode="json")
+                | {"short_code": entry_code(detail.entry.entry_id)},
                 "events": [e.model_dump(mode="json") for e in detail.events],
                 "version": version.model_dump(mode="json"),
                 "evidence_tier": known.get("evidence_tier"),
@@ -591,10 +599,11 @@ def create_app(
     @server.tool(
         name="qfr.report.list",
         description=(
-            "Released reports exactly as research sees them (rounded, batched, reason codes "
-            "only). Filters: version_id, family_id, program_id, type (intake, screening, w1, "
-            "library), since (ISO time), after_id (cursor) and limit (default 200, max "
-            "2000). Reports for a job arrive with the job tools in Phase 4."
+            "Released reports exactly as research sees them (rounded, reason codes only, "
+            "released as soon as the evaluator records them). Filters: version_id, "
+            "family_id, program_id, type (intake, screening, w1, w2, advancement, sim, "
+            "decision, library), since (ISO time), after_id (cursor) and limit (default "
+            "200, max 2000)."
         ),
         annotations=READ,
     )
@@ -602,7 +611,7 @@ def create_app(
         version_id: UUID | None = None,
         family_id: UUID | None = None,
         program_id: UUID | None = None,
-        type: Literal["intake", "screening", "w1", "library"] | None = None,  # noqa: A002
+        type: ReportType | None = None,  # noqa: A002
         since: str | None = None,
         after_id: UUID | None = None,
         limit: int | None = None,
@@ -726,6 +735,7 @@ def create_app(
         exports_dir=Path(exports) if (exports := os.environ.get("QFR_EXPORTS_DIR")) else None,
     )
     register_job_tools(server, deps)
+    register_approval_tools(server, deps, store)
     register_resources(server, deps, pool_page)
     logger.logger.info(
         "service_started",

@@ -8,6 +8,7 @@ from uuid import UUID
 
 from pydantic import JsonValue
 from qfr_core.research_api import (
+    CloseRequest,
     CostReport,
     DeliverablePage,
     DeliverableView,
@@ -69,6 +70,10 @@ class ResearchClient(ApiClient):
 
     async def control(self, job_id: UUID, action: Control) -> JobView:
         return await self._model(JobView, "POST", f"/v1/jobs/{job_id}/{action}")
+
+    async def close(self, job_id: UUID, request: CloseRequest) -> JobView:
+        body = request.model_dump(mode="json")
+        return await self._model(JobView, "POST", f"/v1/jobs/{job_id}/close", body=body)
 
     async def generations(self, program_id: UUID) -> GenerationPage:
         return await self._model(GenerationPage, "GET", f"/v1/programs/{program_id}/generations")

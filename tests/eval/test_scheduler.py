@@ -1,5 +1,6 @@
-"""eval-scheduler (P3.2): pull-only intake, schema and kind checks, exact and behavioral
-dedup, quotas with deferral and expiry, strategies held, and fair enqueueing."""
+"""eval-scheduler (P3.2, P6.5): pull-only intake, schema and kind checks, a strategy's
+component checks, exact and behavioral dedup, quotas with deferral and expiry, and fair
+enqueueing."""
 
 from pathlib import Path
 
@@ -56,10 +57,10 @@ def test_evl_01_discovery_is_since_seq_polling_with_no_inbound_trigger(rig):
             for route in app.routes
             for method in getattr(route, "methods", set()) - {"GET", "HEAD"}
         }
-        # Only the owner's configuration routes write; nothing enqueues or evaluates.
-        assert all(
-            path.startswith(("/v1/protocols", "/v1/policies", "/v1/quotas")) for _, path in writes
-        ), writes
+        # Only the owner's configuration routes and case decisions write; nothing
+        # enqueues or evaluates.
+        owner = ("/v1/protocols", "/v1/policies", "/v1/quotas", "/v1/acceptance/cases/")
+        assert all(path.startswith(owner) for _, path in writes), writes
     first = publish(rig, "first", "Mean($close, 5) / Mean($close, 20) - 1")
     rig.scheduler.tick()
     cursor = rig.db.scalar("SELECT last_published_seq FROM eval.intake_cursor")
@@ -122,14 +123,30 @@ def test_schema_and_kind_checks_reject_without_evaluating(rig):
     assert evaluated(rig, bad["version_id"]) == NOTHING == evaluated(rig, wrong["version_id"])
 
 
-def test_strategies_are_held_until_the_strategy_plugin_exists(rig):
+def test_a_strategy_waits_for_its_components_and_is_then_evaluated(rig):
     factor = publish(rig, "component", "Pct($close, 20)")
     response = rig.registry.publish(strategy_manifest([(factor["version_id"], 1, 1.0)]))
     assert response.status_code == 201, response.text
     strategy = response.json()["version"]
-    rig.cycle()
+    rig.scheduler.tick()  # The component is still being fingerprinted.
     held = intake(rig, strategy["version_id"])
-    assert held.state == "Held" and "Phase 6" in held.hold_reason
+    assert held.state == "Held" and "components" in held.hold_reason
+    assert evaluated(rig, strategy["version_id"]) == NOTHING
+    rig.cycle(rounds=5)  # the component screens first, then the strategy runs
+    done = intake(rig, strategy["version_id"])
+    assert done.state not in ("Held", "IntakeRejected"), done
+    assert evaluated(rig, strategy["version_id"])["records"] >= 1
+
+
+def test_a_strategy_with_an_unscreened_component_is_rejected(rig):
+    failing = publish(rig, "flat", "$close * 0")  # degenerate: fails screening
+    response = rig.registry.publish(strategy_manifest([(failing["version_id"], 1, 1.0)]))
+    assert response.status_code == 201, response.text
+    strategy = response.json()["version"]
+    rig.cycle()
+    assert intake(rig, failing["version_id"]).state == "ScreenFailed"
+    rejected = intake(rig, strategy["version_id"])
+    assert (rejected.state, rejected.reason_code) == ("IntakeRejected", "COMPONENT_INVALID")
     assert evaluated(rig, strategy["version_id"]) == NOTHING
 
 

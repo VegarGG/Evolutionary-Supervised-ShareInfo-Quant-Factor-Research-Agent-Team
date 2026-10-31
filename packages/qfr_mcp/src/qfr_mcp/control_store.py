@@ -1,18 +1,19 @@
-"""control_db setup state and the front door's trace steps (PLAN Sections 13.6 and 14.5).
+"""control_db setup state, approval records and the front door's trace steps (PLAN
+Sections 13.5, 13.6 and 14.5).
 
-Both tables are insert-only: a setup change is a new setup_state row (the latest row per
-step is current), and a re-import reuses the DSL_VALIDATED step recorded for the same
-entry digest instead of writing a second one.
+All three tables are insert-only: a setup change is a new setup_state row (the latest
+row per step is current), an approval is never edited or removed, and a re-import reuses
+the DSL_VALIDATED step recorded for the same entry digest instead of writing a second one.
 """
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from contextlib import AbstractContextManager
 from typing import Annotated, Any, Literal, Protocol
 from uuid import UUID
 
 from pydantic import UUID7, AwareDatetime, JsonValue, StringConstraints
 from qfr_core.config import canonical_json
-from qfr_core.contracts import Contract, TraceStep
+from qfr_core.contracts import ApprovalRecord, Contract, TraceStep
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Connection, RowMapping
 
@@ -39,6 +40,9 @@ class ControlStore(Protocol):
     def find_validation(self, entry_digest: str) -> TraceStep | None: ...
     def latest_publication(self, kind: SeedKind, name: str) -> TraceStep | None: ...
     def publication_of(self, version_id: UUID) -> TraceStep | None: ...
+    def append_approval(self, record: ApprovalRecord) -> None: ...
+    def get_approval(self, approval_id: UUID) -> ApprovalRecord | None: ...
+    def list_approvals(self, limit: int) -> list[ApprovalRecord]: ...
     def healthy(self) -> bool: ...
 
 
@@ -130,6 +134,50 @@ class PostgresControlStore:
     def publication_of(self, version_id: UUID) -> TraceStep | None:
         return self._one("step_type = 'SEEDS_PUBLISHED' AND version_id = :v", {"v": version_id})
 
+    def append_approval(self, record: ApprovalRecord) -> None:
+        document = record.model_dump(mode="json")
+        with self._begin() as conn:
+            conn.execute(
+                text("""INSERT INTO approvals
+                        (approval_id, created_at, decision, scope, owner_confirmation,
+                         rationale, short_codes_matched, principal, request_id, record)
+                        VALUES (:id, :at, :decision, CAST(:scope AS jsonb), :confirmation,
+                                :rationale, :codes, :principal, :request_id,
+                                CAST(:record AS jsonb))"""),
+                {
+                    "id": record.approval_id,
+                    "at": record.created_at,
+                    "decision": record.decision,
+                    "scope": canonical_json(document["scope"]),
+                    "confirmation": record.owner_confirmation,
+                    "rationale": record.rationale,
+                    "codes": list(record.short_codes_matched),
+                    "principal": record.principal,
+                    "request_id": record.request_id,
+                    "record": canonical_json(document),
+                },
+            )
+
+    def get_approval(self, approval_id: UUID) -> ApprovalRecord | None:
+        with self._begin() as conn:
+            record = conn.execute(
+                text("SELECT record FROM approvals WHERE approval_id = :id"), {"id": approval_id}
+            ).scalar()
+            return None if record is None else ApprovalRecord.model_validate(record)
+
+    def list_approvals(self, limit: int) -> list[ApprovalRecord]:
+        with self._begin() as conn:
+            rows: Sequence[Any] = (
+                conn.execute(
+                    text("""SELECT record FROM approvals
+                        ORDER BY created_at DESC, approval_id DESC LIMIT :n"""),
+                    {"n": limit},
+                )
+                .scalars()
+                .all()
+            )
+            return [ApprovalRecord.model_validate(r) for r in rows]
+
     def healthy(self) -> bool:
         try:
             with self._begin() as conn:
@@ -147,6 +195,7 @@ class MemoryControlStore:
     def __init__(self) -> None:
         self.states: list[SetupState] = []
         self.steps: list[TraceStep] = []
+        self.approvals: list[ApprovalRecord] = []
 
     def append_setup_state(self, state: SetupState) -> None:
         self.states.append(state)
@@ -184,6 +233,18 @@ class MemoryControlStore:
 
     def publication_of(self, version_id: UUID) -> TraceStep | None:
         return self._last(lambda s: s.step_type == "SEEDS_PUBLISHED" and s.version_id == version_id)
+
+    def append_approval(self, record: ApprovalRecord) -> None:
+        if any(a.approval_id == record.approval_id for a in self.approvals):
+            raise ValueError("approval ids are unique")
+        self.approvals.append(record)
+
+    def get_approval(self, approval_id: UUID) -> ApprovalRecord | None:
+        return next((a for a in self.approvals if a.approval_id == approval_id), None)
+
+    def list_approvals(self, limit: int) -> list[ApprovalRecord]:
+        ordered = sorted(self.approvals, key=lambda a: (a.created_at, a.approval_id), reverse=True)
+        return ordered[:limit]
 
     def healthy(self) -> bool:
         return True

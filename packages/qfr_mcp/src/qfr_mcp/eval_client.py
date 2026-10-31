@@ -9,13 +9,18 @@ from uuid import UUID
 
 from pydantic import JsonValue
 from qfr_core.eval_api import (
+    AcceptanceCase,
     ActivateRequest,
+    AlertPage,
     ArtifactStatus,
     Card,
+    CaseDecisionRequest,
+    CasePage,
     ConfigKind,
     ConfigVersionView,
     CreateVersionRequest,
     ReportPage,
+    SimulationView,
     VersionStatePage,
 )
 
@@ -55,6 +60,26 @@ class EvalAdminClient(ApiClient):
         body = ActivateRequest(approval_id=approval_id).model_dump(mode="json")
         path = f"/v1/{ROUTES[kind]}/{config_id}/{version}/activate"
         return await self._model(ConfigVersionView, "POST", path, body=body)
+
+    async def cases(
+        self,
+        state: str | None = None,
+        version_id: UUID | None = None,
+        case_id: UUID | None = None,
+    ) -> CasePage:
+        params = {"state": state, "version_id": version_id, "case_id": case_id}
+        return await self._model(CasePage, "GET", "/v1/acceptance/cases", params=params)
+
+    async def decide(self, case_id: UUID, request: CaseDecisionRequest) -> AcceptanceCase:
+        path = f"/v1/acceptance/cases/{case_id}/decision"
+        return await self._model(AcceptanceCase, "POST", path, body=request.model_dump(mode="json"))
+
+    async def simulation(self, sim_id: UUID) -> SimulationView:
+        return await self._model(SimulationView, "GET", f"/v1/sim/{sim_id}")
+
+    async def alerts(self, state: str | None, kind: str | None, limit: int) -> AlertPage:
+        params = {"state": state, "kind": kind, "limit": limit}
+        return await self._model(AlertPage, "GET", "/v1/alerts", params=params)
 
 
 class FeedbackClient(ApiClient):

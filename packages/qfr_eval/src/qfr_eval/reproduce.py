@@ -1,8 +1,9 @@
 """`qfr eval reproduce <record_id>` (PLAN Section 8.9, EVL-04).
 
-Re-runs an official record with its pinned inputs (the version's manifest, the protocol
-version, the epoch's windows, the data snapshot, the seed and, for W1, the exact library
-files) and compares the recomputed results hash with the stored one. It writes nothing.
+Re-runs an official record with its pinned inputs (the version's manifest and, for a
+strategy, its components' expressions, the protocol version, the epoch's windows, the
+data snapshot, the seed and, for W1, the exact library files) and compares the
+recomputed results hash with the stored one. It writes nothing.
 """
 
 import json
@@ -12,14 +13,20 @@ from uuid import UUID
 
 import typer
 from qfr_core.config import RuntimeSettings
-from qfr_core.contracts import FactorManifest
 from sqlalchemy import text
 
 from qfr_eval.configs import EvalError, resolved_windows
-from qfr_eval.plugins import results_hash
+from qfr_eval.plugins import StageOutcome, results_hash
 from qfr_eval.runtime import Database, EvalConfig, EvalEnvironment, eval_config
 from qfr_eval.store import ArtifactStore
-from qfr_eval.worker import Evaluator, LibraryMember, MarketCache, make_runner
+from qfr_eval.worker import (
+    MANIFEST,
+    Evaluator,
+    LibraryMember,
+    MarketCache,
+    make_runner,
+    read_components,
+)
 
 app = typer.Typer(no_args_is_help=True, help="Evaluation operations (evaluation side).")
 
@@ -48,26 +55,42 @@ def reproduce(
         epoch: dict[str, Any] = conn.execute(
             text("SELECT config FROM eval.epochs WHERE epoch_id = :e"), {"e": record.epoch_id}
         ).scalar_one()
-    if intake is None:
-        raise EvalError(409, "VERSION_UNKNOWN", "the record's version has no intake row")
-    manifest = FactorManifest.model_validate(intake.manifest["manifest"])
+        if intake is None:
+            raise EvalError(409, "VERSION_UNKNOWN", "the record's version has no intake row")
+        manifest = MANIFEST.validate_python(intake.manifest["manifest"])
+        components = read_components(conn, manifest)
     windows = resolved_windows(epoch)
     library_spec = (record.summary.get("library") or {}).get("members") or []
     library = [LibraryMember(m["version_id"], m["uri"], m["sha256"]) for m in library_spec]
     if evaluator is None:
         store = ArtifactStore(env.store_dir)
         evaluator = Evaluator(env, make_runner(config, store), MarketCache(env.full_snapshot_dir))
-    outcome = evaluator.evaluate(
-        manifest,
-        str(record.version_id),
-        dict(protocol),
-        windows,
-        record.snapshot_id,
-        library,
-        config.runner.load_cpu_seconds,
-        seed=int(record.seed),
-    )
-    stage = outcome.screening if record.stage == "screening" else outcome.w1
+    stage: StageOutcome | None
+    if record.stage in ("w2", "holdout"):
+        stage = evaluator.run_window(
+            manifest,
+            str(record.version_id),
+            dict(protocol),
+            windows,
+            record.snapshot_id,
+            record.window_name,
+            config.runner.load_cpu_seconds,
+            seed=int(record.seed),
+            components=components,
+        ).outcome
+    else:
+        outcome = evaluator.evaluate(
+            manifest,
+            str(record.version_id),
+            dict(protocol),
+            windows,
+            record.snapshot_id,
+            library,
+            config.runner.load_cpu_seconds,
+            seed=int(record.seed),
+            components=components,
+        )
+        stage = outcome.screening if record.stage == "screening" else outcome.w1
     actual = None if stage is None else results_hash(stage.metrics)
     return {
         "record_id": str(record_id),

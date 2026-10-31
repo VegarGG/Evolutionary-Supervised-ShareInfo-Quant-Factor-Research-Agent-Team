@@ -1627,6 +1627,7 @@ class GenerationRunner:
         if not parents or not spec:
             return {"skipped": "NO_COMPONENTS"}
         components = []
+        rationales: dict[str, dict[str, str]] = {}
         for version_id in parents[:40]:
             manifest = env.registry.version(UUID(version_id)).manifest
             expression = getattr(manifest.implementation, "expression", None)
@@ -1639,15 +1640,11 @@ class GenerationRunner:
                         "title": manifest.title,
                     }
                 )
-        with env.db.transaction() as conn:
-            env.trace.step(
-                conn,
-                "STRATEGY_COMPOSED",
-                ctx,
-                actor="evolution-engine",
-                inputs={"candidate_set": [c["version_id"] for c in components]},
-                payload={"strategy_spec": spec},
-            )
+                rationales[version_id] = {
+                    "hypothesis_id": str(manifest.rationale.hypothesis_id),
+                    "mechanism": manifest.rationale.mechanism,
+                    "falsification": manifest.rationale.falsification,
+                }
         prompt = env.prompts.render(
             "strategy",
             {
@@ -1684,8 +1681,31 @@ class GenerationRunner:
             {str(c.version_id) for c in draft.components}
             | {str(p) for p in draft.parent_version_ids}
         )
+        # Every manifest's rationale names a blackboard hypothesis. A composite tests the
+        # hypothesis its task names or, when the task names none, that of its heaviest
+        # component, whose mechanism and falsification the manifest inherits.
+        lead = max(draft.components, key=lambda c: (c.weight, str(c.version_id)))
+        payload["inherited_rationale"] = rationales[str(lead.version_id)] | (
+            {"hypothesis_id": str(task.hypothesis_id)} if task.hypothesis_id else {}
+        )
+        payload["title"] = (
+            f"Top-{draft.portfolio.top_k} strategy over {len(draft.components)} factor(s)"
+        )
+        payload["description"] = draft.composition_rationale
         with env.db.transaction() as conn:
             require_write(env, "engineer", "strategy_draft", cctx)
+            env.trace.step(
+                conn,
+                "STRATEGY_COMPOSED",
+                cctx,
+                actor="evolution-engine",
+                inputs={"candidate_set": [c["version_id"] for c in components]},
+                payload={
+                    "strategy_spec": spec,
+                    "components": payload["components"],
+                    "portfolio": payload["portfolio"],
+                },
+            )
             conn.execute(
                 text(
                     "INSERT INTO candidates (candidate_id, program_id, generation_id, task_id, "
@@ -1752,7 +1772,22 @@ class GenerationRunner:
                 inputs={"composite": True},
                 payload=workbench,
             )
-        self._candidate(candidate_id, workbench=workbench, similarity={"originality": 1.0})
+        similarity = self._strategy_similarity(gen, candidate_id, payload)
+        with env.db.transaction() as conn:
+            env.trace.step(
+                conn,
+                "SIMILARITY_CHECKED",
+                cctx,
+                actor="evolution-engine",
+                inputs={"canonical_hash": similarity["canonical_hash"]},
+                payload=similarity,
+            )
+        self._candidate(
+            candidate_id,
+            workbench=workbench,
+            canonical_hash=similarity["canonical_hash"],
+            similarity={"originality": similarity["originality"]},
+        )
         prompt = env.prompts.render(
             "critic",
             {
@@ -1806,6 +1841,37 @@ class GenerationRunner:
         state = "approved" if review.output.verdict == "approve" else "rejected"
         self._candidate(candidate_id, state=state, review_rounds=1)
         return {"candidate_id": str(candidate_id), "state": state}
+
+    def _strategy_similarity(
+        self, gen: Generation, candidate_id: UUID, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        """A strategy's duplicate check: the canonical hash of its components (sorted, with
+        signs and weights) and portfolio, against the program's other strategies. The
+        evaluator measures behavioral similarity to the strategy library at W1."""
+        canonical = {
+            "components": sorted(
+                (str(c["version_id"]), int(c["sign"]), float(c["weight"]))
+                for c in payload["components"]
+            ),
+            "portfolio": payload["portfolio"],
+        }
+        digest = hashlib.sha256(
+            json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        with self.env.db.read() as conn:
+            twin = conn.execute(
+                text(
+                    "SELECT candidate_id FROM candidates WHERE program_id = :p AND kind = "
+                    "'strategy' AND canonical_hash = :h AND candidate_id <> :c "
+                    "ORDER BY created_at LIMIT 1"
+                ),
+                {"p": gen.program_id, "h": digest, "c": candidate_id},
+            ).scalar()
+        return {
+            "canonical_hash": digest,
+            "duplicate_of": None if twin is None else str(twin),
+            "originality": 0.0 if twin is not None else 1.0,
+        }
 
     # SELECTING and PUBLISHING ----------------------------------------------------------
 

@@ -19,7 +19,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 from pydantic import JsonValue, ValidationError
 from qfr_core.config import MCPConfig
-from qfr_core.contracts import ResearchBrief
+from qfr_core.contracts import TIER_ORDER, ResearchBrief
 from qfr_core.correlation import bind
 from qfr_core.logging import JsonLogger
 from qfr_core.research_api import (
@@ -46,6 +46,21 @@ CONTROL = ToolAnnotations(
     readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
 )
 Result = Callable[..., ToolResult]
+RANK = {tier: i for i, tier in enumerate(TIER_ORDER)}
+
+
+def contribution_tables(evidence: dict[str, Any] | None) -> JsonValue:
+    """A strategy's per-component contribution table on each evaluated window: the
+    composite's RankIC with each component removed (Sections 8.6 and 9.2), from the
+    summaries of the evaluator's official records."""
+    if not evidence:
+        return None
+    tables: dict[str, JsonValue] = {}
+    for record in evidence.get("official_records") or []:
+        rows = (record.get("summary") or {}).get("contributions")
+        if rows:
+            tables[str(record.get("window") or record.get("stage"))] = rows
+    return tables
 
 
 @dataclass
@@ -130,24 +145,32 @@ class JobToolDeps:
                 status = "evaluator_unavailable"
         items = []
         confirmation: dict[str, JsonValue] = {}
+        contributions: dict[str, JsonValue] = {}
         for item in deliverable.items:
             key = str(item.version_id)
             items.append(item.model_copy(update={"owner_evidence": evidence.get(key)}))
             official = states.get(key)
             confirmed: bool | None = None
-            if official is not None and item.tier_reached == "w1_pass":
-                confirmed = official.evidence_tier == "w1_pass"
+            if official is not None and item.tier_reached is not None:
+                # The tier research read from released reports is confirmed when the
+                # evaluator's highest tier reached is at least as high.
+                reached = official.pool_tier
+                confirmed = reached is not None and RANK[reached] >= RANK[item.tier_reached]
             confirmation[key] = {
                 "research_tier": item.tier_reached,
                 "official_evidence_tier": None if official is None else official.evidence_tier,
+                "official_tier_reached": None if official is None else official.pool_tier,
                 "confirmed": confirmed,
             }
+            if item.kind == "strategy":
+                contributions[key] = contribution_tables(evidence.get(key))
         composed = deliverable.model_copy(update={"items": items})
         return {
             "visibility": "owner_only",
             "deliverable": composed.model_dump(mode="json"),
             "fetched_at": None if view.fetched_at is None else view.fetched_at.isoformat(),
             "tier_confirmation": confirmation,
+            "contribution_tables": contributions,
             "evidence": status,
             "hygiene": "Never copy owner-grade numbers into briefs or steering notes.",
         }

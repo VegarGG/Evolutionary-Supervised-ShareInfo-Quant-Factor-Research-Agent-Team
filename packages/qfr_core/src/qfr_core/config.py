@@ -161,6 +161,9 @@ class PolicyConfig(BaseModel):
     rounding: dict[str, float]
     t_buckets: list[float]
     ladder: dict[str, float]
+    # Edges of the sim report's forward RankIC buckets (PLAN 9.2): negative, between the
+    # first and second edge, between the second and third, and above the third.
+    sim_rankic_buckets: list[float] = Field(min_length=3, max_length=3)
     release_w3_metrics: Literal[False]
     flags: dict[
         Literal[
@@ -184,6 +187,12 @@ class PolicyConfig(BaseModel):
             raise ValueError("every diagnostic flag rule needs a threshold")
         if list(self.t_buckets) != sorted(set(self.t_buckets)):
             raise ValueError("t buckets must be strictly increasing")
+        if list(self.sim_rankic_buckets) != sorted(set(self.sim_rankic_buckets)):
+            raise ValueError("sim RankIC bucket edges must be strictly increasing")
+        if "eta" not in self.ladder or not self.ladder["eta"] > 0:
+            raise ValueError("the Ladder needs a positive eta")
+        if "ladder_best" not in self.rounding:
+            raise ValueError("rounding needs ladder_best for the W2 family best")
         return self
 
 
@@ -213,6 +222,15 @@ class WindowConfig(BaseModel):
         return self
 
 
+class ReplayConfig(BaseModel):
+    """A reserved historical tail that simulation replays as if it were live (PLAN 10.2).
+    Tests and benchmarks only: the evaluator refuses replay unless the snapshot is
+    synthetic, and replay is never valid for real acceptance."""
+
+    model_config = ConfigDict(extra="forbid")
+    start: date
+
+
 class EpochConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     epoch_id: str
@@ -222,12 +240,16 @@ class EpochConfig(BaseModel):
     W2: WindowConfig
     W3: WindowConfig
     embargo_trading_days: int = Field(gt=0)
+    replay: ReplayConfig | None = None
 
     @model_validator(mode="after")
     def disjoint(self) -> "EpochConfig":
         for earlier, later in ((self.W0, self.W1), (self.W1, self.W2), (self.W2, self.W3)):
             if earlier.end is None or earlier.end >= later.start:
                 raise ValueError("historical windows must be resolved and disjoint")
+        if self.replay is not None and self.W0.end is not None:
+            if self.replay.start <= self.W0.end:
+                raise ValueError("a replay tail must start after the research cutoff (W0)")
         return self
 
 

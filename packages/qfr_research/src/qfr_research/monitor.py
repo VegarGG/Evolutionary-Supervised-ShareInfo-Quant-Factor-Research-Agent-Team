@@ -53,6 +53,14 @@ BLOCKING_FLAGS = frozenset(
     }
 )
 WATCHING = ("WAITING_FOR_EVALUATION", "DELIVERABLE_READY", "DELIVERED")
+# The brief's mode fixes the deliverable kind (Section 11.2); review_and_iterate may
+# deliver either kind.
+DELIVERABLE_KIND = {
+    "new_factors": "factor",
+    "improve_factors": "factor",
+    "new_strategy": "strategy",
+    "improve_strategy": "strategy",
+}
 COUNTED = ("CLOSED", "FAILED")
 
 
@@ -238,14 +246,17 @@ class JobMonitor:
 
     # Readings --------------------------------------------------------------------------
 
-    def readings(self, conn: Connection, program_id: UUID, gates: dict[str, Any]) -> list[Reading]:
+    def readings(self, conn: Connection, job: Any, gates: dict[str, Any]) -> list[Reading]:
+        """The job's published versions of the kind its mode delivers."""
+        kind = DELIVERABLE_KIND.get(str(job.brief["mode"]))
         rows = conn.execute(
             text(
                 "SELECT v.version_id, c.candidate_id, c.kind, c.payload, c.workbench "
                 "FROM candidate_versions v JOIN candidates c ON c.candidate_id = v.candidate_id "
-                "WHERE c.program_id = :p AND c.operator <> 'human_seed' ORDER BY v.published_at"
+                "WHERE c.program_id = :p AND c.operator <> 'human_seed' "
+                "AND (CAST(:k AS text) IS NULL OR c.kind = :k) ORDER BY v.published_at"
             ),
-            {"p": program_id},
+            {"p": job.program_id, "k": kind},
         ).all()
         found = []
         for row in rows:
@@ -305,7 +316,7 @@ class JobMonitor:
                 return None
             criteria = job.deliverable_criteria
             wanted: Tier = criteria["tier"]
-            readings = self.readings(conn, job.program_id, protocol["gates"])
+            readings = self.readings(conn, job, protocol["gates"])
             delivered = set(self.delivered(conn, job_id))
             qualifying = sorted(
                 (
@@ -328,6 +339,7 @@ class JobMonitor:
                 actor="job-monitor",
                 inputs={
                     "criteria": criteria,
+                    "kind": DELIVERABLE_KIND.get(str(job.brief["mode"])),
                     "gates_source": source,
                     "gates": protocol["gates"],
                     "delivered": len(delivered),
@@ -626,7 +638,7 @@ class JobMonitor:
         protocol, _, _ = self.cards()
         with env.db.read() as conn:
             job = self._job(conn, job_id)
-            readings = self.readings(conn, job.program_id, protocol["gates"])
+            readings = self.readings(conn, job, protocol["gates"])
             delivered = self.delivered(conn, job_id)
         wanted: Tier = job.deliverable_criteria["tier"]
         if delivered or any(r.pending_for(wanted) for r in readings):
@@ -646,9 +658,7 @@ class JobMonitor:
             if job.state == "CLOSED":
                 return False
             if not self.delivered(conn, job_id) and job.program_id is not None:
-                readings = sorted(
-                    self.readings(conn, job.program_id, protocol["gates"]), key=Reading.key
-                )
+                readings = sorted(self.readings(conn, job, protocol["gates"]), key=Reading.key)
                 picks = readings[: int(job.deliverable_criteria["max_candidates"])]
                 if picks:
                     self.assemble(conn, job, picks, "best_effort", reason)
@@ -668,20 +678,23 @@ class JobMonitor:
                 {"j": job.job_id},
             ).scalar_one()
         )
-        ordinal0 = int(
-            conn.execute(
+        # Item codes number factors (F-k) and strategies (S-k) separately across the
+        # job's deliverables; the owner repeats them in approvals (Section 13.5).
+        numbered = {
+            r.kind: int(r.n)
+            for r in conn.execute(
                 text(
-                    "SELECT count(*) FROM deliverable_items i JOIN deliverables d ON "
-                    "d.deliverable_id = i.deliverable_id WHERE d.job_id = :j"
+                    "SELECT i.kind, count(*) AS n FROM deliverable_items i JOIN deliverables d "
+                    "ON d.deliverable_id = i.deliverable_id WHERE d.job_id = :j GROUP BY i.kind"
                 ),
                 {"j": job.job_id},
-            ).scalar_one()
-        )
+            ).all()
+        }
         wanted: Tier = job.deliverable_criteria["tier"]
         items: list[DeliverableItem] = []
         codes: list[str] = []
         stats = self._stats(conn, job)
-        for offset, pick in enumerate(picks, 1):
+        for pick in picks:
             trace = export(conn, version_id=pick.version_id)
             history = iteration_history(conn, pick.version_id, now, trace)
             manifest: dict[str, Any] = conn.execute(
@@ -691,7 +704,8 @@ class JobMonitor:
                 ),
                 {"v": pick.version_id},
             ).scalar_one()
-            code = f"F-{ordinal0 + offset}"
+            numbered[pick.kind] = numbered.get(pick.kind, 0) + 1
+            code = f"{'F' if pick.kind == 'factor' else 'S'}-{numbered[pick.kind]}"
             codes.append(f"{job.short_code} {code}")
             item = DeliverableItem.model_validate(
                 {

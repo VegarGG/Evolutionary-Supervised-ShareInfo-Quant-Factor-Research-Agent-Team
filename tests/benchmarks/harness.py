@@ -1,4 +1,5 @@
-"""The benchmark harness for BM-PLANTED and BM-NULL at W1 level (PLAN Section 18.3, P5.8).
+"""The benchmark harness for BM-PLANTED and BM-NULL (PLAN Section 18.3, P5.8 at W1 level,
+P6.9 through acceptance), BM-DECAY and BM-STRATEGY.
 
 A scripted client submits the job through the MCP front door; research runs its normal
 generations with a scripted LLM; the evaluator measures every publication on W1 and the
@@ -16,6 +17,11 @@ engineer with tools would:
   duplicates, each with the sign its in-sample RankIC shows.
 
 On the null world the in-sample signs fit noise, which is what BM-NULL measures.
+
+After research stops, `validate` lets the evaluator work through W2, the holdout,
+incubation slots and replay incubation one test-clock day at a time, and a scripted owner
+decides each acceptance case through the MCP front door: accept when the evaluator
+recommends it, reject otherwise (in v1 a case with a failed gate cannot be accepted).
 
 Its draws come from one seeded generator, so the scripted answers are fixed for a fixed
 seed and a fixed call order. The engine derives its own draws from the program id, which
@@ -58,6 +64,10 @@ DISCOVERY_CORRELATION = 0.7
 OPTIONS_PER_DRAFT = 3  # options checked with the tools per draft asked for
 OPTIONS_MAX = 9  # 2 tool calls per option, within the engineer's 20 tool calls
 NEAR_DUPLICATE = 0.9  # the pre-screen's behavioral similarity limit
+# Evidence tiers of a version that passed W1 (Phase 6 moves W1 passes on to W2).
+PAST_W1 = frozenset(
+    {"w1_pass", "w2_fail", "w2_expired", "w2_pass", "not_advanced", "advanced", "incubated"}
+)
 LOW_ORIGINALITY = 0.2  # the pre-screen's AST originality minimum
 
 
@@ -144,6 +154,8 @@ class BenchmarkModels(ScriptedModels):
         )
 
     def _engineer(self, text: str, messages: list[ModelMessage], info: AgentInfo) -> Any:
+        if "working in strategy mode" in text:
+            return self._strategy(text, info)
         operator_found = re.search(r"the operator \((\w+)\)", text)
         operator = operator_found.group(1) if operator_found else "explore"
         limit = re.search(r"into 1 to (\d+) qfr-dsl", text)
@@ -282,8 +294,8 @@ class BenchmarkRun:
 
     def summary(self) -> dict[str, Any]:
         fitness = [g.best_fitness for g in self.generations if g.best_fitness is not None]
-        evaluated = [p for p in self.published if p["evidence_tier"] in ("w1_pass", "w1_fail")]
-        passed = [p for p in evaluated if p["evidence_tier"] == "w1_pass"]
+        evaluated = [p for p in self.published if p["evidence_tier"] in PAST_W1 | {"w1_fail"}]
+        passed = [p for p in evaluated if p["evidence_tier"] in PAST_W1]
         return {
             "generations": len(self.generations),
             "published": len(self.published),
@@ -607,13 +619,14 @@ def lineage_report(full: ResearchStack, run: BenchmarkRun) -> dict[str, Any]:
     }
 
 
+def planted_like(published: dict[str, Any]) -> bool:
+    """Mean rank correlation of 0.7 or more to A1 or A2 on W0 (Section 18.3)."""
+    a1, a2 = published["rank_corr_a1"], published["rank_corr_a2"]
+    return max(a1 or -1.0, a2 or -1.0) >= DISCOVERY_CORRELATION
+
+
 def discoveries(run: BenchmarkRun) -> list[dict[str, Any]]:
-    return [
-        p
-        for p in run.published
-        if p["evidence_tier"] == "w1_pass"
-        and max(p["rank_corr_a1"] or -1.0, p["rank_corr_a2"] or -1.0) >= DISCOVERY_CORRELATION
-    ]
+    return [p for p in run.published if p["evidence_tier"] in PAST_W1 and planted_like(p)]
 
 
 def write_results(name: str, body: dict[str, Any], tmp_path: Path) -> Path:
@@ -644,3 +657,94 @@ def run_body(name: str, run: BenchmarkRun, script: BenchmarkScript, **extra: Any
         "llm_calls": len(script.calls),
         "llm_calls_by_role": dict(sorted(Counter(c["role"] for c in script.calls).items())),
     } | extra
+
+
+# Phase 6: validation, incubation and the owner's decisions ------------------------------
+
+IN_FLIGHT = (
+    "Discovered", "Held", "Fingerprinting", "Screening", "Deferred", "W1Evaluated",
+    "W2Queued", "HoldoutCheck", "AwaitingSlot", "Incubating", "AcceptanceReview",
+)  # fmt: skip
+OWNER_RATIONALE = "Scripted owner: follows the evaluator's recommendation."
+
+
+def decide_cases(full: ResearchStack) -> list[dict[str, Any]]:
+    """The scripted owner decides every open case through the MCP front door."""
+    decided = []
+    for case in full.mcp.ok("qfr.acceptance.list_cases", state="open")["data"]["items"]:
+        accept = case["recommendation"] == "ACCEPT"
+        code = case["short_code"]
+        approval = full.mcp.ok(
+            "qfr.approval.record",
+            decision="accept_case" if accept else "reject_case",
+            case_id=case["case_id"],
+            owner_confirmation=f"{'ACCEPT' if accept else 'REJECT'} {code}",
+            rationale=OWNER_RATIONALE,
+        )["data"]
+        result = full.mcp.ok(
+            "qfr.acceptance.decide",
+            case_id=case["case_id"],
+            decision="accept" if accept else "reject",
+            approval_id=approval["approval_id"],
+        )["data"]
+        decided.append(
+            {
+                "short_code": code,
+                "version_id": case["version_id"],
+                "kind": case["kind"],
+                "recommendation": case["recommendation"],
+                "failing_gates": case["failing_gates"],
+                "gates": {
+                    g["name"]: {k: g[k] for k in ("passed", "skipped", "value", "threshold")}
+                    for g in case["gates"]
+                },
+                "decision": result["decision"],
+            }
+        )
+    return decided
+
+
+def validate(full: ResearchStack, days: int) -> dict[str, Any]:
+    """Run the evaluator one test-clock day at a time until nothing is in flight: W2 (one
+    per family a week), the holdout, the incubation slots and replay incubation; the
+    scripted owner decides each case as it opens."""
+    cases: list[dict[str, Any]] = []
+    ran = 0
+    while ran < days:
+        ran += 1
+        full.eval.run_days(1)
+        cases += decide_cases(full)
+        counts = full.eval.state_counts()
+        if not any(counts.get(state) for state in IN_FLIGHT):
+            break
+    db = full.eval.db
+    records = [
+        {
+            "version_id": str(r.version_id),
+            "stage": r.stage,
+            "passed": r.status == "PASS",
+            "gates": r.gates,
+        }
+        for r in db.rows(
+            "SELECT version_id, stage, summary ->> 'status' AS status, summary -> 'gates' AS "
+            "gates FROM eval.official_records WHERE stage IN ('w2', 'holdout') ORDER BY "
+            "created_at, version_id"
+        )
+    ]
+    w2 = [r for r in records if r["stage"] == "w2"]
+    holdout = [r for r in records if r["stage"] == "holdout"]
+    return {
+        "validation_days": ran,
+        "states": full.eval.state_counts(),
+        "w2_runs": len(w2),
+        "w2_passed": sum(1 for r in w2 if r["passed"]),
+        "holdout_runs": len(holdout),
+        "holdout_passed": sum(1 for r in holdout if r["passed"]),
+        "records": records,
+        "cases": cases,
+        "accepted": [c["version_id"] for c in cases if c["decision"] == "accepted"],
+        "alerts": [
+            {"kind": a.kind, "version_id": str(a.version_id), "details": a.details}
+            for a in db.rows("SELECT kind, version_id, details FROM eval.alerts ORDER BY at")
+        ],
+    }

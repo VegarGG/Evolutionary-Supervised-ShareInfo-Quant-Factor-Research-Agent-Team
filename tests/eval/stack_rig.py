@@ -16,7 +16,7 @@ import httpx
 import pytest
 from qfr_eval import admin_api, feedback_api
 from qfr_eval.compute import Runner
-from qfr_eval.runtime import eval_config
+from qfr_eval.runtime import EvalConfig, eval_config
 from qfr_eval.store import ArtifactStore
 from starlette.testclient import TestClient
 
@@ -71,6 +71,9 @@ def stack(
     monkeypatch: pytest.MonkeyPatch,
     zones: BuiltZones,
     runner: Runner | None = None,
+    *,
+    epoch: dict[str, Any] | None = None,
+    config: EvalConfig | None = None,
 ) -> Iterator[Stack]:
     admin_late, feedback_late = LateApp(), LateApp()
     transports: dict[str, httpx.AsyncBaseTransport] = {
@@ -79,7 +82,9 @@ def stack(
     }
     with (
         setup_rig(tmp_path, monkeypatch, transports) as mcp,
-        eval_rig(tmp_path, zones, registry=mcp.registry, runner=runner) as rig,
+        eval_rig(
+            tmp_path, zones, registry=mcp.registry, runner=runner, epoch=epoch, config=config
+        ) as rig,
     ):
         admin_late.app, feedback_late.app = eval_apps(rig)
         with (

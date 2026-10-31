@@ -136,7 +136,8 @@ class SteerRequest(Contract):
 
 
 class CloseRequest(Contract):
-    """POST /v1/jobs/{id}/close: the approval-gated close arrives in Phase 6."""
+    """POST /v1/jobs/{id}/close: the owner's approval-gated close of a delivered job. The
+    front door checks the approval record; research stores its id."""
 
     decision: Literal["approved", "rejected"]
     approval_id: UUID7

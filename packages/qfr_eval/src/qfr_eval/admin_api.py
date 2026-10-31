@@ -2,10 +2,12 @@
 
 Called only by qfr-mcp with the eval-owner token. It creates and activates protocol,
 policy and quota versions, and serves intake, runs, official records, owner-grade
-evidence, series files, burn meters, quota usage, the library and private configuration.
-Simulation, acceptance, alerts and epoch rollover arrive with Phases 6 and 8.
+evidence, series files, burn meters, quota usage, the library, private configuration,
+simulations, acceptance cases with their gate values, the owner's case decisions (each
+with a rationale and an approval id) and alerts. Epoch rollover arrives with Phase 8.
 """
 
+import importlib.metadata
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -17,10 +19,15 @@ from pydantic import JsonValue
 from qfr_core.config import RuntimeSettings
 from qfr_core.correlation import current
 from qfr_core.eval_api import (
+    AcceptanceCase,
     ActivateRequest,
+    AlertPage,
+    CaseDecisionRequest,
+    CasePage,
     ConfigKind,
     ConfigVersionView,
     CreateVersionRequest,
+    SimulationView,
     VersionState,
     VersionStatePage,
 )
@@ -29,8 +36,8 @@ from qfr_core.registry_api import Health
 from sqlalchemy import text
 from starlette.concurrency import run_in_threadpool
 
-from qfr_eval import evidence
-from qfr_eval.configs import TABLES, EvalError, activate_version, create_version
+from qfr_eval import acceptance, alerts, evidence
+from qfr_eval.configs import TABLES, EvalError, activate_version, active_state, create_version
 from qfr_eval.contracts import OfficialRecord, OwnerEvidence
 from qfr_eval.http import ERROR_RESPONSES, install, serve
 from qfr_eval.runtime import ApiConfig, Clock, Database, SystemClock, eval_config, service_logger
@@ -66,8 +73,10 @@ def create_app(
     store: ArtifactStore,
     logger: JsonLogger,
     clock: Clock | None = None,
+    code_version: str | None = None,
 ) -> FastAPI:
     app = FastAPI(title="QFR eval-admin-api", version="1", docs_url=None, redoc_url=None)
+    code_version = code_version or f"qfr-eval-{importlib.metadata.version('qfr-eval')}"
     install(app, SERVICE, token, logger, PRINCIPAL)
     clock = clock or SystemClock()
     log = logger.logger
@@ -305,6 +314,65 @@ def create_app(
 
         return await run_in_threadpool(read)
 
+    @app.get("/v1/sim/{sim_id}", response_model=SimulationView, responses=ERROR_RESPONSES)
+    async def simulation(sim_id: UUID) -> SimulationView:
+        def read() -> SimulationView:
+            with db.read() as conn:
+                return SimulationView.model_validate(evidence.sim_view(conn, sim_id))
+
+        return await run_in_threadpool(read)
+
+    @app.get("/v1/acceptance/cases", response_model=CasePage, responses=ERROR_RESPONSES)
+    async def cases(
+        state: str | None = None, version_id: UUID | None = None, case_id: UUID | None = None
+    ) -> CasePage:
+        def read() -> CasePage:
+            with db.read() as conn:
+                items = acceptance.list_cases(conn, state, version_id, case_id)
+            return CasePage(items=[AcceptanceCase.model_validate(i) for i in items])
+
+        return await run_in_threadpool(read)
+
+    @app.post(
+        "/v1/acceptance/cases/{case_id}/decision",
+        response_model=AcceptanceCase,
+        responses=ERROR_RESPONSES,
+    )
+    async def decide(case_id: UUID, body: CaseDecisionRequest) -> AcceptanceCase:
+        def write() -> AcceptanceCase:
+            with db.transaction() as conn:
+                state = active_state(conn)
+                if state is None:
+                    raise EvalError(409, "NOT_READY", "no active configuration")
+                view = acceptance.decide_case(
+                    conn, state, case_id, body, PRINCIPAL, clock.now(),
+                    current()["request_id"], code_version,
+                )  # fmt: skip
+            return AcceptanceCase.model_validate(view)
+
+        result = await run_in_threadpool(write)
+        log.info(
+            "case_decided",
+            outcome="ok",
+            payload={
+                "case_id": str(case_id),
+                "decision": result.decision,
+                "reason": result.reason,
+                "approval_id": str(body.approval.approval_id),
+            },
+        )
+        return result
+
+    @app.get("/v1/alerts", response_model=AlertPage, responses=ERROR_RESPONSES)
+    async def alert_list(
+        state: str | None = None, kind: str | None = None, limit: int = limit_query
+    ) -> AlertPage:
+        def read() -> AlertPage:
+            with db.read() as conn:
+                return AlertPage.model_validate(alerts.list_alerts(conn, state, kind, limit))
+
+        return await run_in_threadpool(read)
+
     @app.get("/v1/summary", responses=ERROR_RESPONSES)
     async def summary() -> dict[str, JsonValue]:
         def read() -> dict[str, JsonValue]:
@@ -324,8 +392,9 @@ def build(
     token = environ.get("EVAL_OWNER_TOKEN", "")
     logger = service_logger(SERVICE, settings, [url, token])
     store = ArtifactStore(Path(environ.get("QFR_EVAL_STORE_DIR") or "data/eval-store"))
-    app = create_app(db or Database(url), token, config, store, logger)
-    logger.logger.info("service_started", payload={"phase": 3})
+    code_version = environ.get("QFR_GIT_SHA") or None
+    app = create_app(db or Database(url), token, config, store, logger, code_version=code_version)
+    logger.logger.info("service_started", payload={"phase": 6})
     return app
 
 

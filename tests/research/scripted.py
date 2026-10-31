@@ -40,6 +40,7 @@ class Script:
     critic_verdicts: list[str] = field(default_factory=list)  # consumed in order, then approve
     candidates_per_task: int = 2
     engineer_uses_tool: bool = True
+    strategy_top_k: int = 20  # the scripted strategy's portfolio, in strategy mode
     failing: set[str] = field(default_factory=set)  # "provider/model" refs that answer 503
     balance: dict[str, Any] = field(default_factory=lambda: {"available_balance": 50.0})
     calls: list[dict[str, Any]] = field(default_factory=list)
@@ -143,6 +144,8 @@ class ScriptedModels:
             }
             for island in proposal["islands"]
         ]
+        # Strategy modes: the compose_strategy tasks the engine proposed, unchanged.
+        tasks += [t for t in proposal["tasks"] if t["type"] == "compose_strategy"]
         return answer(
             info,
             {
@@ -179,6 +182,8 @@ class ScriptedModels:
         )
 
     def _engineer(self, text: str, messages: list[ModelMessage], info: AgentInfo) -> Any:
+        if "working in strategy mode" in text:
+            return self._strategy(text, info)
         tools = {t.name for t in info.function_tools}
         expressions = self.script.expressions
         if (
@@ -207,6 +212,26 @@ class ScriptedModels:
             for expression, sign in expressions[:count]
         ]
         return answer(info, {"drafts": drafts})
+
+    def _strategy(self, text: str, info: AgentInfo) -> Any:
+        """A StrategyDraft over every listed component, equally weighted."""
+        listed = text.split("Available factor versions", 1)[1]
+        most = re.search(r"from at most (\d+) published factor versions", text)
+        ids = list(dict.fromkeys(re.findall(rf'"version_id": ?"({UUID})"', listed)))
+        ids = ids[: int(most.group(1))] if most else ids
+        assert ids, "the strategy prompt lists its components"
+        weight = round(1 / len(ids), 2)
+        return answer(
+            info,
+            {
+                "components": [{"version_id": v, "sign": 1, "weight": weight} for v in ids],
+                "portfolio": {"top_k": self.script.strategy_top_k, "dropout": 5},
+                "composition_rationale": "Equal weights over the listed components.",
+                "expected_horizon_days": 5,
+                "parent_version_ids": ids,
+                "change_summary": None,
+            },
+        )
 
     def _critic(self, text: str, messages: list[ModelMessage], info: AgentInfo) -> Any:
         verdict = self.script.critic_verdicts.pop(0) if self.script.critic_verdicts else "approve"
