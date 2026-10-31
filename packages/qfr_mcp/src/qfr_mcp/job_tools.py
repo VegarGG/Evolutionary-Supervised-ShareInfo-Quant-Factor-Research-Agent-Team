@@ -59,6 +59,7 @@ class JobToolDeps:
     evidence_schema: Path
     logger: JsonLogger
     result: Result
+    exports_dir: Path | None = None
 
     def require_research(self) -> ResearchClient:
         if self.research is None:
@@ -389,6 +390,82 @@ def register(server: FastMCP, deps: JobToolDeps) -> None:
             raise ValueError("ARGUMENT_INVALID: give exactly one of version_id or candidate_id")
         view = await call(lambda: deps.require_research().trace(version_id, candidate_id))
         return result(view.model_dump(mode="json"))
+
+    @server.tool(
+        name="qfr.trace.export",
+        description=(
+            "Write the owner export of a published version's development trace to exports/: "
+            "trace.json (trace/1 for the version and its ancestors, with owner-grade official "
+            "records under owner_records, labelled owner_only) and iteration_history.md (the "
+            "lineage hop by hop, a crossover hop with both parents). Returns the paths, the "
+            "trace_hash (computed without owner_records) and the iteration history."
+        ),
+        annotations=READ,
+    )
+    async def trace_export(version_id: UUID) -> ToolResult:
+        if deps.exports_dir is None:
+            raise RuntimeError("EXPORTS_UNCONFIGURED: QFR_EXPORTS_DIR is not set")
+        bundle = await call(lambda: deps.require_research().trace_export(version_id))
+        versions = [version_id, *bundle.export.ancestors]
+        owner: dict[str, JsonValue] = {}
+        status = "ok"
+        if deps.admin is None:
+            status = "evaluator_not_configured"
+        else:
+            for vid in versions:
+                try:
+                    document = await deps.admin.evidence(vid)
+                except DownstreamRefused as error:
+                    if error.status != 404:
+                        raise ValueError(f"{error.error}: {error.message}") from None
+                    continue  # a pool or seed version the evaluator has not recorded
+                except DownstreamUnavailable:
+                    status = "evaluator_unavailable"
+                    break
+                await asyncio.to_thread(validate_owner_evidence, document, deps.evidence_schema)
+                owner[str(vid)] = document
+        owner_records: dict[str, JsonValue] = {
+            "visibility": "owner_only",
+            "status": status,
+            "versions": owner,
+        }
+        body = bundle.export.model_dump(mode="json") | {"owner_records": owner_records}
+        history = bundle.iteration_history.model_dump(mode="json")
+        hops: list[Any] = list(history["hops"])
+        for hop in hops:
+            hop["owner_grade"] = owner.get(str(hop.get("to_version_id")))
+        target = deps.exports_dir / "traces" / str(version_id)
+
+        def write() -> list[str]:
+            target.mkdir(parents=True, exist_ok=True)
+            trace_path = target / "trace.json"
+            history_path = target / "iteration_history.md"
+            trace_path.write_text(json.dumps(body, indent=2, sort_keys=True) + "\n")
+            lines = [bundle.markdown.rstrip("\n"), "", "## Owner-grade evidence (owner_only)", ""]
+            if not owner:
+                lines.append(f"No official records joined ({status}).")
+            for vid, document in owner.items():
+                lines.append(f"- {vid}: {json.dumps(document, sort_keys=True)}")
+            history_path.write_text("\n".join(lines) + "\n")
+            return [str(trace_path), str(history_path)]
+
+        paths = await asyncio.to_thread(write)
+        deps.logger.logger.info(
+            "trace_exported",
+            outcome="ok",
+            version_id=str(version_id),
+            payload={"paths": paths, "trace_hash": bundle.trace_hash, "owner_records": status},
+        )
+        history["hops"] = hops
+        return result(
+            {
+                "version_id": str(version_id),
+                "paths": paths,
+                "trace_hash": bundle.trace_hash,
+                "owner_records": status,
+                "iteration_history": history,
+            }
+        )
 
     @server.tool(
         name="qfr.lineage.get",

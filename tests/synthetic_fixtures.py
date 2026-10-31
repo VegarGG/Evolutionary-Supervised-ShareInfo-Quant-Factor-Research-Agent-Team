@@ -46,3 +46,28 @@ class BuiltZones:
     world: SyntheticWorld
     full: Snapshot
     research: Snapshot
+
+
+def build_small_zones(root: Path, world_name: str) -> BuiltZones:
+    """A small world (planted, null or decay) written as full and research snapshots."""
+    from qfr_core.data.panel import sanity_checks
+    from qfr_core.data.snapshot import SnapshotData, SnapshotSource, ZoneDirs
+    from qfr_eval.ingest.zones import build_zones
+
+    world = small_world(world_name)
+    data = SnapshotData(
+        world.panel, world.membership, world.calendar, {"ground_truth.json": b"{}\n"}
+    )
+    source = SnapshotSource(
+        "synthetic", None, None, {"world": world_name}, {}, sanity_checks(world.panel)
+    )
+    research = SnapshotSource("synthetic", None, None, {}, {}, {})
+    built = build_zones(
+        ZoneDirs.under(root),
+        data,
+        source,
+        small_epoch(),
+        ["full", "research"],
+        research_source=research,
+    )
+    return BuiltZones(root, world, built.snapshots["full"], built.snapshots["research"])

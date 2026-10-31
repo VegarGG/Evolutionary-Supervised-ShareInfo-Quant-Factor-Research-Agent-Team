@@ -38,6 +38,6 @@ strict = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers"
+addopts = "-ra --strict-markers -m 'not benchmark'"
 pythonpath = ["."]
-markers = ["postgres: requires the Phase 0 PostgreSQL roles and migrations", "deployment: requires the running Compose stack", "slow: builds a default-size synthetic world (about a minute); deselect with -m 'not slow'"]
+markers = ["postgres: requires the Phase 0 PostgreSQL roles and migrations", "benchmark: BM-PLANTED and BM-NULL runs (Section 18.3); excluded by default, run with just bench", "deployment: requires the running Compose stack", "slow: builds a default-size synthetic world (about a minute); deselect with -m 'not slow'"]

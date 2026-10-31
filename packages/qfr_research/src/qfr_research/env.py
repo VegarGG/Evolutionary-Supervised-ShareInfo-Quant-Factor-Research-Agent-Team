@@ -49,6 +49,10 @@ class ResearchEnv:
     _workbench: Workbench | None = field(default=None, init=False)
     _snapshot_id: str | None = field(default=None, init=False)
     fingerprints: dict[str, Any] = field(default_factory=dict, init=False)
+    # W0 workbench reports by (canonical expression, sign): the research snapshot is
+    # fixed for the env's lifetime, and a draft the engineer checked with
+    # workbench.evaluate is checked again by the deterministic checks.
+    factor_reports: dict[tuple[str, int], Any] = field(default_factory=dict, init=False)
 
     def __post_init__(self) -> None:
         self.trace = TraceWriter(self.logger, self.clock)

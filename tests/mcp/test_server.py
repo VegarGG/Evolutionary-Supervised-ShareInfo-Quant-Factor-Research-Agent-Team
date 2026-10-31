@@ -90,7 +90,7 @@ def test_mcp_01_status_tail_are_audited_and_request_id_reaches_downstream(rig):
     assert audit.calls[-1].downstream_request_ids == []
 
 
-def test_mcp_02_catalog_is_the_phase_four_catalog(rig):
+def test_mcp_02_catalog_is_the_phase_five_catalog(rig):
     client, _, headers, _ = rig
     response = call(client, headers, "tools/list")
     tools = {tool["name"] for tool in response.json()["result"]["tools"]}
@@ -123,6 +123,7 @@ def test_mcp_02_catalog_is_the_phase_four_catalog(rig):
         "qfr.deliverable.list",
         "qfr.deliverable.get",
         "qfr.trace.get",
+        "qfr.trace.export",
         "qfr.lineage.get",
         "qfr.ops.costs",
     }

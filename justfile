@@ -71,5 +71,13 @@ mcp-config:
 backup:
     uv run --locked python scripts/ops.py deferred backup Phase7
 
-bench:
-    uv run --locked python scripts/ops.py deferred bench Phase5
+# BM-PLANTED and BM-NULL (Section 18.3) on the synthetic worlds, offline with the scripted
+# LLM, against the disposable test database as in test-db (or the one CI's environment
+# names). Results are written to exports/benchmarks.
+bench *args:
+    mkdir -p exports/benchmarks
+    if [ -n "${QFR_TEST_RESEARCH_DB_URL:-}" ]; then \
+        QFR_BENCHMARK_DIR=exports/benchmarks uv run --locked pytest -m benchmark tests/benchmarks -q {{args}}; \
+    else \
+        QFR_BENCHMARK_DIR=exports/benchmarks uv run --locked python scripts/test_database.py -m benchmark tests/benchmarks -q {{args}}; \
+    fi

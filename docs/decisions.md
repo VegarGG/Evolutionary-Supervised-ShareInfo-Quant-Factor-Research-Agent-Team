@@ -646,3 +646,173 @@ real provider: the one real generation per provider is the owner's on-machine st
 18. **Deferred.** The `qfr://docs/host-agent-guide` resource arrives with the guide in P7.5.
     Per-program feedback tokens (Phase 3 decision 21) are not added: both research
     services are one trust zone, and requests narrow by program.
+
+# Phase 5 decisions
+
+Phase 5 implements P5.1 to P5.8: the population and its refresh, official and
+provisional fitness, the MAP-Elites archive, parent selection, the variation operators,
+the context assembler, the publication pre-screen and selection, the Thompson-sampling
+allocator with stagnation, migration and the diversity guardrail, and the BM-PLANTED and
+BM-NULL benchmarks. Approvals, `qfr.job.close` and the promotion workflow (Phase 6) are
+not started. It is built on the Phase 4 branch (PR #15), which is stacked on the Phase 3
+branch (PR #14); neither was merged. Nothing here has reached a real provider.
+
+1. **Provisional members are published versions without a released W1 report.**
+   Section 12.1 (v2.2) defines a provisional member as "an approved but unpublished
+   candidate with W0 statistics" and lets an unpublished one live 3 generations, but
+   task parents, lineage edges and the iteration history all name versions, so an
+   unpublished candidate cannot be a parent without publishing it. The population
+   therefore holds published versions: a version joins its island as provisional with
+   its W0 metrics and provisional fitness, does not expire while it waits for
+   evaluation (a quota deferral included), becomes official when its first W1 report is
+   released, and leaves the population (archived) when it is rejected at intake or its
+   screening fails. A failed screening sets fitness 0 and makes it a repair target; a
+   quota expiry is not a judgement, so it counts as neither a failure nor a repair
+   target. Approved candidates that selection did not publish are not members (the
+   owner has been asked to confirm this). A provisional member parents at most 1 child
+   per generation (engine and plan validator). The population holds factors only:
+   strategies compose factors and are not members.
+2. **Population start.** The population is initialized once per program: pool entries
+   named in the brief (all entries in the improve modes) and a parent job's members as
+   official members in the island matching their tags (else I6), the brief's
+   human_seed versions as provisional members. Their reports are fetched by version id,
+   like seed reports, because they were published outside the program. With no pool and
+   no seeds the population is empty and generation 1 is all explore (SET-01). A program
+   started before migration 0003 adopts its publications at its next refresh.
+3. **Fitness details.** pct is the mid-rank percentile in (0, 1), so ties share the
+   middle of their ranks and a lone official member scores 0.5 on every term. RankIC_IR
+   is multiplied by the declared sign. Ties are broken by originality, then lower
+   complexity, then version id, so every ordering is deterministic. Provisional fitness
+   ranks this generation's pre-screen survivors among themselves (per island once an
+   island has 5), and its library term uses the maximum behavioral similarity to the
+   factor pool, research's view of the library, which is neutral (0.5) with an empty
+   pool. The W2 multipliers apply when a W2 status is released. Section 11.6 ranks
+   publication candidates by "provisional fitness plus novelty". Novelty is read as the
+   AST originality of Section 7.5 (1 minus the largest AST similarity to the library and
+   the population), added with weight 1 (`selection.novelty_weight`). The fitness, the
+   originality and the sum are in each SELECTED and NOT_SELECTED step.
+4. **Fitness is relative, so improvement is measured on a record.** Official fitness is
+   recomputed from percentiles each generation, so a member's fitness falls when better
+   members join. Each island keeps its best fitness so far and the generation it last
+   improved (migration 0003). Stagnation counts generations since that record improved.
+   BM-PLANTED's "best island fitness improves" compares the best record across islands
+   in the first and the last generation; the current best is recorded beside it.
+5. **Archive.** The 64 cells are rebuilt each generation from the current official
+   members, because fitness is relative. A cell's elite must have a positive fitness, so
+   a failed or sign-mismatched factor never holds a cell. The horizon descriptor is the
+   best decay horizon for the declared sign. The field group is volume_only for
+   volume-type fields alone (volume, amount, adv20), price_volume when price and volume
+   fields mix, range_volatility for a price-only expression with a dispersion operator
+   or both range fields, and price_only otherwise. These lists are charter settings.
+   When an island exceeds 60 live members, its lowest-ranked official members are
+   archived (CAPACITY).
+6. **Bandit.** A published child counts once in its island's arm, at the first refresh
+   that sees its W1 report (or a failed screening, which is a failure): it succeeds when
+   its official fitness is at or above the island's 75th percentile, interpolated
+   linearly, at that refresh. `bandit_outcomes` is insert-only with one row per child, so
+   a child is never counted twice and every update names its report. Both counts decay
+   towards the prior by 0.95 once per generation. Slots are split in proportion to the
+   sampled values with a floor of 1 per active island and a cap of 40%. The cap is never
+   below the even share, so it cannot leave slots unused. When the quota is smaller
+   than the number of islands, the islands with the highest samples get the floor.
+   Each publication slot gives 3 candidate slots (36 for 12, the charter's
+   candidate_slots_max).
+7. **Selection.** A tournament draws 3 of the island's top 10 without replacement, and
+   the best entrant wins. The archive side takes a uniformly random occupied cell. When
+   one side is empty the other is used, and a slot without any parent becomes an
+   explore slot. A crossover partner comes from another island's members or an archive
+   cell with behavioral similarity at most 0.5 to the first parent. Without one, the
+   slot becomes an llm_mutation of the first parent (`NO_PARTNER`). A syntactic mutation
+   that cannot be made, or a repair slot without a target, also becomes explore. Every
+   draw has a seed derived from the program, the generation, the purpose and the island
+   (`derive_seed`), and the seed and the choice are in PROPOSAL_EMITTED.
+8. **Operators.** llm_mutation gives the engineer the targeted instruction for each
+   released flag of the parent (Section 12.4; the texts are charter settings) or a
+   generic instruction when there is none. Syntactic mutants arrive as ready-made
+   variants in `syntactic_batch` tasks of at most 3. They get an automatic change
+   summary and inherit the parent's rationale, and the critic does not review them:
+   Section 14.5 lists no LLM steps for them. When the remaining budget cannot pay for the
+   generation's LLM tasks, a crossover becomes a deterministic subtree exchange
+   (`LOW_LLM_BUDGET`). Repair targets are program versions whose screening failed for
+   LOW_COVERAGE or DEGENERATE, whose hypothesis is open or supported ("promising"), and
+   that no repair task has taken; the repair instructions are a new prompt,
+   `prompts/repair.md`. Every application is a MUTATION_APPLIED, CROSSOVER_APPLIED or
+   SYNTACTIC_MUTATION_APPLIED step with each parent's expression and the AST diff from
+   each. A child of a version this program published joins that version's family (the
+   first parent's for a crossover), so its trials count in that family. A child of a
+   version published elsewhere starts a new family.
+9. **Stagnation and pauses.** For a stagnant island, the plan must either give it at
+   least 2 explore tasks or pause it, and the validator refuses a plan that does
+   neither. The engine's default plan reseeds when the island has enough slots for 2
+   explore tasks, and pauses it otherwise. A paused island stays paused for the rest of
+   the program.
+10. **Context assembler.** The engineer's context holds the parents' manifests and
+    released report digests, the island's top 3 elites, 2 archive elites from cells
+    unlike those elites, knowledge items, seed entries and the last 12 things the
+    lineage tried, each oldest first so the prompt budget trims the oldest first. Only
+    research-visible material enters: manifests and released, rounded reports. The
+    engineer prompt is engineer/2.
+11. **Status changes record their reason.** An archived member whose archive reason
+    changes is a status change in the trace, like a move between statuses. Migration adds the migrants to the members already in
+    memory. Reloading them, as the first version did, dropped the status changes made
+    earlier in the same refresh.
+12. **W0 numbers are cached per process.** `workbench.evaluate` and the engine's W0
+    refresh share a cache of factor reports by canonical expression and sign, bounded at
+    2048 entries. The research snapshot is immutable for a process, so cached numbers
+    are the numbers the workbench would compute again.
+13. **Iteration history before and after.** A hop's `expression_before` is the published
+    expression of each parent, as the registry has it, so it matches the parent's own
+    hop. The AST diff comes from the operator's APPLIED step. `qfr.trace.export` (Section
+    13 lists it for Phases 4 and 7) writes trace.json and iteration_history.md under
+    `QFR_EXPORTS_DIR` and joins owner-grade records from eval-admin-api into its copy
+    only, labelled owner_only; the trace_hash is computed without them.
+14. **TRC-03 scripts only the parent choice.** The unscripted engine reaches lineages of
+    3 to 4 generations within the BM-PLANTED run, so a five-generation lineage with a
+    crossover is not guaranteed there. `tests/research/test_lineage.py` scripts the
+    engine's parent choice (one subclass method) so the lineage is known in advance and
+    runs everything else on the production path. BM-PLANTED checks the same properties
+    (parents, AST diffs, every hop of every published version's DAG) on the lineages
+    the engine produces.
+15. **Benchmarks.** BM-PLANTED and BM-NULL run the whole offline stack (MCP front door,
+    research, evaluator) with a scripted LLM: the supervisor returns the proposal's
+    tasks, and the engineer drafts from a fixed 300-expression test pool (planted A1 and
+    A2 forms with their windows, and noise forms). Like an engineer with tools, it checks
+    its options with `workbench.evaluate` and `similarity.search` and drafts the
+    strongest in-sample options that are not near duplicates. The pool is test data,
+    not a product default. The scripted answers come from the benchmark's seed, and
+    `fix_engine_seeds` puts the same seed in place of the fresh program id in the
+    engine's seeds, so both run with fixed seeds as Section 18.3 asks. The benchmark job
+    runs one task at a time, because concurrent tasks would ask the scripted roles in a
+    different order each run; with that, two runs give the same generations, published
+    versions and lineages. The audit sample of the analyst's interpretations still
+    varies, because it hashes each interpretation's fresh id (Phase 4). A discovery
+    is a published version that passes W1 with mean W0 rank correlation of at least 0.7
+    to A1 or A2. Results are JSON files, kept as an artifact by the nightly workflow
+    (`.github/workflows/benchmarks.yml`). BM-NULL's W1 pass rate is recorded but not
+    gated: zero acceptances on the null world is a Phase 6 check.
+16. **Benchmarks are not in the default run.** `pytest` deselects the `benchmark` marker,
+    so `just test` and CI stay fast. `just bench` runs both against the disposable test
+    database (or CI's), and `scripts/test_database.py` now passes extra arguments to
+    pytest.
+17. **Immediate release and the benchmark clock (plan v2.2).** Research gets each
+    report as soon as the evaluator records it. Nothing in the engine depends on release
+    times: stagnation, migration and forgetting count generations, and reports are read
+    from report_cache by release time and id. The benchmark harness runs the job on the
+    v2.2 cadence: a generation starts when the previous one's feedback is complete (or
+    after the max wait), and the reports are released at once. Because the test clock
+    only moves when the harness moves it, the harness advances it 1 hour per generation
+    to stand for the time a generation and its evaluation take; the 24-hour quotas then
+    see a realistic pace. After the generation cap it steps 6 hours at a time, so
+    versions deferred by their family quota are evaluated and the job closes. Both
+    steps are recorded with the results (`clock_hours`).
+18. **BM-PLANTED's coverage check has little margin.** The archive can only fill the
+    cells that official members reach, and the planted signals act within 1 to 5 days on
+    price and volume. Of the pool's planted forms, the 85 that pass the pre-screen on W0
+    fall into 18 of the 64 cells (none in the 10- or 20-day horizon cells and none in
+    volume_only), so 25% (16 cells) is close to what this world allows. The pool's
+    planted variants are spread over every turnover bucket and three field groups so
+    that the reachable cells can be found at all. With the fixed seeds, coverage
+    reaches 16 cells in generation 9 and stays there, which passes, but a change to the
+    pool, the seeds or the engine can move it below 25%. The check follows the plan as
+    written; measuring coverage against the reachable cells would be a plan change, so
+    it is left for the owner.

@@ -118,7 +118,7 @@ def test_trc_01_the_required_steps_depend_on_the_operator(generated):
     assert publish(research, source, copy_id) is None
     (check,) = research.steps(candidate_id=copy_id, step_type="TRACE_CHECKED")
     assert set(check.payload["missing"]) == {
-        "candidate:PARENT_SELECTED",
+        "lineage:PARENT_SELECTED",
         "candidate:MUTATION_APPLIED",
         "lineage:parents",
     }

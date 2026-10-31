@@ -8,6 +8,13 @@ charter's concurrency; a failed task never fails the generation. A budget stop, 
 pause, skips straight to SELECTING with whatever is ready. Agents never write the
 blackboard or the trace themselves: this module validates their outputs and writes
 them through the role's write scope.
+
+Phase 5 adds the evolutionary engine: SYNCING initializes the population once,
+PROPOSING refreshes fitness, the archive and the bandit and emits the engine's proposal,
+and DEVELOPING runs llm_mutation, crossover and repair tasks (the engineer with the
+parents, their released digests, targeted instructions and the assembled context) and
+syntactic batches (ready-made deterministic variants, no LLM). Every operator
+application is a PARENT_SELECTED step and its operator's APPLIED step with the AST diff.
 """
 
 import asyncio
@@ -18,13 +25,16 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
+from qfr_core.dsl import ast_diff, canonicalize, parse
 from qfr_core.ids import uuid7
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
 from qfr_research.agents import RoleFailed, RoleResult, RoleRunner
 from qfr_research.budget import BudgetExceeded
+from qfr_research.context import Context, ContextAssembler, parent_hypothesis
 from qfr_research.db import dumps
+from qfr_research.engine import EvolutionEngine, GenerationRef
 from qfr_research.env import ResearchEnv
 from qfr_research.feedback import FeedbackSync
 from qfr_research.outputs import (
@@ -38,8 +48,21 @@ from qfr_research.outputs import (
     StrategyDraft,
 )
 from qfr_research.packager import Packager
-from qfr_research.planning import Proposal, fit_to_budget, propose, validate_plan
-from qfr_research.selection import Screened, prescreen, select
+from qfr_research.planning import (
+    Proposal,
+    assign_variants,
+    fit_to_budget,
+    stagnation_choices,
+    validate_plan,
+)
+from qfr_research.prompts import RenderedPrompt
+from qfr_research.selection import (
+    Screened,
+    behavioral_dedup,
+    prescreen,
+    provisional_fitness,
+    select,
+)
 from qfr_research.store import Ctx
 from qfr_research.tools import ToolDeps, invoke, require_write
 
@@ -54,6 +77,12 @@ NEXT = {
     "PUBLISHING": "CLOSED",
 }
 LLM_STATES = frozenset({"SYNCING", "PROPOSING", "PLANNING", "DEVELOPING"})
+APPLIED_STEP = {
+    "llm_mutation": "MUTATION_APPLIED",
+    "crossover": "CROSSOVER_APPLIED",
+    "repair": "REPAIR_APPLIED",
+    "syntactic_mutation": "SYNTACTIC_MUTATION_APPLIED",
+}
 
 
 @dataclass
@@ -71,6 +100,28 @@ class Generation:
     def ctx(self) -> Ctx:
         return Ctx(job_id=self.job_id, program_id=self.program_id, generation_id=self.generation_id)
 
+    @property
+    def ref(self) -> GenerationRef:
+        return GenerationRef(
+            self.generation_id, self.program_id, self.job_id, self.seq, self.charter
+        )
+
+
+@dataclass
+class EngineerBrief:
+    """What one engineer task works from: the operator and its instructions, the
+    hypotheses (explore) or the inherited rationale (parent operators), and the context
+    the assembler gathered."""
+
+    operator: str
+    hypotheses: list[tuple[UUID, Any]]
+    hypothesis_text: str
+    parents: list[str]
+    context: Context | None = None
+    instructions: RenderedPrompt | None = None
+    targeted_flags: list[str] | None = None
+    inherited_hypothesis: UUID | None = None
+
 
 class Stop(Exception):
     """Stop LLM work for this generation (budget or pause) and select what is ready."""
@@ -86,6 +137,8 @@ class GenerationRunner:
         self.roles = RoleRunner(env)
         self.packager = Packager(env)
         self.feedback = FeedbackSync(env)
+        self.engine = EvolutionEngine(env)
+        self.context = ContextAssembler(env)
         self.monitor = monitor
 
     # Loading and transitions -----------------------------------------------------------
@@ -217,11 +270,17 @@ class GenerationRunner:
 
     async def _syncing(self, gen: Generation) -> None:
         env = self.env
-        result = self.feedback.sync(gen.ctx)
+        # The population starts once per program (Section 12.1); pool and parent-job
+        # members are versions published elsewhere, so their reports come by version id.
+        self.engine.ensure_initialized(gen.ref)
+        external = set(self.engine.external_versions(gen.program_id))
+        result = self.feedback.sync(gen.ctx, extra_versions=sorted(external, key=str))
         kinds = set(env.config.service.feedback.report_types_interpreted)
         batches: dict[UUID, list[Any]] = {}
         for report in result.new_reports:
-            if report.content.type in kinds:
+            # The analyst interprets this program's results; reports of members
+            # published elsewhere inform fitness but are not this program's evidence.
+            if report.content.type in kinds and report.version_id not in external:
                 batches.setdefault(report.version_id, []).append(report)
         size = env.config.service.analyst.reports_per_run
         for version_id, reports in batches.items():
@@ -460,27 +519,61 @@ class GenerationRunner:
             ).scalar_one()
         return [str(r.version_id) for r in rows] + [str(s) for s in seeds or []]
 
-    def _proposal(self, gen: Generation) -> Proposal:
-        islands, themes = self._islands(gen)
-        return propose(gen.charter, islands, themes, self._strategy_parents(gen))
+    def _stored_proposal(self, gen: Generation) -> Proposal | None:
+        with self.env.db.read() as conn:
+            stored = conn.execute(
+                text("SELECT proposal FROM generations WHERE generation_id = :g"),
+                {"g": gen.generation_id},
+            ).scalar()
+        return None if stored is None else Proposal.from_json(stored)
+
+    def _stored_plan(self, gen: Generation) -> GenerationPlan:
+        with self.env.db.read() as conn:
+            stored: dict[str, Any] = conn.execute(
+                text("SELECT plan FROM generations WHERE generation_id = :g"),
+                {"g": gen.generation_id},
+            ).scalar_one()
+        return GenerationPlan.model_validate(stored)
 
     async def _proposing(self, gen: Generation) -> None:
-        proposal = self._proposal(gen)
-        with self.env.db.transaction() as conn:
+        """The engine updates the population, fitness, the archive and the bandit, then
+        proposes the generation (Section 11.6); every value it used is in the step."""
+        env = self.env
+        refresh = self.engine.refresh(gen.ref)
+        per_task, remaining = self._task_estimate(gen), self._remaining(gen)
+        proposal = self.engine.propose(
+            gen.ref, refresh, self._strategy_parents(gen), remaining, per_task
+        )
+        body = proposal.as_json()
+        with env.db.transaction() as conn:
             conn.execute(
                 text(
                     "UPDATE generations SET proposal = CAST(:p AS jsonb) WHERE generation_id = :g"
                 ),
-                {"p": dumps(proposal.as_json()), "g": gen.generation_id},
+                {"p": dumps(body), "g": gen.generation_id},
             )
-            self.env.trace.step(
+            env.trace.step(
                 conn,
                 "PROPOSAL_EMITTED",
                 gen.ctx,
                 actor="evolution-engine",
-                inputs={"charter_version": gen.charter_version},
-                payload=proposal.as_json(),
+                inputs={"charter_version": gen.charter_version, "seq": gen.seq},
+                payload=body | {"refresh": refresh},
             )
+        env.logger.logger.info(
+            "proposal_emitted",
+            outcome="ok",
+            payload={
+                "publication_slots": proposal.publication_slots,
+                "allocations": proposal.allocations,
+                "operator_mix": proposal.operator_mix,
+                "guardrail": proposal.engine.get("guardrail"),
+                "stagnant_islands": proposal.stagnant_islands,
+                "archive_coverage": refresh["archive"]["coverage"],
+                "tasks": len(proposal.default_plan.tasks),
+            },
+            **gen.ctx.log_ids(),
+        )
 
     def _task_estimate(self, gen: Generation) -> Decimal:
         """A planning estimate per task: one call per LLM role a task uses, each priced
@@ -502,7 +595,11 @@ class GenerationRunner:
 
     async def _planning(self, gen: Generation) -> None:
         env = self.env
-        proposal = self._proposal(gen)
+        proposal = self._stored_proposal(gen)
+        if proposal is None:  # a generation resumed from before its proposal was stored
+            await self._proposing(gen)
+            proposal = self._stored_proposal(gen)
+            assert proposal is not None
         per_task, remaining = self._task_estimate(gen), self._remaining(gen)
         plan: GenerationPlan | None = None
         source = "fallback"
@@ -537,7 +634,10 @@ class GenerationRunner:
                     actor="supervisor",
                     llm=result.attribution,
                     inputs={"attempt": attempt},
-                    payload={"plan": result.output.model_dump(mode="json")},
+                    payload={
+                        "plan": result.output.model_dump(mode="json"),
+                        "stagnation_choice": stagnation_choices(result.output, proposal),
+                    },
                 )
                 env.trace.step(
                     conn,
@@ -561,12 +661,24 @@ class GenerationRunner:
                     gen.ctx,
                     actor="plan-fallback",
                     inputs={"source": "proposal.default_plan"},
-                    payload={"plan": plan.model_dump(mode="json")},
+                    payload={
+                        "plan": plan.model_dump(mode="json"),
+                        "stagnation_choice": stagnation_choices(plan, proposal),
+                    },
                 )
-        self._store_plan(gen, plan, source)
+        self._store_plan(gen, plan, source, proposal)
 
-    def _store_plan(self, gen: Generation, plan: GenerationPlan, source: str) -> None:
+    def _store_plan(
+        self, gen: Generation, plan: GenerationPlan, source: str, proposal: Proposal
+    ) -> None:
         env, now = self.env, self.env.clock.now()
+        for island, choice in stagnation_choices(plan, proposal).items():
+            env.logger.logger.info(
+                "island_stagnation_handled",
+                outcome="ok" if choice != "unhandled" else "failed",
+                payload={"island": island, "choice": choice, "plan_source": source},
+                **gen.ctx.log_ids(),
+            )
         with env.db.transaction() as conn:
             require_write(env, "supervisor", "plan", gen.ctx)
             conn.execute(
@@ -584,10 +696,10 @@ class GenerationRunner:
             for pause in plan.islands_to_pause:
                 conn.execute(
                     text(
-                        "UPDATE islands SET status = 'paused' WHERE program_id = :p AND "
-                        "island_key = :k"
+                        "UPDATE islands SET status = 'paused', paused_reason = :r, "
+                        "paused_seq = :seq WHERE program_id = :p AND island_key = :k"
                     ),
-                    {"p": gen.program_id, "k": pause.island_id},
+                    {"p": gen.program_id, "k": pause.island_id, "r": pause.reason, "seq": gen.seq},
                 )
             for ordinal, task in enumerate(plan.tasks):
                 require_write(env, "supervisor", "task", gen.ctx)
@@ -632,8 +744,7 @@ class GenerationRunner:
                 ),
                 {"p": gen.program_id},
             ).all()
-        proposal_json = proposal.as_json()
-        proposal_json.pop("default_plan")
+        proposal_json = supervisor_view(proposal)
         return {
             "max_slots": str(proposal.max_slots),
             "min_explore_share": f"{proposal.min_explore_share:.2f}",
@@ -722,10 +833,14 @@ class GenerationRunner:
         try:
             if task.type == "explore":
                 result = await self._explore(gen, task, ctx)
+            elif task.type in ("llm_mutation", "crossover", "repair"):
+                result = await self._vary(gen, task, ctx)
+            elif task.type == "syntactic_batch":
+                result = self._syntactic(gen, task, ctx)
             elif task.type == "compose_strategy":
                 result = await self._compose(gen, task, ctx)
-            else:
-                self._task_state(task.task_id, "skipped", {"reason": "PHASE_5_OPERATOR"})
+            else:  # pragma: no cover - the plan validator and the schema forbid it
+                self._task_state(task.task_id, "skipped", {"reason": "UNKNOWN_TASK_TYPE"})
                 return
         except (Stop, BudgetExceeded):
             raise
@@ -742,6 +857,25 @@ class GenerationRunner:
             )
             return
         self._task_state(task.task_id, "done", result)
+
+    def _settings(self, gen: Generation) -> dict[str, Any]:
+        return self.engine.settings(gen.charter)
+
+    def _assemble(self, gen: Generation, island: str, parents: list[str]) -> Context:
+        with self.env.db.read() as conn:
+            seeds: list[str] | None = conn.execute(
+                text("SELECT seed_version_ids FROM research_jobs WHERE job_id = :j"),
+                {"j": gen.job_id},
+            ).scalar_one()
+            return self.context.assemble(
+                conn,
+                gen.program_id,
+                island,
+                parents,
+                self._settings(gen),
+                str(gen.charter.get("mode", "new_factors")),
+                [str(s) for s in seeds or []],
+            )
 
     async def _explore(self, gen: Generation, task: Any, ctx: Ctx) -> dict[str, Any]:
         env = self.env
@@ -803,7 +937,16 @@ class GenerationRunner:
                     | hypothesis.model_dump(mode="json"),
                 )
                 hypotheses.append((hypothesis_id, hypothesis))
-        drafts_result = await self._engineer(gen, task, ctx, hypotheses, None, None)
+        brief = EngineerBrief(
+            operator="explore",
+            hypotheses=hypotheses,
+            hypothesis_text="\n".join(
+                f"- hypothesis_id {h}: {_compact(p.model_dump(mode='json'))}" for h, p in hypotheses
+            ),
+            parents=[],
+            context=self._assemble(gen, task.island_key, []),
+        )
+        drafts_result = await self._engineer(gen, task, ctx, brief, None, None)
         candidates: list[UUID] = []
         for draft in drafts_result.output.drafts[: task.max_candidates]:
             known = {h for h, _ in hypotheses}
@@ -814,17 +957,241 @@ class GenerationRunner:
                 else draft.hypothesis_id
             )
             candidate_id = self._create_candidate(
-                gen, task, ctx, draft, chosen, drafts_result, None, 1, corrected
+                gen, task, ctx, draft, chosen, drafts_result, None, 1, corrected, brief
             )
             candidates.append(candidate_id)
         outcomes = []
         for candidate_id in candidates:
-            outcomes.append(await self._develop(gen, task, ctx, candidate_id, hypotheses, 1))
+            outcomes.append(await self._develop(gen, task, ctx, candidate_id, brief, 1))
         return {
             "hypotheses": [str(h) for h, _ in hypotheses],
             "candidates": [str(c) for c in candidates],
             "outcomes": outcomes,
         }
+
+    async def _vary(self, gen: Generation, task: Any, ctx: Ctx) -> dict[str, Any]:
+        """llm_mutation, crossover and repair: the engineer revises, merges or repairs
+        the task's parents (Section 12.4), with their released digests, the targeted
+        instructions for their flags and the assembled context."""
+        env = self.env
+        parents = [str(p) for p in task.parent_version_ids]
+        context = self._assemble(gen, task.island_key, parents)
+        missing = [p for p in parents if p not in context.parents]
+        if missing:
+            return {"skipped": "PARENTS_UNAVAILABLE", "parent_version_ids": missing}
+        proposal = self._stored_proposal(gen)
+        settings = self._settings(gen)
+        variation = settings["variation"]
+        selection = None if proposal is None else proposal.selection_for(task.type, parents)
+        digests = {p: context.parents[p]["digest"] for p in parents}
+        flags = sorted(
+            {f for d in digests.values() for f in (d.get("w1") or {}).get("flags") or []}
+        )
+        with env.db.transaction() as conn:
+            env.trace.step(
+                conn,
+                "PARENT_SELECTED",
+                ctx,
+                actor="evolution-engine",
+                inputs={"operator": task.type, "parent_version_ids": parents},
+                payload={
+                    "selection": selection or {"rule": "supervisor_choice"},
+                    "parents": [
+                        {
+                            "version_id": p,
+                            "expression": context.parents[p]["expression"],
+                            "released": digests[p],
+                            "proposal": None if proposal is None else proposal.parent_info.get(p),
+                        }
+                        for p in parents
+                    ],
+                    "targeted_flags": flags,
+                },
+            )
+        if task.type == "llm_mutation":
+            targeted = [
+                str(variation["targeted_instructions"][f])
+                for f in flags
+                if f in variation["targeted_instructions"]
+            ] or [str(variation["generic_instruction"])]
+            instructions = env.prompts.render(
+                "mutation",
+                {"targeted": "\n".join(f"- {t}" for t in targeted)},
+                budget_chars=self._budget_chars(gen),
+            )
+        elif task.type == "crossover":
+            instructions = env.prompts.render("crossover", {}, budget_chars=self._budget_chars(gen))
+        else:
+            reasons = sorted(
+                {
+                    r
+                    for d in digests.values()
+                    for key in ("screening", "intake")
+                    for r in (d.get(key) or {}).get("reasons") or []
+                }
+            )
+            instructions = env.prompts.render(
+                "repair",
+                {"reasons": "\n".join(f"- {r}" for r in reasons) or "- not released"},
+                budget_chars=self._budget_chars(gen),
+            )
+        with env.db.read() as conn:
+            inherited = task.hypothesis_id or parent_hypothesis(conn, parents[0])
+        brief = EngineerBrief(
+            operator=task.type,
+            hypotheses=[],
+            hypothesis_text=context.hypothesis_text,
+            parents=parents,
+            context=context,
+            instructions=instructions,
+            targeted_flags=flags,
+            inherited_hypothesis=inherited,
+        )
+        drafts_result = await self._engineer(gen, task, ctx, brief, None, None)
+        candidates: list[UUID] = []
+        for draft in drafts_result.output.drafts[: task.max_candidates]:
+            corrected = draft.hypothesis_id != inherited
+            candidate_id = self._create_candidate(
+                gen, task, ctx, draft, inherited, drafts_result, None, 1, corrected, brief
+            )
+            candidates.append(candidate_id)
+        outcomes = []
+        for candidate_id in candidates:
+            outcomes.append(await self._develop(gen, task, ctx, candidate_id, brief, 1))
+        return {
+            "parents": parents,
+            "targeted_flags": flags,
+            "candidates": [str(c) for c in candidates],
+            "outcomes": outcomes,
+        }
+
+    def _syntactic(self, gen: Generation, task: Any, ctx: Ctx) -> dict[str, Any]:
+        """A syntactic batch: the engine's ready-made deterministic variants become
+        candidates with no LLM call (Section 12.4). They inherit the parent's rationale,
+        get an auto-generated change summary and go through the same automated checks;
+        the critic does not review them (Section 14.5 lists no LLM steps for them)."""
+        proposal = self._stored_proposal(gen)
+        if proposal is None:
+            return {"skipped": "NO_PROPOSAL"}
+        plan = self._stored_plan(gen)
+        variants = assign_variants(plan.tasks, proposal).get(task.ordinal, [])
+        outcomes = []
+        for variant in variants:
+            candidate_id = self._create_variant(gen, task, ctx, variant)
+            if candidate_id is None:
+                outcomes.append({"variant_id": variant["variant_id"], "state": "skipped"})
+                continue
+            checks = self._checks(gen, ctx, candidate_id)
+            state = "invalid" if checks is None else "approved"
+            if checks is not None:
+                self._candidate(candidate_id, state="approved", review_rounds=0)
+            outcomes.append(
+                {
+                    "variant_id": variant["variant_id"],
+                    "candidate_id": str(candidate_id),
+                    "state": state,
+                }
+            )
+        return {"variants": [v["variant_id"] for v in variants], "outcomes": outcomes}
+
+    def _create_variant(
+        self, gen: Generation, task: Any, ctx: Ctx, variant: dict[str, Any]
+    ) -> UUID | None:
+        env = self.env
+        parents = list(variant["parent_version_ids"])
+        first = self.context.parent_manifest(parents[0])
+        if first is None:
+            return None
+        operator = variant["operator"]  # syntactic_mutation, or crossover on a low LLM budget
+        with env.db.read() as conn:
+            hypothesis_id = parent_hypothesis(conn, parents[0])
+        details = variant.get("details") or {}
+        summary = (
+            f"Deterministic {variant['rule']} (seed {variant['seed']}, attempt "
+            f"{variant['attempt']}): {_compact(details)}. Auto-generated change summary; "
+            "the rationale is inherited from the parent."
+        )
+        rationale = first["rationale"]
+        payload = {
+            "title": first["title"],
+            "expression": variant["expression"],
+            "description": str(rationale.get("summary") or first["title"])[:2000],
+            "expected_sign": int(first["declared"]["expected_sign"]),
+            "horizon_days": int(first["declared"]["horizon_days"]),
+            "parameter_rationale": "Inherited from the parent; the change is deterministic.",
+            "operator": operator,
+            "parent_version_ids": parents,
+            "change_summary": summary[:600],
+            "auto_change_summary": True,
+            "deterministic": True,
+            "inherited_rationale": {
+                k: rationale.get(k)
+                for k in ("hypothesis_id", "summary", "mechanism", "falsification")
+            }
+            | {"from_version_id": parents[0]},
+            "variant": {
+                k: variant[k] for k in ("variant_id", "rule", "seed", "attempt", "canonical_hash")
+            },
+        }
+        candidate_id = uuid7()
+        cctx = ctx.with_(candidate_id=candidate_id)
+        with env.db.transaction() as conn:
+            require_write(env, "evolution", "population_member", cctx)
+            conn.execute(
+                text(
+                    "INSERT INTO candidates (candidate_id, program_id, generation_id, task_id, "
+                    "hypothesis_id, island_key, kind, operator, expression, payload, state, "
+                    "review_rounds, created_at, updated_at) VALUES (:c, :p, :g, :t, :h, :i, "
+                    "'factor', :o, :e, CAST(:pl AS jsonb), 'drafted', 0, :now, :now)"
+                ),
+                {
+                    "c": candidate_id,
+                    "p": gen.program_id,
+                    "g": gen.generation_id,
+                    "t": task.task_id,
+                    "h": hypothesis_id,
+                    "i": task.island_key,
+                    "o": operator,
+                    "e": variant["expression"],
+                    "pl": dumps(payload),
+                    "now": env.clock.now(),
+                },
+            )
+            env.trace.step(
+                conn,
+                "PARENT_SELECTED",
+                cctx,
+                actor="evolution-engine",
+                inputs={"operator": operator, "parent_version_ids": parents},
+                payload={
+                    "selection": variant.get("selection"),
+                    "variant_id": variant["variant_id"],
+                },
+            )
+            env.trace.step(
+                conn,
+                "CROSSOVER_APPLIED" if operator == "crossover" else "SYNTACTIC_MUTATION_APPLIED",
+                cctx,
+                actor="evolution-engine",
+                inputs={
+                    "parent_version_ids": parents,
+                    "rule": variant["rule"],
+                    "seed": variant["seed"],
+                },
+                payload={
+                    "rule": variant["rule"],
+                    "seed": variant["seed"],
+                    "attempt": variant["attempt"],
+                    "expressions_before": variant["expressions_before"],
+                    "expression_after": variant["expression"],
+                    "ast_diffs": variant["ast_diffs"],
+                    "details": details,
+                    "change_summary": payload["change_summary"],
+                    "deterministic": True,
+                    "reason": variant.get("reason"),
+                },
+            )
+        return candidate_id
 
     def _similar_hypotheses(self, gen: Generation, island: str) -> dict[str, Any]:
         with self.env.db.read() as conn:
@@ -847,15 +1214,12 @@ class GenerationRunner:
         gen: Generation,
         task: Any,
         ctx: Ctx,
-        hypotheses: list[tuple[UUID, Any]],
+        brief: EngineerBrief,
         previous: Any,
         review: ReviewVerdict | None,
     ) -> RoleResult[EngineerOutput]:
         env = self.env
         _, themes = self._islands(gen)
-        hypothesis_text = "\n".join(
-            f"- hypothesis_id {h}: {_compact(p.model_dump(mode='json'))}" for h, p in hypotheses
-        )
         feedback = "none"
         if review is not None and previous is not None:
             feedback = _compact(
@@ -866,35 +1230,44 @@ class GenerationRunner:
                     "rationale": review.rationale,
                 }
             )
+        context = brief.context
         prompt = env.prompts.render(
             "engineer",
             {
                 "max_candidates": str(1 if review is not None else task.max_candidates),
-                "operator": "explore",
+                "operator": brief.operator,
+                "operator_instructions": "none (a new expression for the hypothesis)"
+                if brief.instructions is None
+                else brief.instructions.text.strip(),
                 "charter": charter_text(gen.charter),
                 "island": task.island_key,
                 "theme": themes.get(task.island_key, ""),
-                "hypothesis": hypothesis_text,
+                "hypothesis": brief.hypothesis_text,
                 "task_brief": task.brief,
-                "parents": "none",
+                "parents": "none" if context is None else context.parents_text,
+                "context": "none" if context is None else context.context_text,
                 "review_feedback": feedback,
                 "dsl_card_version": env.card.version,
                 "dsl_card": env.card.text,
             },
             budget_chars=self._budget_chars(gen),
-            trimmable=("hypothesis",),
+            trimmable=("context", "hypothesis"),
         )
+        inputs: dict[str, Any] = {
+            "dsl_card_version": env.card.version,
+            "hypothesis_ids": [str(h) for h, _ in brief.hypotheses],
+            "operator": brief.operator,
+            "parent_version_ids": brief.parents,
+            "context": {} if context is None else context.included,
+        }
+        if brief.instructions is not None:
+            inputs["operator_template"] = {
+                "template_id": brief.instructions.template_id,
+                "template_sha256": brief.instructions.template_sha256,
+                "targeted_flags": brief.targeted_flags or [],
+            }
         result = await self._call(
-            gen,
-            "engineer",
-            prompt,
-            EngineerOutput,
-            ctx,
-            raise_failures=True,
-            inputs={
-                "dsl_card_version": env.card.version,
-                "hypothesis_ids": [str(h) for h, _ in hypotheses],
-            },
+            gen, "engineer", prompt, EngineerOutput, ctx, raise_failures=True, inputs=inputs
         )
         assert result is not None
         return result
@@ -905,16 +1278,41 @@ class GenerationRunner:
         task: Any,
         ctx: Ctx,
         draft: CandidateDraft,
-        hypothesis_id: UUID,
+        hypothesis_id: UUID | None,
         engineer: RoleResult[EngineerOutput],
         parent_candidate: UUID | None,
         rounds: int,
         corrected: bool,
+        brief: EngineerBrief,
     ) -> UUID:
         env = self.env
         candidate_id = uuid7()
         cctx = ctx.with_(candidate_id=candidate_id)
-        payload = draft.model_dump(mode="json") | {"hypothesis_id": str(hypothesis_id)}
+        operator = brief.operator
+        payload = draft.model_dump(mode="json") | {
+            "hypothesis_id": None if hypothesis_id is None else str(hypothesis_id),
+            "operator": operator,
+        }
+        parents_corrected = False
+        if operator != "explore":
+            # The task's parents are the lineage, whatever the draft listed.
+            parents_corrected = sorted(str(p) for p in draft.parent_version_ids) != sorted(
+                brief.parents
+            )
+            payload["parent_version_ids"] = list(brief.parents)
+            if not payload.get("change_summary"):
+                payload["change_summary"] = (
+                    "The engineer gave no change summary (recorded by the workflow)."
+                )
+                payload["auto_change_summary"] = True
+            first = (brief.context.parents if brief.context else {}).get(brief.parents[0])
+            if first is not None:
+                payload.setdefault("title", first["title"])
+            if hypothesis_id is None and first is not None:
+                payload["inherited_rationale"] = {
+                    k: first["rationale"].get(k)
+                    for k in ("hypothesis_id", "summary", "mechanism", "falsification")
+                } | {"from_version_id": brief.parents[0]}
         with env.db.transaction() as conn:
             require_write(env, "engineer", "candidate", cctx)
             conn.execute(
@@ -932,7 +1330,7 @@ class GenerationRunner:
                     "t": task.task_id,
                     "h": hypothesis_id,
                     "i": task.island_key,
-                    "o": "explore",
+                    "o": operator,
                     "e": draft.expression,
                     "pl": dumps(payload),
                     "r": rounds - 1,
@@ -950,7 +1348,7 @@ class GenerationRunner:
                 llm=engineer.attribution,
                 inputs={
                     "dsl_card_version": env.card.version,
-                    "hypothesis_id": str(hypothesis_id),
+                    "hypothesis_id": None if hypothesis_id is None else str(hypothesis_id),
                     "parent_candidate_id": None
                     if parent_candidate is None
                     else str(parent_candidate),
@@ -959,8 +1357,21 @@ class GenerationRunner:
                     "draft": payload,
                     "tool_calls": engineer.tool_calls,
                     "hypothesis_id_corrected": corrected,
+                    "parents_corrected": parents_corrected,
                 },
             )
+            if operator in APPLIED_STEP:
+                env.trace.step(
+                    conn,
+                    APPLIED_STEP[operator],
+                    cctx,
+                    actor="evolution-engine",
+                    inputs={
+                        "parent_version_ids": brief.parents,
+                        "engineer_run_id": str(engineer.run_id),
+                    },
+                    payload=self._applied(brief, draft.expression, payload),
+                )
             if parent_candidate is not None:
                 env.trace.step(
                     conn,
@@ -973,6 +1384,41 @@ class GenerationRunner:
                     payload={"expression": draft.expression, "round": rounds},
                 )
         return candidate_id
+
+    def _applied(
+        self, brief: EngineerBrief, expression: str, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        """The operator application as research code records it: each parent's canonical
+        expression, the child's, and the deterministic AST diff from each parent."""
+        parents = brief.context.parents if brief.context else {}
+        before = [str(parents[p]["expression"]) for p in brief.parents if p in parents]
+        body: dict[str, Any] = {
+            "operator": brief.operator,
+            "parent_version_ids": brief.parents,
+            "targeted_flags": brief.targeted_flags or [],
+            "instructions_template": None
+            if brief.instructions is None
+            else brief.instructions.template_id,
+            "change_summary": payload.get("change_summary"),
+            "auto_change_summary": bool(payload.get("auto_change_summary")),
+        }
+        try:
+            child = canonicalize(parse(expression))
+            trees = [canonicalize(parse(b)) for b in before]
+        except Exception as error:  # noqa: BLE001 - DSL_VALIDATED records the failure
+            return body | {
+                "expressions_before": before,
+                "expression_after": expression,
+                "ast_diffs": None,
+                "parse_error": str(error)[:300],
+            }
+        from qfr_core.dsl import to_string
+
+        return body | {
+            "expressions_before": [to_string(t) for t in trees],
+            "expression_after": to_string(child),
+            "ast_diffs": [[dict(e) for e in ast_diff(t, child)] for t in trees],
+        }
 
     def _checks(self, gen: Generation, ctx: Ctx, candidate_id: UUID) -> dict[str, Any] | None:
         """Automated checks: dsl.validate, the workbench pre-screen and similarity."""
@@ -1036,7 +1482,7 @@ class GenerationRunner:
         task: Any,
         ctx: Ctx,
         candidate_id: UUID,
-        hypotheses: list[tuple[UUID, Any]],
+        brief: EngineerBrief,
         round_no: int,
     ) -> dict[str, Any]:
         env = self.env
@@ -1058,7 +1504,9 @@ class GenerationRunner:
         prompt = env.prompts.render(
             "critic",
             {
-                "hypothesis": _compact(row.hypothesis or {}),
+                "hypothesis": _compact(
+                    row.hypothesis or (row.payload or {}).get("inherited_rationale") or {}
+                ),
                 "candidate": _compact(
                     {"expression": row.expression}
                     | {
@@ -1154,7 +1602,7 @@ class GenerationRunner:
                 payload={"required_changes": verdict.required_changes},
             )
         self._candidate(candidate_id, state="rejected", review_rounds=round_no, reason="REVISED")
-        revision = await self._engineer(gen, task, ctx, hypotheses, row, verdict)
+        revision = await self._engineer(gen, task, ctx, brief, row, verdict)
         draft = revision.output.drafts[0]
         new_id = self._create_candidate(
             gen,
@@ -1166,8 +1614,9 @@ class GenerationRunner:
             candidate_id,
             round_no + 1,
             draft.hypothesis_id != row.hypothesis_id,
+            brief,
         )
-        return await self._develop(gen, task, ctx, new_id, hypotheses, round_no + 1)
+        return await self._develop(gen, task, ctx, new_id, brief, round_no + 1)
 
     async def _compose(self, gen: Generation, task: Any, ctx: Ctx) -> dict[str, Any]:
         """compose_strategy: the engineer in strategy mode over the job's published
@@ -1361,8 +1810,14 @@ class GenerationRunner:
     # SELECTING and PUBLISHING ----------------------------------------------------------
 
     async def _selecting(self, gen: Generation) -> None:
+        """Section 11.6 SELECTING (P5.5): pre-screen, canonical dedup against the
+        program's publications and the population, behavioral dedup within the batch,
+        then provisional fitness with per-island fairness up to the quota."""
         env = self.env
-        thresholds = gen.charter["prescreen"]
+        settings = self._settings(gen)
+        thresholds = settings["prescreen"]
+        constraints = dict(gen.charter.get("constraints") or {})
+        proposal = self._stored_proposal(gen)
         with env.db.read() as conn:
             rows = conn.execute(
                 text(
@@ -1381,11 +1836,22 @@ class GenerationRunner:
                     {"p": gen.program_id},
                 ).all()
             }
-        survivors: list[Screened] = []
+            members = {
+                r.hash
+                for r in conn.execute(
+                    text(
+                        "SELECT DISTINCT analysis ->> 'canonical_hash' AS hash FROM "
+                        "population_members WHERE program_id = :p"
+                    ),
+                    {"p": gen.program_id},
+                ).all()
+            }
+        by_id = {r.candidate_id: r for r in rows}
+        screened_all: list[Screened] = []
         reasons: dict[Any, str] = {}
-        seen: set[str] = set(h for h in published if h)
+        seen: set[str] = {h for h in published | members if h}
         for row in rows:
-            screened = prescreen(row, thresholds)
+            screened = prescreen(row, thresholds, constraints)
             duplicate = row.canonical_hash is not None and row.canonical_hash in seen
             ctx = gen.ctx.with_(task_id=row.task_id, candidate_id=row.candidate_id)
             with env.db.transaction() as conn:
@@ -1395,7 +1861,7 @@ class GenerationRunner:
                     "PRESCREEN_EVALUATED",
                     ctx,
                     actor="evolution-engine",
-                    inputs={"thresholds": thresholds},
+                    inputs={"thresholds": thresholds, "constraints": constraints},
                     payload={
                         "checks": screened.checks,
                         "passed": screened.passed,
@@ -1412,36 +1878,56 @@ class GenerationRunner:
                 failed = sorted(k for k, v in screened.checks.items() if not v["passed"])
                 reasons[row.candidate_id] = "PRESCREEN_FAILED:" + ",".join(failed)
             else:
-                survivors.append(screened)
+                screened_all.append(screened)
                 if row.canonical_hash:
                     seen.add(row.canonical_hash)
-        quota = int(gen.charter["throughput"]["publications"])
-        chosen, ranks = select(survivors, quota)
+        ranked = sorted(provisional_fitness(screened_all, by_id, settings), key=Screened.key)
+        survivors, twins = behavioral_dedup(
+            ranked, self.engine.similarity, float(thresholds["similarity_max"])
+        )
+        for candidate_id in twins:
+            reasons[candidate_id] = "DUPLICATE_BEHAVIOR"
+        quota = int(settings["throughput"]["publications"])
+        slots = proposal.publication_slots if proposal and proposal.publication_slots else None
+        chosen, ranks = select(survivors, quota, slots)
         chosen_ids = {c.candidate_id for c in chosen}
+        fitness = {s.candidate_id: s for s in ranked}
         for row in rows:
             ctx = gen.ctx.with_(task_id=row.task_id, candidate_id=row.candidate_id)
             selected = row.candidate_id in chosen_ids
             reason = reasons.get(row.candidate_id, None if selected else "QUOTA")
-            score = next((s.score for s in survivors if s.candidate_id == row.candidate_id), None)
+            item = fitness.get(row.candidate_id)
+            value = (
+                None if item is None else (item.fitness if item.kind == "factor" else item.score)
+            )
             with env.db.transaction() as conn:
                 env.trace.step(
                     conn,
                     "SELECTED" if selected else "NOT_SELECTED",
                     ctx,
                     actor="evolution-engine",
-                    inputs={"quota": quota, "survivors": len(survivors)},
+                    inputs={
+                        "quota": quota,
+                        "survivors": len(survivors),
+                        "island_publication_slots": slots,
+                    },
                     payload={
                         "rank": ranks.get(row.candidate_id),
-                        "score": _finite(score),
+                        "provisional_fitness": _finite(value),
+                        "fitness_detail": None if item is None else item.fitness_detail,
+                        "originality": None if item is None else item.originality,
+                        "rank_score": None if item is None else _finite(item.rank_score),
+                        "novelty_weight": float(settings["selection"]["novelty_weight"]),
+                        "duplicate_of": twins.get(row.candidate_id),
                         "reason": reason,
-                        "rule": "w0_ir_then_originality_round_robin",
+                        "rule": "provisional_fitness_plus_novelty_island_slots",
                     },
                 )
             self._candidate(
                 row.candidate_id,
                 state="selected" if selected else "not_selected",
                 reason=reason,
-                provisional_fitness=_finite(score),
+                provisional_fitness=_finite(value),
             )
 
     async def _publishing(self, gen: Generation) -> None:
@@ -1453,9 +1939,14 @@ class GenerationRunner:
                 ),
                 {"g": gen.generation_id},
             ).all()
+        published = []
         for row in rows:
-            self.packager.publish(gen.ctx, row.candidate_id)
-        summary = self.summary(gen)
+            if self.packager.publish(gen.ctx, row.candidate_id) is not None:
+                published.append(row.candidate_id)
+        # Published factors join their island as provisional members until their W1
+        # report arrives (Section 12.1).
+        joined = self.engine.add_published(gen.ref, published)
+        summary = self.summary(gen) | {"population_joined": joined}
         with self.env.db.transaction() as conn:
             conn.execute(
                 text("UPDATE generations SET summary = CAST(:s AS jsonb) WHERE generation_id = :g"),
@@ -1588,6 +2079,48 @@ def charter_text(charter: dict[str, Any]) -> str:
     if notes:
         lines.append(f"Owner notes: {notes}")
     return "\n".join(lines)
+
+
+def supervisor_view(proposal: Proposal) -> dict[str, Any]:
+    """The proposal as the supervisor reads it: the proposed tasks, the parents with
+    their fitness and flags, and the ready-made variants without their AST diffs."""
+    body = proposal.as_json()
+    body["tasks"] = body.pop("default_plan")["tasks"]
+    engine = body.pop("engine")
+    body["engine"] = {
+        k: engine[k]
+        for k in ("guardrail", "stagnation_choice", "low_llm_budget", "operator_slots")
+        if k in engine
+    }
+    body["variants"] = [
+        {
+            k: v.get(k)
+            for k in (
+                "variant_id",
+                "island",
+                "operator",
+                "rule",
+                "parent_version_ids",
+                "expression",
+            )
+        }
+        for v in body["variants"]
+    ]
+    body["selections"] = [
+        {
+            k: s.get(k)
+            for k in ("type", "island", "parent_version_ids", "parent_fitness", "targeted_flags")
+        }
+        for s in body["selections"]
+    ]
+    body["parent_info"] = {
+        k: {
+            x: v.get(x)
+            for x in ("island", "fitness", "status", "expression", "flags", "offered_as")
+        }
+        for k, v in body["parent_info"].items()
+    }
+    return body
 
 
 def _compact(value: Any) -> str:

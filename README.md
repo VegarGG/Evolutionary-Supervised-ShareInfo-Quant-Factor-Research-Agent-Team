@@ -32,7 +32,7 @@ The owner's network and memory decisions are applied. `just doctor` checks curre
 OOM flags; 24 GiB is a planning expectation, not a required allocation. Test the
 host endpoint with `python scripts/smoke_mcp.py --host`. Domain placeholders still
 exit cleanly; live downstream tracing is deferred by the owner.
-`just backup` and `just bench` explicitly report their later phases.
+`just backup` explicitly reports its later phase.
 `just mcp-config` prints bearer-bearing client snippets; keep its output private.
 
 Phase 1: build snapshots with `uv run --locked qfr data build --source synthetic`
@@ -61,6 +61,19 @@ after 18:30 Shanghai time. The MCP front door gains `qfr.evidence.get`,
 official record with `just eval-reproduce <record_id>`. Read
 [the Phase 3 record](docs/phase3-acceptance.md), which ends with the on-machine test
 steps, and the [Phase 3 decisions](docs/decisions.md#phase-3-decisions).
+
+Phase 5 adds the evolutionary engine. Before each generation, research refreshes its
+population of published factors from the released reports (official members with W1
+fitness, provisional members waiting for evaluation), rebuilds the 64-cell MAP-Elites
+archive and updates each island's Thompson-sampling arm. It then proposes the
+generation: publication slots per island, the operator mix with the diversity
+guardrail, parents by tournament or archive elite, crossover partners and ready-made
+syntactic mutants. The engineer drafts from a context of parents, elites, archive
+members and what the lineage already tried, and the pre-screen and provisional fitness
+choose at most 12 publications. `qfr.trace.export` writes a version's trace and
+iteration history to `exports/traces/`. `just bench` runs BM-PLANTED and BM-NULL, which
+CI also runs nightly. Read [the Phase 5 record](docs/phase5-acceptance.md) and the
+[Phase 5 decisions](docs/decisions.md#phase-5-decisions).
 
 ## License and use
 

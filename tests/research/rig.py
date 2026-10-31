@@ -11,7 +11,7 @@ import asyncio
 import io
 import json
 import threading
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -184,6 +184,7 @@ def research_rig(
     *,
     clock: Any = None,
     feedback: TestClient | None = None,
+    models: Callable[[ResearchConfig, Script], Any] = ScriptedModels,
 ) -> Iterator[ResearchRig]:
     db = TransactionalResearchDb(database_url("RESEARCH"))
     try:
@@ -193,7 +194,7 @@ def research_rig(
         clock = clock or FixedClock(START)
         config = priced(ResearchConfig.load(Path("configs")))
 
-        def env(service: str, models: Any) -> ResearchEnv:
+        def env(service: str, source: Any) -> ResearchEnv:
             logger = research_logger(tmp_path, service)
             return ResearchEnv(
                 config=config,
@@ -211,14 +212,14 @@ def research_rig(
                     logger,
                     client=feedback,
                 ),
-                models=models,
+                models=source,
                 prompts=PromptLibrary(Path("prompts")),
                 research_snapshot_dir=zones.research.path,
                 sleep=no_sleep,
             )
 
         api_env = env("research-api", NoModels())
-        worker_env = env("research-worker", ScriptedModels(config, script))
+        worker_env = env("research-worker", models(config, script))
         app = research_api.create_app(api_env, RESEARCH_TOKEN)
         with TestClient(app, base_url="http://research-api:8000") as client:
             client.headers["Authorization"] = f"Bearer {RESEARCH_TOKEN}"
@@ -263,7 +264,11 @@ class ResearchStack:
 
 @contextmanager
 def research_stack(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, zones: BuiltZones, script: Script
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    zones: BuiltZones,
+    script: Script,
+    models: Callable[[ResearchConfig, Script], Any] = ScriptedModels,
 ) -> Iterator[ResearchStack]:
     admin_late, feedback_late, research_late = LateApp(), LateApp(), LateApp()
     transports: dict[str, httpx.AsyncBaseTransport] = {
@@ -284,7 +289,13 @@ def research_stack(
             admin.headers["Authorization"] = f"Bearer {EVAL_TOKENS['eval-admin-api']}"
             feedback.headers["Authorization"] = f"Bearer {EVAL_TOKENS['feedback-api']}"
             with research_rig(
-                tmp_path, zones, mcp.registry, script, clock=rig.clock, feedback=feedback
+                tmp_path,
+                zones,
+                mcp.registry,
+                script,
+                clock=rig.clock,
+                feedback=feedback,
+                models=models,
             ) as research:
                 research_late.app = research.app
                 yield ResearchStack(mcp, rig, admin, feedback, research)
