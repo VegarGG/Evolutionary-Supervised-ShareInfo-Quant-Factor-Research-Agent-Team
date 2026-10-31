@@ -19,7 +19,9 @@ runner:
   wall_clock_factor: 3     # wall-clock backstop = factor x CPU budget
   load_cpu_seconds: 120    # CPU allowance for reading the snapshot before the budget starts
 release:
-  interval_seconds: 60
+  # Reports are released as soon as they are queued (PLAN 9.2); the engine looks every
+  # second, so a decision reaches research within about a second of being recorded.
+  interval_seconds: 1
   batch_limit: 1000
 apis:
   feedback: {bind: 127.0.0.1, port: 8000, list_default: 200, list_max: 2000}

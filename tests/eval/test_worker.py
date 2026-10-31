@@ -96,7 +96,6 @@ def test_screening_failures_are_recorded_with_reason_codes(rig, expression, reas
     )
     assert [r.stage for r in record] == ["screening"]
     assert reason in record[0].summary["reasons"]
-    rig.clock.advance(hours=6)
     rig.release.tick()
     screening = rig.db.rows(
         "SELECT report FROM eval.released_reports WHERE version_id = :v "

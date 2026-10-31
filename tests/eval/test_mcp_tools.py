@@ -65,7 +65,6 @@ def test_report_list_filters_by_version_and_type(full):
     )["data"]  # fmt: skip
     version = imported["entries"][0]["version_id"]
     full.settle()
-    full.eval.clock.advance(hours=6)
     full.eval.release.tick()
     w1 = full.mcp.ok("qfr.report.list", version_id=version, type="w1")["data"]["items"]
     assert len(w1) == 1 and w1[0]["version_id"] == version

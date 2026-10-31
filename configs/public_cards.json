@@ -1,12 +1,5 @@
 {
   "policy": {
-    "batching": {
-      "advancement_min_delay_days": 7,
-      "advancement_weekday": "monday",
-      "w1_hours": 6,
-      "w2_utc_time": "00:00",
-      "w2_weekday": "monday"
-    },
     "diagnostic_flags": [
       "HIGH_TURNOVER",
       "LOW_MONOTONICITY",
@@ -72,6 +65,7 @@
       "DEGENERATE",
       "INTERNAL_ERROR"
     ],
+    "release_timing": "immediate",
     "release_w3_metrics": false,
     "report_fields": {
       "intake": [

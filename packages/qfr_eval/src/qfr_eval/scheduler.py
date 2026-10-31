@@ -47,7 +47,7 @@ from qfr_eval.configs import (
     snapshot_calendar,
 )
 from qfr_eval.registry import RegistryReader, RegistryUnavailable
-from qfr_eval.reports import next_w1_batch, queue_report
+from qfr_eval.reports import queue_report
 from qfr_eval.runtime import (
     Clock,
     Database,
@@ -327,7 +327,6 @@ class Scheduler:
                     "refs": _refs(state, self.env.code_version),
                 },
                 now,
-                now,
                 current()["request_id"],
             )
             record_event(
@@ -375,14 +374,11 @@ class Scheduler:
                 "reasons": [reason.value] if reason else [],
                 "duplicate_of": str(duplicate_of) if duplicate_of else None,
             }
-            policy = state.policy.config
-            due = next_w1_batch(now, float(policy["batching"]["w1_hours"]))
             queue_report(
                 conn,
                 "intake",
                 row.version_id,
                 {"content": content, "refs": _refs(state, self.env.code_version)},
-                due,
                 now,
                 current()["request_id"],
             )

@@ -89,7 +89,6 @@ def test_evl_05_exact_and_behavioral_duplicates_are_never_evaluated(rig):
     for version in (exact, near):
         assert evaluated(rig, version["version_id"]) == NOTHING
     assert rig.db.scalar("SELECT count(*) FROM eval.trial_ledger") == 1
-    rig.clock.advance(hours=6)
     rig.release.tick()
     released = {
         r.version_id: r.report["content"]
@@ -193,7 +192,6 @@ def test_rel_03_deferrals_expire_after_seven_days(rig):
     expired = intake(rig, last)
     assert (expired.state, expired.reason_code) == ("IntakeRejected", "QUOTA_EXPIRED")
     assert evaluated(rig, last) == NOTHING
-    rig.clock.advance(hours=6)
     rig.release.tick()
     statuses = [
         r.report["content"]["status"]

@@ -1,7 +1,7 @@
 """Phase 3 acceptance, end to end on the synthetic world, through the MCP front door.
 
 Thirty seed factors imported with qfr.pool.import are pulled by the scheduler, screened
-and evaluated on W1 by the worker, and released at the next 6-hour batch with rounded
+and evaluated on W1 by the worker, and released as soon as they are recorded, with rounded
 values; qfr.report.list shows what research sees and qfr.evidence.get returns the
 owner-grade evidence at full precision. The seeds become the correlation library once
 their W1 records exist; a stack with no seeds records the library gate as vacuous.
@@ -84,13 +84,9 @@ def test_thirty_seeds_flow_from_import_to_released_reports_and_owner_evidence(fu
     assert evaluated + states.get("ScreenFailed", 0) == 30, states
     assert evaluated >= 25, states
 
-    # Nothing is visible before the batch time (REL-02).
-    assert full.mcp.ok("qfr.report.list")["data"]["items"] == []
-    pending = full.mcp.ok("qfr.pool.list", pool="factor")["data"]["items"]
-    assert {i["released_state"] for i in pending} == {None}
-
-    full.eval.clock.advance(hours=6)  # 01:00 -> 07:00, past the 06:00 batch
-    full.eval.release.tick()
+    # One release tick at the decision time releases everything (REL-02).
+    released = full.eval.release.tick()
+    assert released.waiting == 0
     reports = full.mcp.ok("qfr.report.list", limit=2000)["data"]["items"]
     by_type = {}
     for report in reports:
@@ -111,7 +107,7 @@ def test_thirty_seeds_flow_from_import_to_released_reports_and_owner_evidence(fu
         assert multiple_of(content["ls_net_sharpe"], rounding["sharpe"])
         assert multiple_of(content["top_turnover"], rounding["shares"])
         assert all(multiple_of(v, rounding["rankic"]) for v in content["decay_profile"].values())
-        assert report["released_at"].startswith("2026-01-05T07:00")
+        assert report["released_at"].startswith("2026-01-05T01:00")
 
     # Owner-grade evidence at full precision through the front door.
     w1_version = by_type["w1"][0]["version_id"]
@@ -126,8 +122,9 @@ def test_thirty_seeds_flow_from_import_to_released_reports_and_owner_evidence(fu
         "library_correlation", "coverage",
     }  # fmt: skip
     assert {s["kind"] for s in evidence["series"]} == {"rankic", "ls_returns", "nav"}
-    # The first seed evaluated sees no library yet. Reports in one batch share a due time,
-    # so the release order is not the evaluation order: take the first W1 record.
+    # The first seed evaluated sees no library yet. The rig's clock does not move, so
+    # reports share a due time and the release order is not the evaluation order: take
+    # the first W1 record.
     first = full.eval.db.scalar(
         "SELECT version_id FROM eval.official_records WHERE stage = 'w1' ORDER BY record_id LIMIT 1"
     )

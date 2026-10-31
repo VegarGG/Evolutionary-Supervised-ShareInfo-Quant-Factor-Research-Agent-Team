@@ -1,3 +1,19 @@
+# Plan amendments
+
+1. **v2.2, 2026-10-31: immediate release.** The owner replaced the batched release of
+   reports to research (6-hour W1 batches, weekly W2 and advancement batches,
+   advancement delayed at least 7 days) with immediate release: every report is
+   released as soon as the evaluator records it, and research starts its next
+   generation when the previous generation's feedback is complete (or after at most
+   6 hours). Coarsening, quotas, the Ladder, the private W3 holdout, the trial ledger
+   with DSR and the burn meters are unchanged. Sections changed: 1.2, 1.3, SC5, the
+   architecture and workflow figures, 4.4, D11, 7.9, 9.1 to 9.3, 11.1, 11.8, 12.1
+   (published provisional members no longer expire), 13.3, 15.3, 16.3, 17.1, 17.4,
+   REL-02, P3.5, P6.2, the Phase 3 acceptance check, M1 and the Release and Research
+   defaults. The plan is now `docs/QFR-Implementation-Plan-v2.2-EN.html` and
+   `docs/PLAN.md`; the SHA-256 under Phase 0 below is that of v2.1. Phase 3 decision
+   16 records the implementation.
+
 # Phase 0 decisions
 
 The authoritative document is the owner's complete HTML, retained byte for byte as
@@ -430,12 +446,22 @@ memory is not changed.
     factor evaluated before a pool admission is not compared with it after the fact.
     Library changes are released immediately (Section 9.2). A pool admission never
     triggers an evaluation.
-16. **Release timing.** Intake, screening and W1 reports are released at the next
-    6-hour UTC boundary strictly after the decision (00, 06, 12, 18). The release
-    engine writes `released_at` = the batch time; the feedback views also filter on
-    `released_at <= now()`, so a report written ahead of its time stays hidden (REL-02).
-    Reports due in the same batch are released in the order they were queued (the
-    UUIDv7 queue id breaks ties), so a version's intake precedes its screening and W1.
+16. **Release timing.** By the owner's plan change of 2026-10-31 (plan v2.2,
+    Section 9.2), every report is released as soon as the evaluator records it; no
+    report waits for a batch time. The deciding service queues the report in the same
+    transaction as its decision with `due_at` = the decision time, and release-worker
+    releases it on its next tick (`release.interval_seconds`, 1 second), writing
+    `released_at` = the release time. The release policy says `release_timing:
+    immediate` in place of the old `batching` block, so the public policy card tells
+    research when it hears back. Release-worker stays the only writer of
+    `released_reports`, which keeps rounding and whitelisting in one place and lets a
+    library change for a version not yet pulled wait for its intake row. The feedback
+    views keep their `released_at <= now()` filter as a guard. Reports due together are
+    released in the order they were queued (the UUIDv7 queue id breaks ties), so a
+    version's intake precedes its screening and W1 (REL-02). Policy `default/1` is
+    edited in place rather than published as `default/2` because Phase 3 is not merged;
+    a stack that activated the earlier `default/1` keeps serving the old policy card
+    until its evaluation database is recreated.
 17. **Rounding.** Released values are rounded half away from zero to the policy step
     in decimal arithmetic (`Decimal(repr(x))`), so 0.0125 at step 0.005 is 0.015, not
     the binary-float 0.01. Negative zero is released as 0.0.
@@ -445,7 +471,7 @@ memory is not changed.
     library correlation 0.70, RankIC 0.02 with NW-t 2.5) and 0.50 for monotonicity.
     The policy refuses to load unless every rule has a threshold.
 19. **Policy card.** The public policy card includes the active quota card, and its
-    ref is `default/1+quotas:default/1`, so research sees the pacing it is held to.
+    ref is `default/1+quotas:default/1`, so research sees the quotas it is held to.
     Cards never name windows, dates, holdout or acceptance details.
 20. **Contract fixes.** `W1Content.decay_profile` keys are the strings "1", "5", "10",
     "20" (`HorizonKey`), because JSON object keys are strings and the released report

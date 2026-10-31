@@ -424,7 +424,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 
 <section class="hero" id="top">
   <div class="hero-inner">
-    <span class="eyebrow"><span class="dot"></span>Version 2.0 · Generated 2026-10-30 · Status: ready for implementation</span>
+    <span class="eyebrow"><span class="dot"></span>Version 2.2 · Generated 2026-10-31 · Status: ready for implementation</span>
     <h1>QFR Implementation Plan v2: <span>an owner-driven, MCP-fronted</span> multi-agent factor research and evolution system</h1>
     <p class="lede">QFR is operated by a single human owner who works through a host agent (Codex, Claude Code or any other MCP client) that drives QFR over a standard MCP front door. Research agents run on Kimi, GLM and DeepSeek online APIs. Every factor's development path is recorded step by step so the LLM is no longer a black box. Everything inside the system is logged, and the logs are readable through MCP. Deliverables arrive with their iteration history and backtesting results, the owner approves, and approved factors and strategies are saved to long-lived pools. The system starts with no default factors and no default strategies, and it ships as Docker Compose for an Apple silicon Mac Studio.</p>
     <div class="hero-meta">
@@ -510,7 +510,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
     <li class="l2"><a href="#ch-9">9 Feedback release policy and anti-overfitting controls</a></li>
     <li class="l3"><a href="#s-9-1">9.1 Principles</a></li>
     <li class="l3"><a href="#s-9-2">9.2 Release levels for the default_v1 policy</a></li>
-    <li class="l3"><a href="#s-9-3">9.3 Quotas and pacing</a></li>
+    <li class="l3"><a href="#s-9-3">9.3 Quotas</a></li>
     <li class="l3"><a href="#s-9-4">9.4 Burn accounting</a></li>
     <li class="l3"><a href="#s-9-5">9.5 Optional Thresholdout mode for W2 (Phase 8)</a></li>
     <li class="l3"><a href="#s-9-6">9.6 What research is told, and what the owner sees</a></li>
@@ -667,13 +667,13 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
   <li><strong>Evolutionary development.</strong> An island-based, quality-diversity population in the style of MAP-Elites, with LLM-guided and syntactic mutation and crossover, budgeted by a multi-armed bandit.</li>
   <li><strong>Standardized artifact preparation.</strong> A deterministic packager freezes approved candidates into immutable, content-hashed artifact versions with full provenance and a complete trace.</li>
 </ul>
-<p>The evaluation side is deterministic code with no LLM anywhere in the measurement path. It pulls published artifacts on its own schedule, applies its own protocols, run budget and quotas, writes immutable official records, and releases coarsened, delayed and rationed reports through a read-only Feedback API. The owner, through MCP, may read the full-precision official records; research agents never can.</p>
+<p>The evaluation side is deterministic code with no LLM anywhere in the measurement path. It pulls published artifacts on its own schedule, applies its own protocols, run budget and quotas, writes immutable official records, and releases coarsened and rationed reports through a read-only Feedback API as soon as each one is recorded. The owner, through MCP, may read the full-precision official records; research agents never can.</p>
 
 <h3 id="s-1-3"><span class="sn">1.3</span>Decisions that make the design robust</h3>
 <ul>
   <li><strong>Physical data zones.</strong> Research processes only ever see data up to a research cutoff. All later windows exist only in the evaluation zone.</li>
   <li><strong>A four-window protocol.</strong> W1 gives coarsened feedback, W2 gives rationed pass/fail validation through a Ladder mechanism, W3 is a private holdout that is never released to research, and W4 is forward simulated trading after publication.</li>
-  <li><strong>The release policy is an anti-overfitting mechanism</strong>, not a reporting convenience. Coarsening, batching delays, per-family quotas, the Ladder and per-window burn meters come from adaptive data analysis research (the reusable holdout, the Ladder leaderboard).</li>
+  <li><strong>The release policy is an anti-overfitting mechanism</strong>, not a reporting convenience. Coarsening, per-family quotas, the Ladder and per-window burn meters come from adaptive data analysis research (the reusable holdout, the Ladder leaderboard). They limit how much each answer reveals and how many questions are asked; no finished result is held back, so research hears about every evaluation as soon as it is recorded.</li>
   <li><strong>Every evaluated version counts.</strong> A trial ledger feeds the Deflated Sharpe Ratio, the probability of backtest overfitting and burn accounting, so the cost of searching widely is priced in.</li>
   <li><strong>Forward incubation guards against LLM memorization.</strong> LLMs memorize historical market outcomes, so historical holdouts are contaminated. Only forward simulated trading after publication is clean evidence, and full acceptance requires it. The owner can still approve a deliverable at an earlier evidence tier, and the system always states which tier a result has reached.</li>
   <li><strong>Factors start as DSL expressions.</strong> A typed DSL with no access to dates or tickers and no way to look ahead removes arbitrary code execution from the MVP, makes mutation, crossover and deduplication trivial, and closes most evaluation-gaming channels. Python factors arrive later inside a sandbox.</li>
@@ -726,7 +726,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 <tr><td class="id">SC2</td><td>Null-world safety</td><td>Zero accepted factors after 50 generations of scripted search that publish at least 500 versions</td></tr>
 <tr><td class="id">SC3</td><td>Boundary integrity</td><td>All boundary tests (BND series) pass in CI</td></tr>
 <tr><td class="id">SC4</td><td>Reproducibility</td><td>Re-running any official evaluation reproduces an identical results hash</td></tr>
-<tr><td class="id">SC5</td><td>Feedback latency</td><td>Median time from publication to first released W1 report is at most one release batch interval (default 6 hours)</td></tr>
+<tr><td class="id">SC5</td><td>Feedback latency</td><td>A report is visible to research within 5 seconds of the evaluator recording its decision (median). For a version not deferred by quota, the median time from publication to its first released W1 report is the evaluation time plus at most one scheduler poll (60 seconds)</td></tr>
 <tr><td class="id">SC6</td><td>Cost control</td><td>No generation exceeds its LLM cost cap, no job exceeds its job cap, and the daily cap acts as a hard stop</td></tr>
 <tr><td class="id">SC7</td><td>Real-data smoke run</td><td>On CN data, 20 generations run unattended without a crash, and every report is linked to the exact version it evaluated</td></tr>
 <tr><td class="id">SC8</td><td>Owner workflow</td><td>A real host agent (Claude Code or Codex) completes the five-step workflow on the synthetic world end to end: brief in, deliverable out with iteration history and backtest results, approval recorded, pool entry written</td></tr>
@@ -832,7 +832,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 <g class="node eval"><rect x="780" y="398" width="215" height="56"/><text x="887" y="422" text-anchor="middle">Backtests W1 · W2 · W3</text><text class="sub" x="887" y="440" text-anchor="middle">official metrics · gates · statistics</text></g>
 <g class="node eval"><rect x="1015" y="398" width="205" height="56"/><text x="1117" y="422" text-anchor="middle">Simulated trading W4</text><text class="sub" x="1117" y="440" text-anchor="middle">forward incubation · replay mode</text></g>
 <g class="node store"><rect x="780" y="478" width="215" height="64"/><text x="887" y="502" text-anchor="middle">Official records + trial ledger</text><text class="sub" x="887" y="520" text-anchor="middle">eval_db · full precision · insert-only</text></g>
-<g class="node feedback"><rect x="1015" y="478" width="205" height="56"/><text x="1117" y="502" text-anchor="middle">Release engine</text><text class="sub" x="1117" y="520" text-anchor="middle">policy · coarsening · batching · Ladder</text></g>
+<g class="node feedback"><rect x="1015" y="478" width="205" height="56"/><text x="1117" y="502" text-anchor="middle">Release engine</text><text class="sub" x="1117" y="520" text-anchor="middle">policy · coarsening · whitelist · Ladder</text></g>
 <g class="node eval"><rect x="780" y="566" width="215" height="56"/><text x="887" y="590" text-anchor="middle">Acceptance and library</text><text class="sub" x="887" y="608" text-anchor="middle">gates · cases · monitoring · alerts</text></g>
 <g class="node feedback"><rect x="1015" y="566" width="205" height="56"/><text x="1117" y="590" text-anchor="middle">Feedback API · GET only</text><text class="sub" x="1117" y="608" text-anchor="middle">released reports · public cards · library</text></g>
 <path class="edge" d="M995,346 H1015"/>
@@ -862,7 +862,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 <path class="edge dashed" d="M530,449 H490"/>
 <text class="elabel" x="510" y="470" text-anchor="middle">read pools</text>
 <path class="edge dashed" d="M1117,622 V664 H255 V622"/>
-<text class="elabel" x="690" y="659" text-anchor="middle">released reports only · GET · coarsened, batched, rationed</text>
+<text class="elabel" x="690" y="659" text-anchor="middle">released reports only · GET · coarsened, rationed</text>
 <path class="edge dashed" d="M1220,107 H1252 V726 H1242"/>
 <text class="elabel" transform="translate(1262,420) rotate(-90)" text-anchor="middle">qfr-mcp reads the logs volume</text>
 
@@ -1004,7 +1004,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 <line class="msg" x1="710" y1="290" x2="920" y2="290"/><text class="mlabel" x="815" y="282" text-anchor="middle">publish immutable versions (quota-limited)</text>
 <line class="msg" x1="1130" y1="330" x2="920" y2="330"/><text class="mlabel" x="1025" y="322" text-anchor="middle">pull since_seq, on its own schedule</text>
 <path class="selfloop" d="M1130,368 H1172 V392 H1138"/><text class="mlabel" x="1124" y="384" text-anchor="end">screen · W1/W2 backtests · official records · trial ledger</text>
-<line class="msg ret" x1="1130" y1="430" x2="710" y2="430"/><text class="mlabel" x="920" y="422" text-anchor="middle">released reports (Feedback API, GET only, coarsened and batched)</text>
+<line class="msg ret" x1="1130" y1="430" x2="710" y2="430"/><text class="mlabel" x="920" y="422" text-anchor="middle">released reports (Feedback API, GET only, coarsened, immediate)</text>
 <path class="selfloop" d="M710,468 H752 V492 H718"/><text class="mlabel" x="760" y="484" text-anchor="start">job monitor: criteria met → assemble deliverable + iteration history</text>
 <g class="step"><circle cx="34" cy="530" r="11"/><text x="34" y="534" text-anchor="middle">4</text></g>
 <line class="msg" x1="290" y1="530" x2="500" y2="530"/><text class="mlabel" x="395" y="522" text-anchor="middle">qfr.job.wait · qfr.deliverable.get</text>
@@ -1055,7 +1055,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 
 <div class="grid-2">
 <div class="card"><span class="mini">Step 1 · Owner</span><h4>States the intent</h4><p>Plain language in the host harness. Attachments (methodology notes, factor lists, strategy descriptions) stay with the host agent, which extracts what QFR can use.</p></div>
-<div class="card"><span class="mini">Step 2 · Host agent</span><h4>Breaks it down and submits</h4><p>Reads <code>qfr://cards/protocol</code>, <code>qfr://cards/policy</code> and the pools, validates any extracted expressions with <code>qfr.dsl.validate</code>, builds a <code>ResearchBrief</code> (<a href="#s-13-3">Section 13.3</a>) and calls <code>qfr.job.submit</code>. The response states the job id, the derived charter and a realistic timeline from the release cadence.</p></div>
+<div class="card"><span class="mini">Step 2 · Host agent</span><h4>Breaks it down and submits</h4><p>Reads <code>qfr://cards/protocol</code>, <code>qfr://cards/policy</code> and the pools, validates any extracted expressions with <code>qfr.dsl.validate</code>, builds a <code>ResearchBrief</code> (<a href="#s-13-3">Section 13.3</a>) and calls <code>qfr.job.submit</code>. The response states the job id, the derived charter and a realistic timeline for the deliverable tier.</p></div>
 <div class="card"><span class="mini">Step 3 · QFR</span><h4>Researches and evaluates</h4><p>Generations run on the research cadence. Published versions are pulled and measured by the evaluator. The job monitor compares each released report with the brief's deliverable criteria. A result that meets them becomes a deliverable and the job state becomes <code>DELIVERABLE_READY</code>.</p></div>
 <div class="card"><span class="mini">Step 4 · Host agent</span><h4>Receives and reports</h4><p><code>qfr.deliverable.get</code> returns the artifact, the iteration history generated from the trace, the released reports, and the owner-grade backtest results from the evaluator with their evidence tier and caveats. The host agent reports to the owner using the <code>qfr.report_deliverable</code> prompt.</p></div>
 <div class="card"><span class="mini">Step 5 · Owner</span><h4>Approves, and the pools grow</h4><p>The owner confirms in their own words. The host agent records the approval with <code>qfr.approval.record</code>, quoting the owner's confirmation, then calls <code>qfr.pool.add</code> for each factor or strategy. The evaluator pulls the pool change into its library, and research can now use the entry as a parent.</p></div>
@@ -1063,7 +1063,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 </div>
 
 <div class="callout warn"><span class="ico">!</span><div><b class="t">Expectation setting for the owner</b>
-<p>Feedback is deliberately slow and coarse for research agents, and that pacing also sets the owner's timeline: first W1 reports arrive at the next 6-hour batch after publication, W2 confirmation is weekly, holdout advancement is delayed at least 7 days, and forward incubation lasts 60 trading days. A job's deliverable tier (<a href="#s-13-4">Section 13.4</a>) decides how long the owner waits. The default tier, <code>w1_pass</code>, typically delivers within one to two days; <code>incubated</code> takes about a quarter. The host agent must state the tier reached in every report.</p></div></div>
+<p>Feedback to research agents is coarse and rationed, but never held back: every report is released as soon as the evaluator records it. The owner's timeline is therefore set by how long evaluation, quotas and incubation take. First W1 reports arrive within minutes of a publication, W2 confirmation follows the family W2 quota (one W2 run per family every 7 days), and forward incubation lasts 60 trading days. A job's deliverable tier (<a href="#s-13-4">Section 13.4</a>) decides how long the owner waits. The default tier, <code>w1_pass</code>, typically delivers within a day; <code>incubated</code> takes about a quarter. The host agent must state the tier reached in every report.</p></div></div>
 
 <h3 id="s-4-5"><span class="sn">4.5</span>Key decisions</h3>
 <div class="table-wrap">
@@ -1080,7 +1080,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 <tr><td class="id">D8</td><td>Default market</td><td>CN A-shares daily, CSI 300 point-in-time, from the investment_data Qlib-binary release</td><td>Free, updated daily (needed for forward simulation), includes delisted names</td><td>yfinance (survivorship bias), paid US data (cost)</td></tr>
 <tr><td class="id">D9</td><td>Qlib usage</td><td>Read the Qlib binary format directly and do not depend on the qlib package</td><td>Avoids Python-version and dependency friction on arm64, and keeps full control</td><td>The qlib backtest engine</td></tr>
 <tr><td class="id">D10</td><td>Measurement</td><td>Deterministic code only, with no LLM judgement in official records</td><td>Reproducible and cannot be gamed by prompting</td><td>LLM-scored evaluation</td></tr>
-<tr><td class="id">D11</td><td>Feedback to research</td><td>Coarsened, batched and quota-limited. Ladder for W2. Nothing released for W3</td><td>Limits adaptive overfitting to the evaluation windows</td><td>Instant full-precision feedback</td></tr>
+<tr><td class="id">D11</td><td>Feedback to research</td><td>Released as soon as recorded. Coarsened and quota-limited. Ladder for W2. Nothing released for W3</td><td>Limits what each answer reveals and how many questions are asked, which is what adaptive overfitting depends on; research learns from every result without delay</td><td>Full-precision feedback; holding finished results back for batch release times, which slows research without reducing what is revealed</td></tr>
 <tr><td class="id">D12</td><td>Promotion</td><td>Automated gates plus evidence tiers, and an owner approval recorded through MCP for every pool entry</td><td>Accounts for multiple testing and LLM memorization while keeping the owner in control of what is kept</td><td>Acceptance on backtests alone; automatic promotion</td></tr>
 <tr><td class="id">D13</td><td>Human control surface</td><td>A standard MCP server driven by a host agent. No web dashboard, no CLI for the owner beyond setup and operations</td><td>The owner already works in an agent harness; MCP is the standard, client-agnostic way to expose tools, resources and prompts to it</td><td>Next.js dashboard, Streamlit, a bespoke chat UI</td></tr>
 <tr><td class="id">D14</td><td>Deployment</td><td>Docker Compose on a single Apple silicon Mac Studio, images built for linux/arm64 (and amd64 in CI), separate networks and credentials per zone, loopback-only ports</td><td>Simple, native performance on the target, and the boundaries are still real</td><td>Kubernetes, cloud hosting, running processes directly on macOS</td></tr>
@@ -1514,7 +1514,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
   <div class="st bad">ScreenFailed</div>
   <div class="st good">W1Evaluated<small>official record; coarsened report released</small></div><span class="arrow">→</span>
   <div class="st bad">W1GateFailed</div>
-  <div class="st">W2Queued<small>weekly batch, family quota</small></div><span class="arrow">→</span>
+  <div class="st">W2Queued<small>family W2 quota</small></div><span class="arrow">→</span>
   <div class="st bad">W2Failed</div>
   <div class="st">HoldoutCheck<small>W3, once per version, private</small></div><span class="arrow">→</span>
   <div class="st bad">NotAdvanced</div>
@@ -1718,17 +1718,18 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 
 <h3 id="s-9-1"><span class="sn">9.1</span>Principles</h3>
 <p>Feedback is necessary for learning, but every released number leaks information about the evaluation windows. Adaptive data analysis research shows that repeatedly querying a holdout and acting on full-precision answers overfits it. It also shows that thresholding, coarsening and noise preserve validity: see the reusable holdout (Thresholdout) and the Ladder leaderboard mechanism. The release engine is therefore a first-class, versioned and tested component owned by the evaluator. The policy governs what <em>research agents</em> may see. The owner sees everything through MCP, with the hygiene rule in <a href="#s-9-6">Section 9.6</a>.</p>
+<p>Results are never held back. Every report is released as soon as the evaluator records its decision, so research learns from each evaluation without delay. The safeguards work on content and count, not on time: coarsening, fixed enum codes and the Ladder limit how much each answer reveals; quotas, the trial ledger with DSR, and the burn meters limit and account for how many questions are asked; W3 is never released at all. Research already works in generations, publishing at most 12 versions and planning the next generation from their results, so the number of adaptive rounds is set by the generation loop. Holding a finished answer back would not change what it reveals or how many answers research receives, so timing is not used as a safeguard.</p>
 
 <h3 id="s-9-2"><span class="sn">9.2</span>Release levels for the default_v1 policy</h3>
 <div class="table-wrap compact">
 <table>
 <thead><tr><th>Report type</th><th>Trigger</th><th>Released content</th><th>Precision</th><th>Timing</th></tr></thead>
 <tbody>
-<tr><td>intake</td><td>Intake decision</td><td>Status and reason code</td><td>Not applicable</td><td>Next W1 batch</td></tr>
-<tr><td>screening</td><td>Screening finished</td><td>Pass or fail and reason codes</td><td>Not applicable</td><td>Next W1 batch</td></tr>
-<tr><td>w1</td><td>W1 official record</td><td>RankIC_mean, RankIC_IR, NW t bucket, hit ratio, decay profile, LS net Sharpe, monotonicity, top turnover, rank autocorrelation, maximum library correlation with the library version id, yearly RankIC, coverage bucket, size-neutral RankIC, complexity, diagnostic flags. Strategy counterparts for strategies</td><td>RankIC values to 0.005. IR to 0.02. t in buckets: below 1, 1 to 2, 2 to 3, above 3. Sharpe to 0.25. Shares and correlations to 0.05</td><td>Batches every 6 hours</td></tr>
-<tr><td>w2</td><td>W2 official record</td><td>PASS or FAIL. Ladder status for the family. When the family best improved by at least η = 0.005, the new family best RankIC rounded to 0.01</td><td>Coarse</td><td>Weekly batch, Monday 00:00 UTC</td></tr>
-<tr><td>advancement</td><td>Holdout check</td><td>ADVANCED or NOT_ADVANCED, with no numbers</td><td>1 bit</td><td>Weekly batch, at least 7 days after the check</td></tr>
+<tr><td>intake</td><td>Intake decision</td><td>Status and reason code</td><td>Not applicable</td><td>Immediately</td></tr>
+<tr><td>screening</td><td>Screening finished</td><td>Pass or fail and reason codes</td><td>Not applicable</td><td>Immediately</td></tr>
+<tr><td>w1</td><td>W1 official record</td><td>RankIC_mean, RankIC_IR, NW t bucket, hit ratio, decay profile, LS net Sharpe, monotonicity, top turnover, rank autocorrelation, maximum library correlation with the library version id, yearly RankIC, coverage bucket, size-neutral RankIC, complexity, diagnostic flags. Strategy counterparts for strategies</td><td>RankIC values to 0.005. IR to 0.02. t in buckets: below 1, 1 to 2, 2 to 3, above 3. Sharpe to 0.25. Shares and correlations to 0.05</td><td>Immediately</td></tr>
+<tr><td>w2</td><td>W2 official record</td><td>PASS or FAIL. Ladder status for the family. When the family best improved by at least η = 0.005, the new family best RankIC rounded to 0.01</td><td>Coarse</td><td>Immediately</td></tr>
+<tr><td>advancement</td><td>Holdout check</td><td>ADVANCED or NOT_ADVANCED, with no numbers</td><td>1 bit</td><td>Immediately</td></tr>
 <tr><td>sim</td><td>Incubation finished</td><td>Completion status. Forward RankIC bucket: negative, 0 to 0.01, 0.01 to 0.03, above 0.03. Forward Sharpe bucket</td><td>Coarse</td><td>Only when incubation ends</td></tr>
 <tr><td>decision</td><td>Owner decision on an acceptance case</td><td>ACCEPTED or REJECTED with a reason category: gate failed (gate name), owner rejected, or incubation failed</td><td>Not applicable</td><td>Immediately</td></tr>
 <tr><td>library</td><td>Pool change synced into the library</td><td>Library membership change: version id and new status</td><td>Not applicable</td><td>Immediately</td></tr>
@@ -1775,7 +1776,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 </table>
 </div>
 
-<h3 id="s-9-3"><span class="sn">9.3</span>Quotas and pacing</h3>
+<h3 id="s-9-3"><span class="sn">9.3</span>Quotas</h3>
 <p>All quotas are owned by the evaluator and changed only by activating a new quota version through MCP.</p>
 <div class="table-wrap compact">
 <table>
@@ -1787,7 +1788,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
 </tbody>
 </table>
 </div>
-<p>Reports become visible to research only at batch times: every 6 hours for W1, weekly for W2 and advancement. Sequential probing is therefore slow and batched. Owner-grade evidence is readable as soon as the official record exists, because the owner is not the party being rationed.</p>
+<p>Quotas limit how many versions are evaluated per family, per program and in total. That bounds the number of trials DSR and the burn meters account for, and stops one family from being probed many times a day; the global limits match worker capacity. Quotas never hold back a finished result. A version over quota receives a <code>QUOTA_DEFERRED</code> intake report at once, is evaluated when room opens, and is rejected with <code>QUOTA_EXPIRED</code> after 7 days. Owner-grade evidence is readable as soon as the official record exists, at the same moment research receives the coarsened report.</p>
 
 <h3 id="s-9-4"><span class="sn">9.4</span>Burn accounting</h3>
 <p>For each window in each epoch, the evaluator tracks the trial count, the number of released numeric values, W2 queries used against budget, and W3 queries used. Burn-meter thresholds:</p>
@@ -1921,7 +1922,7 @@ svg .ext .sub{font-size:10.5px;font-weight:500;fill:var(--muted)}
   <li>Budgets: LLM cost per generation and per day, a per-job cap, publications per generation (default 12) and maximum concurrent tasks (default 4).</li>
   <li>Constraints: allowed subsets of fields and operators, and complexity caps no looser than the evaluator's.</li>
   <li>Deliverable criteria: tier, minimum count, maximum candidates, and the stop conditions (maximum generations, wall clock, cost).</li>
-  <li>Cadence: a generation starts every 6 hours, aligned just after the W1 release batch, or as soon as at least 10 new reports have been released, until a stop condition or the deliverable criteria are met.</li>
+  <li>Cadence: the next generation starts as soon as the previous generation's feedback is complete, that is, every version it published has been answered. A version is answered when one of these has been released for it: an intake FAIL, DUPLICATE or DEFERRED report, a screening FAIL, or a W1 report. The seeds published at job start count as generation 0, and a generation or seed set that published nothing is answered at once. If feedback is still incomplete <code>max_wait_hours</code> (default 6) after the previous generation closed, the next generation starts with what has arrived. After a FAILED generation the next one always waits the full <code>max_wait_hours</code>, so a provider outage cannot use up the generation cap in minutes. Generations continue until a stop condition or the deliverable criteria are met; the cost caps (Section 11.7) and the evaluator's quotas (Section 9.3) bound how fast they run.</li>
 </ul>
 
 <h3 id="s-11-2"><span class="sn">11.2</span>Agent roster</h3>
@@ -2122,7 +2123,7 @@ roles:
   <li><strong>Diversity by default.</strong> The default mapping spreads roles across all three providers so that no single provider's style dominates the population and no single outage stops research.</li>
   <li><strong>Probe.</strong> <code>qfr llm probe</code> (also behind <code>qfr.setup.status</code>) runs at setup, daily and at every job start. For each configured model it lists the provider's models and checks the id exists, sends one small text request with a tool definition and one with <code>json_object</code>, exercises the configured thinking switch, verifies that a price is configured, and on Moonshot reads the account tier against the configured concurrency. Failures raise alerts, and a job does not start on a role whose primary and fallbacks all fail.</li>
   <li><strong>Lifecycle.</strong> Providers retire models within months. Replacing a model is a <code>providers.yaml</code> and <code>roles.yaml</code> change plus a probe run; no code changes and no redeploy of anything but research-worker.</li>
-  <li><strong>Cost awareness.</strong> DeepSeek halves prices off-peak, which for the default cadence means the generations after the 00:00, 12:00 and 18:00 UTC batches are cheap and the one after 06:00 UTC is at peak price on weekdays. The owner may shift the research cadence anchor in the charter if that matters; QFR does not schedule around it on its own.</li>
+  <li><strong>Cost awareness.</strong> DeepSeek halves prices off-peak. Generations start whenever the previous generation's feedback is complete, so they fall at any hour, and DeepSeek calls made during the weekday peak windows cost twice as much. QFR does not schedule around peak prices on its own; the generation, daily and job caps bound the cost either way.</li>
   <li><strong>Secrets.</strong> Keys are read from the environment of research-worker only, never logged, never included in traces or exports, and scrubbed by the logging redaction processor if they ever appear in a message.</li>
   <li><strong>Tests.</strong> The test suite never calls a provider. FunctionModel scenarios script every role. The manual, owner-authorized smoke run exercises each real provider once per phase that changes the provider layer.</li>
 </ul>
@@ -2136,7 +2137,7 @@ roles:
 <h3 id="s-12-1"><span class="sn">12.1</span>Population structure</h3>
 <ul>
   <li><strong>Islands:</strong> 6 themes by default. Each island holds up to 60 members. I1 momentum and trend; I2 reversal and mean reversion; I3 volatility and risk; I4 liquidity and volume; I5 price–volume interaction; I6 open exploration. A job's mode and seeds select which islands are active.</li>
-  <li>A member is either <strong>official</strong> (a published version with at least one released W1 report) or <strong>provisional</strong> (an approved but unpublished candidate with W0 statistics). A provisional member may parent at most 1 child per generation and expires after 3 generations.</li>
+  <li>A member is either <strong>official</strong> (a published version with at least one released W1 report) or <strong>provisional</strong> (an approved but unpublished candidate with W0 statistics). A provisional member may parent at most 1 child per generation. An unpublished provisional member expires after 3 generations. A published one (a human_seed, or a candidate whose version is waiting for evaluation, including a quota deferral) does not expire: it becomes official when its W1 report arrives, or leaves the population when it is rejected.</li>
   <li><strong>Initialization from the pools.</strong> At program start, pool entries named in the brief, and all pool entries when the mode is improve_factors or improve_strategy, are inserted as official members (they are published versions with W1 records) in the island whose theme matches their tags, or in I6 when untagged. Brief expressions are published as <code>human_seed</code> versions and enter as provisional members until their W1 report arrives.</li>
   <li><strong>Empty start.</strong> When the pools are empty and the brief has no seeds, every island starts empty, the first generation is 100% explore, and the library-correlation terms in fitness are neutral. This is the normal state of a fresh deployment and <span class="kw">MUST</span> work without any special casing beyond these rules (test SET-01).</li>
   <li><strong>Global MAP-Elites archive:</strong> 64 cells, each keeping its best official elite. The cell descriptors are: horizon bucket (the best decay horizon among 1, 5, 10 and 20); turnover bucket (below 0.2, 0.2 to 0.4, 0.4 to 0.6, 0.6 and above); field group (price only, volume only, price and volume, range or volatility).</li>
@@ -2259,7 +2260,7 @@ roles:
   <div class="st owner">CLOSED<small>approved · rejected · expired · cancelled · budget_exhausted</small></div>
 </div>
 <ul>
-  <li>The response to <code>qfr.job.submit</code> states the job id, the derived charter, the seed version ids, and a <strong>timeline estimate</strong> computed from the release cadence and the tier: for example "first W1 reports at the next 6-hour batch after the first publication; expected first deliverable within 1 to 2 days" for <code>w1_pass</code>, "at least 1 to 2 weeks" for <code>w2_pass</code>, "at least 3 weeks" for <code>advanced</code>, "about one quarter" for <code>incubated</code>.</li>
+  <li>The response to <code>qfr.job.submit</code> states the job id, the derived charter, the seed version ids, and a <strong>timeline estimate</strong> computed from the tier, the evaluator's queue and the quotas: for example "first W1 reports within minutes of the first publication; first deliverable typically within a day" for <code>w1_pass</code>, "typically a few days" for <code>w2_pass</code>, "typically about a week" for <code>advanced</code>, "about one quarter (60 trading days of forward incubation)" for <code>incubated</code>.</li>
   <li>A job can produce several deliverables over time; the job closes when <code>min_count</code> is met and no better candidate is pending, or when a stop condition fires. A stop on budget or generations with nothing meeting the tier closes the job with a <code>best_effort</code> deliverable containing the best candidates so far, clearly labelled.</li>
   <li><code>qfr.job.steer</code> appends owner guidance to the charter for the next generation. <code>qfr.job.pause</code> stops new generations and spending; evaluation of already-published versions continues regardless, because research cannot stop the evaluator and neither can the host agent.</li>
   <li>The owner's third example, "based on the attachment, review the methodology, factors and strategies, and use QFR to iterate them", is mode <code>review_and_iterate</code>: the host agent summarizes the methodology into <code>notes</code>, extracts factors as DSL <code>expressions</code>, describes the strategy as a <code>strategy_spec</code>, and QFR seeds the population with them and iterates.</li>
@@ -2579,7 +2580,7 @@ agent_runs (research_db, insert-only)
 <tr><td>Registry</td><td>Publish decisions, dedup hits, pool entries and events with approval ids</td><td>INFO</td></tr>
 <tr><td>Intake and scheduler</td><td>Cursor positions, each intake decision with reason code, dedup matches, quota deferrals and expiries, library sync changes, queue depth</td><td>INFO</td></tr>
 <tr><td>Evaluation workers</td><td>Run start and end with pinned inputs, screening results and values, each gate evaluated with values, record and ledger ids, results hash, runtime and memory</td><td>INFO</td></tr>
-<tr><td>Release engine</td><td>Each report queued, due time, released fields, withheld fields and the rule that withheld them, Ladder decisions, burn meter updates</td><td>INFO</td></tr>
+<tr><td>Release engine</td><td>Each report queued and released with both times, released fields, withheld fields and the rule that withheld them, Ladder decisions, burn meter updates</td><td>INFO</td></tr>
 <tr><td>Simulation</td><td>Per day: orders, fills, blocked trades, NAV, checkpoints, staleness, data revisions</td><td>INFO</td></tr>
 <tr><td>Acceptance and monitoring</td><td>Case opened with gate values, decisions with approval ids, alerts raised and acknowledged</td><td>INFO, WARNING for alerts</td></tr>
 <tr><td>Data ingest</td><td>Download, checksum verification, sanity checks with counts, snapshot ids built, zone truncation cutoff</td><td>INFO, ERROR on failed checks</td></tr>
@@ -2697,7 +2698,7 @@ agent_runs (research_db, insert-only)
 <tr><td>trial_ledger</td><td>window, epoch_id, version_id, family_id, program_id, job_id, sharpe_daily, n_obs, skew, kurt_raw, fingerprint_ref, counted_at</td><td>Insert-only</td></tr>
 <tr><td>fingerprints, trial_clusters</td><td>version_id, epoch_id, uri; epoch_id, window, version_id, cluster_id, computed_at</td><td>Nightly N_eff job</td></tr>
 <tr><td>quota_usage, burn_meters</td><td>scope, key, period_start, count; epoch_id, window, trials, released_values, queries_used, budget, status</td><td></td></tr>
-<tr><td>release_queue, released_reports, ladder_state</td><td>record_id, report_type, due_at, state; report_id, version_id, content_hash, family_id, program_id, report_type, policy_ref, protocol_card_ref, content, released_at; family_id, best_value, updated_at</td><td>released_reports is insert-only</td></tr>
+<tr><td>release_queue, released_reports, ladder_state</td><td>record_id, report_type, due_at (the decision time), state; report_id, version_id, content_hash, family_id, program_id, report_type, policy_ref, protocol_card_ref, content, released_at; family_id, best_value, updated_at</td><td>released_reports is insert-only</td></tr>
 <tr><td>sim_accounts, sim_orders, sim_fills, sim_positions, sim_nav</td><td>sim_id, version_id, mode (forward or replay), start_date, status, capital; per-table fields (instrument, shares, price, cost, NAV, cash, turnover)</td><td></td></tr>
 <tr><td>acceptance_cases</td><td>case_id, version_id, gate_results, recommendation, state, decision, decided_at, rationale, approval_id</td><td>Decisions require an approval id</td></tr>
 <tr><td>alerts</td><td>alert_id, kind (decay, staleness, burn, ops), version_id, at, details, state (open or acknowledged), acknowledged_by</td><td></td></tr>
@@ -2818,7 +2819,7 @@ agent_runs (research_db, insert-only)
 <tbody>
 <tr><td>Evaluation gaming</td><td>A factor behaves differently on evaluation periods</td><td>The DSL has no access to dates or identifiers. Computation is one pass over the full history. A prefix-invariance probe runs at screening</td></tr>
 <tr><td>Covert channels</td><td>Holdout information encoded into errors or timings</td><td>Only sanitized enum codes are released. No timings or free text. The Python sandbox (Phase 8) has no network</td></tr>
-<tr><td>Adaptive overfitting</td><td>Sequential probing of W1 or W2</td><td>Coarsening, batching, quotas, the Ladder, burn meters, and a trial ledger feeding DSR and PBO</td></tr>
+<tr><td>Adaptive overfitting</td><td>Sequential probing of W1 or W2</td><td>Coarsening, quotas, the Ladder, burn meters, and a trial ledger feeding DSR and PBO</td></tr>
 <tr><td>LLM memorization</td><td>Factors designed around remembered market episodes</td><td>No tickers or dates in the DSL or prompts. The critic flags period-specific narratives. Forward incubation is required for the top tier, and every deliverable states its tier</td></tr>
 <tr><td>Leakage through the owner channel</td><td>Owner-only numbers pasted into a brief</td><td>Evidence objects cannot be attached to briefs; briefs and steering notes are scanned for owner-only values; the host-agent guide forbids it; residual risk accepted and recorded</td></tr>
 <tr><td>Host agent overreach</td><td>The host agent approves or curates without the owner saying so</td><td>Approval records quote the owner and must contain the scope's short codes; every call is audited; the catalog has no research or evaluation powers (MCP-02)</td></tr>
@@ -2930,9 +2931,9 @@ agent_runs (research_db, insert-only)
 
 <h3 id="s-17-4"><span class="sn">17.4</span>Operations runbook</h3>
 <ul>
-  <li><strong>Daily (Asia/Shanghai):</strong> 18:30 data ingest and full snapshot build; then the simulation cycle; W1 release batches at 08:00, 14:00, 20:00 and 02:00 (00:00, 06:00, 12:00 and 18:00 UTC); research generations start just after each batch when a job is running.</li>
+  <li><strong>Daily (Asia/Shanghai):</strong> 18:30 data ingest and full snapshot build; then the simulation cycle.</li>
+  <li><strong>Continuous:</strong> the evaluator releases each report as soon as it records it, and a running job starts its next generation when the previous generation's feedback is complete.</li>
   <li><strong>Nightly (02:30):</strong> fingerprints and trial clustering for N_eff, burn meters, log compression and retention, disk guard, backups (<a href="#s-17-5">Section 17.5</a>).</li>
-  <li><strong>Weekly (Monday 08:00):</strong> W2 and advancement release batch.</li>
   <li><strong>Reproduce a result:</strong> <code>qfr eval reproduce &lt;record_id&gt;</code> re-runs with pinned inputs and compares the results hash.</li>
   <li><strong>Boundary incident:</strong> if any boundary test fails against the deployed stack (<code>just doctor</code> runs them), pause all research programs with <code>qfr.ops.pause_research</code> until it is fixed and documented in <code>docs/decisions.md</code>.</li>
   <li><strong>Data staleness:</strong> if no new data arrives for 2 trading days, simulation clocks pause and an alert appears in <code>qfr.ops.alerts</code> and <code>qfr.status</code>.</li>
@@ -2997,7 +2998,7 @@ agent_runs (research_db, insert-only)
 <tr><td class="id">EVL-05</td><td>Exact and behavioral duplicates are never evaluated or counted as trials</td></tr>
 <tr><td class="id">EVL-06</td><td>A trial-ledger row exists for every version evaluated on W1, W2 or W3</td></tr>
 <tr><td class="id">REL-01</td><td>W1 values are rounded to the policy granularity</td></tr>
-<tr><td class="id">REL-02</td><td>Reports become visible only at or after their batch time</td></tr>
+<tr><td class="id">REL-02</td><td>A report is released as soon as its decision is recorded, within one release-engine tick, in queue order (intake, screening, W1)</td></tr>
 <tr><td class="id">REL-03</td><td>Quotas defer excess intake, and deferrals expire after 7 days</td></tr>
 <tr><td class="id">REL-04</td><td>Every released report validates against the public JSON schema, which contains only whitelisted fields and enum codes</td></tr>
 <tr><td class="id">REL-05</td><td>No released report contains any W3-derived field. This is a scan test, plus a property test over random policies</td></tr>
@@ -3139,13 +3140,13 @@ agent_runs (research_db, insert-only)
 <li><input type="checkbox" id="t-P3-2" data-task="P3.2"><label for="t-P3-2"><b>P3.2</b> Implement the scheduler: since_seq polling of versions and pool events, library sync, schema and kind checks, exact and behavioral dedup, quotas with deferral, and fair round-robin enqueueing.</label></li>
 <li><input type="checkbox" id="t-P3-3" data-task="P3.3"><label for="t-P3-3"><b>P3.3</b> Implement screening: static constraints, single-pass computation, coverage, the prefix-invariance probe, runtime limits and degeneracy checks.</label></li>
 <li><input type="checkbox" id="t-P3-4" data-task="P3.4"><label for="t-P3-4"><b>P3.4</b> Implement W1 evaluation runs that write runs, metrics, series files, official records and trial-ledger rows in a single transaction, with results hashes, through the factor plugin.</label></li>
-<li><input type="checkbox" id="t-P3-5" data-task="P3.5"><label for="t-P3-5"><b>P3.5</b> Implement the release engine for the default_v1 intake, screening, W1 and library report types: whitelisted fields, rounding, batching, reason codes and diagnostic flags.</label></li>
+<li><input type="checkbox" id="t-P3-5" data-task="P3.5"><label for="t-P3-5"><b>P3.5</b> Implement the release engine for the default_v1 intake, screening, W1 and library report types: whitelisted fields, rounding, immediate release, reason codes and diagnostic flags.</label></li>
 <li><input type="checkbox" id="t-P3-6" data-task="P3.6"><label for="t-P3-6"><b>P3.6</b> Implement the read-only Feedback API with the policy and protocol cards.</label></li>
 <li><input type="checkbox" id="t-P3-7" data-task="P3.7"><label for="t-P3-7"><b>P3.7</b> Implement the eval admin API for protocols, policies, quotas, intake, runs, records, owner-grade evidence, library and private config, plus the <code>qfr eval reproduce</code> command, and wire qfr.evidence.get, qfr.report.list and the qfr.ops.activate_* tools into the MCP server.</label></li>
 <li><input type="checkbox" id="t-P3-8" data-task="P3.8"><label for="t-P3-8"><b>P3.8</b> Implement data-ingest scheduling and daily full-snapshot builds, with a synthetic daily-replay source for tests.</label></li>
 </ul>
 <div class="accept"><b>Acceptance checks</b><ul>
-<li>End to end on the synthetic world: 30 seed factors imported through MCP are pulled, evaluated and released at batch time with rounded values, and their owner-grade evidence is readable through qfr.evidence.get at full precision.</li>
+<li>End to end on the synthetic world: 30 seed factors imported through MCP are pulled, evaluated and released as soon as they are recorded, with rounded values, and their owner-grade evidence is readable through qfr.evidence.get at full precision.</li>
 <li>EVL-01, EVL-02, EVL-04, EVL-05, EVL-06, REL-01 to REL-04 and BND-03 pass.</li>
 <li>The seed entries become the correlation library once their W1 records exist, and a stack with no seeds records the library gate as vacuous.</li>
 </ul></div>
@@ -3203,7 +3204,7 @@ agent_runs (research_db, insert-only)
 <p class="goal"><strong>Goal.</strong> Trustworthy promotion: higher evidence tiers, strategies as deliverables, owner approvals and pool curation through MCP. Do not run long real-data campaigns before this phase is complete.</p>
 <ul class="tasks">
 <li><input type="checkbox" id="t-P6-1" data-task="P6.1"><label for="t-P6-1"><b>P6.1</b> Implement W2 runs, the Ladder release, and W2 quota and burn accounting.</label></li>
-<li><input type="checkbox" id="t-P6-2" data-task="P6.2"><label for="t-P6-2"><b>P6.2</b> Implement the private W3 holdout check (one shot per version) and the delayed advancement release.</label></li>
+<li><input type="checkbox" id="t-P6-2" data-task="P6.2"><label for="t-P6-2"><b>P6.2</b> Implement the private W3 holdout check (one shot per version) and the advancement release.</label></li>
 <li><input type="checkbox" id="t-P6-3" data-task="P6.3"><label for="t-P6-3"><b>P6.3</b> Implement nightly fingerprint clustering for N_eff and the DSR, PBO and HLZ gate computations.</label></li>
 <li><input type="checkbox" id="t-P6-4" data-task="P6.4"><label for="t-P6-4"><b>P6.4</b> Implement the simulation engine with forward and replay modes: orders, fills, tradability, lots, costs, positions and NAV.</label></li>
 <li><input type="checkbox" id="t-P6-5" data-task="P6.5"><label for="t-P6-5"><b>P6.5</b> Implement strategy artifacts v1: the StrategyDraft output and compose_strategy tasks on the research side, the strategy evaluation plugin and gates on the evaluation side, strategy deliverables with contribution tables, and the strategy modes in briefs.</label></li>
@@ -3263,7 +3264,7 @@ agent_runs (research_db, insert-only)
 <table>
 <thead><tr><th>Milestone</th><th>After phase</th><th>Demonstration</th></tr></thead>
 <tbody>
-<tr><td>M1 Measurable factors</td><td>3</td><td>Import a raw factor pool through MCP and watch coarsened reports get released on schedule while the owner reads full-precision evidence</td></tr>
+<tr><td>M1 Measurable factors</td><td>3</td><td>Import a raw factor pool through MCP and watch coarsened reports get released as each evaluation finishes while the owner reads full-precision evidence</td></tr>
 <tr><td>M2 Owner workflow</td><td>4</td><td>A brief through MCP yields a deliverable with an iteration history and backtest results, with a scripted LLM and with real providers</td></tr>
 <tr><td>M3 Evolving system</td><td>5</td><td>Multi-generation improvement on the synthetic world, every hop traced, plus a smoke run on CN data</td></tr>
 <tr><td>M4 Trustworthy promotion and pools</td><td>6</td><td>Full gates, incubation, strategies, owner approval and pool entries through MCP</td></tr>
@@ -3300,13 +3301,13 @@ agent_runs (research_db, insert-only)
 <tr><td>Gates</td><td>W2</td><td>Factor: RankIC at least 0.015, IR at least 0.08, LS net Sharpe at least 0.5. Strategy: net Sharpe at least 0.5, IR at least 0.3</td><td>Evaluator config</td></tr>
 <tr><td>Gates</td><td>Holdout</td><td>Factor: RankIC at least 0.01, LS net Sharpe at least 0.3, reference IR at least 0.3. Strategy: net Sharpe at least 0.3, IR at least 0.3</td><td>Evaluator config</td></tr>
 <tr><td>Gates</td><td>Acceptance</td><td>DSR at least 0.90 with N_eff (clusters at 0.7). PBO at most 0.30 with S = 16. HLZ t at least 3.0. Incubation at least 60 days. Consistency z at least −1.645. Forward max drawdown at most 15%. Library correlation at most 0.60</td><td>Evaluator config</td></tr>
-<tr><td>Release</td><td>Batching</td><td>W1 every 6 hours. W2 and advancement weekly. Advancement delayed at least 7 days</td><td>Evaluator config</td></tr>
+<tr><td>Release</td><td>Timing</td><td>Every report is released as soon as the evaluator records it. The release engine looks for new reports every second</td><td>Evaluator config</td></tr>
 <tr><td>Release</td><td>Rounding</td><td>RankIC 0.005. IR 0.02. Sharpe 0.25. Shares and correlations 0.05. t buckets below 1, 1 to 2, 2 to 3, above 3. Ladder η 0.005</td><td>Evaluator config</td></tr>
 <tr><td>Quotas</td><td>Per family, per program, global</td><td>3 W1 per 24 h and 1 W2 per 7 days per family. 60 W1 per day and 10 W2 per week per program. 200 W1 per day, 400 W2 per epoch, 100 W3 per epoch, 40 simulation slots. Deferral expiry 7 days</td><td>Evaluator config</td></tr>
 <tr><td>Burn</td><td>W1 meter</td><td>Amber at 3,000 trials. Red at 6,000</td><td>Evaluator config</td></tr>
 <tr><td>Simulation</td><td>Incubation</td><td>60 trading days. 20-day checkpoints. Capital 100,000,000 CNY. 100-share lots. Staleness alert after 2 days</td><td>Evaluator config</td></tr>
 <tr><td>Monitoring</td><td>Decay alarm</td><td>Rolling 60-day RankIC mean below 0 for 20 consecutive days</td><td>Evaluator config</td></tr>
-<tr><td>Research</td><td>Cadence</td><td>Every 6 hours after the W1 batch, or after 10 new reports</td><td>Charter</td></tr>
+<tr><td>Research</td><td>Cadence</td><td>Next generation when the previous generation's feedback is complete, after at most 6 hours; the full 6 hours after a failed generation</td><td>Charter</td></tr>
 <tr><td>Research</td><td>Throughput</td><td>12 publications per generation. 36 candidate slots at most. Concurrency 4. At most 2 review rounds. At most 2 compose_strategy tasks per generation</td><td>Charter</td></tr>
 <tr><td>Research</td><td>Budget</td><td>Currency CNY. 20 per generation. 200 per day. 500 per job. Engineer runs limited to 12 requests and 20 tool calls</td><td>Charter and brief</td></tr>
 <tr><td>Research</td><td>Context and temperature</td><td>12,000 tokens per prompt. Temperature 0.7 for explore and hypothesis tasks, 0.2 for supervisor, engineer, critic and analyst</td><td>roles.yaml</td></tr>

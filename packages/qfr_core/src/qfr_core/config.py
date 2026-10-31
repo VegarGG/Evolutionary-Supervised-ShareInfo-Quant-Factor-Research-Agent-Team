@@ -155,7 +155,7 @@ class PolicyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     policy_id: str
     version: str
-    batching: dict[str, JsonValue]
+    release_timing: Literal["immediate"]
     rounding: dict[str, float]
     t_buckets: list[float]
     ladder: dict[str, float]
