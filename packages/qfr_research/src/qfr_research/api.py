@@ -25,7 +25,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from qfr_core.config import RuntimeSettings
 from qfr_core.correlation import bind, current, from_headers
-from qfr_core.logging import JsonLogger
+from qfr_core.logging import JsonLogger, env_secrets
 from qfr_core.registry_api import ApiError, Health
 from qfr_core.research_api import (
     CostReport,
@@ -610,11 +610,7 @@ def build_env(settings: RuntimeSettings, environ: dict[str, str], mode: Mode) ->
     from qfr_research.settings import ResearchConfig, prompts_dir, research_logger
 
     config = ResearchConfig.load(settings.config_dir)
-    secret_values = [
-        v
-        for k, v in environ.items()
-        if any(w in k.upper() for w in ("TOKEN", "PASSWORD", "SECRET", "API_KEY", "DB_URL"))
-    ]
+    secret_values = env_secrets(environ)
     service = "research-api" if mode == "api" else "research-worker"
     logger = research_logger(service, settings, secret_values)
     url = environ.get("RESEARCH_DB_URL")

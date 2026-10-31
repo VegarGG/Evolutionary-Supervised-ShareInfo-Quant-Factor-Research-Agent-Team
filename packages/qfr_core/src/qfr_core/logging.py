@@ -21,6 +21,21 @@ from qfr_core.contracts import LogLine
 from qfr_core.correlation import current
 
 PROVIDER_ENV = frozenset({"DEEPSEEK_API_KEY", "MOONSHOT_API_KEY", "ZHIPU_API_KEY"})
+SECRET_ENV_WORDS = ("TOKEN", "PASSWORD", "SECRET", "API_KEY", "DB_URL")
+
+
+def env_secrets(environ: MutableMapping[str, str] | dict[str, str]) -> list[str]:
+    """The environment values a service redacts from its logs: every variable whose name
+    marks a credential. A purely numeric value (for example a token-count setting such as
+    MAX_THINKING_TOKENS) is a setting, not a credential; redacting it would also rewrite
+    the same digits inside timestamps and counts."""
+    return [
+        value
+        for name, value in environ.items()
+        if value
+        and not value.strip().isdigit()
+        and any(word in name.upper() for word in SECRET_ENV_WORDS)
+    ]
 
 
 def assert_provider_boundary(service: str) -> None:

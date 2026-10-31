@@ -230,7 +230,7 @@ class GenerationRunner:
         if self.monitor is not None:
             self.monitor.evaluate(gen.job_id)
             with env.db.read() as conn:
-                state = conn.execute(
+                state: str = conn.execute(
                     text("SELECT state FROM research_jobs WHERE job_id = :j"), {"j": gen.job_id}
                 ).scalar_one()
             if state != "RUNNING":

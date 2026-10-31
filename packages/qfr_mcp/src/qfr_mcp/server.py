@@ -26,7 +26,7 @@ from qfr_core.correlation import current
 from qfr_core.dsl import DslLimits, canonicalize, parse, validate
 from qfr_core.dsl.explain import explain
 from qfr_core.log_reader import LogQuery, LogReader
-from qfr_core.logging import JsonLogger, StdlibBridge
+from qfr_core.logging import JsonLogger, StdlibBridge, env_secrets
 from qfr_core.pool_import import NO_DEFAULTS_NOTICE
 from qfr_core.registry_api import RegistrySummary
 from qfr_core.research_api import ResearchSummary
@@ -96,11 +96,7 @@ def create_app(
             raise ValueError("CONTROL_DB_URL is required")
         control = PostgresControlStore(settings.control_db_url.get_secret_value())
     store: ControlStore = control
-    secret_values = [
-        v
-        for k, v in os.environ.items()
-        if any(word in k.upper() for word in ("TOKEN", "PASSWORD", "SECRET", "API_KEY", "DB_URL"))
-    ]
+    secret_values = env_secrets(os.environ)
     logger = JsonLogger(
         "qfr-mcp", "control", settings.log_dir, log_config, secrets=secret_values + [token]
     )

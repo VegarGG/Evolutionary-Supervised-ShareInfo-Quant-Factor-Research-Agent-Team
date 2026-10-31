@@ -9,7 +9,7 @@ from qfr_core.config import logging_config, mcp_config
 from qfr_core.contracts import LogLine
 from qfr_core.correlation import bind, current, from_headers, from_queue, to_headers, to_queue
 from qfr_core.log_reader import LogQuery, LogReader
-from qfr_core.logging import JsonLogger, assert_provider_boundary
+from qfr_core.logging import JsonLogger, assert_provider_boundary, env_secrets
 
 SERVICES = {
     "qfr-mcp": "control",
@@ -133,3 +133,19 @@ def test_long_log_ranges_require_both_explicit_dates(tmp_path):
             }
         )
     ).lines
+
+
+def test_env_secrets_take_credentials_by_name_and_skip_numeric_settings():
+    environ = {
+        "REGISTRY_CONTROL_TOKEN": "a-long-random-token",
+        "POSTGRES_PASSWORD": "pw-value-1",
+        "EVAL_DB_URL": "postgresql://u:p@h/db",
+        "MAX_THINKING_TOKENS": "31999",
+        "EMPTY_SECRET": "",
+        "QFR_ZONE": "control",
+    }
+    assert env_secrets(environ) == [
+        "a-long-random-token",
+        "pw-value-1",
+        "postgresql://u:p@h/db",
+    ]
