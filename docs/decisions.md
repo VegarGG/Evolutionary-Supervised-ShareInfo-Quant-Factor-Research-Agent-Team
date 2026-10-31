@@ -247,8 +247,8 @@ or evaluator run exists, and nothing from Phase 2 onward is started.
 
 Phase 2 implements P2.1 to P2.6 only: the registry, the pools, raw pool import and the
 empty start. No research job, evaluator run, provider call or approval workflow exists,
-and nothing from Phase 3 onward is started. It is built on the Phase 1 branch (PR #12),
-which was not yet merged, as the owner asked.
+and nothing from Phase 3 onward is started. It was built on the Phase 1 branch (PR #12),
+as the owner asked, and rebased onto `main` after #12 merged.
 
 1. **Ordered sequences.** Every registry write runs in one transaction that first takes
    a transaction-level advisory lock. `published_seq` and `event_seq` are bigserials,

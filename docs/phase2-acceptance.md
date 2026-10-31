@@ -2,8 +2,8 @@
 
 Status: **implemented; every Phase 2 acceptance check passes in local tests against a
 real PostgreSQL 16; ready for owner review**. Owner acceptance and merge are not
-asserted. Phase 2 is built on the Phase 1 branch (PR #12), which was not yet merged.
-No Phase 3 work has begun. Design choices are in
+asserted. Phase 2 was built on the Phase 1 branch (PR #12) and rebased onto `main` after
+#12 merged. No Phase 3 work has begun. Design choices are in
 [decisions.md](decisions.md#phase-2-decisions).
 
 ## Acceptance checks
