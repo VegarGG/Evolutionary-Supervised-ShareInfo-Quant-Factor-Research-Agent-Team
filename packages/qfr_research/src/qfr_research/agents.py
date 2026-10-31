@@ -17,6 +17,7 @@ import json
 import math
 import time
 from dataclasses import dataclass
+from datetime import timedelta
 from decimal import Decimal
 from typing import Any, TypeVar
 from uuid import UUID
@@ -43,9 +44,10 @@ from pydantic_ai.messages import (
     ThinkingPart,
     ToolCallPart,
 )
-from qfr_core.correlation import bind
+from qfr_core.correlation import bind, current
 from qfr_core.ids import uuid7
 
+from qfr_research import alerts as provider_alerts
 from qfr_research.budget import BudgetExceeded
 from qfr_research.env import ResearchEnv
 from qfr_research.prompts import RenderedPrompt
@@ -381,6 +383,7 @@ class RoleRunner:
             payload={"role": role, "from": str(ref), "to": str(nxt), "reason": reason[:300]},
             **ctx.log_ids(),
         )
+        alerts = self.env.config.service.alerts
         with self.env.db.transaction() as conn:
             self.env.trace.step(
                 conn,
@@ -391,6 +394,12 @@ class RoleRunner:
                 payload={"reason": reason[:500]},
                 outcome="fallback",
             )
+            # Repeated fallbacks away from one model raise a provider alert (17.4).
+            provider_alerts.after_fallback(
+                conn, str(ref), self.env.clock.now(), alerts.fallback_threshold,
+                timedelta(minutes=alerts.fallback_window_minutes),
+                current().get("request_id") or str(uuid7()), self.env.logger,
+            )  # fmt: skip
 
 
 def _transient(error: BaseException) -> bool:

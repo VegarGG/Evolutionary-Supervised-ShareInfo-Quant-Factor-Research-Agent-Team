@@ -38,3 +38,7 @@ timeline:
 # Per-run cost estimate checked against the remaining budget before each call (Section 11.7):
 # the prompt's token count plus max_completion_tokens, priced at the miss and output rates.
 estimate: {chars_per_token: 3}
+# Provider alerts (Section 17.4): this many fallbacks away from one model within the window
+# raise one alert per model per UTC day; a failed probe raises one per day per set of
+# failed models. Both appear in qfr.ops.alerts.
+alerts: {fallback_threshold: 3, fallback_window_minutes: 60}

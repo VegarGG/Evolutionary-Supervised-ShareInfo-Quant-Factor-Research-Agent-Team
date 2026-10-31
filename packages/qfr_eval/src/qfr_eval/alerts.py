@@ -1,9 +1,9 @@
 """Alerts (PLAN Sections 9.4, 10.2 and 10.4): decay, staleness, burn and operations.
 
 An alert is raised once per condition (its dedup key) and stays in eval_db; the owner
-reads it through qfr.ops.alerts and qfr.status. Nothing deletes or edits an alert; the
-table's trigger allows only acknowledgement, which arrives with Phase 7's operations
-tools.
+reads it through qfr.ops.alerts and qfr.status and acknowledges it with
+qfr.ops.acknowledge_alert. Nothing deletes or edits an alert; the table's trigger allows
+only acknowledgement.
 """
 
 from datetime import datetime
@@ -99,3 +99,34 @@ def list_alerts(
         text("SELECT count(*) FROM eval.alerts WHERE state = 'open'")
     ).scalar_one()
     return {"items": [alert_view(r) for r in rows], "open": int(open_count)}
+
+
+def acknowledge(
+    conn: Connection,
+    alert_id: UUID,
+    by: str,
+    note: str | None,
+    at: datetime,
+    principal: str,
+    request_id: str,
+) -> dict[str, Any] | None:
+    """Acknowledge an open alert; a second acknowledgement returns it unchanged. None
+    when there is no such alert."""
+    changed = conn.execute(
+        text(
+            "UPDATE eval.alerts SET state = 'acknowledged', acknowledged_by = :by, "
+            "acknowledged_at = :at WHERE alert_id = :id AND state = 'open' RETURNING 1"
+        ),
+        {"by": by, "at": at, "id": alert_id},
+    ).first()
+    row = conn.execute(
+        text("SELECT * FROM eval.alerts WHERE alert_id = :id"), {"id": alert_id}
+    ).first()
+    if row is None:
+        return None
+    if changed is not None:
+        record_event(
+            conn, at, principal, "alert_acknowledged", "alert", str(alert_id), request_id,
+            {"by": by, "note": note},
+        )  # fmt: skip
+    return alert_view(row)

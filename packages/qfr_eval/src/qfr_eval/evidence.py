@@ -5,6 +5,7 @@ front door through eval-admin-api. It is readable as soon as the official record
 the owner is not the party being rationed.
 """
 
+from datetime import datetime, timedelta
 from typing import Any, Final
 from uuid import UUID
 
@@ -312,7 +313,47 @@ def private_config(conn: Connection) -> dict[str, JsonValue]:
     }
 
 
-def summary(conn: Connection) -> dict[str, JsonValue]:
+def quota_summary(conn: Connection, state: Any, now: datetime) -> dict[str, JsonValue] | None:
+    """Quota use over the last 24 hours against the active quota limits (Section 9.3):
+    totals per scope and window, and the busiest family and program."""
+    if state is None:
+        return None
+    rows = conn.execute(
+        text(
+            "SELECT scope, window_name, key, count(*) AS n FROM eval.quota_usage "
+            "WHERE used_at > :since GROUP BY scope, window_name, key"
+        ),
+        {"since": now - timedelta(hours=24)},
+    ).all()
+    counts: dict[str, int] = {}
+    peaks: dict[str, int] = {}
+    for r in rows:
+        name = f"{r.scope}:{r.window_name}"
+        counts[name] = counts.get(name, 0) + int(r.n)
+        peaks[name] = max(peaks.get(name, 0), int(r.n))
+    totals: dict[str, JsonValue] = dict(counts)
+    busiest: dict[str, JsonValue] = dict(peaks)
+    # Incubation accounts that hold a slot, as the scheduler counts them.
+    live_sims: int = conn.execute(
+        text(
+            "SELECT count(*) FROM eval.sim_accounts WHERE purpose = 'incubation' "
+            "AND status IN ('waiting', 'running', 'paused')"
+        )
+    ).scalar_one()
+    limits = state.quotas.config
+    return {
+        "ref": state.quotas.ref,
+        "limits": {k: limits[k] for k in ("family", "program", "global") if k in limits},
+        "used_24h": totals,
+        "busiest_key_24h": busiest,
+        "simulation_slots": {
+            "live": int(live_sims),
+            "limit": (limits.get("global") or {}).get("simulation_slots"),
+        },
+    }
+
+
+def summary(conn: Connection, now: datetime | None = None) -> dict[str, JsonValue]:
     """Counts the front door shows in qfr.status (no per-version detail)."""
     state = active_state(conn)
     intake = {
@@ -385,6 +426,7 @@ def summary(conn: Connection) -> dict[str, JsonValue]:
         "burn_meters": burn,  # type: ignore[dict-item]
         "release": {"queued": int(pending_release), "released": int(released)},
         "open_alerts": int(open_alerts),
+        "quotas": None if now is None else quota_summary(conn, state, now),
         "simulations": sims,  # type: ignore[dict-item]
         "acceptance_cases": cases,  # type: ignore[dict-item]
         "data_freshness": None

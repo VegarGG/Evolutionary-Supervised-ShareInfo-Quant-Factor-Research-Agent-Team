@@ -324,6 +324,27 @@ def test_a_failing_primary_leaves_the_role_usable_through_its_fallbacks(research
     research.script.balance = {"available_balance": 0}
     report = asyncio.run(run_probe(research.env, "manual"))
     assert not report.ok
+    # A failed probe is a provider alert; the same failures the same day raise no second.
+    asyncio.run(run_probe(research.env, "daily"))
+    page = research.client.get("/v1/alerts").json()
+    [alert] = page["items"]
+    assert page["open"] == 1 and alert["kind"] == "probe_failed"
+    assert alert["details"]["probe_id"] == str(report.probe_id)
+    assert "glm/glm-5.3-flash" in alert["details"]["failed_models"]
+    assert research.client.get("/v1/summary").json()["open_alerts"] == 1
+    acked = research.client.post(
+        f"/v1/alerts/{alert['alert_id']}/acknowledge", json={"by": "owner", "note": "known"}
+    ).json()
+    assert acked["state"] == "acknowledged" and acked["note"] == "known"
+    again = research.client.post(
+        f"/v1/alerts/{alert['alert_id']}/acknowledge", json={"by": "owner", "note": "later"}
+    ).json()
+    assert again["note"] == "known" and again["acknowledged_at"] == acked["acknowledged_at"]
+    missing = research.client.post(
+        "/v1/alerts/019a35e0-0000-7000-8000-000000000001/acknowledge", json={"by": "owner"}
+    )
+    assert missing.status_code == 404 and missing.json()["error"] == "ALERT_NOT_FOUND"
+    assert research.client.get("/v1/alerts", params={"state": "open"}).json()["items"] == []
     engineer = report.roles["engineer"]
     assert engineer.primary == "glm/glm-5.3-flash" and not engineer.primary_ok
     assert engineer.usable == ["deepseek/deepseek-flash"]  # kimi has no balance

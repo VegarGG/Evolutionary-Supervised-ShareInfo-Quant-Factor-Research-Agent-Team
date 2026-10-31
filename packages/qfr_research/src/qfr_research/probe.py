@@ -20,6 +20,7 @@ from qfr_core.ids import uuid7
 from qfr_core.research_api import ModelProbe, ProbeReport, RoleProbe
 from sqlalchemy import text
 
+from qfr_research import alerts
 from qfr_research.db import dumps
 from qfr_research.env import ResearchEnv
 from qfr_research.providers import ModelRef, NoPrice, TokenUsage
@@ -85,6 +86,8 @@ async def run_probe(env: ResearchEnv, trigger: Trigger, ctx: Ctx | None = None) 
         roles=roles,
         notes=notes,
     )
+    failed_models = [f"{m.provider}/{m.model_id}" for m in models if not m.ok]
+    failed_roles = [k for k, v in roles.items() if not v.ok]
     with env.db.transaction() as conn:
         conn.execute(
             text(
@@ -100,6 +103,12 @@ async def run_probe(env: ResearchEnv, trigger: Trigger, ctx: Ctx | None = None) 
                 "rid": str(report.probe_id),
             },
         )
+        if not report.ok:
+            # A role without its primary model is a provider alert (Sections 11.8, 17.4).
+            alerts.after_probe(
+                conn, report.probe_id, trigger, failed_models, failed_roles, report.at,
+                env.logger,
+            )  # fmt: skip
     emit = env.logger.logger.info if report.ok else env.logger.logger.warning
     emit(
         "llm_probe_completed",
@@ -107,8 +116,8 @@ async def run_probe(env: ResearchEnv, trigger: Trigger, ctx: Ctx | None = None) 
         error_code=None if report.ok else "PROBE_FAILED",
         payload={
             "trigger": trigger,
-            "failed_models": [f"{m.provider}/{m.model_id}" for m in models if not m.ok],
-            "failed_roles": [k for k, v in roles.items() if not v.ok],
+            "failed_models": failed_models,
+            "failed_roles": failed_roles,
             "duration_ms": round((time.monotonic() - started) * 1000, 1),
         },
         **(ctx.log_ids() if ctx else {}),

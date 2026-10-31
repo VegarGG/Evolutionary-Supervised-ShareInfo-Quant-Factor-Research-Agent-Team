@@ -4,7 +4,9 @@ and a critic never runs on the provider that drafted the candidate."""
 
 import pytest
 from qfr_core.contracts import ResearchBrief
+from qfr_research.agents import RoleRunner
 from qfr_research.jobs import JobService
+from qfr_research.store import Ctx
 
 from tests.research.rig import brief, research_only
 from tests.research.scripted import Script
@@ -44,6 +46,15 @@ def test_a_failing_primary_falls_back_and_the_critic_avoids_the_engineers_provid
             if line["event"] == "llm_provider_fallback"
         ]  # fmt: skip
         assert len(lines) == len(fallbacks)
+        # Repeated fallbacks away from one model raise one provider alert per model and
+        # day (Section 17.4); the rig's clock is fixed, so all fallbacks share the window.
+        alerts = research.db.rows("SELECT * FROM provider_alerts WHERE kind = 'provider_fallback'")
+        threshold = research.config.service.alerts.fallback_threshold
+        expected = [failing] if len(fallbacks) >= threshold else []
+        assert [a.details["model"] for a in alerts] == expected
+        # The job-start probe found the failing model: a probe alert names it.
+        probes = research.db.rows("SELECT * FROM provider_alerts WHERE kind = 'probe_failed'")
+        assert [failing in a.details["failed_models"] for a in probes] == [True]
         ok = research.db.rows("SELECT * FROM agent_runs WHERE status = 'ok'")
         assert not {f"{r.provider}/{r.model_id}" for r in ok} & {failing}
 
@@ -54,3 +65,24 @@ def test_a_failing_primary_falls_back_and_the_critic_avoids_the_engineers_provid
             "JOIN agent_runs e ON e.run_id = c.engineer_run_id"
         )
         assert pairs and all(p.critic != p.engineer for p in pairs), pairs
+
+
+def test_repeated_fallbacks_from_one_model_raise_one_alert_a_day(tmp_path, small_zones):
+    with research_only(tmp_path, small_zones, Script([REVERSAL])) as (_, research):
+        runner = RoleRunner(research.env)
+        primary, second = research.env.planner.chain("engineer")[:2]
+        threshold = research.config.service.alerts.fallback_threshold
+        for n in range(threshold + 2):
+            runner._fallback("engineer", primary, second, "TRANSIENT HTTP_503", Ctx())
+            raised = research.db.rows("SELECT * FROM provider_alerts")
+            assert len(raised) == (1 if n + 1 >= threshold else 0)
+        [alert] = raised
+        assert alert.kind == "provider_fallback" and alert.state == "open"
+        assert alert.details["model"] == str(primary)
+        assert alert.details["fallbacks"] == threshold
+        assert alert.dedup_key == f"provider_fallback:{primary}:{research.clock.now().date()}"
+        # Another model's fallbacks are counted on their own.
+        runner._fallback("engineer", second, primary, "TRANSIENT HTTP_503", Ctx())
+        assert research.db.scalar("SELECT count(*) FROM provider_alerts") == 1
+        warnings = [x for x in research.logs("research-worker") if x["event"] == "alert_raised"]
+        assert len(warnings) == 1 and warnings[0]["level"] == "WARNING"

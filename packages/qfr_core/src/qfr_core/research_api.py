@@ -253,6 +253,24 @@ class ProbeReport(Contract):
     notes: list[str]
 
 
+class ProviderAlert(Contract):
+    """A research-zone provider alert: repeated fallbacks or a failed probe."""
+
+    alert_id: UUID7
+    kind: Literal["provider_fallback", "probe_failed"]
+    at: AwareDatetime
+    details: dict[str, JsonValue]
+    state: Literal["open", "acknowledged"]
+    acknowledged_by: str | None
+    acknowledged_at: AwareDatetime | None
+    note: str | None = None
+
+
+class ProviderAlertPage(Contract):
+    items: list[ProviderAlert]
+    open: int = Field(ge=0)
+
+
 class ResearchSummary(Contract):
     """GET /v1/summary: counts for qfr.status."""
 
@@ -264,3 +282,4 @@ class ResearchSummary(Contract):
     currency: str
     research_paused: bool
     last_probe: ProbeReport | None
+    open_alerts: int = Field(default=0, ge=0)

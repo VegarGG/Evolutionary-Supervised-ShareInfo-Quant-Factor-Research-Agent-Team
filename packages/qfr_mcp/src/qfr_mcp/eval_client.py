@@ -8,10 +8,12 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import JsonValue
+from qfr_core.contracts import AlertAckRequest
 from qfr_core.eval_api import (
     AcceptanceCase,
     ActivateRequest,
     AlertPage,
+    AlertView,
     ArtifactStatus,
     Card,
     CaseDecisionRequest,
@@ -80,6 +82,18 @@ class EvalAdminClient(ApiClient):
     async def alerts(self, state: str | None, kind: str | None, limit: int) -> AlertPage:
         params = {"state": state, "kind": kind, "limit": limit}
         return await self._model(AlertPage, "GET", "/v1/alerts", params=params)
+
+    async def acknowledge_alert(self, alert_id: UUID, request: AlertAckRequest) -> AlertView:
+        path = f"/v1/alerts/{alert_id}/acknowledge"
+        return await self._model(AlertView, "POST", path, body=request.model_dump(mode="json"))
+
+    async def burn(self) -> dict[str, JsonValue]:
+        _, data = await self._call("GET", "/v1/burn")
+        return dict(data)
+
+    async def quota_usage(self) -> dict[str, JsonValue]:
+        _, data = await self._call("GET", "/v1/quotas/usage")
+        return dict(data)
 
 
 class FeedbackClient(ApiClient):

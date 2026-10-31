@@ -66,6 +66,8 @@ class LoggingConfig(BaseModel):
     default_search_hours: int = Field(gt=0)
     implicit_range_max_days: int = Field(gt=0)
     tail_default: int = Field(gt=0)
+    correlate_default_days: int = Field(gt=0)
+    export_max_lines: int = Field(gt=0)
 
     @model_validator(mode="after")
     def retention_order(self) -> "LoggingConfig":

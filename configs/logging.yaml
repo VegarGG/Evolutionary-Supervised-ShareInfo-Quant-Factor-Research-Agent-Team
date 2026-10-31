@@ -15,3 +15,8 @@ excluded_text_fields: [request_messages, response_text, prompt, response, raw_ma
 default_search_hours: 24
 implicit_range_max_days: 7
 tail_default: 100
+# qfr.logs.correlate scans this many days when no dates are given: an id is selective, and
+# a job's lines span its whole life (up to max_wall_clock_days).
+correlate_default_days: 30
+# qfr.logs.export writes at most this many lines per file; the result says when it stopped.
+export_max_lines: 500000

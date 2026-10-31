@@ -742,6 +742,14 @@ class LogLine(Contract):
     payload: dict[str, JsonValue] | None = None
 
 
+class AlertAckRequest(Contract):
+    """The owner's acknowledgement of one alert, sent by the front door to the service
+    that raised it (eval-admin-api or research-api)."""
+
+    by: Annotated[str, StringConstraints(min_length=1, max_length=64)]
+    note: Annotated[str, StringConstraints(min_length=1, max_length=2000)] | None = None
+
+
 PUBLIC_CONTRACTS: dict[str, type[Contract]] = {
     "factor_manifest": FactorManifest,
     "strategy_manifest": StrategyManifest,

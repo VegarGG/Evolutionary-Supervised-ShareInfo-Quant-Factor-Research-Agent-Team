@@ -12,6 +12,7 @@ from uuid import UUID
 import pytest
 from qfr_core.ids import uuid7
 from qfr_eval.alerts import raise_alert
+from sqlalchemy import text
 
 from tests.eval.eval_rig import replay_config
 from tests.eval.stack_rig import stack
@@ -193,16 +194,50 @@ def test_an_approval_cannot_name_a_tier_above_the_one_reached(full):
     assert lower["approval"]["scope"]["tier"] == "w1_pass"
 
 
-def test_ops_alerts_lists_the_evaluator_alerts(full):
+def test_ops_alerts_lists_and_acknowledges_the_evaluator_alerts(full):
     full.eval.scheduler.tick()
-    assert full.mcp.ok("qfr.ops.alerts")["data"] == {"items": [], "open": 0}
+    empty = full.mcp.ok("qfr.ops.alerts")["data"]
+    assert empty["items"] == [] and empty["open"]["evaluation"] == 0
+    assert empty["open"]["operations"] == 0
+    # This rig has no research-api: the source is named, not guessed.
+    assert empty["sources"]["research"] == "not_configured"
     with full.eval.db.transaction() as conn:
         raise_alert(
             conn, "decay", "decay:test", {"rolling_rankic_mean": -0.01, "days_below": 20},
             full.eval.clock.now(), "sim-engine", "r",
         )  # fmt: skip
     page = full.mcp.ok("qfr.ops.alerts", kind="decay")["data"]
-    assert page["open"] == 1 and page["items"][0]["kind"] == "decay"
+    assert page["open"]["evaluation"] == 1
+    [item] = page["items"]
+    assert item["kind"] == "decay" and item["source"] == "evaluation"
+    # A kind belongs to one source; the others are skipped rather than asked.
+    assert page["sources"] == {"evaluation": "ok", "research": "skipped", "operations": "skipped"}
     assert full.mcp.ok("qfr.ops.alerts", kind="burn")["data"]["items"] == []
     status = full.mcp.ok("qfr.status")["data"]
-    assert status["alerts"] == {"open": 1, "tool": "qfr.ops.alerts"}
+    assert status["alerts"]["evaluation"] == 1 and status["alerts"]["tool"] == "qfr.ops.alerts"
+    acked = full.mcp.ok(
+        "qfr.ops.acknowledge_alert", source="evaluation", alert_id=item["alert_id"],
+        note="Seen; the factor stays monitored.",
+    )["data"]  # fmt: skip
+    assert (
+        acked["alert"]["state"] == "acknowledged" and acked["alert"]["acknowledged_by"] == "owner"
+    )
+    assert acked["acknowledgement"]["note"] == "Seen; the factor stays monitored."
+    again = full.mcp.ok(
+        "qfr.ops.acknowledge_alert", source="evaluation", alert_id=item["alert_id"]
+    )["data"]
+    assert again["acknowledgement"]["ack_id"] == acked["acknowledgement"]["ack_id"]
+    assert full.mcp.ok("qfr.ops.alerts", state="open")["data"]["open"]["evaluation"] == 0
+    missing = full.mcp.error(
+        "qfr.ops.acknowledge_alert", source="evaluation", alert_id=str(uuid7())
+    )
+    assert "ALERT_NOT_FOUND" in missing
+    with full.eval.db.read() as conn:
+        events = (
+            conn.execute(
+                text("SELECT payload FROM eval.events WHERE action = 'alert_acknowledged'")
+            )
+            .scalars()
+            .all()
+        )
+    assert events == [{"by": "owner", "note": "Seen; the factor stays monitored."}]
