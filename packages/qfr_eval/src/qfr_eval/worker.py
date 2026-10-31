@@ -150,7 +150,7 @@ class MarketCache:
         if self._key != key or self._market is None:
             snapshot = read_snapshot(self.full_dir / snapshot_id)
             self._market = Market.from_panel(
-                snapshot.panel(), plugin.eligibility, snapshot.calendar()
+                snapshot.panel(), plugin.eligibility, snapshot.calendar(), snapshot.industry()
             )
             self._key = key
         return self._market

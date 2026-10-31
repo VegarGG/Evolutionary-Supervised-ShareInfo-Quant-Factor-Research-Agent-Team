@@ -1,7 +1,8 @@
 """Content-addressed, verified data snapshots (PLAN Sections 6.3 and 6.4).
 
 Layout: <root>/<zone>/<snapshot_id>/ with panel/year=YYYY/part.parquet,
-membership.parquet, calendar.parquet and manifest.json. The manifest lists the SHA-256
+membership.parquet, calendar.parquet, optionally industry.parquet (Phase 8, a
+point-in-time industry classification) and manifest.json. The manifest lists the SHA-256
 of every other file, and the snapshot id is the SHA-256 of the canonical manifest JSON,
 so a snapshot cannot change without changing its id. Writes go to a temporary
 directory first and are renamed into place, so readers never see a partial snapshot.
@@ -22,6 +23,7 @@ import polars as pl
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 from qfr_core.config import canonical_json
+from qfr_core.data.industry import INDUSTRY_FILE, INDUSTRY_SCHEMA, check_industry
 from qfr_core.data.panel import (
     CALENDAR_SCHEMA,
     DATE,
@@ -120,12 +122,14 @@ def code_version() -> str:
 
 @dataclass(frozen=True)
 class SnapshotData:
-    """Frames in canonical schema plus extra files (full zone only, e.g. ground truth)."""
+    """Frames in canonical schema plus extra files (full zone only, e.g. ground truth)
+    and, from Phase 8, an optional industry classification (both zones)."""
 
     panel: pl.DataFrame
     membership: pl.DataFrame
     calendar: pl.DataFrame
     extras: dict[str, bytes] = field(default_factory=dict)
+    industry: pl.DataFrame | None = None
 
 
 @dataclass(frozen=True)
@@ -173,6 +177,12 @@ class Snapshot:
     def calendar(self) -> pl.DataFrame:
         return pl.read_parquet(self.path / "calendar.parquet")
 
+    def industry(self) -> pl.DataFrame | None:
+        """The industry classification, or None when the snapshot has none."""
+        if INDUSTRY_FILE not in self.manifest.files:
+            return None
+        return pl.read_parquet(self.path / INDUSTRY_FILE)
+
     def extra(self, name: str) -> bytes:
         if name not in self.manifest.files or name.startswith("panel/"):
             raise SnapshotError(f"{name} is not part of snapshot {self.snapshot_id}")
@@ -200,8 +210,12 @@ def _write_frames(directory: Path, data: SnapshotData) -> None:
         directory / "membership.parquet", compression="zstd"
     )
     data.calendar.sort(DATE).write_parquet(directory / "calendar.parquet", compression="zstd")
+    if data.industry is not None:
+        data.industry.sort(INSTRUMENT, "start").write_parquet(
+            directory / INDUSTRY_FILE, compression="zstd"
+        )
     for name, content in sorted(data.extras.items()):
-        if "/" in name or name in {MANIFEST, CURRENT} or not name:
+        if "/" in name or name in {MANIFEST, CURRENT, INDUSTRY_FILE} or not name:
             raise SnapshotError(f"invalid extra file name {name!r}")
         (directory / name).write_bytes(content)
 
@@ -247,6 +261,9 @@ def write_snapshot(
     check_schema(data.panel, PANEL_SCHEMA, "the panel")
     check_schema(data.membership, MEMBERSHIP_SCHEMA, "the membership table")
     check_schema(data.calendar, CALENDAR_SCHEMA, "the calendar")
+    if data.industry is not None:
+        check_schema(data.industry, INDUSTRY_SCHEMA, "the industry table")
+        check_industry(data.industry)
     if zone == "research" and data.extras:
         raise SnapshotError("research snapshots carry no extra files")
     first, last = _date_bounds(data.calendar, DATE)
@@ -273,7 +290,8 @@ def write_snapshot(
                 "instruments": data.panel.get_column(INSTRUMENT).n_unique(),
                 "dates": data.calendar.height,
                 "membership": data.membership.height,
-            },
+            }
+            | ({} if data.industry is None else {"industry": data.industry.height}),
             research_cutoff=research_window.end if research_window else None,
             research_window=research_window,
             parent_snapshot_id=parent_snapshot_id,
@@ -319,16 +337,21 @@ def check_research_snapshot(snapshot: Snapshot) -> date:
     if manifest.zone != "research" or manifest.research_cutoff is None:
         raise SnapshotError("BND-06: research processes may open research snapshots only")
     cutoff = manifest.research_cutoff
-    extras = [n for n in manifest.files if not n.startswith("panel/")]
+    extras = {n for n in manifest.files if not n.startswith("panel/")} - {INDUSTRY_FILE}
     if sorted(extras) != ["calendar.parquet", "membership.parquet"]:
-        raise SnapshotError("BND-06: research snapshots hold only panel, membership and calendar")
+        raise SnapshotError(
+            "BND-06: research snapshots hold only panel, membership, calendar and industry"
+        )
     _, panel_max = _date_bounds(snapshot.scan_panel().select(DATE).collect(), DATE)
     _, calendar_max = _date_bounds(snapshot.calendar(), DATE)
     _, member_max = _date_bounds(snapshot.membership(), "end")
+    industry = snapshot.industry()
+    _, industry_max = (None, None) if industry is None else _date_bounds(industry, "end")
     for label, value in (
         ("panel", panel_max),
         ("calendar", calendar_max),
         ("membership", member_max),
+        ("industry", industry_max),
     ):
         if value is not None and value > cutoff:
             raise SnapshotError(f"BND-06: {label} data dated {value} is after the cutoff {cutoff}")

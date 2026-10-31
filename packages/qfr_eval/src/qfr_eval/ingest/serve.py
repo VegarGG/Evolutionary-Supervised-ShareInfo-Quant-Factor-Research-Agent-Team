@@ -137,7 +137,9 @@ def replay_source(data: SnapshotData, source: SnapshotSource, first: date) -> Bu
             source.source, source.release_tag, source.archive_sha256, details,
             source.conventions, source.checks,
         )  # fmt: skip
-        snapshot = SnapshotData(part.panel, part.membership, part.calendar, dict(data.extras))
+        snapshot = SnapshotData(
+            part.panel, part.membership, part.calendar, dict(data.extras), part.industry
+        )
         return snapshot, revealed, {"replay_builds": index - start + 1, "through": cut.isoformat()}
 
     return build

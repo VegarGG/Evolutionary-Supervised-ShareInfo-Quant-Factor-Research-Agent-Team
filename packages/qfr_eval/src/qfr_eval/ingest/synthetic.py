@@ -14,7 +14,8 @@ All random numbers are drawn once from the seed (common random numbers). Each al
 is calibrated by bisection on a separate calibration sample so that the evaluator's own
 RankIC of signal k hits its target. Signals are computed here with the same validity
 rules as the DSL; tests check them against the DSL evaluation of the ground-truth
-expressions on the built panel.
+expressions on the built panel. Each name's sector g(i) is fixed for its listed life and
+is published as the snapshot's industry classification (scheme "synthetic", Phase 8).
 """
 
 import math
@@ -39,6 +40,7 @@ Mask = NDArray[np.bool_]
 Ints = NDArray[np.int64]
 
 UNIVERSE = "csi300"
+INDUSTRY_SCHEME = "synthetic"
 LISTED_DAYS_MIN = 60
 GROUND_TRUTH_NOTE = (
     "Test infrastructure for the evaluation side and the benchmark harness only. "
@@ -516,6 +518,23 @@ class SyntheticWorld:
     calendar: pl.DataFrame
     ground_truth: dict[str, Any]
     simulation: Simulation
+    industry: pl.DataFrame
+
+
+def _industry_frame(sim: Simulation, sector: Ints) -> pl.DataFrame:
+    """One interval per name over its listed life: the sector that drives its returns."""
+    records: list[tuple[str, str, date, date, str]] = []
+    for j, name in enumerate(sim.instruments):
+        listed = np.flatnonzero(sim.listed[:, j])
+        if listed.size:
+            first, last = sim.days[int(listed[0])], sim.days[int(listed[-1])]
+            records.append((INDUSTRY_SCHEME, name, first, last, f"S{int(sector[j]):02d}"))
+    return pl.DataFrame(
+        records,
+        schema={"scheme": pl.String, "instrument": pl.String, "start": pl.Date, "end": pl.Date,
+                "industry": pl.String},
+        orient="row",
+    )  # fmt: skip
 
 
 def _observations(sim: Simulation) -> pl.DataFrame:
@@ -614,4 +633,7 @@ def generate(
             for s in signals
         ],
     }
-    return SyntheticWorld(world, days, observations, membership, panel, calendar, ground_truth, sim)
+    industry = _industry_frame(sim, draws.sector)
+    return SyntheticWorld(
+        world, days, observations, membership, panel, calendar, ground_truth, sim, industry
+    )

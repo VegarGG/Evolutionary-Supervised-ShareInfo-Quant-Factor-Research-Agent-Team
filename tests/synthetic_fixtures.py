@@ -111,7 +111,11 @@ def _build_zones(
 
     world = generate(config, world_name, epoch, SETTINGS, MINIMUM)  # type: ignore[arg-type]
     data = SnapshotData(
-        world.panel, world.membership, world.calendar, {"ground_truth.json": b"{}\n"}
+        world.panel,
+        world.membership,
+        world.calendar,
+        {"ground_truth.json": b"{}\n"},
+        industry=world.industry,
     )
     source = SnapshotSource(
         "synthetic", None, None, {"world": world_name}, {}, sanity_checks(world.panel)

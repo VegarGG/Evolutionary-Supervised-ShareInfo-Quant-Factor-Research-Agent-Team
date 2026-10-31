@@ -113,7 +113,9 @@ class SimMarkets:
         if key not in self._cache:
             snapshot = read_snapshot(self.full_dir / snapshot_id)
             panel = snapshot.panel()
-            market = Market.from_panel(panel, plugin.eligibility, snapshot.calendar())
+            market = Market.from_panel(
+                panel, plugin.eligibility, snapshot.calendar(), snapshot.industry()
+            )
             present = np.zeros(market.shape, dtype=bool)
             present[market.rows, market.cols] = True
             self._cache = {

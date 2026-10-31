@@ -80,7 +80,9 @@ class Workbench:
         self.settings = MetricSettings.from_protocol(protocol)
         self.protocol = protocol
         self.panel = self.snapshot.panel()
-        self.market = Market.from_panel(self.panel, self.eligibility, self.snapshot.calendar())
+        self.market = Market.from_panel(
+            self.panel, self.eligibility, self.snapshot.calendar(), self.snapshot.industry()
+        )
         self._fingerprint_dates: list[date] | None = None
 
     def values(self, expression: str) -> tuple[Array, DslAnalysis]:
