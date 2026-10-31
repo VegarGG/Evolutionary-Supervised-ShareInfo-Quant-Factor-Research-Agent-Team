@@ -2,14 +2,13 @@
 
 Status: **implemented; every Phase 3 acceptance check passes in local tests against a
 real PostgreSQL 16; the on-machine test on the Mac Studio is the owner's next step**.
-Owner acceptance and merge are not asserted. Phase 3 is built on the Phase 2 branch
-(PR #13), itself on Phase 1 (PR #12); neither is merged yet. No Phase 4 work has begun.
-Design choices are in [decisions.md](decisions.md#phase-3-decisions).
+Owner acceptance and merge are not asserted. Phase 3 is on main after Phases 1 and 2
+merged (PRs #12 and #13). No Phase 4 work has begun. Design choices are in
+[decisions.md](decisions.md#phase-3-decisions).
 
-One owner decision is open: epoch_001's embargo gaps are 17 and 16 SSE trading days,
-not 20 (decision 4). The evaluator refuses to pin epoch_001 on CN data until the
-windows are moved or the shortfall is accepted. The synthetic dry run below does not
-depend on it.
+By the owner's decision of 2026-10-31, epoch_001's W1 and W2 start on 2020-02-07 and
+2023-02-07 instead of the plan's 2020-02-04 and 2023-02-01, so that every embargo is at
+least 20 SSE trading days (decision 4; `tests/eval/test_epochs.py`).
 
 ## Acceptance checks
 
@@ -57,8 +56,8 @@ Nothing is preloaded: no factors, strategies, pool entries or sample files.
 - `ruff check`, `ruff format --check`, `mypy`, all four import contracts, schema and
   public-card generation (no diff after regeneration) and the license check pass.
 - `pytest -n 4` against PostgreSQL 16 with the Phase 0 roles and all migrations
-  (`QFR_REQUIRE_DB_TESTS=1`): **985 passed, 0 skipped** in about three minutes; Phase
-  3 adds 69 tests. registry_db and eval_db are empty after the run (control_db keeps
+  (`QFR_REQUIRE_DB_TESTS=1`): **987 passed, 0 skipped** in under three minutes; Phase
+  3 adds 71 tests. registry_db and eval_db are empty after the run (control_db keeps
   the one audit row that the Phase 0 boundary test writes on purpose).
 
 Not executed here: Docker image builds, `just up`, `just doctor` and anything on the
@@ -93,9 +92,10 @@ Docker Desktop memory as it is; the point is to see real RAM use.
    `just eval-reproduce <record_id>`; it must print `"match": true`.
 8. **Clean up.** `just down`, then `docker compose -p qfr-dry down -v` to remove only
    the dry run's volumes, and `unset COMPOSE_PROJECT_NAME QFR_EPOCH QFR_INGEST_SOURCE`.
-9. **CN run, after the epoch decision.** Start the real stack with `just up`, then
+9. **CN run.** Start the real stack with `just up`, then
    `just data-build --source cn --release-tag <tag>` while the worker is idle (the CN
-   build is the largest memory user), and `just doctor`. The scheduler pins epoch_001
-   only once its windows satisfy the embargo.
+   build is the largest memory user), and `just doctor`. On its next tick the
+   scheduler pins epoch_001; `qfr.config.get` with `owner_only=true` then shows the
+   pinned windows and the embargo check (gaps 20, 20 and 23).
 
 Send back `just doctor`'s output, the `docker stats` peaks and anything unhealthy.

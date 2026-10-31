@@ -351,10 +351,10 @@ Phase 3 implements P3.1 to P3.8 only: eval_db, the scheduler and queue, the eval
 worker with screening and W1, the release engine, feedback-api, eval-admin-api,
 `qfr eval reproduce` and the daily data-ingest service, plus the MCP tools that reach
 them. Strategies are held at intake (their plugin is Phase 6); W2, simulation,
-acceptance, approvals, research jobs and providers are not started. It is built on the
-Phase 2 branch (PR #13), itself on Phase 1 (PR #12), neither merged yet. The Phase 3
-on-machine test on the Mac Studio is left to the owner, and Docker Desktop memory is
-not changed.
+acceptance, approvals, research jobs and providers are not started. It was built on
+the Phase 2 branch and rebased onto main once Phases 1 and 2 merged (PRs #12 and #13).
+The Phase 3 on-machine test on the Mac Studio is left to the owner, and Docker Desktop
+memory is not changed.
 
 1. **eval_db is insert-only where the plan says so.** Official records, the trial
    ledger, metrics, series files, released reports, events, burn history and quota
@@ -374,13 +374,17 @@ not changed.
    (`protocol_epoch_ref_matches`), so a synthetic dry run with
    `QFR_EPOCH=synthetic_001` is visible as such rather than silently passing. Switching
    epochs later needs a fresh evaluator database; rollover is Phase 8.
-4. **The embargo is enforced, and epoch_001 currently fails it.** Activation resolves
-   the windows on the snapshot's own trading calendar and refuses with
-   `EMBARGO_TOO_SHORT` when any gap is below `embargo_trading_days` (20). On the SSE
-   calendar, epoch_001's W0→W1 gap is 17 trading days and W1→W2 is 16 (Spring Festival
-   holidays). The windows are not moved silently: the choice (move W1 to 2020-02-07
-   and W2 to 2023-02-07, or record the shortfall) is with the owner. Until then the
-   scheduler logs `epoch_activation_refused` and evaluates nothing on CN data.
+4. **The embargo is enforced, and epoch_001's W1 and W2 start later than the plan's
+   defaults.** Activation resolves the windows on the snapshot's own trading calendar
+   and refuses with `EMBARGO_TOO_SHORT` (logged as `epoch_activation_refused`) when any
+   gap is below `embargo_trading_days` (20). On the SSE calendar the plan's dates
+   (W1 from 2020-02-04, W2 from 2023-02-01) leave 17 and 16 trading days because of
+   the Spring Festival closures. The owner chose on 2026-10-31 to move the starts to
+   2020-02-07 and 2023-02-07, which gives 20, 20 and 23 (checked against the
+   exchange_calendars XSHG calendar; `tests/eval/test_epochs.py` keeps the check). The
+   window ends, W0 and W3 are unchanged. The file keeps version 1 because no epoch was
+   ever activated with the old dates: no evaluator before Phase 3 existed, and Phase 3
+   refuses them.
 5. **Two job kinds.** A `fingerprint` job computes the 40-date W0 fingerprint that
    behavioral dedup needs; an `evaluate` job screens and, on a pass, runs W1.
    Fingerprint jobs are claimed first. The queue is fair round-robin across families
