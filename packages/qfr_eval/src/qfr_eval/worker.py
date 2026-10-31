@@ -11,6 +11,7 @@ keys and have no network route outside eval_net; measurement uses fixed seeds an
 wall clock.
 """
 
+import hashlib
 import os
 import time
 import traceback
@@ -25,7 +26,13 @@ import numpy as np
 import polars as pl
 from pydantic import TypeAdapter
 from qfr_core.config import RuntimeSettings, canonical_json
-from qfr_core.contracts import FactorManifest, Manifest, ReasonCode, StrategyManifest
+from qfr_core.contracts import (
+    FactorManifest,
+    Manifest,
+    PythonImplementation,
+    ReasonCode,
+    StrategyManifest,
+)
 from qfr_core.correlation import bind, current
 from qfr_core.data.snapshot import read_snapshot
 from qfr_core.dsl import DslError, compile_expression
@@ -33,6 +40,7 @@ from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
 from qfr_core.metrics.fingerprint import fingerprint_dates, fingerprint_rows
 from qfr_core.metrics.matrix import Array, Market
+from qfr_core.pyfactor import check_source
 from sqlalchemy import bindparam, text
 from sqlalchemy.engine import Connection
 
@@ -71,6 +79,12 @@ from qfr_eval.runtime import (
     service_logger,
     start_heartbeat,
 )
+from qfr_eval.sandbox import (
+    ExchangeTransport,
+    LocalTransport,
+    PythonComputeRequest,
+    PythonRunner,
+)
 from qfr_eval.store import ArtifactStore
 
 SERVICE = "eval-worker"
@@ -89,12 +103,15 @@ class LibraryMember:
 
 @dataclass(frozen=True)
 class Component:
-    """A strategy component as the evaluator knows it: its own copy of the expression."""
+    """A strategy component as the evaluator knows it: its own copy of the expression, or
+    of a Python factor's module."""
 
     version_id: str
     kind: str
     state: str
     expression: str | None
+    python: PythonImplementation | None = None
+    lookback: int = 0
 
 
 @dataclass(frozen=True)
@@ -150,12 +167,18 @@ def read_components(conn: Connection, manifest: Manifest) -> dict[str, Component
     out = {}
     for row in rows:
         body = (row.manifest or {}).get("manifest") or {}
-        expression = (body.get("implementation") or {}).get("expression")
+        implementation = body.get("implementation") or {}
+        expression = implementation.get("expression")
+        python = None
+        if implementation.get("language") == "qfr-python/1":
+            python = PythonImplementation.model_validate(implementation)
         out[str(row.version_id)] = Component(
             str(row.version_id),
             row.kind,
             row.state,
             expression if isinstance(expression, str) else None,
+            python,
+            int((body.get("declared") or {}).get("max_lookback_days") or 0),
         )
     return out
 
@@ -191,9 +214,52 @@ class Evaluator:
     """The measurement itself; used by the worker, the simulation engine and
     `qfr eval reproduce`."""
 
-    def __init__(self, env: EvalEnvironment, runner: Runner, markets: MarketCache) -> None:
-        self.env, self.runner, self.markets = env, runner, markets
+    def __init__(
+        self,
+        env: EvalEnvironment,
+        runner: Runner,
+        markets: MarketCache,
+        python: PythonRunner | None = None,
+    ) -> None:
+        self.env, self.runner, self.markets, self.python = env, runner, markets, python
         self.store = ArtifactStore(env.store_dir)
+
+    def _python(
+        self,
+        plugin: FactorPlugin,
+        snapshot_id: str,
+        implementation: PythonImplementation,
+        lookback: int,
+        rows: list[int],
+        cuts: list[int],
+    ) -> ComputeOutput:
+        """A Python factor's values, computed in the sandbox (P8.1)."""
+        if self.python is None or plugin.python is None:
+            raise RuntimeError("no sandbox is configured for Python factors")
+        check = check_source(implementation.source, plugin.python)
+        if check.analysis is None:
+            return ComputeOutput(
+                ComputeResult(status="refused", error_code=ReasonCode.FORBIDDEN_CONSTRUCT.value),
+                None,
+            )
+        screening = plugin.screening
+        protocol_seed = int(plugin.protocol["fingerprint"]["seed"])
+        digest = hashlib.sha256(f"{protocol_seed}:{check.analysis.canonical_hash}".encode())
+        request = PythonComputeRequest(
+            snapshot_path=str(self.env.full_snapshot_dir / snapshot_id),
+            source=implementation.source,
+            parameters=check.analysis.parameters,
+            limits=plugin.python,
+            eligibility=plugin.eligibility,
+            rows=rows,
+            probe_cuts=cuts,
+            lookback=lookback,
+            tolerance=float(screening["prefix_tolerance"]),
+            cpu_seconds=float(screening["cpu_seconds"]),
+            memory_bytes=int(float(screening["memory_gb"]) * GB),
+            seed=int.from_bytes(digest.digest()[:4], "big"),
+        )
+        return self.python.run(request)
 
     def _request(
         self,
@@ -235,9 +301,12 @@ class Evaluator:
         from their expressions and combined; the second item holds each component's
         values on the whole market (rows filled), for the contribution table."""
         if isinstance(manifest, FactorManifest):
+            implementation = manifest.implementation
+            if isinstance(implementation, PythonImplementation):
+                lookback = manifest.declared.max_lookback_days
+                return self._python(plugin, snapshot_id, implementation, lookback, rows, cuts), {}
             request = self._request(
-                plugin, snapshot_id, manifest.implementation.expression, rows, cuts,
-                load_cpu_seconds,
+                plugin, snapshot_id, implementation.expression, rows, cuts, load_cpu_seconds,
             )  # fmt: skip
             return self.runner.run(request), {}
         assert isinstance(manifest, StrategyManifest) and isinstance(plugin, StrategyPlugin)
@@ -245,12 +314,17 @@ class Evaluator:
         values: dict[str, Array] = {}
         for item in manifest.implementation.components:
             component = components.get(str(item.version_id))
-            if component is None or component.expression is None:
-                raise RuntimeError("a strategy component has no expression in intake")
-            request = self._request(
-                plugin, snapshot_id, component.expression, rows, cuts, load_cpu_seconds
-            )
-            output = self.runner.run(request)
+            if component is not None and component.python is not None:
+                output = self._python(
+                    plugin, snapshot_id, component.python, component.lookback, rows, cuts
+                )
+            else:
+                if component is None or component.expression is None:
+                    raise RuntimeError("a strategy component has no expression in intake")
+                request = self._request(
+                    plugin, snapshot_id, component.expression, rows, cuts, load_cpu_seconds
+                )
+                output = self.runner.run(request)
             if output.result.status != "ok" or output.values is None:
                 return output, {}
             results.append(output.result)
@@ -299,6 +373,14 @@ class Evaluator:
             return reasons, None
         complexity = 0
         for component in components.values():
+            if component.python is not None:
+                if plugin.python is None:
+                    return [ReasonCode.COMPONENT_INVALID], None
+                check = check_source(component.python.source, plugin.python)
+                if not check.ok or check.analysis is None:
+                    return [ReasonCode.COMPONENT_INVALID], None
+                complexity += check.analysis.node_count
+                continue
             try:
                 compiled = compile_expression(component.expression or "", plugin.limits)
             except DslError:
@@ -428,6 +510,20 @@ def make_runner(config: EvalConfig, store: ArtifactStore, scratch: Path | None =
     return SubprocessRunner(config.runner.wall_clock_factor, scratch or store.scratch())
 
 
+def make_python_runner(
+    config: EvalConfig, env: EvalEnvironment, scratch: Path | None = None
+) -> PythonRunner | None:
+    """The sandbox runner for Python factors: the eval-sandbox exchange volume in
+    production, local children in tests. None when no exchange volume is mounted: a
+    Python factor then fails as an internal error and is retried, never run here."""
+    factor = config.runner.wall_clock_factor
+    if config.sandbox.mode == "local":
+        return PythonRunner(LocalTransport(scratch or Path(env.store_dir) / "sandbox"), factor)
+    if env.sandbox_dir is None:
+        return None
+    return PythonRunner(ExchangeTransport(env.sandbox_dir, config.sandbox.poll_seconds), factor)
+
+
 class Worker:
     def __init__(
         self,
@@ -443,7 +539,10 @@ class Worker:
         self.clock = clock or SystemClock()
         self.store = ArtifactStore(env.store_dir)
         self.evaluator = Evaluator(
-            env, runner or make_runner(config, self.store), MarketCache(env.full_snapshot_dir)
+            env,
+            runner or make_runner(config, self.store),
+            MarketCache(env.full_snapshot_dir),
+            make_python_runner(config, env),
         )
 
     # Shared ------------------------------------------------------------------------

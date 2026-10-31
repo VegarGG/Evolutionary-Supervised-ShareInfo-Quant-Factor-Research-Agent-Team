@@ -235,6 +235,35 @@
       "title": "Provenance",
       "type": "object"
     },
+    "PythonImplementation": {
+      "additionalProperties": false,
+      "description": "A qfr-python/1 module (Phase 8): `factor(...)` over field matrices, run only in the\nevaluator's sandbox. The protocol's python section caps the length; this is the\nschema's outer bound.",
+      "properties": {
+        "entrypoint": {
+          "const": "factor",
+          "title": "Entrypoint",
+          "type": "string"
+        },
+        "language": {
+          "const": "qfr-python/1",
+          "title": "Language",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "language",
+        "source",
+        "entrypoint"
+      ],
+      "title": "PythonImplementation",
+      "type": "object"
+    },
     "Rationale": {
       "additionalProperties": false,
       "properties": {
@@ -361,7 +390,22 @@
       "title": "Family Id"
     },
     "implementation": {
-      "$ref": "#/$defs/FactorImplementation"
+      "discriminator": {
+        "mapping": {
+          "qfr-dsl/1": "#/$defs/FactorImplementation",
+          "qfr-python/1": "#/$defs/PythonImplementation"
+        },
+        "propertyName": "language"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/FactorImplementation"
+        },
+        {
+          "$ref": "#/$defs/PythonImplementation"
+        }
+      ],
+      "title": "Implementation"
     },
     "kind": {
       "const": "factor",

@@ -17,12 +17,13 @@ from uuid import UUID
 from pydantic import JsonValue
 from qfr_core.composite import normalized_weights, strategy_canonical_hash, strategy_diff
 from qfr_core.config import RegistryConfig, canonical_json
-from qfr_core.contracts import FactorManifest, PoolEntry, StrategyManifest
+from qfr_core.contracts import FactorManifest, PoolEntry, PythonImplementation, StrategyManifest
 from qfr_core.correlation import bind
 from qfr_core.dsl import DslLimits, ast_diff, declaration_mismatches, validate
 from qfr_core.dsl.diff import parse_fragment
 from qfr_core.ids import uuid7
 from qfr_core.logging import JsonLogger
+from qfr_core.pyfactor import PythonLimits, check_source, declaration_errors
 from qfr_core.registry_api import (
     AddEntryRequest,
     AddEntryResponse,
@@ -128,9 +129,56 @@ EVENT_COLUMNS = """pe.event_id, pe.event_seq, pe.entry_id, e.pool, e.version_id,
 
 class RegistryService:
     def __init__(
-        self, db: Database, limits: DslLimits, config: RegistryConfig, logger: JsonLogger
+        self,
+        db: Database,
+        limits: DslLimits,
+        config: RegistryConfig,
+        logger: JsonLogger,
+        python: PythonLimits | None = None,
     ) -> None:
         self.db, self.limits, self.config, self.logger = db, limits, config, logger
+        self.python = python
+
+    def _analyze_python(
+        self, manifest: FactorManifest, implementation: PythonImplementation
+    ) -> tuple[dict[str, JsonValue], str, str]:
+        """qfr-python/1 (Phase 8): the module must parse, keep to the language and name its
+        fields; the size cap is screening's to enforce and is recorded here. The registry
+        never runs the code."""
+        if self.python is None:
+            raise RegistryError(
+                400, "KIND_UNSUPPORTED", "this deployment does not accept qfr-python/1 factors"
+            )
+        check = check_source(implementation.source, self.python)
+        refusing = [e for e in check.errors if e.code != "COMPLEXITY_LIMIT"]
+        if check.analysis is None or refusing:
+            errors = refusing or check.errors
+            raise RegistryError(
+                400,
+                errors[0].code,
+                errors[0].message,
+                [{"field": "manifest.implementation.source", **e.as_dict()} for e in errors],
+            )
+        mismatches = declaration_errors(
+            check.analysis,
+            list(manifest.declared.fields_used),
+            manifest.declared.max_lookback_days,
+            self.python.max_lookback_days,
+        )
+        declared = [e for e in mismatches if e.code == "DECLARATION_MISMATCH"]
+        if declared:
+            raise RegistryError(
+                400,
+                "DECLARATION_MISMATCH",
+                "declared fields differ from the factor() parameters",
+                [{"field": "manifest.declared", **e.as_dict()} for e in declared],
+            )
+        analysis: dict[str, JsonValue] = check.analysis.as_dict() | {
+            "static_limit_errors": [
+                e.as_dict() for e in check.errors + mismatches if e.code == "COMPLEXITY_LIMIT"
+            ]
+        }
+        return analysis, check.analysis.canonical_hash, implementation.source
 
     # ------------------------------------------------------------------ publication
 
@@ -149,6 +197,8 @@ class RegistryService:
             }
             payload = canonical_json(impl.model_dump(mode="json"))
             return analysis, strategy_canonical_hash(impl), payload
+        if isinstance(manifest.implementation, PythonImplementation):
+            return self._analyze_python(manifest, manifest.implementation)
         expression = manifest.implementation.expression
         check = validate(expression, self.limits)
         if check.analysis is None:
@@ -252,8 +302,8 @@ class RegistryService:
         rows = {
             row["version_id"]: row
             for row in conn.execute(
-                text("""SELECT version_id, kind, manifest, analysis FROM artifact_versions
-                        WHERE version_id = ANY(:ids)"""),
+                text("""SELECT version_id, kind, manifest, analysis, canonical_hash
+                        FROM artifact_versions WHERE version_id = ANY(:ids)"""),
                 {"ids": list(ids)},
             ).mappings()
         }
@@ -270,12 +320,22 @@ class RegistryService:
             )
         edges: list[dict[str, Any]] = []
         if isinstance(manifest, FactorManifest):
-            child = parse_fragment(canonical)
+            python = isinstance(manifest.implementation, PythonImplementation)
+            child = None if python else parse_fragment(canonical)
             for version_id in ids:
                 parent = rows[version_id]
                 if parent["kind"] != "factor":
                     raise RegistryError(409, "KIND_CONFLICT", "a factor's parents are factors")
-                diff = ast_diff(parse_fragment(parent["analysis"]["canonical"]), child)
+                parent_canonical = (parent["analysis"] or {}).get("canonical")
+                if child is None or not isinstance(parent_canonical, str):
+                    # A Python module on either side: the edge names the two module hashes
+                    # (the DSL's AST diff does not apply).
+                    before = parent_canonical or parent["canonical_hash"]
+                    diff: Any = [
+                        {"op": "replace_module", "path": [], "from": before, "to": canonical}
+                    ]
+                else:
+                    diff = ast_diff(parse_fragment(parent_canonical), child)
                 edges.append({"parent": version_id, "relation": "parent", "diff": diff})
             return edges
         components = {c.version_id for c in manifest.implementation.components}
@@ -357,7 +417,7 @@ class RegistryService:
                     [{"field": "publish_key", "version_id": str(reused)}],
                 )
             family_id, created_family = self._family(conn, manifest, principal, request_id, now)
-            edges = self._parents(conn, manifest, str(analysis.get("canonical", "")))
+            edges = self._parents(conn, manifest, str(analysis.get("canonical") or canonical))
             version_no: int = conn.execute(
                 text(
                     "SELECT COALESCE(max(version_no), 0) + 1 FROM artifact_versions "

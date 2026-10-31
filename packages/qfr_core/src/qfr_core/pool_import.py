@@ -29,6 +29,7 @@ from qfr_core.contracts import (
     Hash,
     PoolImportEntry,
     Provenance,
+    PythonImplementation,
     Rationale,
     ReasonCode,
     Review,
@@ -38,6 +39,7 @@ from qfr_core.contracts import (
     StrategyRationale,
 )
 from qfr_core.dsl import DslAnalysis, DslLimits, validate
+from qfr_core.pyfactor import ENTRYPOINT, LANGUAGE, PythonAnalysis, PythonLimits, check_source
 
 SCHEMA_VERSION = "pool_import/1"
 FORMATS = (".json", ".yaml", ".yml", ".csv")
@@ -75,7 +77,7 @@ class EntryError(Contract):
 class ValidEntry:
     index: int
     entry: PoolImportEntry
-    analysis: DslAnalysis | None  # Set for factor entries.
+    analysis: DslAnalysis | PythonAnalysis | None  # Set for factor entries.
 
 
 @dataclass(frozen=True)
@@ -180,13 +182,41 @@ def _identity(raw: JsonValue) -> tuple[str | None, Literal["factor", "strategy"]
     kind: Literal["factor", "strategy"] | None = None
     if raw.get("strategy") is not None:
         kind = "strategy"
-    elif raw.get("expression") is not None:
+    elif raw.get("expression") is not None or raw.get("python") is not None:
         kind = "factor"
     return (name if isinstance(name, str) else None), kind
 
 
+def _python_entry(
+    index: int, entry: PoolImportEntry, limits: PythonLimits | None
+) -> ValidEntry | InvalidEntry:
+    """A qfr-python/1 entry: the same static rules as the registry. Size caps are
+    screening's to enforce, as for the DSL."""
+    assert entry.python is not None
+    if limits is None:
+        error = EntryError(
+            reason_code=ReasonCode.KIND_UNSUPPORTED,
+            message="the shipped protocol does not accept qfr-python/1 factors",
+            field="python",
+        )
+        return InvalidEntry(index, entry.name, "factor", [error])
+    check = check_source(entry.python.source, limits)
+    refusing = [e for e in check.errors if e.code != "COMPLEXITY_LIMIT"]
+    if check.analysis is None or refusing:
+        errors = [
+            EntryError(
+                reason_code=ReasonCode(e.code),
+                message=e.message if e.line is None else f"line {e.line}: {e.message}",
+                field="python.source",
+            )
+            for e in (refusing or check.errors)
+        ]
+        return InvalidEntry(index, entry.name, "factor", errors)
+    return ValidEntry(index, entry, check.analysis)
+
+
 def validate_entries(
-    raw_entries: Sequence[JsonValue], limits: DslLimits
+    raw_entries: Sequence[JsonValue], limits: DslLimits, python: PythonLimits | None = None
 ) -> list[ValidEntry | InvalidEntry]:
     """Validate every entry on its own, in file order."""
     results: list[ValidEntry | InvalidEntry] = []
@@ -206,6 +236,9 @@ def validate_entries(
             results.append(InvalidEntry(index, entry.name, entry.kind, [error_item]))
             continue
         seen[entry.name] = index
+        if entry.python is not None:
+            results.append(_python_entry(index, entry, python))
+            continue
         if entry.expression is None:
             results.append(ValidEntry(index, entry, None))
             continue
@@ -266,6 +299,7 @@ def entry_digest(entry: PoolImportEntry, components: Mapping[str, UUID] | None =
         "name": entry.name,
         "title": entry.title,
         "expression": entry.expression.strip() if entry.expression else None,
+        "python": entry.python.model_dump(mode="json") if entry.python else None,
         "expected_sign": entry.expected_sign,
         "horizon_days": entry.horizon_days,
         "notes": entry.notes,
@@ -295,13 +329,25 @@ def _provenance(ids: SeedIds, parents: list[UUID], core_version: str) -> Provena
 
 def factor_seed_manifest(
     entry: PoolImportEntry,
-    analysis: DslAnalysis,
+    analysis: DslAnalysis | PythonAnalysis,
     ids: SeedIds,
     family_id: UUID | None,
     previous_version_id: UUID | None,
     core_version: str,
 ) -> FactorManifest:
-    assert entry.expression is not None
+    implementation: FactorImplementation | PythonImplementation
+    if entry.python is not None:
+        assert isinstance(analysis, PythonAnalysis)
+        implementation = PythonImplementation(
+            language=LANGUAGE, source=entry.python.source, entrypoint=ENTRYPOINT
+        )
+        lookback = entry.python.max_lookback_days
+    else:
+        assert entry.expression is not None and isinstance(analysis, DslAnalysis)
+        implementation = FactorImplementation(
+            language="qfr-dsl/1", expression=entry.expression.strip()
+        )
+        lookback = analysis.max_lookback_days
     direction = "positive" if entry.expected_sign == 1 else "negative"
     change = None
     if previous_version_id is not None:
@@ -315,14 +361,12 @@ def factor_seed_manifest(
         family_id=family_id,
         name=entry.name,
         title=entry.title,
-        implementation=FactorImplementation(
-            language="qfr-dsl/1", expression=entry.expression.strip()
-        ),
+        implementation=implementation,
         declared=FactorDeclaration(
             expected_sign=entry.expected_sign,
             horizon_days=entry.horizon_days,
             fields_used=list(analysis.fields),
-            max_lookback_days=analysis.max_lookback_days,
+            max_lookback_days=lookback,
         ),
         rationale=Rationale(
             hypothesis_id=ids.hypothesis_id,

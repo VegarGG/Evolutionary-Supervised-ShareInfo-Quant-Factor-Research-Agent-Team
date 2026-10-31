@@ -153,6 +153,10 @@ class ProtocolConfig(BaseModel):
     gates: dict[str, dict[str, JsonValue]]
     simulation: dict[str, JsonValue]
     monitoring: dict[str, JsonValue]
+    # Phase 8 sections. A protocol activated before Phase 8 has none: Python factors are
+    # then refused as an unsupported kind, and strategies keep the v1 rules.
+    python: dict[str, JsonValue] | None = None
+    strategy_rules: dict[str, JsonValue] | None = None
 
 
 class PolicyConfig(BaseModel):

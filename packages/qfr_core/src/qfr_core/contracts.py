@@ -133,6 +133,19 @@ class FactorImplementation(Contract):
     expression: Annotated[str, StringConstraints(min_length=1, max_length=1000)]
 
 
+class PythonImplementation(Contract):
+    """A qfr-python/1 module (Phase 8): `factor(...)` over field matrices, run only in the
+    evaluator's sandbox. The protocol's python section caps the length; this is the
+    schema's outer bound."""
+
+    language: Literal["qfr-python/1"]
+    source: Annotated[str, StringConstraints(min_length=1, max_length=50000)]
+    entrypoint: Literal["factor"]
+
+
+FactorCode = Annotated[FactorImplementation | PythonImplementation, Field(discriminator="language")]
+
+
 class Declaration(Contract):
     expected_sign: Sign
     horizon_days: Horizon
@@ -149,7 +162,7 @@ class FactorManifest(Contract):
     family_id: UUID7 | None
     name: Slug
     title: ShortText
-    implementation: FactorImplementation
+    implementation: FactorCode
     declared: FactorDeclaration
     rationale: Rationale
     provenance: Provenance
@@ -671,12 +684,22 @@ class ImportStrategy(Contract):
         return self
 
 
+class ImportPython(Contract):
+    """A qfr-python/1 factor in a pool import (Phase 8): the module and its declared
+    lookback, which the evaluator's window probe checks."""
+
+    source: Annotated[str, StringConstraints(min_length=1, max_length=50000)]
+    max_lookback_days: int = Field(ge=0, le=10000)
+
+
 class PoolImportEntry(Contract):
-    """One raw-pool row: a factor (expression) or a strategy over factor rows (strategy)."""
+    """One raw-pool row: a factor (a DSL expression or a qfr-python/1 module) or a
+    strategy over factor rows."""
 
     name: Slug
     title: ShortText
     expression: Annotated[str, StringConstraints(min_length=1, max_length=1000)] | None = None
+    python: ImportPython | None = None
     expected_sign: Sign
     horizon_days: Horizon
     tags: list[Tag] = Field(default_factory=list)
@@ -686,15 +709,18 @@ class PoolImportEntry(Contract):
 
     @model_validator(mode="after")
     def one_kind(self) -> Self:
-        if (self.expression is None) == (self.strategy is None):
-            raise ValueError("an entry needs exactly one of expression (factor) or strategy")
+        given = [self.expression is not None, self.python is not None, self.strategy is not None]
+        if given.count(True) != 1:
+            raise ValueError(
+                "an entry needs exactly one of expression or python (factor) or strategy"
+            )
         if self.strategy is not None and self.expected_sign != 1:
             raise ValueError("a strategy's direction is always +1 after component signs")
         return self
 
     @property
     def kind(self) -> Literal["factor", "strategy"]:
-        return "factor" if self.expression is not None else "strategy"
+        return "strategy" if self.strategy is not None else "factor"
 
 
 class PoolImport(Contract):
@@ -706,7 +732,7 @@ class PoolImport(Contract):
         names = [entry.name for entry in self.entries]
         if len(names) != len(set(names)):
             raise ValueError("import names must be unique")
-        factors = {entry.name for entry in self.entries if entry.expression is not None}
+        factors = {entry.name for entry in self.entries if entry.kind == "factor"}
         for entry in self.entries:
             if entry.strategy and any(c.name not in factors for c in entry.strategy.components):
                 raise ValueError("import strategy references an unknown factor entry")

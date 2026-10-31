@@ -78,6 +78,15 @@ class SimulationConfig(BaseModel):
     replay_days_per_tick: int = Field(ge=1)
 
 
+class SandboxConfig(BaseModel):
+    """Where Python factors run (P8.1): the eval-sandbox service through the exchange
+    volume in production; local children only in tests."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    mode: Literal["exchange", "local"]
+    poll_seconds: float = Field(gt=0)
+
+
 class EvalConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     version: str
@@ -88,6 +97,7 @@ class EvalConfig(BaseModel):
     apis: dict[Literal["feedback", "admin"], ApiConfig]
     ingest: IngestConfig
     simulation: SimulationConfig
+    sandbox: SandboxConfig
 
 
 def eval_config(root: Path) -> EvalConfig:
@@ -107,6 +117,8 @@ class EvalEnvironment:
     code_version: str
     image_digest: str
     worker_id: str = field(default_factory=lambda: f"{os.uname().nodename}-{os.getpid()}")
+    # The sandbox exchange volume (Python factors); None where no Python factor runs.
+    sandbox_dir: Path | None = None
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str], settings: RuntimeSettings) -> "EvalEnvironment":
@@ -119,6 +131,9 @@ class EvalEnvironment:
             code_version=environ.get("QFR_GIT_SHA")
             or f"qfr-eval-{importlib.metadata.version('qfr-eval')}",
             image_digest=environ.get("QFR_IMAGE_DIGEST") or "unpinned",
+            sandbox_dir=Path(environ["QFR_SANDBOX_DIR"])
+            if environ.get("QFR_SANDBOX_DIR")
+            else None,
         )
 
 

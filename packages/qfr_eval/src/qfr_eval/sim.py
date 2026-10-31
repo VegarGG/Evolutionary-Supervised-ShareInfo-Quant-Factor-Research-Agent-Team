@@ -74,7 +74,14 @@ from qfr_eval.runtime import (
     service_logger,
 )
 from qfr_eval.store import ArtifactStore
-from qfr_eval.worker import MANIFEST, Evaluator, MarketCache, make_runner, read_components
+from qfr_eval.worker import (
+    MANIFEST,
+    Evaluator,
+    MarketCache,
+    make_python_runner,
+    make_runner,
+    read_components,
+)
 
 SERVICE = "sim-engine"
 LIVE = ("waiting", "running", "paused")
@@ -194,11 +201,14 @@ class SimEngine:
         self.store = ArtifactStore(env.store_dir)
         # The engine reads the evaluation store (fingerprints and trial series) but never
         # writes it; the runner's scratch files go to a private temporary directory.
+        scratch = Path(os.environ.get("QFR_SCRATCH_DIR") or tempfile.gettempdir()) / "qfr-sim"
         if runner is None:
-            scratch = Path(os.environ.get("QFR_SCRATCH_DIR") or tempfile.gettempdir()) / "qfr-sim"
             scratch.mkdir(parents=True, exist_ok=True)
             runner = make_runner(config, self.store, scratch)
-        self.evaluator = Evaluator(env, runner, MarketCache(env.full_snapshot_dir))
+        self.evaluator = Evaluator(
+            env, runner, MarketCache(env.full_snapshot_dir),
+            make_python_runner(config, env, scratch / "sandbox"),
+        )  # fmt: skip
         self.markets = SimMarkets(env.full_snapshot_dir)
         deployment = deployment or load_yaml(env.config_dir / "deployment.yaml")
         self.tz = ZoneInfo(str(deployment["timezone"]))

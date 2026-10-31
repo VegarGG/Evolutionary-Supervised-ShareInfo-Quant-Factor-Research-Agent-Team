@@ -29,6 +29,7 @@ from qfr_core.contracts import (
     DiagnosticFlag,
     FactorManifest,
     HorizonKey,
+    PythonImplementation,
     ReasonCode,
     SimulationContent,
     StrategyManifest,
@@ -40,6 +41,7 @@ from qfr_core.eligibility import Eligibility
 from qfr_core.metrics.factor import FactorEvaluation, MetricSettings, evaluate_factor
 from qfr_core.metrics.matrix import Array, Market
 from qfr_core.metrics.stats import moments
+from qfr_core.pyfactor import PythonLimits, check_source, declaration_errors
 
 from qfr_eval.compute import ComputeResult
 
@@ -154,11 +156,34 @@ class FactorPlugin:
         self.settings = MetricSettings.from_protocol(protocol)
         self.screening = protocol["screening"]
         self.gates = protocol["gates"]["w1_factor"]
+        # qfr-python/1 is evaluated only under a protocol with a python section (Phase 8).
+        self.python = PythonLimits.from_protocol(protocol) if protocol.get("python") else None
 
     # Screening -------------------------------------------------------------------------
 
+    def python_checks(
+        self, implementation: PythonImplementation, fields: list[str], lookback: int
+    ) -> tuple[list[ReasonCode], int | None]:
+        """The qfr-python/1 static rules and the declaration (Section 7.7, P8.1)."""
+        if self.python is None:
+            return [ReasonCode.KIND_UNSUPPORTED], None
+        check = check_source(implementation.source, self.python)
+        errors = list(check.errors)
+        if check.analysis is not None:
+            errors += declaration_errors(
+                check.analysis, fields, lookback, self.python.max_lookback_days
+            )
+        reasons = sorted({ReasonCode(e.code) for e in errors}, key=lambda c: c.value)
+        return reasons, None if check.analysis is None else check.analysis.node_count
+
     def static_checks(self, manifest: FactorManifest) -> tuple[list[ReasonCode], int | None]:
         """Parse, type check, constraints and declared-versus-parsed consistency."""
+        if isinstance(manifest.implementation, PythonImplementation):
+            return self.python_checks(
+                manifest.implementation,
+                list(manifest.declared.fields_used),
+                manifest.declared.max_lookback_days,
+            )
         try:
             compiled = compile_expression(manifest.implementation.expression, self.limits)
         except DslError as error:
@@ -179,13 +204,15 @@ class FactorPlugin:
         window: tuple[int, int],
     ) -> StageOutcome:
         """Coverage, the prefix-invariance probe, runtime limits and degeneracy on W1."""
-        resources = {
+        resources: dict[str, Any] = {
             "cpu_seconds": result.cpu_seconds,
             "probe_cpu_seconds": result.probe_cpu_seconds,
             "peak_rss_bytes": result.peak_rss_bytes,
             "limit": result.limit,
         }
-        if result.status == "dsl_error":
+        if result.sandbox is not None:
+            resources["sandbox"] = result.sandbox
+        if result.status in ("dsl_error", "refused"):
             code = ReasonCode(result.error_code or ReasonCode.PARSE_ERROR)
             return StageOutcome("screening", False, [code], {}, {"status": "FAIL"}, resources)
         if result.status == "runtime_limit" or values is None:
@@ -231,6 +258,25 @@ class FactorPlugin:
             "reasons": [r.value for r in reasons],
             "probe_cuts": [p.cut.isoformat() for p in result.probes],
         }
+        if result.sandbox is not None:
+            # A Python factor's value at a cut must not change when only its declared
+            # lookback is given: the lookback is honest and the code does not depend on
+            # its absolute row position (it never sees a date).
+            window_mismatches = sum(p.mismatches for p in result.window_probes)
+            if window_mismatches > 0:
+                reasons.append(ReasonCode.DECLARATION_MISMATCH)
+            metrics |= {
+                "window_probe_cut_dates": float(len(result.window_probes)),
+                "window_probe_mismatches": float(window_mismatches),
+                "window_probe_max_abs_diff": _f(
+                    max((p.max_abs_diff or 0.0 for p in result.window_probes), default=0.0)
+                ),
+            }
+            summary |= {
+                "status": "PASS" if not reasons else "FAIL",
+                "reasons": [r.value for r in reasons],
+                "window_probe_cuts": [p.cut.isoformat() for p in result.window_probes],
+            }
         return StageOutcome("screening", not reasons, reasons, metrics, summary, resources)
 
     # Measurement ---------------------------------------------------------------------

@@ -233,6 +233,11 @@
       "winsor_upper": 0.99
     },
     "protocol_id": "cn_csi300_daily",
+    "python": {
+      "max_ast_nodes": 2000,
+      "max_source_chars": 20000,
+      "window_probe_dates": 5
+    },
     "quantiles": 5,
     "reference_strategy": {
       "dropout": 5,

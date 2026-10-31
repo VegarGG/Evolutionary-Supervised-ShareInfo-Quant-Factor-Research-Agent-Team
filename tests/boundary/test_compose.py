@@ -144,6 +144,7 @@ EVAL_SERVICES = {
     "sim-engine": ["python", "-m", "qfr_eval.sim"],
     "feedback-api": ["python", "-m", "qfr_eval.feedback_api"],
     "eval-admin-api": ["python", "-m", "qfr_eval.admin_api"],
+    "eval-sandbox": ["python", "-m", "qfr_eval.sandbox"],
 }
 
 
@@ -222,3 +223,28 @@ def test_feedback_api_reads_released_views_only():
 def test_release_policies_and_quotas_are_mounted_only_into_the_scheduler():
     for source in ("../configs/release_policies", "../configs/quotas"):
         assert _mounts(source) == {"eval-scheduler": False}
+
+
+def test_phase_8_sandbox_runs_python_factors_with_nothing_else():
+    """eval-sandbox (P8.1): no network at all, no database URL, token or secret, no
+    snapshot and no store; only its log folder and the exchange volume, which only the
+    two services that send it work (eval-worker, sim-engine) also mount."""
+    sandbox = COMPOSE["services"]["eval-sandbox"]
+    assert sandbox["network_mode"] == "none"
+    assert "networks" not in sandbox and "ports" not in sandbox
+    assert "secrets" not in sandbox
+    assert not [k for k in sandbox["environment"] if k.endswith(("_URL", "_TOKEN", "_KEY"))]
+    assert sandbox["pids_limit"] <= 64
+    assert {(v["source"], v["target"]) for v in sandbox["volumes"]} == {
+        ("qfr_logs", "/var/log/qfr/eval-sandbox"),
+        ("sandbox_exchange", "/sandbox"),
+    }
+    assert _mounts("sandbox_exchange") == {
+        "eval-worker": True,
+        "sim-engine": True,
+        "eval-sandbox": True,
+    }
+    for name in ("eval-worker", "sim-engine"):
+        assert COMPOSE["services"][name]["environment"]["QFR_SANDBOX_DIR"] == "/sandbox"
+    created = COMPOSE["services"]["init-volumes"]["command"][2]
+    assert "Path('/var/log/qfr/eval-sandbox').mkdir" in created

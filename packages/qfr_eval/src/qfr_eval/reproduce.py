@@ -24,6 +24,7 @@ from qfr_eval.worker import (
     Evaluator,
     LibraryMember,
     MarketCache,
+    make_python_runner,
     make_runner,
     read_components,
 )
@@ -64,7 +65,12 @@ def reproduce(
     library = [LibraryMember(m["version_id"], m["uri"], m["sha256"]) for m in library_spec]
     if evaluator is None:
         store = ArtifactStore(env.store_dir)
-        evaluator = Evaluator(env, make_runner(config, store), MarketCache(env.full_snapshot_dir))
+        evaluator = Evaluator(
+            env,
+            make_runner(config, store),
+            MarketCache(env.full_snapshot_dir),
+            make_python_runner(config, env),
+        )
     stage: StageOutcome | None
     if record.stage in ("w2", "holdout"):
         stage = evaluator.run_window(

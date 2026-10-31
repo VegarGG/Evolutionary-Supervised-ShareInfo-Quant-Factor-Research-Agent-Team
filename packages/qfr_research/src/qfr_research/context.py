@@ -74,11 +74,16 @@ class ContextAssembler:
         self.env = env
 
     def parent_manifest(self, version_id: str) -> dict[str, Any] | None:
+        """A DSL parent's manifest. None when it is unavailable or is not a DSL factor:
+        research mutates expressions only, so a qfr-python/1 import (Phase 8) is never a
+        parent or a seed of a research variant."""
         try:
             record = self.env.registry.version(UUID(version_id))
         except (ServiceRefused, ServiceUnavailable):
             return None
         manifest = record.manifest.model_dump(mode="json")
+        if not manifest["implementation"].get("expression"):
+            return None
         return {
             "version_id": version_id,
             "family_id": str(record.family_id),

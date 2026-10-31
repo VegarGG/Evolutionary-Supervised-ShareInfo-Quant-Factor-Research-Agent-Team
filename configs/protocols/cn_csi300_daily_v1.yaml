@@ -11,6 +11,10 @@ costs: {long_short_bps_per_side: 10, buy_bps: 5, sell_bps: 15}
 reference_strategy: {type: topk_dropout, top_k: 50, dropout: 5, rebalance: daily, long_only: true}
 strategy_bounds: {top_k: [20, 100], dropout: [1, 20], max_components: 8}
 fingerprint: {dates: 40, window: W0, seed: 20261030}
+# qfr-python/1 factors (Phase 8) run only in the eval-sandbox container. Screening's CPU
+# and memory limits apply to each sandbox run; max_lookback_days is the DSL's cap. The
+# window probe recomputes the factor on only its declared lookback before each probe cut.
+python: {max_source_chars: 20000, max_ast_nodes: 2000, window_probe_dates: 5}
 dsl: {max_nodes: 30, max_depth: 7, max_fields: 4, max_constants: 3, max_lookback_days: 250, max_corr_cov_nesting: 2, windows: [1, 2, 3, 5, 10, 20, 40, 60, 120, 250]}
 screening: {coverage_min: 0.80, prefix_probe_dates: 5, prefix_tolerance: 1.0e-9, cpu_seconds: 120, memory_gb: 4, degenerate_date_fraction_max: 0.10}
 dedup: {behavioral_similarity_min: 0.95}

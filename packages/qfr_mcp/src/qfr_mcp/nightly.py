@@ -231,7 +231,7 @@ def main() -> None:
     backups = Path(b) if (b := os.environ.get("QFR_BACKUPS_DIR")) else None
     beat = Path(os.environ.get("QFR_HEARTBEAT_FILE") or "/tmp/heartbeat")
     poll = float(os.environ.get("QFR_NIGHTLY_POLL_SECONDS") or 60)
-    logger.logger.info("service_started", payload={"phase": 7, "nightly": schedule.at})
+    logger.logger.info("service_started", payload={"phase": 8, "nightly": schedule.at})
     while True:
         try:
             tick(store, logger, log_root, backups, config, schedule, datetime.now(UTC))

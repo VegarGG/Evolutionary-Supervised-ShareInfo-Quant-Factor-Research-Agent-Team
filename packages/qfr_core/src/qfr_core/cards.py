@@ -40,7 +40,13 @@ PROTOCOL_FIELDS = (
     # The research workbench computes the same W0 fingerprints as the evaluator.
     "fingerprint",
 )
+# Phase 8 sections, carried when the protocol has them: the qfr-python/1 limits and the
+# richer strategy rules are what research needs to write a valid artifact.
+OPTIONAL_PROTOCOL_FIELDS = ("python", "strategy_rules")
 PUBLIC_GATES = ("w1_factor", "w1_strategy", "w2_factor", "w2_strategy")
+# The Thresholdout parameters are public (Section 9.5); its seed is not, or research could
+# compute the noise it adds.
+PRIVATE_POLICY_KEYS = {"thresholdout": ("seed",)}
 QUOTA_FIELDS = ("quota_id", "version", "family", "program", "global", "deferral_expiry_days")
 REPORT_FIELDS: dict[str, list[str]] = {
     "intake": sorted(IntakeContent.model_fields),
@@ -56,6 +62,9 @@ REPORT_FIELDS: dict[str, list[str]] = {
 
 def protocol_card(protocol: dict[str, Any]) -> dict[str, JsonValue]:
     card: dict[str, JsonValue] = {key: protocol[key] for key in PROTOCOL_FIELDS}
+    for key in OPTIONAL_PROTOCOL_FIELDS:
+        if protocol.get(key) is not None:
+            card[key] = protocol[key]
     card["gates"] = {key: protocol["gates"][key] for key in PUBLIC_GATES}
     return card
 
@@ -67,6 +76,10 @@ def quota_card(quotas: dict[str, Any]) -> dict[str, JsonValue]:
 def policy_card(policy: dict[str, Any]) -> dict[str, JsonValue]:
     """The whole release policy plus the released fields and code vocabularies."""
     card: dict[str, JsonValue] = dict(policy)
+    for section, keys in PRIVATE_POLICY_KEYS.items():
+        value = policy.get(section)
+        if isinstance(value, dict):
+            card[section] = {k: v for k, v in value.items() if k not in keys}
     card["report_fields"] = {k: list(v) for k, v in REPORT_FIELDS.items()}
     card["reason_codes"] = [code.value for code in ReasonCode]
     card["diagnostic_flags"] = [flag.value for flag in DiagnosticFlag]

@@ -32,6 +32,30 @@
       "title": "ImportComponent",
       "type": "object"
     },
+    "ImportPython": {
+      "additionalProperties": false,
+      "description": "A qfr-python/1 factor in a pool import (Phase 8): the module and its declared\nlookback, which the evaluator's window probe checks.",
+      "properties": {
+        "max_lookback_days": {
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Max Lookback Days",
+          "type": "integer"
+        },
+        "source": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "max_lookback_days"
+      ],
+      "title": "ImportPython",
+      "type": "object"
+    },
     "ImportStrategy": {
       "additionalProperties": false,
       "properties": {
@@ -63,7 +87,7 @@
     },
     "PoolImportEntry": {
       "additionalProperties": false,
-      "description": "One raw-pool row: a factor (expression) or a strategy over factor rows (strategy).",
+      "description": "One raw-pool row: a factor (a DSL expression or a qfr-python/1 module) or a\nstrategy over factor rows.",
       "properties": {
         "expected_sign": {
           "enum": [
@@ -116,6 +140,17 @@
           ],
           "default": null,
           "title": "Notes"
+        },
+        "python": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImportPython"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "strategy": {
           "anyOf": [
