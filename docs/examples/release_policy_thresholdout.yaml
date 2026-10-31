@@ -1,0 +1,32 @@
+# A release policy with the optional Thresholdout mode for W2 (PLAN Section 9.5, Phase 8).
+# To use it: copy this file into imports/, replace the seed with a private random integer
+# (python3 -c "import secrets; print(secrets.randbits(62))"), then ask the host agent to
+# activate it with qfr.ops.activate_policy. The seed never leaves the evaluator: the
+# policy card research reads leaves it out. Thresholdout's state is per epoch and pinned
+# at the epoch's first W2 query; activating another policy does not refill the budget.
+policy_id: default
+version: '2'
+# Every report is released as soon as the evaluator records it (PLAN 9.2).
+release_timing: immediate
+rounding: {rankic: 0.005, ir: 0.02, sharpe: 0.25, shares: 0.05, correlations: 0.05, ladder_best: 0.01}
+t_buckets: [1, 2, 3]
+ladder: {eta: 0.005}
+# Forward RankIC bucket edges of the sim report: negative, 0 to 0.01, 0.01 to 0.03, above.
+sim_rankic_buckets: [0.0, 0.01, 0.03]
+release_w3_metrics: false
+# Diagnostic flag rules (PLAN 9.2). SIGN_MISMATCH (realized sign opposite to the declared
+# sign), UNSTABLE_YEARLY (yearly RankIC means change sign) and LOW_COVERAGE (coverage
+# check failed) take no parameter; HIGH_DRAWDOWN applies to strategies (Phase 6).
+flags:
+  high_turnover_above: 0.60
+  low_monotonicity_below: 0.50
+  crowded_library_correlation_above: 0.70
+  decays_fast_h5_over_h1_below: 0.40
+  weak_signal_rankic_below: 0.02
+  weak_signal_nw_t_below: 2.5
+  cost_dominated_net_over_gross_below: 0.50
+# W2 releases PASS or FAIL and one Thresholdout answer for s x RankIC_mean per query:
+# the W0 value while W2 agrees with it, else the W2 value plus Laplace noise, until the
+# budget is spent (then nothing until the next epoch).
+w2_mode: thresholdout
+thresholdout: {threshold: 0.01, sigma: 0.002, budget: 50, seed: 0}

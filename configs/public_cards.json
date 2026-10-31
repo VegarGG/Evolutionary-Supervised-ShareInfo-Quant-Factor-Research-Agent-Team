@@ -125,8 +125,11 @@
         "yearly_rankic"
       ],
       "w2": [
+        "answer_budget",
+        "answer_rankic",
         "family_best_rankic",
         "ladder_status",
+        "mode",
         "status",
         "type"
       ]

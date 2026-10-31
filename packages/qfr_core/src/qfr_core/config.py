@@ -159,6 +159,17 @@ class ProtocolConfig(BaseModel):
     strategy_rules: dict[str, JsonValue] | None = None
 
 
+class ThresholdoutConfig(BaseModel):
+    """Thresholdout for W2 (PLAN Section 9.5): threshold T, noise scale sigma, budget B
+    and the private seed of the noise generator."""
+
+    model_config = ConfigDict(extra="forbid")
+    threshold: float = Field(gt=0)
+    sigma: float = Field(gt=0)
+    budget: int = Field(ge=1)
+    seed: int = Field(ge=0)
+
+
 class PolicyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     policy_id: str
@@ -171,6 +182,10 @@ class PolicyConfig(BaseModel):
     # first and second edge, between the second and third, and above the third.
     sim_rankic_buckets: list[float] = Field(min_length=3, max_length=3)
     release_w3_metrics: Literal[False]
+    # Phase 8: W2 releases the Ladder's family best (the default) or, in thresholdout
+    # mode, one Thresholdout answer per query (Section 9.5).
+    w2_mode: Literal["ladder", "thresholdout"] = "ladder"
+    thresholdout: ThresholdoutConfig | None = None
     flags: dict[
         Literal[
             "high_turnover_above",
@@ -197,6 +212,8 @@ class PolicyConfig(BaseModel):
             raise ValueError("sim RankIC bucket edges must be strictly increasing")
         if "eta" not in self.ladder or not self.ladder["eta"] > 0:
             raise ValueError("the Ladder needs a positive eta")
+        if self.w2_mode == "thresholdout" and self.thresholdout is None:
+            raise ValueError("thresholdout mode needs its threshold, sigma, budget and seed")
         if "ladder_best" not in self.rounding:
             raise ValueError("rounding needs ladder_best for the W2 family best")
         return self

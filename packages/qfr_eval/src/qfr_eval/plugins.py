@@ -634,7 +634,21 @@ class FactorPlugin:
 
 def release_w2(raw: dict[str, Any], policy: dict[str, Any]) -> W2Content:
     """PASS or FAIL, the family's Ladder status and, only when the family best improved
-    by at least eta, the new best rounded to the Ladder step (Section 9.2, REL-06)."""
+    by at least eta, the new best rounded to the Ladder step (Section 9.2, REL-06). In
+    Thresholdout mode (Section 9.5), PASS or FAIL and the query's answer instead."""
+    if raw.get("mode") == "thresholdout":
+        answer = raw.get("answer")
+        return W2Content(
+            type="w2",
+            status="PASS" if raw["passed"] else "FAIL",
+            ladder_status=None,
+            family_best_rankic=None,
+            mode="thresholdout",
+            answer_rankic=None
+            if answer is None
+            else quantize(float(answer), policy["rounding"]["rankic"]),
+            answer_budget="exhausted" if raw.get("source") == "exhausted" else "open",
+        )
     improved = bool(raw["improved"])
     best = raw.get("released_best")
     return W2Content(

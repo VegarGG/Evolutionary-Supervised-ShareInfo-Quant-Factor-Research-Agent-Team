@@ -279,8 +279,15 @@ class W1Content(Contract):
 class W2Content(Contract):
     type: Literal["w2"]
     status: Literal["PASS", "FAIL"]
-    ladder_status: Literal["IMPROVED", "UNCHANGED"]
+    # Ladder mode (the default): IMPROVED with the family best rounded to the Ladder step,
+    # or UNCHANGED. Thresholdout mode (Phase 8, Section 9.5) has no Ladder status: it
+    # releases one answer for s x RankIC_mean, rounded to the policy's RankIC step, or
+    # nothing once the epoch's budget is spent.
+    ladder_status: Literal["IMPROVED", "UNCHANGED"] | None
     family_best_rankic: FiniteFloat | None
+    mode: Literal["ladder", "thresholdout"] = "ladder"
+    answer_rankic: FiniteFloat | None = None
+    answer_budget: Literal["open", "exhausted"] | None = None
 
 
 class AdvancementContent(Contract):

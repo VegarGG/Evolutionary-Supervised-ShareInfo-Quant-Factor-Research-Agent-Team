@@ -13,6 +13,7 @@ wall clock.
 
 import dataclasses
 import hashlib
+import math
 import os
 import time
 import traceback
@@ -45,7 +46,8 @@ from qfr_core.pyfactor import check_source
 from sqlalchemy import bindparam, text
 from sqlalchemy.engine import Connection
 
-from qfr_eval import queue
+from qfr_eval import queue, thresholdout
+from qfr_eval.alerts import raise_alert
 from qfr_eval.compute import (
     ComputeOutput,
     ComputeRequest,
@@ -501,6 +503,28 @@ class Evaluator:
         outcome = plugin.run_window(window_name, sign, scores, market, window.start, window.end)
         columns = np.flatnonzero(market.eligible[first : last + 1].any(axis=0))
         return WindowOutcome(seed, outcome, values, columns)
+
+    def window_statistic(
+        self,
+        manifest: Manifest,
+        protocol: dict[str, Any],
+        window: Window,
+        snapshot_id: str,
+        load_cpu_seconds: float,
+        components: Mapping[str, Component] | None = None,
+    ) -> float | None:
+        """s x RankIC_mean of a version on one window: Thresholdout's W0 value."""
+        plugin = plugin_for(protocol, manifest)
+        market, first, last, values = self.window_values(
+            manifest, protocol, snapshot_id, window, load_cpu_seconds, components
+        )
+        scores = np.full(market.shape, np.nan)
+        scores[first : last + 1] = values
+        sign = 1 if isinstance(manifest, StrategyManifest) else manifest.declared.expected_sign
+        rankic = plugin.measure(scores, sign, market, window.start, window.end).metrics.get(
+            "rankic_mean"
+        )
+        return None if rankic is None or not math.isfinite(rankic) else sign * float(rankic)
 
 
 def make_runner(config: EvalConfig, store: ArtifactStore, scratch: Path | None = None) -> Runner:
@@ -1159,6 +1183,14 @@ class Worker:
             self.config.runner.load_cpu_seconds,
             components=components,
         )
+        # Thresholdout (Section 9.5) compares W2 with the same statistic on W0.
+        params = thresholdout.Params.from_policy(state.policy.config) if window == "W2" else None
+        w0 = None
+        if params is not None:
+            w0 = self.evaluator.window_statistic(
+                manifest, state.protocol.config, state.epoch.windows["W0"],
+                state.epoch.snapshot_id, self.config.runner.load_cpu_seconds, components,
+            )  # fmt: skip
         finished = self.clock.now()
         run_id = uuid7()
         outcome = result.outcome
@@ -1180,7 +1212,9 @@ class Worker:
             self._ledger(conn, row, state, record, outcome.raw["ledger"], window, finished)
             self._query_burn(conn, state, window, finished)
             if window == "W2":
-                self._w2_decision(conn, row, state, record, outcome, finished, request_id)
+                self._w2_decision(
+                    conn, row, state, record, outcome, finished, request_id, params, w0
+                )
             else:
                 self._holdout_decision(conn, row, state, record, outcome, finished, request_id)
             queue.finish(conn, job, finished, "done")
@@ -1211,9 +1245,13 @@ class Worker:
         outcome: StageOutcome,
         at: datetime,
         request_id: str,
+        params: thresholdout.Params | None = None,
+        w0: float | None = None,
     ) -> None:
         """The Ladder (Section 9.2, REL-06): the family best moves, and is released rounded
-        to the Ladder step, only when the W2 value beats it by at least eta."""
+        to the Ladder step, only when the W2 value beats it by at least eta. In Thresholdout
+        mode (Section 9.5) the Ladder keeps its books but the release is the query's
+        answer."""
         policy = state.policy.config
         eta = float(policy["ladder"]["eta"])
         previous = conn.execute(
@@ -1262,11 +1300,27 @@ class Worker:
                     "at": at,
                 },
             )
-        raw = {
+        raw: dict[str, Any] = {
             "passed": outcome.passed,
             "improved": step.improved,
             "released_best": released if step.improved else None,
         }
+        if params is not None:
+            answer = thresholdout.query(
+                conn, params, state.epoch.epoch_id, state.policy_ref, record.record_id,
+                row.version_id, w0, outcome.raw.get("ladder_value"), at,
+            )  # fmt: skip
+            raw = {
+                "passed": outcome.passed, "improved": False, "released_best": None,
+                "mode": "thresholdout", "answer": answer.value, "source": answer.source,
+            }  # fmt: skip
+            if answer.budget_after < 1:
+                raise_alert(
+                    conn, "burn", f"burn:{state.epoch.epoch_id}:thresholdout",
+                    {"window": "W2", "rule": "thresholdout_budget_exhausted",
+                     "budget": params.budget},
+                    at, SERVICE, request_id, logger=self.logger,
+                )  # fmt: skip
         queue_report(
             conn, "w2", row.version_id, {"raw": raw, "refs": self._refs(state)}, at, request_id,
             record.record_id,
@@ -1322,10 +1376,11 @@ class Worker:
             if self._fenced(conn, job, at):
                 return
             if job.kind == "w2":
+                failed: dict[str, Any] = {"passed": False, "improved": False, "released_best": None}
+                if thresholdout.Params.from_policy(state.policy.config) is not None:
+                    failed |= {"mode": "thresholdout", "answer": None, "source": "missing"}
                 queue_report(
-                    conn, "w2", row.version_id,
-                    {"raw": {"passed": False, "improved": False, "released_best": None},
-                     "refs": self._refs(state)},
+                    conn, "w2", row.version_id, {"raw": failed, "refs": self._refs(state)},
                     at, request_id,
                 )  # fmt: skip
                 new_state, column = "W2Failed", "w2_passed"

@@ -810,6 +810,34 @@
     "W2Content": {
       "additionalProperties": false,
       "properties": {
+        "answer_budget": {
+          "anyOf": [
+            {
+              "enum": [
+                "open",
+                "exhausted"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Budget"
+        },
+        "answer_rankic": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Rankic"
+        },
         "family_best_rankic": {
           "anyOf": [
             {
@@ -822,11 +850,27 @@
           "title": "Family Best Rankic"
         },
         "ladder_status": {
-          "enum": [
-            "IMPROVED",
-            "UNCHANGED"
+          "anyOf": [
+            {
+              "enum": [
+                "IMPROVED",
+                "UNCHANGED"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Ladder Status",
+          "title": "Ladder Status"
+        },
+        "mode": {
+          "default": "ladder",
+          "enum": [
+            "ladder",
+            "thresholdout"
+          ],
+          "title": "Mode",
           "type": "string"
         },
         "status": {
