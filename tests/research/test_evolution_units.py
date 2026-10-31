@@ -39,7 +39,13 @@ from qfr_research.planning import (
     stagnation_choices,
     validate_plan,
 )
-from qfr_research.selection import Screened, behavioral_dedup, prescreen, select
+from qfr_research.selection import (
+    Screened,
+    behavioral_dedup,
+    prescreen,
+    provisional_fitness,
+    select,
+)
 from qfr_research.settings import ResearchConfig
 from qfr_research.variation import (
     Choice,
@@ -551,6 +557,25 @@ def test_select_gives_each_island_its_slots_then_the_best_remaining():
     assert ranks["a"] == 1 and ranks["e"] == 5
     round_robin, _ = select(survivors, 3, None)
     assert [c.candidate_id for c in round_robin] == ["a", "d", "e"]
+
+
+def test_publication_rank_is_provisional_fitness_plus_novelty():
+    # Section 11.6: the slightly stronger candidate that copies the population's structure
+    # ranks below a novel one; the rank score is fitness + novelty_weight * originality.
+    strong = {"coverage": 0.95, "rankic_mean": 0.04, "rankic_ir": 0.40}
+    weaker = {"coverage": 0.95, "rankic_mean": 0.035, "rankic_ir": 0.35}
+    rows = {
+        "copy": Row(candidate_id="copy", metrics=strong, similarity={"originality": 0.25}),
+        "novel": Row(candidate_id="novel", metrics=weaker, similarity={"originality": 0.9}),
+    }
+    screened_rows = [prescreen(r, SETTINGS["prescreen"], CONSTRAINTS) for r in rows.values()]
+    scored = provisional_fitness(screened_rows, rows, SETTINGS)
+    by_id = {x.candidate_id: x for x in scored}
+    assert by_id["copy"].fitness > by_id["novel"].fitness
+    weight = SETTINGS["selection"]["novelty_weight"]
+    for x in scored:
+        assert x.rank_score == pytest.approx(x.fitness + weight * x.originality)
+    assert [x.candidate_id for x in sorted(scored, key=Screened.key)] == ["novel", "copy"]
 
 
 def test_behavioral_dedup_keeps_the_better_ranked_twin():

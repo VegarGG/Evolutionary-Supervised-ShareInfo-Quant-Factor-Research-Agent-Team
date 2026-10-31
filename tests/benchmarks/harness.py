@@ -20,13 +20,15 @@ On the null world the in-sample signs fit noise, which is what BM-NULL measures.
 Its draws come from one seeded generator, so the scripted answers are fixed for a fixed
 seed and a fixed call order. The engine derives its own draws from the program id, which
 is fresh in every run; fix_engine_seeds puts the benchmark's seed in its place, so the
-engine's draws are fixed too (Section 18.3: fixed seeds). Every draw is also recorded in
-the PROPOSAL_EMITTED steps.
+engine's draws are fixed too (Section 18.3: fixed seeds), and the job runs one task at a
+time so the scripted roles are asked in the same order. Every engine draw is also
+recorded in the PROPOSAL_EMITTED steps.
 """
 
 import json
 import random
 import re
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import timedelta
 from pathlib import Path
@@ -262,6 +264,7 @@ class Generation:
     best_fitness: float | None  # the best current official fitness over the islands
     tracked_best: float | None  # the best fitness any island has reached so far
     coverage: float
+    cells: list[str]  # the archive cells with an elite, read at the generation's start
     official: int
     guardrail: bool
     operators: dict[str, int]
@@ -319,6 +322,9 @@ def run_benchmark(
     works off what it published, and its reports are released at once. The test clock
     moves GENERATION_HOURS per generation, so the 24-hour quotas see a realistic pace."""
     mcp, research = full.mcp, full.research
+    # Fixed seeds give fixed runs only if the scripted roles are asked in the same order
+    # every time, so the benchmark job's charter runs one task at a time.
+    research.config.charter_values["throughput"]["concurrency"] = 1  # type: ignore[index]
     started_at = full.eval.clock.at
     submitted = mcp.ok("qfr.job.submit", brief=benchmark_brief(generations, islands))["data"]
     job_id = submitted["job"]["job_id"]
@@ -418,6 +424,7 @@ def _generations(full: ResearchStack, job_id: str) -> list[Generation]:
                 best_fitness=max(bests) if bests else None,
                 tracked_best=max(tracked) if tracked else None,
                 coverage=float((refresh.get("archive") or {}).get("coverage", 0.0)),
+                cells=sorted(((refresh.get("archive") or {}).get("elites") or {}).keys()),
                 official=sum(int(v.get("official", 0)) for v in islands.values()),
                 guardrail=bool(
                     ((payload.get("engine") or {}).get("guardrail") or {}).get("raised")
@@ -443,7 +450,8 @@ def _published(full: ResearchStack, job_id: str) -> list[dict[str, Any]]:
         "SELECT v.version_id, c.expression, c.operator, c.island_key, c.payload, g.seq FROM "
         "candidate_versions v JOIN candidates c ON c.candidate_id = v.candidate_id JOIN "
         "generations g ON g.generation_id = c.generation_id JOIN programs p ON p.program_id = "
-        "c.program_id WHERE p.job_id = :j AND c.kind = 'factor' ORDER BY g.seq, v.published_at",
+        "c.program_id WHERE p.job_id = :j AND c.kind = 'factor' ORDER BY g.seq, c.island_key, "
+        "c.canonical_hash",
         j=job_id,
     )
     if not rows:
@@ -634,4 +642,5 @@ def run_body(name: str, run: BenchmarkRun, script: BenchmarkScript, **extra: Any
         "published": run.published,
         "draws": draws,
         "llm_calls": len(script.calls),
+        "llm_calls_by_role": dict(sorted(Counter(c["role"] for c in script.calls).items())),
     } | extra

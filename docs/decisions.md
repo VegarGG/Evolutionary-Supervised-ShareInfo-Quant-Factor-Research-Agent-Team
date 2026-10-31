@@ -686,7 +686,11 @@ branch (PR #14); neither was merged. Nothing here has reached a real provider.
    ranks this generation's pre-screen survivors among themselves (per island once an
    island has 5), and its library term uses the maximum behavioral similarity to the
    factor pool, research's view of the library, which is neutral (0.5) with an empty
-   pool. The W2 multipliers apply when a W2 status is released.
+   pool. The W2 multipliers apply when a W2 status is released. Section 11.6 ranks
+   publication candidates by "provisional fitness plus novelty". Novelty is read as the
+   AST originality of Section 7.5 (1 minus the largest AST similarity to the library and
+   the population), added with weight 1 (`selection.novelty_weight`). The fitness, the
+   originality and the sum are in each SELECTED and NOT_SELECTED step.
 4. **Fitness is relative, so improvement is measured on a record.** Official fitness is
    recomputed from percentiles each generation, so a member's fitness falls when better
    members join. Each island keeps its best fitness so far and the generation it last
@@ -777,9 +781,13 @@ branch (PR #14); neither was merged. Nothing here has reached a real provider.
     strongest in-sample options that are not near duplicates. The pool is test data,
     not a product default. The scripted answers come from the benchmark's seed, and
     `fix_engine_seeds` puts the same seed in place of the fresh program id in the
-    engine's seeds, so both run with fixed seeds as Section 18.3 asks. A discovery is a
-    published version that passes W1 with mean W0 rank correlation of at least 0.7 to A1
-    or A2. Results are JSON files, kept as an artifact by the nightly workflow
+    engine's seeds, so both run with fixed seeds as Section 18.3 asks. The benchmark job
+    runs one task at a time, because concurrent tasks would ask the scripted roles in a
+    different order each run; with that, two runs give the same generations, published
+    versions and lineages. The audit sample of the analyst's interpretations still
+    varies, because it hashes each interpretation's fresh id (Phase 4). A discovery
+    is a published version that passes W1 with mean W0 rank correlation of at least 0.7
+    to A1 or A2. Results are JSON files, kept as an artifact by the nightly workflow
     (`.github/workflows/benchmarks.yml`). BM-NULL's W1 pass rate is recorded but not
     gated: zero acceptances on the null world is a Phase 6 check.
 16. **Benchmarks are not in the default run.** `pytest` deselects the `benchmark` marker,
@@ -797,3 +805,14 @@ branch (PR #14); neither was merged. Nothing here has reached a real provider.
     see a realistic pace. After the generation cap it steps 6 hours at a time, so
     versions deferred by their family quota are evaluated and the job closes. Both
     steps are recorded with the results (`clock_hours`).
+18. **BM-PLANTED's coverage check has little margin.** The archive can only fill the
+    cells that official members reach, and the planted signals act within 1 to 5 days on
+    price and volume. Of the pool's planted forms, the 85 that pass the pre-screen on W0
+    fall into 18 of the 64 cells (none in the 10- or 20-day horizon cells and none in
+    volume_only), so 25% (16 cells) is close to what this world allows. The pool's
+    planted variants are spread over every turnover bucket and three field groups so
+    that the reachable cells can be found at all. With the fixed seeds, coverage
+    reaches 16 cells in generation 9 and stays there, which passes, but a change to the
+    pool, the seeds or the engine can move it below 25%. The check follows the plan as
+    written; measuring coverage against the reachable cells would be a plan change, so
+    it is left for the owner.

@@ -7,8 +7,10 @@ population and the pools, AST originality, and complexity within the brief's cap
 strategies need a W0 composite net Sharpe and at most 8 components. Survivors are
 deduplicated canonically against the program's publications and the population, and
 behaviorally against each other. Factors are ranked by provisional fitness (the
-Section 12.2 formula on W0 metrics times 0.5), ties broken by originality, then lower
-complexity, then id; each island first gets up to its Thompson-sampled publication
+Section 12.2 formula on W0 metrics times 0.5) plus novelty (Section 11.6), where novelty
+is the AST originality against the library and the population times the charter's
+novelty_weight; ties are broken by originality, then lower complexity, then id. Each
+island first gets up to its Thompson-sampled publication
 slots in rank order, and what is left of the quota goes to the best remaining
 candidates. Strategy survivors, at most the charter's compose_strategy tasks, are
 selected first. Every decision is a trace step with the values it used.
@@ -34,9 +36,11 @@ class Screened:
     expression: str | None = None
     fitness: float | None = None
     fitness_detail: dict[str, Any] = field(default_factory=dict)
+    rank_score: float | None = None  # provisional fitness plus novelty
 
     def key(self) -> tuple[Any, ...]:
-        return rank_key(self.fitness, self.originality, self.nodes, str(self.candidate_id))
+        value = self.fitness if self.rank_score is None else self.rank_score
+        return rank_key(value, self.originality, self.nodes, str(self.candidate_id))
 
 
 def prescreen(
@@ -108,7 +112,9 @@ def provisional_fitness(
     survivors: list[Screened], rows: dict[Any, Any], settings: dict[str, Any]
 ) -> list[Screened]:
     """Section 12.2 on W0 metrics times the provisional factor, with percentiles among
-    this generation's factor survivors (per island once it has 5 of them)."""
+    this generation's factor survivors (per island once it has 5 of them), and the rank
+    score: that fitness plus novelty_weight times the AST originality (Section 11.6)."""
+    weight = float(settings["selection"]["novelty_weight"])
     inputs = []
     for s in survivors:
         if s.kind != "factor":
@@ -138,6 +144,7 @@ def provisional_fitness(
                 s.expression,
                 result.value,
                 result.detail,
+                result.value + weight * s.originality,
             )
         )
     return out

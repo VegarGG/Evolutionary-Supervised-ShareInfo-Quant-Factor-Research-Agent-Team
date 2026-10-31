@@ -1916,9 +1916,11 @@ class GenerationRunner:
                         "provisional_fitness": _finite(value),
                         "fitness_detail": None if item is None else item.fitness_detail,
                         "originality": None if item is None else item.originality,
+                        "rank_score": None if item is None else _finite(item.rank_score),
+                        "novelty_weight": float(settings["selection"]["novelty_weight"]),
                         "duplicate_of": twins.get(row.candidate_id),
                         "reason": reason,
-                        "rule": "provisional_fitness_island_slots",
+                        "rule": "provisional_fitness_plus_novelty_island_slots",
                     },
                 )
             self._candidate(

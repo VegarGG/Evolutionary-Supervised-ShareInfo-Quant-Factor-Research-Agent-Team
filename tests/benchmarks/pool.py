@@ -21,8 +21,10 @@ PLANTED_WINDOW = {"A1": 5, "A2": 20}
 SIZE = 300
 
 # Variants span the archive's descriptors: plain, rank-normalized, smoothed (lower
-# turnover), volatility-scaled (range_volatility), volume-conditioned (price_volume) and
-# range-based forms, at several windows.
+# turnover), volatility-scaled and range-conditioned (range_volatility), volume-conditioned
+# (price_volume) and range-based forms, at several windows. The archive can only fill the
+# cells the candidates reach, and the planted signals act within 1 to 5 days, so the
+# variants are spread over every turnover bucket and three field groups.
 A1_TEMPLATES = (
     "-Pct($close,{w})",
     "-Pct($vwap,{w})",
@@ -35,6 +37,13 @@ A1_TEMPLATES = (
     "-Pct($close,{w})*($amount/Mean($amount,20))",
     "-(($high+$low)/2/Ref($close,{w})-1)",
     "-TsZ($close,{w})",
+    "Mean(-Pct($close,{w}),10)",
+    "EMA(-Pct($close,{w}),20)",
+    "-Pct($close,{w})*Rank(Std($ret,20))",
+    "-Pct($close,{w})*Rank(Mean(($high-$low)/$close,20))",
+    "EMA(-Pct($close,{w})*Rank($volume/Mean($volume,20)),20)",
+    "Mean(-Pct($close,{w})*($amount/Mean($amount,20)),5)",
+    "EMA(-Pct($close,{w})/Std($ret,20),10)",
 )
 A1_WINDOWS = (2, 3, 5, 10, 20, 40)
 A2_TEMPLATES = (
@@ -44,6 +53,8 @@ A2_TEMPLATES = (
     "Clip(Sign(Pct($close,1))*($volume/Mean($volume,{w})-1),-3,3)",
     "Sign($ret)*($amount/Mean($amount,{w})-1)",
     "EMA(Clip(Sign($ret)*($volume/Mean($volume,{w})-1),-3,3),5)",
+    "Mean(Sign($ret)*($volume/Mean($volume,{w})-1),10)",
+    "EMA(Sign($ret)*Rank($volume/Mean($volume,{w})),20)",
 )
 A2_WINDOWS = (5, 10, 20, 40, 60)
 NOISE_TEMPLATES = (

@@ -11,8 +11,9 @@ role_limits: {supervisor_requests: 8, hypothesis_requests: 6, critic_requests: 4
 # percentiles (Section 12.2).
 population: {islands: 6, members_per_island: 60, archive_shape: [4, 4, 4], provisional_children_max: 1, island_percentile_min: 5}
 # Section 12.3. crossover_similarity_max is the behavioral similarity limit between the
-# two parents of a crossover.
-selection: {exploit_probability: 0.7, tournament_size: 3, tournament_top: 10, crossover_similarity_max: 0.5}
+# two parents of a crossover. Section 11.6: publication candidates are ranked by
+# provisional fitness plus novelty, novelty_weight times their AST originality.
+selection: {exploit_probability: 0.7, tournament_size: 3, tournament_top: 10, crossover_similarity_max: 0.5, novelty_weight: 1.0}
 operator_mix: {explore: 0.25, llm_mutation: 0.35, crossover: 0.15, syntactic_mutation: 0.20, repair: 0.05}
 improve_mix: {explore: 0.15, llm_mutation: 0.45, crossover: 0.15, syntactic_mutation: 0.20, repair: 0.05}
 prescreen: {coverage_min: 0.85, rankic_min: 0.015, ir_min: 0.10, similarity_max: 0.90, originality_min: 0.2, strategy_net_sharpe_min: 0.8, strategy_components_max: 8}
