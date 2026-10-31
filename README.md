@@ -32,7 +32,7 @@ The owner's network and memory decisions are applied. `just doctor` checks curre
 OOM flags; 24 GiB is a planning expectation, not a required allocation. Test the
 host endpoint with `python scripts/smoke_mcp.py --host`. Domain placeholders still
 exit cleanly; live downstream tracing is deferred by the owner.
-`just backup` explicitly reports its later phase.
+`just backup` runs a backup now (Phase 7); the backup service runs one every night.
 `just mcp-config` prints bearer-bearing client snippets; keep its output private.
 
 Phase 1: build snapshots with `uv run --locked qfr data build --source synthetic`
@@ -74,6 +74,25 @@ choose at most 12 publications. `qfr.trace.export` writes a version's trace and
 iteration history to `exports/traces/`. `just bench` runs BM-PLANTED and BM-NULL, which
 CI also runs nightly. Read [the Phase 5 record](docs/phase5-acceptance.md) and the
 [Phase 5 decisions](docs/decisions.md#phase-5-decisions).
+
+Phase 7 makes QFR operable through the host agent. `qfr.deliverable.export` writes a
+deliverable bundle (deliverable, iteration history, each item's manifest, trace and
+owner-grade records, the evaluator's series as Parquet and CSV, and a SHA-256 manifest)
+to `exports/<job>/<deliverable>/`; `just export-verify <path>` re-checks it.
+`qfr.evidence.get` shows every window, labelled gate values and every simulation
+account; every owner-grade response is labelled owner_only with the hygiene warning.
+`qfr.status` adds queues, quotas, burn meters, data freshness, disk, open alerts per
+zone and today's costs; `qfr.ops.alerts` merges evaluation, research and operations
+alerts and `qfr.ops.acknowledge_alert` acknowledges one; `qfr.ops.pause_research` and
+`resume_research` stop and restart all research. Log search reads compressed days, and
+`qfr.logs.export` writes a slice to `exports/logs/`. The ops-nightly service compresses
+and prunes logs, guards the disk and checks backups; the backup service dumps the four
+databases every night into `backups/<date>/` and mirrors the snapshots. Run
+`just restore-drill` quarterly and `just rotate-mcp-token` to replace the owner token.
+Host agents read [the host-agent guide](docs/HOST_AGENT_GUIDE.md) (also the MCP
+resource `qfr://docs/host-agent-guide`) and the `qfr.approval` and `qfr.investigate`
+prompts. Read [the Phase 7 record](docs/phase7-acceptance.md), which ends with the
+on-machine rehearsal, and the [Phase 7 decisions](docs/decisions.md#phase-7-decisions).
 
 ## License and use
 

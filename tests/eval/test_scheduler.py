@@ -57,10 +57,15 @@ def test_evl_01_discovery_is_since_seq_polling_with_no_inbound_trigger(rig):
             for route in app.routes
             for method in getattr(route, "methods", set()) - {"GET", "HEAD"}
         }
-        # Only the owner's configuration routes and case decisions write; nothing
-        # enqueues or evaluates.
-        owner = ("/v1/protocols", "/v1/policies", "/v1/quotas", "/v1/acceptance/cases/")
+        # Only the owner's configuration routes, case decisions and alert
+        # acknowledgements (Phase 7) write; nothing enqueues or evaluates.
+        owner = (
+            "/v1/protocols", "/v1/policies", "/v1/quotas", "/v1/acceptance/cases/",
+            "/v1/alerts/",
+        )  # fmt: skip
         assert all(path.startswith(owner) for _, path in writes), writes
+        alerts = {path for _, path in writes if path.startswith("/v1/alerts/")}
+        assert alerts <= {"/v1/alerts/{alert_id}/acknowledge"}, alerts
     first = publish(rig, "first", "Mean($close, 5) / Mean($close, 20) - 1")
     rig.scheduler.tick()
     cursor = rig.db.scalar("SELECT last_published_seq FROM eval.intake_cursor")
