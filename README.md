@@ -20,8 +20,11 @@ The [first real native-team trial](docs/harness/LIVE_TRIAL_2026-11-12.md) ran at
 tokens. It stopped at a fenced-JSON report mismatch before the reviewer or draft.
 The boundary repair passes offline; a complete real three-role pass is still
 required before owner-trial readiness is accepted.
-The authorized rerun adds [deterministic measurements and audited reporting](docs/harness/MEASUREMENT_CONTRACT.md)
-to replace hand-calculated observations; its real result will be recorded separately.
+The authorized rerun adds [deterministic measurements and audited reporting](docs/harness/MEASUREMENT_CONTRACT.md).
+Its first attempt reached both workers but rejected a reviewer report with nine
+findings against an eight-item limit. The next attempt validates submissions inside
+the active worker, allowing precise correction within unchanged call limits.
+Both failed attempts remain recorded; a real complete pass is still required.
 
 ## Current deliverable
 
@@ -47,9 +50,9 @@ estimates under the unchanged **200 CNY** ceiling. The raw call history and old
 estimates are preserved. The first diagnostic pilot's input cache hit rate was 22.64%.
 The interactive-trial export reports each role's token usage, cache hits, TPM/RPM,
 tariff-estimated cost and shared-process resource observations separately.
-The failed interactive round adds a 0.115572 CNY conservative debit, leaving
-**179.534428 CNY** under the original cap. Its tariff estimate is 0.04310952 CNY;
-two balance snapshots did not resolve the actual billed amount.
+The first two interactive rounds add 0.475450 CNY in conservative debits, leaving
+**179.174550 CNY** under the original cap before the next attempt. Their combined
+tariff estimate is 0.14163796 CNY; account snapshots do not verify per-trial invoices.
 
 ## Local setup and checks
 

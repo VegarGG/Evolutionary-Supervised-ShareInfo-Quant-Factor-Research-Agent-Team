@@ -175,11 +175,14 @@ def work_metrics(member, events, draft):
     tools = [e for e in own if e["kind"] == "tool_result"]
     report = None
     if member["role"] != "supervisor" and member["state"] == "completed":
-        result = json.loads(member["result"])
-        # Completion already enforced the configured size/citation limits. Use
-        # the same presentation decoder while retaining the original raw result.
-        report, _ = parse_worker_report(result, len(member["result"]))
-        report = report.model_dump()
+        submitted = [e for e in own if e["kind"] == "worker_report_submitted"]
+        if submitted:
+            report = submitted[0]["body"]["report"]
+        else:
+            # Historical trials used final-text reports; retain their original contract.
+            result = json.loads(member["result"])
+            report, _ = parse_worker_report(result, len(member["result"]))
+            report = report.model_dump()
     return {
         "model_authored_report": None
         if report is None
@@ -187,6 +190,7 @@ def work_metrics(member, events, draft):
             k: report.get(k)
             for k in (
                 "summary",
+                "findings",
                 "proposed_formula",
                 "recommended_changes",
                 "limitations",
@@ -210,6 +214,10 @@ def work_metrics(member, events, draft):
         ),
         "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
         "failed_tool_operations": sum(e["kind"] == "tool_failure" for e in own),
+        "report_submission_rejections": sum(
+            e["body"]["op"] == "submit_report" and e["body"]["result"].get("status") == "rejected"
+            for e in tools
+        ),
         "evidence_fetches": [
             {k: e["body"]["result"].get(k) for k in ("evidence_id", "cache_reused", "row_count")}
             for e in tools

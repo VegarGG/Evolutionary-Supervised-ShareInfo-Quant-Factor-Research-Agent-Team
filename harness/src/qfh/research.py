@@ -21,7 +21,7 @@ from typing import Literal
 from zoneinfo import ZoneInfo
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, admission_open
 from qfh.data_gateway import DataGuard, DataPolicy, dispatch
@@ -30,6 +30,7 @@ from qfh.research_metrics import ArithmeticProtocol, MeasurementRef, calculate_o
 
 Role = Literal["supervisor", "researcher", "reviewer"]
 WorkerRole = Literal["researcher", "reviewer"]
+REPORT_CONTRACT = "submitted-reports-v3"
 
 
 class Route(BaseModel):
@@ -147,7 +148,9 @@ class Draft(BaseModel):
 
 class Operation(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    op: Literal["scope", "data", "metrics", "begin_worker", "finish_worker", "draft"]
+    op: Literal[
+        "scope", "data", "metrics", "submit_report", "begin_worker", "finish_worker", "draft"
+    ]
     session_id: str = Field(pattern=r"^[A-Za-z0-9_.:-]{1,200}$")
     selected_provider: Literal["baostock", "ifind", "rqdata"] = "baostock"
     args: dict = Field(default_factory=dict)
@@ -268,7 +271,7 @@ class Research:
                             self.policy.model_dump_json().encode()
                         ).hexdigest(),
                         "roles": self.policy.model_dump()["roles"],
-                        "report_contract": "measured-observations-v2",
+                        "report_contract": REPORT_CONTRACT,
                         "arithmetic_protocol": self.arithmetic.model_dump(),
                     },
                 )
@@ -330,7 +333,11 @@ class Research:
             "max_requests_per_trial": self.policy.max_requests_per_trial,
             "request_limit_kind": "model wire requests, not market-data queries",
             "activity": self.activity(session_id),
-            "report_contract": "Return qualitative prose, with no numeric literals outside "
+            "report_contract": "Workers must call submit_worker_report before ending their turn. "
+            "A rejected submission returns precise issues for correction within the SAME active "
+            "worker and its unchanged request allowance; it is not a completed-worker replay. "
+            "Once accepted, end with a short acknowledgment; do not rewrite the report. "
+            "Return qualitative prose, with no numeric literals outside "
             "the formula field. Call research_metrics; select its measurement_id and fact keys "
             "in measurement_refs. The host supplies values and units; do not recalculate them. "
             "All proposals are post-observation exploration, not preregistered.",
@@ -380,13 +387,19 @@ class Research:
             "task": task,
             "scope": {k: scope[k] for k in ("provider", "query", "scope_limit")},
             "instruction": "Use market_daily_bars to inspect the allowed real evidence yourself. "
+            "The assignment already supplies your scope and schema; no initial scope call is "
+            "needed. Bars includes the returned rows, so read_research_evidence is optional "
+            "when those rows are already complete. Preserve calls for validation feedback. "
             "Call research_metrics for all arithmetic. Copy its measurement_id and select fact "
             "keys in measurement_refs (do not include values). Keep ALL prose qualitative, "
             "without numeric literals, dates, stock codes or percentages; numeric parameters "
             "are allowed only in proposed_formula, which must contain a symbolic definition, "
             "not observed results. The host attaches measured values, counts, dates and units. "
             "No claimed preregistration: this proposal follows evidence access. "
-            "Return ONLY one JSON object matching the schema. "
+            "Call submit_worker_report with a JSON object matching the schema BEFORE ending. "
+            "Respect every maxItems limit; keep the report concise. If rejected, correct the "
+            "specific issues within this same turn and request allowance. Once accepted, end "
+            "with a short acknowledgment, not a rewritten report. "
             "Separate observations from hypotheses; disclose sample limits; cite evidence ids. "
             "Do not delegate or submit a draft. No claims of alpha or gate passage.",
             "required_output_schema": WorkerReport.model_json_schema(),
@@ -396,6 +409,92 @@ class Research:
             "role": role,
             "prompt": json.dumps(prompt, ensure_ascii=False),
             "route": self.policy.roles[role].model_dump(),
+        }
+
+    def submitted_report(self, child_id):
+        with self.db() as db:
+            row = db.execute(
+                "SELECT body FROM events WHERE principal=? AND kind='worker_report_submitted'",
+                (child_id,),
+            ).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def validated_report(self, child_id, result):
+        if result.get("stopReason") != "completed":
+            raise ValueError("worker did not complete normally")
+        submitted = self.submitted_report(child_id)
+        if submitted:
+            return WorkerReport.model_validate(submitted["report"]), "submitted_tool"
+        member = self.member(child_id)
+        with self.db() as db:
+            started = json.loads(
+                db.execute(
+                    "SELECT body FROM events WHERE principal=? AND kind='trial_started'",
+                    (member["trial_id"],),
+                ).fetchone()[0]
+            )
+        if started.get("report_contract") == "submitted-reports-v3":
+            raise ValueError("worker ended without an accepted submit_worker_report")
+        # Historical trials retain their original completion contract and raw text.
+        return parse_worker_report(result, self.policy.max_tool_result_chars)
+
+    def submit_report(self, session_id, report_json):
+        member = self.member(session_id)
+        if member["role"] == "supervisor" or member["state"] != "active":
+            raise ValueError("only an active worker can submit its own report")
+        if self.submitted_report(session_id):
+            raise ValueError("accepted worker report is immutable")
+        try:
+            if (
+                not isinstance(report_json, str)
+                or len(report_json) > self.policy.max_tool_result_chars
+            ):
+                raise ValueError("report must be a JSON string within the configured result limit")
+            report = WorkerReport.model_validate_json(report_json)
+            self.check_citations(session_id, report.evidence_ids)
+            check_qualitative_prose(
+                report, ("summary", "findings", "recommended_changes", "limitations")
+            )
+            self.resolve_measurements(session_id, report)
+        except (ValueError, TypeError) as exc:
+            issues = (
+                [
+                    {k: issue[k] for k in ("type", "loc", "msg")}
+                    for issue in exc.errors(include_url=False, include_input=False)
+                ]
+                if isinstance(exc, ValidationError)
+                else [{"type": type(exc).__name__, "message": str(exc)}]
+            )
+            return {
+                "status": "rejected",
+                "issues": issues,
+                "worker_state": "active",
+                "instruction": "Correct these issues and resubmit within the existing "
+                "model-request allowance. No report was accepted or silently repaired.",
+            }
+        body = report.model_dump(mode="json")
+        digest = hashlib.sha256(canonical(body)).hexdigest()
+        with self.db() as db:
+            if (
+                db.execute(
+                    "SELECT state FROM members WHERE session_id=?", (session_id,)
+                ).fetchone()[0]
+                != "active"
+            ):
+                raise ValueError("only an active worker can submit its own report")
+            if db.execute(
+                "SELECT 1 FROM events WHERE principal=? AND kind='worker_report_submitted'",
+                (session_id,),
+            ).fetchone():
+                raise ValueError("accepted worker report is immutable")
+            self.event(
+                db, session_id, "worker_report_submitted", {"report": body, "sha256": digest}
+            )
+        return {
+            "status": "accepted",
+            "report_sha256": digest,
+            "instruction": "The validated report is frozen. End with a short acknowledgment; "
+            "do not rewrite it. Native completion is still required.",
         }
 
     def finish_worker(self, session_id, child_id, result):
@@ -410,7 +509,7 @@ class Research:
             raise ValueError("worker settlement already recorded")
         report, error, encoding = None, None, None
         try:
-            report, encoding = parse_worker_report(result, self.policy.max_tool_result_chars)
+            report, encoding = self.validated_report(child_id, result)
             self.check_citations(child_id, report.evidence_ids)
             check_qualitative_prose(
                 report, ("summary", "findings", "recommended_changes", "limitations")
@@ -491,9 +590,7 @@ class Research:
             ]
         measured = []
         for worker in complete:
-            report, _ = parse_worker_report(
-                json.loads(worker["result"]), self.policy.max_tool_result_chars
-            )
+            report, _ = self.validated_report(worker["session_id"], json.loads(worker["result"]))
             measured.extend(
                 {**f, "worker": worker["role"]}
                 for f in self.resolve_measurements(worker["session_id"], report)
@@ -633,6 +730,10 @@ class Research:
         args = request.args
         try:
             scope = self.scope(request.session_id, request.selected_provider)
+            if request.op not in ("scope", "finish_worker") and any(
+                role["report_state"] == "failed" for role in scope["activity"]["roles"].values()
+            ):
+                raise ValueError("trial stopped after a failed worker; only status reads remain")
             if request.op == "scope":
                 result = scope
             elif request.op == "begin_worker":
@@ -643,6 +744,8 @@ class Research:
                 result = self.record_draft(request.session_id, args)
             elif request.op == "metrics":
                 result = self.metrics(request.session_id, args["evidence_id"])
+            elif request.op == "submit_report":
+                result = self.submit_report(request.session_id, args["report_json"])
             else:
                 kind = args.get("kind")
                 if kind not in ("bars", "read"):

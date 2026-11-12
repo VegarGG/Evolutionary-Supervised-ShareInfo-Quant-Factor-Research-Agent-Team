@@ -2,7 +2,7 @@
 
 The first real trial exposed wrong hand-calculated returns, a five-lag indexing
 error and a supervisor recap that confused report rejection with absence of work.
-The second trial uses `measured-observations-v2` to address those concrete failures.
+The second trial used `measured-observations-v2` to address those concrete failures.
 This changes the report contract, not the data allowance, model route, budget or
 independent evaluator boundary.
 
@@ -36,10 +36,20 @@ All proposals are labelled `post_observation_exploration`. There is no mechanism
 here that can establish preregistration. Qualitative arguments and formula meaning
 still require review; this contract is not proof of scientific or economic merit.
 
-The report parser retains bare JSON or a single JSON/unlabelled fence and all raw
-output. The new fields default empty only to allow historical report parsing;
-new worker completion requires valid measurement references. Existing failed
-trials, raw reports, ledger charges and immutable drafts are not rewritten.
+The second live trial reached both workers but the reviewer returned nine findings
+against the eight-item schema limit. Its report was rejected and no draft recorded.
+The `submitted-reports-v3` contract now validates reports inside each active native
+worker via `submit_worker_report`. A rejection returns precise field/type/message
+diagnostics, without echoing the submitted content. The worker can correct its own
+submission within the same turn and unchanged model-call cap. The host does not
+truncate, silently repair, or relax the schema. Acceptance freezes an append-only
+report and hash; the native turn must also complete normally. Final acknowledgment
+text cannot replace that report. This is not replay of a completed or failed worker.
+
+Historical trials retain their original bare/fenced JSON completion contract and
+raw outputs. Existing failed trials, ledger charges and immutable drafts are not
+rewritten. After a final worker failure, host operations permit status reads and
+settlement only; the supervisor cannot continue data work or submit a partial draft.
 
 `research_scope`, worker completion and draft submission return a host activity
 snapshot with completed-operation counts, report states and model-request counts
@@ -47,6 +57,8 @@ so far. Data operations and model quotas are labelled separately. A native turn
 completion is distinct from report validation. A rejected report can still have
 completed data and arithmetic operations. Final token/cost totals come from the
 post-turn exporter, because a mid-turn snapshot cannot include later requests.
+Native chat prose remains model-authored commentary, not an authoritative numerical
+report. The host-validated report and attached measurement facts are the record.
 
 Offline regressions cover the originally observed off-by-one and return errors,
 constant/nonconstant and short series, invalid prices/dates, deterministic precision,

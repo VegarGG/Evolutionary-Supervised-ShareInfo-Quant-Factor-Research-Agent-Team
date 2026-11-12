@@ -25,6 +25,7 @@ TOOLS = {
     "research_scope",
     "research_metrics",
     "research_worker",
+    "submit_worker_report",
     "submit_research_draft",
 }
 

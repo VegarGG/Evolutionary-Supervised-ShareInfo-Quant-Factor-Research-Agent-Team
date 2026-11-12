@@ -49,12 +49,18 @@ export function apply(ctx, config) {
   }
   const register = tool => ctx.effect(() => ctx.tools.register(defineTool({ output, ...tool })))
   register({ name: 'research_scope',
-    description: 'Read the fixed research sample, budget, worker status and required draft/report schemas. Call first.',
+    description: 'Read the fixed research sample, budget, worker status and required draft/report schemas. Supervisor: call first. Workers already receive scope and schema in their assignment; use this only for a needed status check.',
     parameters: {}, execute: (_args, exec) => operation('scope', {}, exec) })
   register({ name: 'research_metrics',
     description: 'Compute deterministic daily returns, moments and lookback/next-close alignment on granted closes. Copy measurement_id and fact keys into worker measurement_refs; never recalculate observations in prose. This is not a strategy backtest or evaluation.',
     parameters: { evidence_id: { type: 'string', required: true } },
     execute: (args, exec) => operation('metrics', args, exec) })
+  register({ name: 'submit_worker_report',
+    description: 'Worker only: validate and freeze your own cited report before ending. Rejection returns precise schema/provenance issues to correct within this same active turn and request allowance. On acceptance end with a brief acknowledgment; never rewrite the accepted report.',
+    parameters: { report_json: { type: 'string', required: true,
+      description: 'JSON object matching worker_output_schema; respect all array limits and measurement references.' } },
+    isConcurrencySafe: () => false,
+    execute: (args, exec) => operation('submit_report', args, exec) })
   register({ name: 'research_worker',
     description: 'Supervisor only: run one named worker once and receive its cited report. First use researcher to propose; then reviewer to independently check the proposal. Each uses native DSH sessions and the Agent Teams task board. Workers cannot delegate.',
     parameters: {

@@ -10,8 +10,11 @@ from qfh.trial_metrics import work_metrics
 
 
 @pytest.fixture
-def research(tmp_path, monkeypatch):
+def research(tmp_path, monkeypatch, request):
     monkeypatch.setattr("qfh.research.admission_open", lambda _: True)
+    monkeypatch.setattr(
+        "qfh.research.REPORT_CONTRACT", getattr(request, "param", "submitted-reports-v3")
+    )
     obj = Research(Path(__file__).resolve().parents[1] / "configs/research-trial.yaml", tmp_path)
     obj.admit("root")
     return obj
@@ -71,6 +74,7 @@ def completed(research, role, evidence_id):
     worker = research.begin_worker("root", role, "Inspect the bounded test evidence.")
     research.data.grant(worker["child_id"], evidence_id)
     body = measured_report(research, worker["child_id"], evidence_id)
+    assert research.submit_report(worker["child_id"], json.dumps(body))["status"] == "accepted"
     research.finish_worker(
         "root",
         worker["child_id"],
@@ -175,6 +179,7 @@ def test_failed_worker_retains_raw_output_and_stops_draft(research):
 
 
 @pytest.mark.parametrize("label", ["json", ""])
+@pytest.mark.parametrize("research", ["measured-observations-v2"], indirect=True)
 def test_single_fenced_report_keeps_raw_text_and_validates_citations(research, label):
     worker = research.begin_worker("root", "researcher", "Inspect the bounded test evidence.")
     ident = fixture_data(research, worker["child_id"])
@@ -294,6 +299,9 @@ def test_report_measurements_cannot_be_fabricated_or_copied_from_another_worker(
         ref["value"] = "999"
     if fault == "numeric_prose":
         body["summary"] = "The measured return is 999 percent."
+    rejection = research.submit_report(child, json.dumps(body))
+    assert rejection["status"] == "rejected"
+    assert research.submitted_report(child) is None
     with pytest.raises(ValueError, match="raw result retained"):
         research.finish_worker(
             "root",
@@ -320,3 +328,74 @@ def test_host_activity_and_draft_show_measured_facts_without_trusting_agent_coun
     assert activity["roles"]["supervisor"]["report_state"] == "draft_recorded"
     assert activity["roles"]["researcher"]["completed_operations"]["metrics"] == 1
     assert research.member(first["child_id"])["state"] == "completed"
+
+
+def test_oversized_findings_can_be_corrected_in_same_active_worker(research):
+    worker = research.begin_worker("root", "reviewer", "Check the evidence independently.")
+    child = worker["child_id"]
+    ident = fixture_data(research, child)
+    body = measured_report(research, child, ident)
+    rejected = research.operate(
+        Operation(
+            op="submit_report",
+            session_id=child,
+            args={"report_json": json.dumps({**body, "findings": ["Qualitative finding."] * 9})},
+        )
+    )
+    assert rejected["status"] == "rejected"
+    assert rejected["issues"][0]["loc"] == ("findings",)
+    assert rejected["issues"][0]["type"] == "too_long"
+    assert "input" not in rejected["issues"][0]
+    assert research.member(child)["state"] == "active"
+    assert research.submitted_report(child) is None
+    accepted = research.operate(
+        Operation(op="submit_report", session_id=child, args={"report_json": json.dumps(body)})
+    )
+    assert accepted["status"] == "accepted"
+    raw = {"stopReason": "completed", "output": [{"type": "text", "text": "Report submitted."}]}
+    result = research.finish_worker("root", child, raw)
+    assert result["report"] == body
+    assert json.loads(research.member(child)["result"]) == raw
+    with research.db() as db:
+        events = [
+            {**dict(r), "body": json.loads(r["body"])} for r in db.execute("SELECT * FROM events")
+        ]
+    exported = work_metrics(research.member(child), events, None)
+    assert exported["report_submission_rejections"] == 1
+    assert exported["model_authored_report"]["summary"] == body["summary"]
+    with pytest.raises(BudgetRefused, match="already finished"):
+        research.admit(child)
+
+
+def test_submission_is_own_report_immutable_and_requires_normal_native_completion(research):
+    child = research.begin_worker("root", "researcher", "Inspect the bounded evidence.")["child_id"]
+    ident = fixture_data(research, child)
+    body = measured_report(research, child, ident)
+    with pytest.raises(ValueError, match="active worker"):
+        research.submit_report("root", json.dumps(body))
+    assert research.submit_report(child, json.dumps(body))["status"] == "accepted"
+    with pytest.raises(ValueError, match="immutable"):
+        research.submit_report(child, json.dumps(body))
+    with pytest.raises(ValueError, match="raw result retained"):
+        research.finish_worker("root", child, {"stopReason": "error", "output": []})
+    assert research.member(child)["state"] == "failed"
+
+
+def test_final_text_cannot_bypass_submission_and_failed_worker_stops_tools(research):
+    child = research.begin_worker("root", "reviewer", "Inspect the bounded evidence.")["child_id"]
+    ident = fixture_data(research, child)
+    body = measured_report(research, child, ident)
+    with pytest.raises(ValueError, match="raw result retained"):
+        research.finish_worker(
+            "root",
+            child,
+            {"stopReason": "completed", "output": [{"type": "text", "text": json.dumps(body)}]},
+        )
+    assert research.scope("root")["activity"]["roles"]["reviewer"]["report_state"] == "failed"
+    for op, args in [
+        ("data", {"kind": "read", "evidence_id": ident}),
+        ("draft", {}),
+        ("begin_worker", {"role": "researcher", "task": "Try again."}),
+    ]:
+        with pytest.raises(ValueError, match="trial stopped"):
+            research.operate(Operation(op=op, session_id="root", args=args))

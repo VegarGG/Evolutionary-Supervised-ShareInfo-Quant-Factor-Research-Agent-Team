@@ -80,7 +80,7 @@ class Response:
 
 
 class ScriptedClient:
-    def __init__(self, research, evidence_id, worker_format="bare"):
+    def __init__(self, research, evidence_id, worker_format="submitted"):
         self.research, self.evidence_id = research, evidence_id
         self.worker_format = worker_format
         self.counts = {}
@@ -172,6 +172,17 @@ class ScriptedClient:
                 }
             ],
         }
+        if self.worker_format in ("submitted", "repair"):
+            submit_index = 3 if self.worker_format == "repair" else 2
+            if index <= submit_index:
+                if self.worker_format == "repair" and index == 2:
+                    report["findings"] = ["Deliberately oversized synthetic list."] * 9
+                return Response(
+                    tool="submit_worker_report",
+                    arguments={"report_json": json.dumps(report)},
+                    ident=ident,
+                )
+            return Response(text="Validated report submitted.", ident=ident)
         text = json.dumps(report)
         if self.worker_format == "json-fence":
             text = "```json\n" + text + "\n```"
@@ -185,7 +196,9 @@ def main():
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--port", type=int, default=3081)
     parser.add_argument(
-        "--worker-format", choices=("bare", "json-fence", "invalid"), default="bare"
+        "--worker-format",
+        choices=("submitted", "repair", "bare", "json-fence", "invalid"),
+        default="submitted",
     )
     args = parser.parse_args()
     private = args.directory.resolve()
@@ -219,6 +232,12 @@ def main():
         patch("qfh.proxy.httpx.Client", return_value=client),
         patch("qfh.budget.admission_open", return_value=True),
         patch("qfh.research.admission_open", return_value=True),
+        patch(
+            "qfh.research.REPORT_CONTRACT",
+            "measured-observations-v2"
+            if args.worker_format in ("bare", "json-fence")
+            else "submitted-reports-v3",
+        ),
     ):
         serve(config, private, key_file, args.port, True, evidence_mode="synthetic_model_and_data")
 

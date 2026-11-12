@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "mode": "synthetic_model_and_data",
+  "trial_id": "session-c3e51110-87d6-49d8-8339-2c133fde18bf",
+  "requests": 15,
+  "same_turn_schema_rejections": 2,
+  "accepted_reports": 2,
+  "completed_workers": 2,
+  "draft_recorded": true,
+  "tool_failures": 0,
+  "real_provider_requests": 0,
+  "regressions_passed": 108,
+  "limits": [
+    "No real inference or data; cannot establish live readiness.",
+    "Missing browser prompt argument and wrong inspection title caused pre-submit/read-only failures; retained separately."
+  ]
+}

@@ -485,3 +485,19 @@ the existing three-session allowance and 179.534428 CNY remaining before new cal
 No data quota, model route, time window or total spending cap is enlarged. The
 current 18:00–24:00 Beijing window permits execution after offline verification.
 See `MEASUREMENT_CONTRACT.md` for the contract and its scientific limits.
+
+The first rerun attempt at 21:15 Beijing reached both actual workers. The researcher
+passed; the reviewer's nine findings violated the unchanged eight-item limit.
+All sixteen Flash calls settled; no draft was accepted. Preserve its 0.359878 CNY
+conservative debit and frozen evidence. Before the next attempt, the accounted total
+is 20.825450 CNY, leaving 179.174550 CNY of the original budget.
+
+Use `submitted-reports-v3`: each active worker submits its own report through a
+validated tool before ending. Return field-level rejection diagnostics; permit
+correction only in that same active native turn and existing six-call role allowance.
+Freeze accepted reports in append-only events and require normal native completion.
+Do not silently truncate oversized lists or replay completed/failed workers. Block
+further research tools after a final worker failure, apart from status and settlement.
+Keep native final chat brief; only host-validated reports/facts constitute the record.
+The third and final configured pilot slot is used for the fresh full rerun after
+offline validation. No automatic extension or reset of the three-trial cap is allowed.

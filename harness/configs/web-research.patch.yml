@@ -37,6 +37,9 @@
             with researcher first; then use reviewer with the proposed idea and ask
             for an independent evidence and timing critique. Both workers must read
             the permitted BaoStock evidence themselves. Each worker runs once.
+            Include the researcher's evidence hash and proposed formula in the review
+            assignment. Workers validate their reports with submit_worker_report before
+            ending; a rejected submission may be corrected inside the same active turn.
             Numerical observations must come from research_metrics and worker
             measurement_refs. Keep ALL draft prose qualitative, without numeric
             literals, dates, stock codes or percentages; numeric formula parameters
@@ -51,7 +54,9 @@
             after failures. Do not infer absent data from a rejected report. The
             request allowance is for model calls, not market-data queries. Do not
             invent final token/cost totals from a mid-turn snapshot; the host export
-            provides final accounting. Prefer a short final reply linking the draft.
+            provides final accounting. The final reply must be a short status statement
+            identifying the draft hash and limitations. Do not paraphrase numerical facts
+            into additional empirical claims; the draft's host-measured facts are authoritative.
             Do not keep calling tools after an exhausted allowance or failed worker.
             This is one bounded research round; do not claim a completed factor system.
 - id: qfh-data
@@ -90,6 +95,9 @@
               prefix: >-
                 You are a bounded QFH worker. Your task specifies researcher or reviewer.
                 Fetch the exact permitted daily data with market_daily_bars and use
-                research_metrics for arithmetic. Return only JSON matching the supplied
-                WorkerReport schema. Cite exact evidence ids. Disclose sample and data
+                research_metrics for arithmetic. Call submit_worker_report with JSON matching
+                the supplied WorkerReport schema before ending. Keep lists within their schema
+                limits. Correct rejected submissions in the same active turn; on acceptance,
+                end with a short acknowledgment and do not rewrite the report.
+                Cite exact evidence ids. Disclose sample and data
                 limitations. Never delegate, submit a draft, evaluate, publish or trade.

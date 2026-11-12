@@ -74,7 +74,12 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
         own = [c for c in calls if c["step"] == f"research:{trial_id}:{member['role']}"]
         by_role[member["role"]] = {
             "session_id": member["session_id"],
-            "report_state": member["state"],
+            "report_state": member["state"]
+            if member["role"] != "supervisor"
+            else "draft_recorded"
+            if draft is not None
+            else "no_draft",
+            "admission_state": member["state"],
             "provider_requests": len(own),
             "conservative_cny": sum(c["charged"] or 0 for c in own) / 1_000_000,
             **model_metrics(own, pricing, synthetic=synthetic),
