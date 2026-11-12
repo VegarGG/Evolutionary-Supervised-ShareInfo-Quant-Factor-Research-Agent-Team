@@ -85,4 +85,10 @@ the supervisor selects a reviewer-executed definition and the host renders the
 formula/timings/statistical state. The earlier free-form fields remain historical.
 All 135 offline tests and native synthetic correction checks pass before the new
 live verification. Validated numbers and executable definitions alone do not
-establish research validity.
+establish research validity. The [new live verification](LIVE_SPECIFICATION_TRIAL_2026-11-12.md)
+completed fifteen Flash calls, two worker calculations/specifications and a draft
+with seventeen fact references. All forty-four facts, dates, support counts and
+hashes passed independent checks. The new reports/draft correctly distinguish
+endpoint contact, untested independence and insufficient support. One speculative
+researcher sentence remains separately flagged; numerical validation does not
+make all model prose authoritative.

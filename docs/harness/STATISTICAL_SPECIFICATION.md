@@ -106,5 +106,10 @@ PYTHONPATH=harness/src python harness/scripts/extend_pilot.py \
 
 The immutable original policy still says three; status reads the latest recorded
 amendment and reports both original and effective limits. No counter is reset.
-The upcoming real trial is separately reported; this offline evidence alone does
-not establish live readiness or research quality.
+The [real trial](LIVE_SPECIFICATION_TRIAL_2026-11-12.md) subsequently completed all
+three roles with fifteen Flash calls. Independent exact-rational checks verified
+the selected definition, seven aligned cases, five signal/two control cases,
+zero positive overlap and the insufficient-data outcome. Four sessions are now
+used, two remain, and 178.391810 CNY remains under the original budget. The report
+separates this live verification from offline evidence and retains a qualitative
+model-speculation caveat; neither establishes research quality or alpha acceptance.

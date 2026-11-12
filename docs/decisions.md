@@ -550,3 +550,29 @@ spending before the fresh trial remains 21.253244 CNY, leaving 178.746756 CNY.
 Use Flash only and the existing real BaoStock cache in the current permitted
 window. The new live result must be recorded separately; earlier drafts, failures
 and charges remain unchanged. See `STATISTICAL_SPECIFICATION.md`.
+
+## 2026-11-12: full specification-repair trial passed
+
+Frozen clean source `ef71f3f` completed at 22:49:31–22:51:15 Beijing. Each real
+Flash role made five calls; all fifteen settled. Both workers independently fetched
+the same cached BaoStock evidence, computed metrics, executed the exact concrete
+contrast and submitted accepted reports. Both Team tasks and the immutable draft
+completed, with no report rejection, retry or new vendor query. Independent checks
+verified seventy-three frozen files, forty-four facts per calculation, seventeen
+draft references, seven aligned cases, five signal/two control cases and zero
+positive label overlap. The outcome is insufficient_data with no bootstrap run.
+
+The three prior blockers are resolved in this run. Retain a new qualitative audit
+caveat: the researcher speculates about a larger-sample interval based on observed
+dispersion, which the available evidence cannot justify, and the reviewer does not
+challenge it. Exclude that speculation from verified conclusions; do not rewrite
+the immutable report or claim all prose is scientifically validated.
+
+Tariff estimate: 0.08414564 CNY; conservative debit: 0.354946 CNY. Accounted total:
+21.608190 CNY; remaining original allowance: 178.391810 CNY. All seventy-eight
+harness calls are settled. Two balance observations show 0.02 CNY account decline,
+not a reconciled invoice; no billing baseline change. Four of six pilot sessions
+are now used, leaving two bounded owner trials. Desktop completion/reload/Team
+checks pass; mobile clipping remains. See `LIVE_SPECIFICATION_TRIAL_2026-11-12.md`
+for per-agent work, costs, rates, cache and shared-machine observations. Keep the
+server available for owner trials under the existing time/model/data guards.

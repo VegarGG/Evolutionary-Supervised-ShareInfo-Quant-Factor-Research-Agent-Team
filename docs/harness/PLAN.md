@@ -21,7 +21,9 @@ as BaoStock after bounded comparisons; only one provider is used per session.
    session uploads, package inventory uploads and general shell/file tools.
 3. Enforce the original cumulative 200 CNY allowance at the actual provider wire,
    including retries, helper requests and unknown outcomes. Prior conservative
-   spending is 56.256735 CNY across 884 calls; it is not reset for this project.
+   spending was estimated at 56.256735 CNY across 884 calls. Retain that history;
+   the owner's later official 20.35 CNY observation is the recorded baseline for
+   subsequent conservative charges, not a renewed allowance.
 4. Build bounded read-only iFind, RQData and BaoStock adapters. RQData also
    provides the initial report/disclosure/news discovery seams. No credentials or licensed rows are committed. Credential/entitlement
    failures are recorded as unavailable, never replaced by synthetic real data.
@@ -110,8 +112,9 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
   retain the existing ledger and original spending/data bounds.
 - [x] Implement the [statistical/specification repairs](STATISTICAL_SPECIFICATION.md):
   geometry, explicit uncertainty states and one host-executed concrete definition.
-- [ ] Fresh real three-role verification of those repairs; workflow integration
-  does not establish research-quality acceptance.
+- [x] Fresh real three-role verification of those repairs: [fifteen Flash calls,
+  two workers and a host-executed contrast](LIVE_SPECIFICATION_TRIAL_2026-11-12.md).
+  Insufficient data is correctly recorded; no research-quality acceptance claimed.
 - [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
 - [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 

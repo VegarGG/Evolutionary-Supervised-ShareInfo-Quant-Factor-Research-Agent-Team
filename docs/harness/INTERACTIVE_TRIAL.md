@@ -1,13 +1,13 @@
 # Bounded interactive research trial
 
-Status: the [full real Flash/BaoStock rerun](LIVE_RERUN_2026-11-12.md) passed at
-21:29–21:31 Beijing on 12 November. Both workers, both native Team tasks and a
-cited draft completed; sixteen requests settled. The first two failed attempts
-remain preserved. The desktop workflow passes bounded integration, while the draft
-exposed scientific/specification issues. The [new executable contrast contract](STATISTICAL_SPECIFICATION.md)
-repairs those boundaries and passes 135 offline tests and a native synthetic team
-run. Fresh live verification is pending. The owner-authorized append-only allowance
-is now six cumulative sessions, three used, with the original budget ledger intact.
+Status: the [latest real Flash/BaoStock trial](LIVE_SPECIFICATION_TRIAL_2026-11-12.md)
+passed at 22:49–22:51 Beijing on 12 November: both workers, both native Team tasks
+and a cited executable contrast completed; fifteen calls settled. The
+[new contract](STATISTICAL_SPECIFICATION.md) repairs the earlier statistical and
+specification findings, with 135 tests and native synthetic/live checks passing.
+The host correctly reports insufficient data; qualitative prose still needs review.
+Earlier records remain intact. The desktop is ready for **two further small owner
+trials** under the explicit six-session allowance, with four now used.
 
 The owner authorized that rerun after arithmetic/reporting repairs. New
 reports use the [measurement contract](MEASUREMENT_CONTRACT.md): deterministic
@@ -66,7 +66,7 @@ remain available for preparation, while this trial's active source is BaoStock.
 | Model routes | `deepseek-flash` only for supervisor, researcher and reviewer; other model IDs are rejected |
 | Team | Supervisor + researcher + reviewer, one activation each; sequential workers |
 | Requests | At most 8 supervisor, 6 researcher and 6 reviewer; 20 per trial including retries |
-| Trials | Six cumulative sessions under the explicit owner amendment; three used before repair verification; no automatic increase |
+| Trials | Six cumulative sessions under the explicit owner amendment; four used and two remaining; no automatic increase |
 | Data | `000001.XSHE`, 2026-10-19..30, unadjusted daily closes |
 | New BaoStock access | The one additional business query/login was used by the first trial; reruns reused its exact cache |
 | Data history | Prior 3 business attempts/3 logins/9 estimated cells retained; new cumulative caps 4/4/21 |
@@ -98,12 +98,13 @@ claim that Codex independently downloaded an invoice. Subsequent charges use
 conservative peak cache-miss input and output rates, with the remaining cap
 calculated from the official baseline plus those newer estimates/reservations.
 
-The three recorded interactive rounds add 0.903244 CNY conservatively, yielding
-21.253244 CNY accounted and 178.746756 CNY remaining. The final round's tariff
-estimate is 0.11078532 CNY; its conservative debit is 0.427794 CNY. Account balance
+The four recorded interactive rounds add 1.258190 CNY conservatively, yielding
+21.608190 CNY accounted and 178.391810 CNY remaining. The latest round's tariff
+estimate is 0.08414564 CNY; its conservative debit is 0.354946 CNY. Account balance
 observations did not reconcile per-trial invoices and do not replace the ledger.
-Those three sessions remain counted under the new six-session allowance.
-The [rerun report](LIVE_RERUN_2026-11-12.md) separates
+Those four sessions remain counted under the new six-session allowance.
+The [latest trial report](LIVE_SPECIFICATION_TRIAL_2026-11-12.md) and
+[previous rerun report](LIVE_RERUN_2026-11-12.md) separate
 each attempt, each agent, actual work, resource observations and cost estimates.
 
 Private evidence includes raw request/SSE records, event timings, native DSH

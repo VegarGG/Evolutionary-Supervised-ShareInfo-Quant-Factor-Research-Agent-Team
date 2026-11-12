@@ -7,14 +7,13 @@ This module uses DSH through its SDK and native plugin APIs. It does not fork th
 agent loop or claim that the original multi-agent framework is complete.
 The new [interactive trial profile](../docs/harness/INTERACTIVE_TRIAL.md) uses the
 native DSH chat, Agent Teams board and two child sessions through the same guard.
-The [real rerun](../docs/harness/LIVE_RERUN_2026-11-12.md) completed both workers and
-a cited draft with Flash-only inference and real cached BaoStock evidence. The
-measurement/submission fixes passed 108 offline tests and the live workflow.
-The new [executable contrast contract](../docs/harness/STATISTICAL_SPECIFICATION.md)
-addresses its remaining statistical/specification findings, with 135 tests and a
-native synthetic team run passing; fresh live verification is pending. Earlier
-records remain unchanged. An owner-authorized append-only amendment extends the
-pilot from three to six sessions, preserving all spending/data bounds and history.
+The [latest real trial](../docs/harness/LIVE_SPECIFICATION_TRIAL_2026-11-12.md) completed
+both workers and a cited executable contrast using fifteen Flash calls and cached
+real BaoStock evidence. The [specification contract](../docs/harness/STATISTICAL_SPECIFICATION.md)
+corrects the earlier statistical findings; 135 offline tests and native synthetic
+and real team checks pass. The host correctly reports insufficient data; a model
+prose caveat remains audited. Two further bounded owner trials are available under
+the authorized six-session allowance, preserving all spending/data bounds/history.
 
 ## Install and verify
 
@@ -104,7 +103,10 @@ so reservation uses provider maxima. Retries consume the same step's call allowa
 unknown outcomes keep their reservation across restart. All input is conservatively
 settled at peak cache-miss prices; cache savings are reported separately. A completed
 step is loaded without paid replay; an interrupted step requires reconciliation.
-The original 56.256735 CNY / 884 calls carry forward into the same 200 CNY total.
+The original 56.256735 CNY / 884-call estimate remains historical evidence. The
+owner's later official 20.35 CNY total supersedes covered estimates through the
+immutable billing-baseline record; newer conservative debits accumulate under
+the same 200 CNY ceiling. See the interactive guide for the current balance.
 
 Admission is DeepSeek-only, 12:00–14:00 and 18:00–24:00 Beijing; an in-flight request
 may drain after the window closes. Current concurrency is one, below the authorized
