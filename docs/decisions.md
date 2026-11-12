@@ -387,3 +387,30 @@ licenses, and vendor-data terms. MIT does not require matching downstream
 licenses; this transition is the owner's affirmative licensing choice. Earlier
 commit/review records remain historical. See LICENSING_REVIEW.md for the exact
 source, scope and distribution verification.
+
+## Interactive research and billing clarification — 12 November 2026
+
+The owner directed: "Please proceed with the integration and make DSH ready for
+me to test." The concrete live scope is: "Run one real trial with a supervisor
+and two workers using DeepSeek and BaoStock, keep the original 200 CNY budget and
+time windows, and record everything."
+
+Use native DSH subagent sessions and Agent Teams tasks behind a small bounded
+research-worker tool. Keep the original ledger, one-provider data policy and
+independent evaluator boundary. Allow at most three small interactive sessions
+(one validation plus two owner trials), 20 model requests per trial and one new
+12-calendar-day BaoStock query. Exact repeats reuse the same evidence. Preserve
+all previous failed data attempts and old model traces. Do not infer acceptance
+of the full Hybrid v1 system from this trial.
+
+The owner clarified: "Let me clarify the actual deepseek cost, the data is from
+the official api usage record, CNY 20.35." Record this as an owner-reported
+official cumulative billing baseline at the then-current 908 recorded calls.
+Preserve raw call counts and conservative historical estimates; reserve/estimate
+new requests separately. Do not reset or enlarge the original 200 CNY budget.
+
+The owner identified the experimental "Agent teams" interface and requested
+different model/provider choices for different roles, plus limited market data
+and news for researchers. Review the pinned native Team/subagent implementation
+and stage these modules in `docs/harness/ROLE_MODELS_AND_CONTEXT.md`. Additional
+provider designs do not authorize additional live providers in this trial.

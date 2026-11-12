@@ -1,3 +1,6 @@
+import hashlib
+import json
+import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
@@ -84,3 +87,66 @@ def test_global_total_and_policy_cannot_be_reset(tmp_path):
 )
 def test_admission_windows(hour, expected):
     assert admission_open(NOW.replace(hour=hour)) is expected
+
+
+def test_explicit_conversation_grant_keeps_old_limits_and_shared_cap(tmp_path):
+    ledger = Ledger(tmp_path / "spend.db", policy())
+    ledger.grant_step("root", "trial", 3, 3, "owner-approved integration trial")
+    ledger.grant_step("worker", "trial", 2, 3, "owner-approved integration trial")
+    for i, step in enumerate(["root", "worker", "root"]):
+        ledger.reserve(str(i), step, NOW)
+        ledger.settle(
+            str(i), Usage(input_uncached=1, input_cached=0, input_cache_write=0, output=1)
+        )
+    with pytest.raises(BudgetRefused, match="trial request"):
+        ledger.reserve("extra", "worker", NOW)
+    with pytest.raises(ValueError, match="immutable"):
+        ledger.grant_step("worker", "trial", 3, 3, "changed")
+    ledger.reserve("old", "diagnostic", NOW)
+    ledger.settle("old", Usage(input_uncached=1, input_cached=0, input_cache_write=0, output=1))
+    with pytest.raises(ValueError, match="already used"):
+        ledger.grant_step("diagnostic", "new", 2, 2, "attempted replay")
+    with pytest.raises(BudgetRefused, match="step request"):
+        ledger.reserve("replay", "diagnostic", NOW)
+
+
+def test_billing_reconciliation_preserves_calls_and_charges_new_calls(tmp_path):
+    ledger = Ledger(tmp_path / "spend.db", policy())
+    ledger.reserve("old", "old", NOW)
+    usage = Usage(input_uncached=10, input_cached=0, input_cache_write=0, output=10)
+    with pytest.raises(ValueError, match="unknown charges"):
+        ledger.reconcile_official_total(20_350_000, "wrong", "owner invoice")
+    ledger.settle("old", usage)
+    digest = hashlib.sha256(json.dumps(["old"], separators=(",", ":")).encode()).hexdigest()
+    with pytest.raises(ValueError, match="history changed"):
+        ledger.reconcile_official_total(20_350_000, "wrong", "owner invoice")
+    ledger.reconcile_official_total(20_350_000, digest, "owner invoice")
+    resumed = Ledger(ledger.path, policy())
+    s = resumed.snapshot()
+    assert s["cumulative_micro_cny"] == 20_350_000
+    assert s["remaining_unreserved_micro_cny"] == 179_650_000
+    assert s["calls"][0]["charged"] == 100
+    resumed.reserve("new", "new", NOW)
+    assert (
+        resumed.snapshot()["remaining_unreserved_micro_cny"] == 179_650_000 - policy().reservation
+    )
+    resumed.settle("new", usage)
+    assert resumed.snapshot()["cumulative_micro_cny"] == 20_350_100
+
+
+def test_reconciled_actual_total_is_still_capped(tmp_path):
+    ledger = Ledger(tmp_path / "spend.db", policy())
+    digest = hashlib.sha256(b"[]").hexdigest()
+    ledger.reconcile_official_total(199_000_000, digest, "owner invoice")
+    with pytest.raises(BudgetRefused, match="original cumulative"):
+        ledger.reserve("new", "new", NOW)
+    ledger.grant_step("root", "trial", 2, 2, "owner-approved test")
+    with ledger.transaction() as db:
+        for statement in (
+            "UPDATE billing_baselines SET actual=0",
+            "DELETE FROM billing_baselines",
+            "UPDATE step_grants SET max_requests=1000",
+            "DELETE FROM step_grants",
+        ):
+            with pytest.raises(sqlite3.IntegrityError, match="append only"):
+                db.execute(statement)

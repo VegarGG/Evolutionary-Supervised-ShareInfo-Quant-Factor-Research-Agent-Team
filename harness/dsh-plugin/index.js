@@ -14,13 +14,25 @@ export const Config = Schema.object({
   sourceRoot: Schema.string().required(),
   policyPath: Schema.string().required(),
   privateRoot: Schema.string().required(),
+  researchConfig: Schema.string().default(''),
+  researchPrivateRoot: Schema.string().default(''),
+  enabledKinds: Schema.array(Schema.string()).default(['bars', 'report_summaries', 'announcements', 'news']),
   requestTimeoutMs: Schema.number().min(1000).max(180000).default(90000),
 })
 
 export function runBackend(config, request, signal) {
+  return runPython(config, ['-m', 'qfh.data_gateway', '--policy', config.policyPath,
+    '--root', config.privateRoot], request, signal)
+}
+
+export function runResearch(config, request, signal) {
+  return runPython(config, ['-m', 'qfh.research', '--config', config.researchConfig,
+    '--private', config.researchPrivateRoot], request, signal)
+}
+
+function runPython(config, args, request, signal) {
   return new Promise((resolve, reject) => {
-    const child = spawn(config.python, ['-m', 'qfh.data_gateway', '--policy', config.policyPath,
-      '--root', config.privateRoot], {
+    const child = spawn(config.python, args, {
       env: { PATH: process.env.PATH ?? '', PYTHONPATH: config.sourceRoot },
       stdio: ['pipe', 'pipe', 'ignore'], signal,
     })
@@ -55,6 +67,7 @@ export function apply(ctx, config) {
     ['company_announcements', 'announcements', 'Read company disclosure metadata and original document links where enabled.'],
     ['research_news', 'news', 'Read news titles, source links and publication times where supported and enabled.'],
   ]) {
+    if (!config.enabledKinds.includes(kind)) continue
     ctx.effect(() => ctx.tools.register(defineTool({
       name: toolName, description,
       parameters: {
@@ -68,6 +81,9 @@ export function apply(ctx, config) {
       async execute(args, exec) {
         if (!exec.agent) throw new Error('Research data requires an owning session')
         const provider = config.activeProvider.get()
+        if (config.researchConfig) return runResearch(config, { op: 'data',
+          session_id: exec.agent.session.id, selected_provider: provider,
+          args: { kind, query: { symbols: args.symbols, start: args.start, end: args.end } } }, exec.signal)
         let payload = {}
         if (provider !== 'baostock') {
           const credential = await ctx.credentials.resolve(credentialRef(
@@ -98,6 +114,9 @@ export function apply(ctx, config) {
     output: { schema: { type: 'json' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
     async execute(args, exec) {
       if (!exec.agent) throw new Error('Research data requires an owning session')
+      if (config.researchConfig) return runResearch(config, { op: 'data',
+        session_id: exec.agent.session.id, selected_provider: config.activeProvider.get(),
+        args: { kind: 'read', ...args } }, exec.signal)
       return runBackend(config, { provider: config.activeProvider.get(), kind: 'read',
         run_id: exec.agent.session.id, ...args }, exec.signal)
     },

@@ -5,6 +5,8 @@ Read the [current plan](../docs/harness/PLAN.md),
 [data-source protocol and limits](../docs/harness/DATA_SOURCES.md).
 This module uses DSH through its SDK and native plugin APIs. It does not fork the
 agent loop or claim that the original multi-agent framework is complete.
+The new [interactive trial profile](../docs/harness/INTERACTIVE_TRIAL.md) uses the
+native DSH chat, Agent Teams board and two child sessions through the same guard.
 
 ## Install and verify
 
@@ -107,9 +109,10 @@ Raw model requests/responses, native session traces, resource samples, data wire
 and credential stores stay private on the operator's machine. Public summaries
 include hashes and measurements, not keys or vendor row dumps. The live model
 pilot, real data transport checks, synthetic model-loop smokes and offline unit
-tests are reported separately. The local UI is currently a credential setup surface;
-a budget-guarded interactive research-chat profile and the minimal supervisor/two-
-worker core remain gated work, not features established by these tests.
+tests are reported separately. The setup-only profile and the new guarded research
+profile use separate launch commands. The latter is a bounded supervisor/researcher/
+reviewer prototype; its live validation is recorded separately from these earlier
+diagnostic checks.
 
 Upstream: [DSH source pin](https://github.com/deepseek-ai/deepseek-harness/tree/e8f7b93a344964de3dca1ace9e72b6e4d6de87cb)
 (MIT), [BaoStock SDK](https://pypi.org/project/baostock/0.9.4/),

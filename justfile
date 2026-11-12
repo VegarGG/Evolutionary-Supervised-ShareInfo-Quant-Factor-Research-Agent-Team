@@ -6,6 +6,7 @@ harness-check:
     uv run --project harness --locked ruff format --check harness
     node --check harness/dsh-plugin/index.js
     node --check harness/dsh-plugin/client.js
+    node --check harness/dsh-plugin/research.js
     uv run --project harness --locked python scripts/check_licenses.py
 
 harness-test:
@@ -13,6 +14,10 @@ harness-test:
 
 harness-ui:
     PYTHONPATH=harness/src uv run --project harness --locked python harness/scripts/start_ui.py --install-plugin
+
+# Explicit operator launch; every model request still waits for an authorized window.
+harness-research-ui *args:
+    PYTHONPATH=harness/src uv run --project harness --locked python harness/scripts/start_research_ui.py {{args}}
 
 harness-data-plan *args:
     PYTHONPATH=harness/src uv run --project harness --locked python harness/scripts/data_pilot.py {{args}}

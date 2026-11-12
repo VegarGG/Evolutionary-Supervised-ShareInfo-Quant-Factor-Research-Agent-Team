@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 from contextlib import contextmanager
@@ -74,11 +75,104 @@ class Ledger:
                 "finished TEXT, state TEXT NOT NULL, reserved INTEGER NOT NULL, "
                 "charged INTEGER, usage TEXT, detail TEXT)"
             )
+            db.execute(
+                "CREATE TABLE IF NOT EXISTS step_grants ("
+                "step TEXT PRIMARY KEY, group_id TEXT NOT NULL, max_requests INTEGER NOT NULL, "
+                "group_max_requests INTEGER NOT NULL, authority TEXT NOT NULL, at TEXT NOT NULL)"
+            )
+            db.execute(
+                "CREATE TABLE IF NOT EXISTS billing_baselines ("
+                "id INTEGER PRIMARY KEY, at TEXT NOT NULL, actual INTEGER NOT NULL, "
+                "covered_calls TEXT NOT NULL, calls_sha256 TEXT NOT NULL, authority TEXT NOT NULL)"
+            )
+            for table in ("step_grants", "billing_baselines"):
+                for action in ("UPDATE", "DELETE"):
+                    db.execute(
+                        f"CREATE TRIGGER IF NOT EXISTS {table}_no_{action.lower()} "
+                        f"BEFORE {action} ON {table} "
+                        "BEGIN SELECT RAISE(ABORT,'budget authority is append only'); END"
+                    )
             saved = db.execute("SELECT body FROM config WHERE id=1").fetchone()
             body = policy.model_dump_json()
             if saved and saved[0] != body:
                 raise ValueError("budget policy changed; explicit reconciliation required")
             db.execute("INSERT OR IGNORE INTO config VALUES (1, ?)", (body,))
+
+    def reconcile_official_total(self, actual: int, expected_calls_sha256: str, authority: str):
+        """Record an owner-reported official cumulative bill, keeping every old call.
+
+        All current calls must have known usage. The caller freezes the covered-id
+        digest first, so an intervening dispatch cannot be silently folded in.
+        Reconciliation includes the historical carry; it is not an extra budget.
+        """
+        if actual < 0 or not authority.strip():
+            raise ValueError("invalid official billing baseline")
+        with self.transaction() as db:
+            rows = db.execute("SELECT id,charged FROM calls ORDER BY id").fetchall()
+            if any(row[1] is None for row in rows):
+                raise ValueError("reconcile unknown charges before recording an official baseline")
+            covered = json.dumps([r[0] for r in rows], separators=(",", ":"))
+            digest = hashlib.sha256(covered.encode()).hexdigest()
+            if digest != expected_calls_sha256:
+                raise ValueError("call history changed since billing observation")
+            prior = db.execute(
+                "SELECT actual,calls_sha256,authority FROM billing_baselines "
+                "ORDER BY id DESC LIMIT 1"
+            ).fetchone()
+            if prior == (actual, digest, authority):
+                return
+            db.execute(
+                "INSERT INTO billing_baselines (at,actual,covered_calls,calls_sha256,authority) "
+                "VALUES (?,?,?,?,?)",
+                (datetime.now(UTC).isoformat(), actual, covered, digest, authority),
+            )
+
+    def _effective_total(self, db) -> int:
+        baseline = db.execute(
+            "SELECT actual,covered_calls FROM billing_baselines ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        covered = set(json.loads(baseline[1])) if baseline else set()
+        return (baseline[0] if baseline else self.policy.carry_micro_cny) + sum(
+            charged if charged is not None else reserved
+            for ident, charged, reserved in db.execute("SELECT id,charged,reserved FROM calls")
+            if ident not in covered
+        )
+
+    def grant_step(
+        self, step: str, group_id: str, max_requests: int, group_max_requests: int, authority: str
+    ) -> None:
+        """An explicit, immutable host grant for a bounded tool conversation.
+
+        This does not modify the saved policy, original cap, carry, prices or any
+        call. Old ungranted diagnostic steps retain their one-request allowance.
+        The host calls this before a new step's first wire request, never a model.
+        """
+        if not (
+            step and group_id and authority.strip() and 1 <= max_requests <= group_max_requests
+        ):
+            raise ValueError("invalid conversation grant")
+        expected = (group_id, max_requests, group_max_requests, authority)
+        with self.transaction() as db:
+            saved = db.execute(
+                "SELECT group_id,max_requests,group_max_requests,authority "
+                "FROM step_grants WHERE step=?",
+                (step,),
+            ).fetchone()
+            if saved:
+                if saved != expected:
+                    raise ValueError("conversation grant is immutable")
+                return
+            if db.execute("SELECT 1 FROM calls WHERE step=?", (step,)).fetchone():
+                raise ValueError("cannot expand an already used step")
+            other = db.execute(
+                "SELECT group_max_requests FROM step_grants WHERE group_id=?", (group_id,)
+            ).fetchone()
+            if other and other[0] != group_max_requests:
+                raise ValueError("inconsistent group allowance")
+            db.execute(
+                "INSERT INTO step_grants VALUES (?,?,?,?,?,?)",
+                (step, *expected, datetime.now(UTC).isoformat()),
+            )
 
     @contextmanager
     def transaction(self):
@@ -106,12 +200,33 @@ class Ledger:
             count = db.execute("SELECT COUNT(*) FROM calls WHERE step=?", (step,)).fetchone()[0]
             if pending >= self.policy.concurrency:
                 raise BudgetRefused("concurrency limit")
-            if count >= self.policy.max_requests_per_step:
+            grant = db.execute(
+                "SELECT group_id,max_requests,group_max_requests FROM step_grants WHERE step=?",
+                (step,),
+            ).fetchone()
+            limit = grant[1] if grant else self.policy.max_requests_per_step
+            if count >= limit:
                 raise BudgetRefused("step request allowance exhausted, including retries")
+            if grant:
+                group_count = db.execute(
+                    "SELECT COUNT(*) FROM calls c JOIN step_grants g ON c.step=g.step "
+                    "WHERE g.group_id=?",
+                    (grant[0],),
+                ).fetchone()[0]
+                if group_count >= grant[2]:
+                    raise BudgetRefused("research trial request allowance exhausted")
+                if db.execute(
+                    "SELECT 1 FROM calls c JOIN step_grants g ON c.step=g.step "
+                    "WHERE g.group_id=? AND c.state='unknown'",
+                    (grant[0],),
+                ).fetchone():
+                    raise BudgetRefused(
+                        "research trial has an unknown charge; reconcile before continuing"
+                    )
             new = spent + self.policy.reservation
             if new > self.policy.package_micro_cny:
                 raise BudgetRefused("work-package budget exhausted or reserved")
-            if new + self.policy.carry_micro_cny > self.policy.total_micro_cny:
+            if self._effective_total(db) + self.policy.reservation > self.policy.total_micro_cny:
                 raise BudgetRefused("original cumulative budget exhausted or reserved")
             db.execute(
                 "INSERT INTO calls (id,step,started,state,reserved) VALUES (?,?,?,?,?)",
@@ -153,18 +268,24 @@ class Ledger:
         with self.transaction() as db:
             db.row_factory = sqlite3.Row
             calls = [dict(row) for row in db.execute("SELECT * FROM calls ORDER BY started")]
+            baseline_row = db.execute(
+                "SELECT * FROM billing_baselines ORDER BY id DESC LIMIT 1"
+            ).fetchone()
+            baseline = dict(baseline_row) if baseline_row else None
+            effective = self._effective_total(db)
         settled = sum(c["charged"] or 0 for c in calls)
         reserved = sum(c["reserved"] for c in calls if c["charged"] is None)
         return {
             "carry_micro_cny": self.policy.carry_micro_cny,
             "new_settled_micro_cny": settled,
             "unresolved_micro_cny": reserved,
-            "cumulative_micro_cny": self.policy.carry_micro_cny + settled,
-            "remaining_unreserved_micro_cny": self.policy.total_micro_cny
-            - self.policy.carry_micro_cny
-            - settled
-            - reserved,
+            "cumulative_micro_cny": effective - reserved,
+            "conservative_unreconciled_cumulative_micro_cny": self.policy.carry_micro_cny + settled,
+            "remaining_unreserved_micro_cny": self.policy.total_micro_cny - effective,
             "invoice_verified": False,
+            "billing_baseline": {k: v for k, v in baseline.items() if k != "covered_calls"}
+            if baseline
+            else None,
             "calls": [
                 {**c, "usage": json.loads(c["usage"]) if c["usage"] else None} for c in calls
             ],

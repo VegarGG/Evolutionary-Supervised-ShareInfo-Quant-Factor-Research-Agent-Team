@@ -85,13 +85,15 @@ globalThis.__ModuleLoader__.load({
         error ? h('p', { role: 'alert' }, error) : null,
         !state ? h('p', null, 'Loading settings…') : h(React.Fragment, null,
           h('label', null, 'Active data source',
-            h('select', { 'aria-label': 'Active data source', value: state.provider, disabled: busy,
+            h('select', { 'aria-label': 'Active data source', value: state.provider, disabled: busy || state.researchMode,
               onChange: event => { void select(event.target.value) }, style: fieldStyle },
               h('option', { value: 'baostock' }, 'BaoStock — free testing'),
               h('option', { value: 'ifind' }, 'iFind'),
               h('option', { value: 'rqdata' }, 'RiceQuant RQData'))),
           h('p', { style: { margin: 0, fontSize: 13 } },
-            'Change source before starting a new session. An existing session refuses source changes.'),
+            state.researchMode
+              ? 'Interactive trial: BaoStock is pinned. Start a new chat, describe a research idea, and keep Use Agent Teams enabled. One supervisor and two workers will produce a cited draft.'
+              : 'Change source before starting a new session. An existing session refuses source changes.'),
           h('div', { style: { border: '1px solid #bbb', borderRadius: 10, padding: 20 } },
             h('h3', { style: { margin: '0 0 8px' } }, 'BaoStock free testing'),
             h('p', { style: { margin: 0 } },
@@ -101,7 +103,9 @@ globalThis.__ModuleLoader__.load({
           h(CredentialForm, { provider: 'rqdata', configured: state.credentials[refs[1]]?.configured,
             operations, refresh }),
           h('p', { style: { margin: 0, fontSize: 13 } },
-            'Initial scope: one symbol, up to three calendar days, close price only. iFind and RQData each allow one data query and one authentication request. BaoStock allows three attempts, including two retained failed attempts. Exact repeats reuse saved results.'),
+            state.researchMode
+              ? 'Trial sample: 000001.XSHE, 19–30 October 2026, daily unadjusted close only. One new BaoStock query is authorized; later trials reuse its cache. Models run only 12:00–14:00 and 18:00–24:00 Beijing, within the original shared 200 CNY cap. No backtest or publication is included.'
+              : 'Initial scope: one symbol, up to three calendar days, close price only. iFind and RQData each allow one data query and one authentication request. BaoStock allows three attempts, including two retained failed attempts. Exact repeats reuse saved results.'),
           h('p', { style: { margin: 0, fontSize: 13 } },
             'Credentials stay in the local DSH credential store. iFind uses the current access token and never rotates it automatically.')))
     }
@@ -121,6 +125,7 @@ globalThis.__ModuleLoader__.load({
             const form = checked(settings).namespaces.find(x => x.ns === 'qfh-data')
             if (!form) throw new Error('QFH settings are unavailable')
             return { provider: form.value.activeProvider, revision: form.revision,
+              researchMode: !!form.value.researchConfig,
               credentials: checked(credentials) }
           },
           async save(ref, value) { checked(await ctx.remote.credentials.set(ref, value)) },

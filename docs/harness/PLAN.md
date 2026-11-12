@@ -82,6 +82,12 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
+Owner update, 12 November: proceed with guarded chat and one real supervisor/two-
+worker BaoStock trial. This authorizes the bounded prototype now; a universal
+collaboration advantage is not a prerequisite to implementing this trial. Earlier
+single-case comparisons retain their limitations. See [the interactive trial](INTERACTIVE_TRIAL.md)
+and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
+
 - [x] Same repository and current main baseline, separate worktree/branch.
 - [x] Superseded open PRs closed; source branches preserved.
 - [x] Pinned DSH boot and exact request routing verified locally.
@@ -93,8 +99,14 @@ cannot expand tool privileges or select a credential/host/path.
 - [x] One-case equal-evidence diagnostic live comparison completed (24 real calls).
 - [ ] Repeats, other mechanisms and open-ended cases completed.
 - [ ] Capability card supports progression to the minimal core.
+- [x] Native DSH Agent Teams source and model-selection interfaces reviewed.
+- [x] Bounded chat/worker integration implemented and exercised with synthetic inference.
+- [ ] One combined live DeepSeek + BaoStock browser trial, full trace and resources.
+- [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
+- [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 
 Current evidence and gate assessment: [first pilot](FIRST_PILOT.md),
 [data-source record](DATA_SOURCES.md), [legacy deployment archive](LEGACY_EXPERIMENTS.md).
-The minimal-core gate remains open: no measured collaboration advantage has yet
-been demonstrated. Repeats are complete only for single/blackboard on the first case.
+No measured collaboration advantage has yet been demonstrated. Repeats are complete
+only for single/blackboard on the first case; the new native-team trial tests
+integration and research traceability, not general collaboration superiority.

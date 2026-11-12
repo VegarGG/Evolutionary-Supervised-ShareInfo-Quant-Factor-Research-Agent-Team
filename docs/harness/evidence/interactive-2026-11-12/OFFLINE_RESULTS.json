@@ -1,0 +1,144 @@
+{
+  "trial_id": "session-808b4e46-2c45-4fd4-882c-3bf5ebf35cee",
+  "mode": "synthetic_model_and_data",
+  "status": "pass",
+  "checks": {
+    "exactly_three_roles": true,
+    "both_workers_valid": true,
+    "draft_recorded": true,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": true,
+    "no_tool_failures": true,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "resource_samples_required_for_live": true
+  },
+  "started_utc": "2026-11-12T07:48:48.169370+00:00",
+  "finished_utc": "2026-11-12T07:48:49.226166+00:00",
+  "wall_seconds": 1.056796,
+  "roles": {
+    "researcher": {
+      "session_id": "qfh-84d8636831844d7fb985f2f3496031fa",
+      "report_state": "completed",
+      "provider_requests": 3,
+      "conservative_cny": 0.00096,
+      "tokens": {
+        "input_uncached": 192,
+        "input_cached": 96,
+        "input_cache_write": 0,
+        "output": 48
+      }
+    },
+    "reviewer": {
+      "session_id": "qfh-ce4a8120a4bf4dca92c1bd2ba2240705",
+      "report_state": "completed",
+      "provider_requests": 3,
+      "conservative_cny": 0.00096,
+      "tokens": {
+        "input_uncached": 192,
+        "input_cached": 96,
+        "input_cache_write": 0,
+        "output": 48
+      }
+    },
+    "supervisor": {
+      "session_id": "session-808b4e46-2c45-4fd4-882c-3bf5ebf35cee",
+      "report_state": "active",
+      "provider_requests": 5,
+      "conservative_cny": 0.0016,
+      "tokens": {
+        "input_uncached": 320,
+        "input_cached": 160,
+        "input_cache_write": 0,
+        "output": 80
+      }
+    }
+  },
+  "model_usage": {
+    "provider": "deepseek",
+    "configured_model": "deepseek-flash",
+    "requests": 11,
+    "tokens": {
+      "input_uncached": 704,
+      "input_cached": 352,
+      "input_cache_write": 0,
+      "output": 176
+    },
+    "total_tokens": 1232,
+    "input_cache_hit_ratio": 0.3333333333333333,
+    "peak_rolling_60s_dispatch_rpm": 11,
+    "peak_rolling_60s_completion_rpm": 11,
+    "peak_rolling_60s_dispatch_tpm": 1232,
+    "peak_rolling_60s_completion_tpm": 1232,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival."
+  },
+  "accounting": {
+    "actual_external_spend_cny": 0,
+    "note": "All 11 responses and cached market rows are scripted fixtures. Their token and price values do not measure real model performance."
+  },
+  "data": {
+    "query": {
+      "symbols": [
+        "000001.XSHE"
+      ],
+      "start": "2026-10-19",
+      "end": "2026-10-30"
+    },
+    "requests_during_trial": [],
+    "tool_fetches": 2,
+    "exact_cache_hits": 2,
+    "evidence_ids": [
+      "c7f78c6760f67b2a1f80ea5038d0fc1a7d384ab1faf6dff6ed0e8ee96f1600a2"
+    ]
+  },
+  "resources": {
+    "samples": 0,
+    "process_tree_peak_rss_bytes": null,
+    "host_cpu_max_percent": null,
+    "process_tree_peak_sampled_cpu_cores": null,
+    "swap_peak_bytes": null,
+    "host_total_ram_bytes": null,
+    "host_available_ram_min_bytes": null,
+    "work_volume_min_free_bytes": null,
+    "measurement_errors": [],
+    "scope": "Guard and DSH/data child process tree. Host readings include unrelated work. Short-lived children between samples may be missed. Not production sizing. A null metric means no measurement, never zero usage."
+  },
+  "draft": {
+    "title": "Offline integration fixture",
+    "formula": "fixture_only",
+    "signal_time": "close_t",
+    "execution_time": "next_trading_day_close",
+    "evidence_ids": [
+      "c7f78c6760f67b2a1f80ea5038d0fc1a7d384ab1faf6dff6ed0e8ee96f1600a2"
+    ],
+    "decisions": [
+      {
+        "worker": "researcher",
+        "adopted": true,
+        "reason": "Retain this synthetic fixture contribution."
+      },
+      {
+        "worker": "reviewer",
+        "adopted": true,
+        "reason": "Retain this synthetic fixture contribution."
+      }
+    ],
+    "limitations": [
+      "Synthetic fixture, not a real finding."
+    ],
+    "next_steps": [
+      "No evaluation or publication."
+    ]
+  },
+  "tool_failures": [],
+  "snapshot_at": "2026-11-12T07:50:37.494543+00:00",
+  "limitations": [
+    "No independent evaluation, publication or gate passed.",
+    "Single stock and short historical sample; no alpha claim.",
+    "DSH session footer counts the selected session; this report includes all three roles.",
+    "Fast synthetic loop is not a resource load or model-quality test.",
+    "Desktop verified; native 390px layout is clipped and is not accepted.",
+    "The 1.06-second fixture loop fell between 2-second resource samples. Resource values are null; live sampling is still required."
+  ]
+}

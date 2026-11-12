@@ -26,6 +26,13 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   evaluation. The invariants below continue to govern any reused QFR services.
 - End each work package with updated README, decision/experiment records and a
   commit. Do not merge a new PR without authorization.
+- The owner now authorizes the bounded interactive supervisor/two-worker prototype
+  in `docs/harness/INTERACTIVE_TRIAL.md`. Use native DSH Agent Teams/subagents;
+  preserve every earlier trace. Additional role/provider designs are staged in
+  `ROLE_MODELS_AND_CONTEXT.md`; live calls remain DeepSeek-only for this package.
+- The owner-reported official cumulative 20.35 CNY observation supersedes the old
+  conservative spending estimate as the budget baseline. Keep the immutable
+  reconciliation, covered-call digest and raw usage; charge new calls afterward.
 
 ## Non-negotiable invariants (each one has tests; never weaken them)
 1. Research code never invokes, configures, prioritizes or cancels evaluation, and never touches simulated accounts or pools. No such tool, endpoint or credential may exist on the research side.

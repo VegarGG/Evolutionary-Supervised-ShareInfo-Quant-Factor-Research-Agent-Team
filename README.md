@@ -9,7 +9,10 @@ and its research/holdout boundaries remain separate.
 Start with the [approved plan](docs/harness/PLAN.md),
 [first live pilot report](docs/harness/FIRST_PILOT.md), and
 [data-source selection](docs/harness/DATA_SOURCES.md).
-The [validation record](docs/harness/VALIDATION.md) includes test scope and UI checks.
+The [interactive trial guide](docs/harness/INTERACTIVE_TRIAL.md) covers the new
+supervisor/two-worker workflow and its small limits.
+The [initial validation record](docs/harness/VALIDATION.md) and
+[native-team validation](docs/harness/INTERACTIVE_VALIDATION.md) distinguish each test scope.
 This is a prototype, not a completed Hybrid v1 system or an accepted alpha engine.
 
 ## Current deliverable
@@ -24,11 +27,16 @@ This is a prototype, not a completed Hybrid v1 system or an accepted alpha engin
   preserving unknown charges and enforcing Beijing admission windows.
 - Ten real-model diagnostic runs across six workflow variants, 24 new API calls.
   All passed the one known-answer case; collaboration showed no accuracy advantage
-  and cost more. More diagnostic/open-ended work is required before the core gate.
+  and cost more. Those diagnostics are separate from the interactive trial.
+- A guarded DSH chat preset with one supervisor and two native child sessions,
+  the native Agent Teams task board, cited worker reports and immutable research
+  drafts. See the trial guide for the current live validation status.
 
-Conservative cumulative model spending is **57.084913 CNY**, including the earlier
-56.256735 CNY. The new pilot used 0.828178 CNY, with 22.64% input cache hits. These
-figures are not invoice verified. Free-data and browser checks added no paid calls.
+The owner reported an official cumulative API charge of **20.35 CNY** on
+12 November 2026, superseding the earlier 57.084913 CNY conservative estimate.
+That observation is now the billing baseline; subsequent requests add conservative
+estimates under the unchanged **200 CNY** ceiling. The raw call history and old
+estimates are preserved. The first diagnostic pilot's input cache hit rate was 22.64%.
 
 ## Local setup and checks
 
@@ -46,7 +54,10 @@ port 3080. Use its authenticated bootstrap link printed locally. In Settings →
 Research data, select BaoStock, iFind or RQData. Saving a credential sends no
 provider request. This setup profile has model providers disabled; guarded live
 experiments use the separate SDK runner, as described in [harness/README.md](harness/README.md).
-It is not yet the complete interactive research-chat frontend.
+For the guarded chat/Agent Teams profile, use `just harness-research-ui --private
+.qfh-private --key-file /operator/deepseek-key-file --install-plugin`. The real key
+stays in the parent relay. Follow the [trial guide](docs/harness/INTERACTIVE_TRIAL.md);
+the existing setup-only command remains available.
 
 `just harness-data-plan` prints the tiny initial data test without contacting a
 provider. Execution requires the explicit `--execute` argument. The current pilot
