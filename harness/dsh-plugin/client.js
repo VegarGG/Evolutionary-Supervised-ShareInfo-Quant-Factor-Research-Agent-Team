@@ -125,7 +125,7 @@ globalThis.__ModuleLoader__.load({
             const form = checked(settings).namespaces.find(x => x.ns === 'qfh-data')
             if (!form) throw new Error('QFH settings are unavailable')
             return { provider: form.value.activeProvider, revision: form.revision,
-              researchMode: !!form.value.researchConfig,
+              researchMode: globalThis.__QFH_RESEARCH_PROFILE__?.enabled === true,
               credentials: checked(credentials) }
           },
           async save(ref, value) { checked(await ctx.remote.credentials.set(ref, value)) },

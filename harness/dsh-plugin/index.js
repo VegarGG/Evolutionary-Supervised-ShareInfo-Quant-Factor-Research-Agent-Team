@@ -61,6 +61,12 @@ export function apply(ctx, config) {
   for (const key of ['python', 'sourceRoot', 'policyPath', 'privateRoot']) {
     if (!isAbsolute(config[key])) throw new Error(`qfh-data ${key} must be an absolute path`)
   }
+  // Static configuration is intentionally absent from editable settings forms.
+  // Publish only this non-secret UI fact through DSH's native page bootstrap.
+  ctx.on('webserver/index-inject', table => {
+    table.push({ kind: 'global', name: '__QFH_RESEARCH_PROFILE__',
+      value: { enabled: !!config.researchConfig } })
+  })
   for (const [toolName, kind, description] of [
     ['market_daily_bars', 'bars', 'Fetch daily stock data from the selected data source within the operator quota.'],
     ['research_reports', 'report_summaries', 'Read broker report summaries where supported and enabled.'],

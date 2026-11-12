@@ -14,7 +14,7 @@ counted as real inference or evidence of research quality.
 | Desktop persistence | Pass | 1440×1000 Chrome via Playwright; draft and both native workers/tasks survive reload; no browser console errors |
 | Local workspace placement | Pass | Fresh profile stores its default workspace under the private Work-volume directory |
 | Actual UI window refusal | Pass after display fix | Two closed-window attempts added zero provider calls, data queries or trial allocations; fixed UI shows the window reason |
-| Research settings | Pass | BaoStock is selected and locked; bounded-trial instructions and masked paid-source fields are visible; no credentials changed and no provider query |
+| Research settings | Pass after display fix | BaoStock selected and locked, bounded-trial instructions visible, paid credential fields masked; no credentials changed and no provider query occurred |
 | Package and secret scan | Pass | Packed plugin includes `research.js`, MIT license and notices; 341 publishable files checked against the actual authorized key, with zero matches |
 | Mobile conversation | Known limitation | 390×844 view clips content horizontally; capture retained, mobile not accepted |
 | Live inference/data/resource result | Pending | One combined trial at 18:00 Beijing; original shared 200 CNY ledger and owner-reported 20.35 CNY baseline |
@@ -49,6 +49,13 @@ resource values are null. The separate live run must capture resource samples.
   The guard now returns HTTP 409 for policy conflicts and HTTP 401 for invalid
   local credentials. A browser rerun shows the actual admission-window reason;
   both attempts retain zero dispatched provider requests and zero trial allocations.
+- The research settings test initially failed because a static profile field is
+  absent from DSH's editable-settings projection. The panel consequently showed
+  its setup selector, although the server still enforced BaoStock-only access.
+  A non-secret boolean now uses DSH's native page-bootstrap hook. The rerun verifies
+  the locked BaoStock selector, correct trial instructions and masked credential
+  fields. An initially premature validation-table entry was corrected immediately;
+  only the successful rerun establishes this result.
 - The earlier desktop-to-mobile screenshot was captured during a sidebar
   transition. A stable-state retest exposed the native horizontal clipping and
   changed the mobile conclusion to a known limitation.
@@ -60,6 +67,7 @@ synthetic verification summary and screenshots; live raw vendor rows stay privat
 
 [Offline result](evidence/interactive-2026-11-12/OFFLINE_RESULTS.json)
 · [Actual-window refusal](evidence/interactive-2026-11-12/WINDOW_REFUSAL_RESULTS.json)
+· [Research settings](evidence/interactive-2026-11-12/RESEARCH_SETTINGS.json)
 
 ![Native Agent Teams with two completed workers and tasks](evidence/interactive-2026-11-12/offline-team-board.png)
 
