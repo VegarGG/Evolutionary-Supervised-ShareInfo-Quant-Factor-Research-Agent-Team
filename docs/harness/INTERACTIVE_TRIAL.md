@@ -1,9 +1,10 @@
 # Bounded interactive research trial
 
-Status: integration implemented; offline browser/team loop verified. The first
-live DeepSeek + BaoStock trial is scheduled for the next authorized window,
-18:00 Beijing on 12 November 2026. This document will record its actual outcome.
-It does not count scripted model responses as live inference.
+Status: the [real Flash/BaoStock trial](LIVE_TRIAL_2026-11-12.md) started at 18:01
+Beijing on 12 November and stopped after the researcher's fenced JSON report was
+rejected. Seven requests settled; the reviewer never ran and no draft exists.
+The presentation boundary is repaired and passes native offline tests, but a full
+real three-role pass is still required before owner-trial readiness is accepted.
 
 ## What you can test
 
@@ -86,6 +87,11 @@ claim that Codex independently downloaded an invoice. Subsequent charges use
 conservative peak cache-miss input and output rates, with the remaining cap
 calculated from the official baseline plus those newer estimates/reservations.
 
+The first interactive round adds 0.115572 CNY conservatively, leaving 179.534428 CNY.
+Its published-tariff estimate is 0.04310952 CNY. Two private balance observations
+returned no displayed change and did not establish the actual charge. The failed
+round occupies one of the three slots; two owner slots remain. No paid replay ran.
+
 Private evidence includes raw request/SSE records, event timings, native DSH
 session archives, append-only research events, source hashes, role assignments,
 worker outputs, data wire records, evidence hashes and resource samples. Export a
@@ -137,6 +143,11 @@ or production capacity.
 
 Completed workers and drafts are not automatically rerun. Failed or interrupted
 workers keep their task, raw result or start marker; the trial stops for inspection.
+Reports now accept bare JSON or one complete JSON/unlabelled code fence. The
+contents still pass the same size, schema and citation checks; text outside the
+object/fence is rejected. Failure messages include completed-operation counts,
+and a rejected/uncertain settlement is not sent twice. These repairs do not alter
+the failed live round or verify the arithmetic in a model-authored report.
 There is no production job scheduler or automatic cross-window recovery in this
 first UI. A stopped native task can remain in progress on the Team board; that
 must not be mistaken for successful research. Reopen history to inspect, and

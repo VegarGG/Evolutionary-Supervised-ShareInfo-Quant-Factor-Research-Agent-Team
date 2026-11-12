@@ -7,6 +7,9 @@ This module uses DSH through its SDK and native plugin APIs. It does not fork th
 agent loop or claim that the original multi-agent framework is complete.
 The new [interactive trial profile](../docs/harness/INTERACTIVE_TRIAL.md) uses the
 native DSH chat, Agent Teams board and two child sessions through the same guard.
+The [first real attempt](../docs/harness/LIVE_TRIAL_2026-11-12.md) used Flash and
+BaoStock but stopped at a fenced-report mismatch. That boundary is fixed offline;
+the reviewer/draft path still needs a complete real pass before trial acceptance.
 
 ## Install and verify
 

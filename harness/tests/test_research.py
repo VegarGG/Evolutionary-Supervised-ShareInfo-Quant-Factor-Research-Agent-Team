@@ -1,10 +1,12 @@
+import json
 from pathlib import Path
 
 import pytest
 
 from qfh.budget import BudgetRefused
 from qfh.data_gateway import dispatch
-from qfh.research import Operation, Research
+from qfh.research import Operation, Research, parse_worker_report
+from qfh.trial_metrics import work_metrics
 
 
 @pytest.fixture
@@ -153,6 +155,84 @@ def test_failed_worker_retains_raw_output_and_stops_draft(research):
         )
     row = research.member(worker["child_id"])
     assert row["state"] == "failed" and "invalid report" in row["result"]
+
+
+@pytest.mark.parametrize("label", ["json", ""])
+def test_single_fenced_report_keeps_raw_text_and_validates_citations(research, label):
+    worker = research.begin_worker("root", "researcher", "Inspect the bounded test evidence.")
+    ident = fixture_data(research, worker["child_id"])
+    text = "```" + label + "\n" + json.dumps(report(ident)) + "\n```"
+    raw = {"stopReason": "completed", "output": [{"type": "text", "text": text}]}
+    result = research.finish_worker("root", worker["child_id"], raw)
+    assert result["report"] == report(ident)
+    member = research.member(worker["child_id"])
+    assert json.loads(member["result"]) == raw
+    assert (
+        work_metrics(member, [], None)["model_authored_report"]["summary"]
+        == report(ident)["summary"]
+    )
+    with research.db() as db:
+        event = json.loads(
+            db.execute("SELECT body FROM events WHERE kind='worker_finished'").fetchone()[0]
+        )
+    assert event["report_format"] == "json_fence" and event["validation_error"] is None
+    with pytest.raises(ValueError, match="already recorded"):
+        research.finish_worker("root", worker["child_id"], raw)
+
+
+@pytest.mark.parametrize(
+    "template",
+    [
+        "Here is the report: ```json\n%s\n```",
+        "```json\n%s\n```\nAdditional claims.",
+        "```python\n%s\n```",
+        "```json\n%s\n```\n```json\n{}\n```",
+        "%s {}",
+    ],
+)
+def test_report_decoder_rejects_prose_multiple_objects_and_wrong_fences(template):
+    raw = {
+        "stopReason": "completed",
+        "output": [{"type": "text", "text": template % json.dumps(report("f" * 64))}],
+    }
+    with pytest.raises(ValueError):
+        parse_worker_report(raw, 50000)
+
+
+def test_fence_does_not_bypass_schema_size_stop_or_citation_checks(research):
+    worker = research.begin_worker("root", "researcher", "Inspect the bounded test evidence.")
+    body = report("f" * 64)
+    raw = {
+        "stopReason": "completed",
+        "output": [{"type": "text", "text": "```json\n" + json.dumps(body) + "\n```"}],
+    }
+    with pytest.raises(ValueError, match="result limit"):
+        parse_worker_report(raw, 10)
+    with pytest.raises(ValueError, match="complete normally"):
+        parse_worker_report({**raw, "stopReason": "error"}, 50000)
+    invalid = {**body, "unexpected_field": True}
+    with pytest.raises(ValueError):
+        parse_worker_report(
+            {**raw, "output": [{"type": "text", "text": json.dumps(invalid)}]}, 50000
+        )
+    with pytest.raises(ValueError, match="raw result retained"):
+        research.finish_worker("root", worker["child_id"], raw)
+    assert research.member(worker["child_id"])["state"] == "failed"
+
+
+def test_rejected_report_exposes_observed_operations_without_vendor_rows(research):
+    worker = research.begin_worker("root", "researcher", "Inspect the bounded test evidence.")
+    ident = fixture_data(research, worker["child_id"])
+    research.operate(
+        Operation(op="metrics", session_id=worker["child_id"], args={"evidence_id": ident})
+    )
+    with pytest.raises(ValueError, match='Completed worker operations: {"metrics": 1}') as err:
+        research.finish_worker(
+            "root",
+            worker["child_id"],
+            {"stopReason": "completed", "output": [{"type": "text", "text": "invalid"}]},
+        )
+    assert ident not in str(err.value)
 
 
 def test_arithmetic_and_append_only_events(research):

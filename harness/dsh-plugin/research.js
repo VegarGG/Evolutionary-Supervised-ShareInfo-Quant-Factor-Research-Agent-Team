@@ -73,7 +73,7 @@ export function apply(ctx, config) {
       }
       const admitted = await operation('begin_worker', args, exec)
       let activation
-      let recorded = false
+      let settlementAttempted = false
       try {
         let task = await ctx.agentTeams.createTask(exec.agent,
           { subject: `${args.role}: bounded A-share research`, description: args.task }, exec.signal)
@@ -88,13 +88,15 @@ export function apply(ctx, config) {
         task = await ctx.agentTeams.updateTask(exec.agent, { taskId: task.id,
           expectedRevision: task.revision, action: 'reassign', owner: activation.childId }, exec.signal)
         const result = await activation.result
+        // A failed or uncertain settlement must not be submitted a second time.
+        // The backend retains the actual result, including rejected reports.
+        settlementAttempted = true
         const report = await operation('finish_worker', { child_id: admitted.child_id, result }, exec, null)
-        recorded = true
         task = await ctx.agentTeams.updateTask(exec.agent, { taskId: task.id,
           expectedRevision: task.revision, action: 'complete' }, exec.signal)
         return { ...report, team_task: task }
       } catch (error) {
-        if (!recorded) {
+        if (!settlementAttempted) {
           try { await operation('finish_worker', { child_id: admitted.child_id,
             result: { stopReason: 'error', output: [], diagnostic: 'Native worker or report validation failed; inspect retained logs.' } }, exec, null) }
           catch { /* The original worker settlement or active marker remains durable. */ }

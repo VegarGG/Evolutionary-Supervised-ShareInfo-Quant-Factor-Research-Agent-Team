@@ -1,13 +1,15 @@
 # Native-team integration verification — 12 November 2026
 
-The guarded desktop workflow passes offline integration. Live DeepSeek + BaoStock
-validation remains pending the 18:00 Beijing window. No scripted response is
-counted as real inference or evidence of research quality.
+The guarded desktop workflow passes offline integration. The real DeepSeek Flash
+and BaoStock round ran after 18:00 Beijing but failed at the researcher-report
+boundary; the reviewer and draft did not run. See the [full live result and
+repair checks](LIVE_TRIAL_2026-11-12.md). No scripted response is counted as real
+inference or evidence of research quality.
 
 | Check | Result | Evidence and limits |
 |---|---|---|
 | Harness lint, format, JavaScript and MIT notices | Pass | `just harness-check`; three JavaScript entrypoints and all package notices |
-| Harness offline regressions | 82 passed | Original 75 plus seven per-agent measurement/balance-observation regressions; actual token weighting, rolling boundaries, unknown usage, tariff boundaries, activity attribution and secret-safe non-replay |
+| Harness offline regressions | 91 passed | Includes per-agent accounting and nine report-wrapper/validation/audit regressions |
 | Legacy checks | Pass | Ruff, mypy, import contracts, schemas/cards and package license checks |
 | Legacy tests | 862 passed, 54 skipped | No PostgreSQL integration credentials; one existing deprecation warning |
 | Native DSH chat/team loop | Pass with fixtures | Actual pinned DSH runtime, one root and two spawned children, 11 scripted requests, two completed native Team tasks, one validated draft |
@@ -15,16 +17,19 @@ counted as real inference or evidence of research quality.
 | Local workspace placement | Pass | Fresh profile stores its default workspace under the private Work-volume directory |
 | Actual UI window refusal | Pass after display fix | Two closed-window attempts added zero provider calls, data queries or trial allocations; fixed UI shows the window reason |
 | Research settings | Pass after display fix | BaoStock selected and locked, bounded-trial instructions visible, paid credential fields masked; no credentials changed and no provider query occurred |
-| Package and secret scan | Pass | Packed plugin includes `research.js`, MIT license and notices; 341 publishable files checked against the actual authorized key, with zero matches |
+| Package and secret scan | Pass before live run | Packed plugin includes `research.js`, MIT license and notices; 350 publishable files checked against the actual authorized key, with zero matches |
 | Mobile conversation | Known limitation | 390×844 view clips content horizontally; capture retained, mobile not accepted |
-| Live inference/data/resource result | Pending | One combined trial at 18:00 Beijing; original shared 200 CNY ledger and owner-reported 20.35 CNY baseline |
+| Live inference/data/resource result | Partial / failed | Seven settled Flash requests, one BaoStock query/login, 35 resource samples; researcher report rejected, reviewer not started, no draft |
+| Report-wrapper repair | Pass offline | Native DSH accepts two fenced synthetic reports and records one draft; retained real report passes offline schema/citation recheck only |
+| Malformed report settlement | Pass offline | Native DSH rejects the synthetic report exactly once and includes completed-operation counts; no replay or draft |
 
 The browser plugin was unavailable, so the existing installed Chrome was driven
 with the bundled Playwright runtime. Both offline model transport and market data
 are synthetic; the offline driver rejects any uncached provider read. The model
 request fixture's token/cache values are not model-performance measurements.
 The 1.06-second fixture loop fell between two-second resource samples, so its
-resource values are null. The separate live run must capture resource samples.
+resource values are null. The separate live run captured 35 resource samples;
+the whole-run peak shared process RSS was 636.5 MiB.
 
 The later per-agent export was replayed on the retained offline trace without
 running new model/data calls. It separates role usage, shared-process activity
@@ -34,6 +39,20 @@ were tested with synthetic responses only before the authorized live window.
 
 ## Retained failures and corrections
 
+- The live worker returned one valid JSON object inside a Markdown fence. The
+  original bare-JSON receiver rejected it. The repair accepts that one wrapper
+  without changing its contents, citation checks or other validation. The plugin
+  no longer submits a second failure settlement after an already-recorded rejection.
+- The supervisor's failure recap incorrectly said no data/arithmetic occurred.
+  Failure messages now include actual completed-operation counts. The live record
+  remains incorrect and is identified as such in the report.
+- Independent arithmetic checks found errors in the worker's added daily returns
+  and five-lag indexing. Those scientific-quality issues are not repaired by JSON
+  normalization; no reviewer or evaluator assessed the real proposal.
+- Post-fix fresh-profile browser attempts encountered workspace initialization and
+  a disappearing disabled Preview Notice button before submission. Both allocated
+  zero trials/requests; subsequent offline runs passed. The private driver now
+  waits for the preview transition and checks unsent editor content before sending.
 - A first browser script matched both search and chat textboxes. It failed before
   dispatch; the corrected script identifies the chat editor by its full label.
 - In a fresh profile, initial workspace creation reset the editor after an early

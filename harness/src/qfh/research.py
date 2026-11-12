@@ -14,6 +14,7 @@ import re
 import sqlite3
 import sys
 import uuid
+from collections import Counter
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -81,6 +82,23 @@ class WorkerReport(BaseModel):
     proposed_formula: str | None = None
     recommended_changes: list[str] = Field(max_length=8)
     limitations: list[str] = Field(min_length=1, max_length=8)
+
+
+def parse_worker_report(result, max_chars):
+    """Accept one JSON object, optionally fenced, without repairing its contents."""
+    if result.get("stopReason") != "completed":
+        raise ValueError("worker did not complete normally")
+    text = "".join(b.get("text", "") for b in result.get("output", []) if b.get("type") == "text")
+    if len(text) > max_chars:
+        raise ValueError("worker report exceeds the configured result limit")
+    text = text.strip()
+    encoding = "bare_json"
+    if text.startswith("```"):
+        match = re.fullmatch(r"```(?:json)?[ \t]*\r?\n(.*?)\r?\n```", text, re.DOTALL)
+        if match is None:
+            raise ValueError("expected one JSON fence without surrounding prose")
+        text, encoding = match[1], "json_fence"
+    return WorkerReport.model_validate_json(text), encoding
 
 
 class Decision(BaseModel):
@@ -349,16 +367,9 @@ class Research:
             raise ValueError("worker does not belong to this supervisor")
         if child["state"] != "active":
             raise ValueError("worker settlement already recorded")
-        report, error = None, None
+        report, error, encoding = None, None, None
         try:
-            if result.get("stopReason") != "completed":
-                raise ValueError("worker did not complete normally")
-            text = "".join(
-                b.get("text", "") for b in result.get("output", []) if b.get("type") == "text"
-            )
-            if len(text) > self.policy.max_tool_result_chars:
-                raise ValueError("worker report exceeds the configured result limit")
-            report = WorkerReport.model_validate_json(text)
+            report, encoding = parse_worker_report(result, self.policy.max_tool_result_chars)
             self.check_citations(child_id, report.evidence_ids)
         except (ValueError, TypeError) as exc:
             error = type(exc).__name__
@@ -381,12 +392,26 @@ class Research:
                     "child_id": child_id,
                     "role": child["role"],
                     "result": result,
+                    "report_format": encoding,
                     "validation_error": error,
                 },
             )
         if error:
+            with self.db() as db:
+                operations = Counter(
+                    body["op"]
+                    + (":" + body["args"].get("kind", "") if body["op"] == "data" else "")
+                    for row in db.execute(
+                        "SELECT body FROM events WHERE principal=? AND kind='tool_result'",
+                        (child_id,),
+                    )
+                    for body in [json.loads(row["body"])]
+                )
             raise ValueError(
-                "worker report failed validation; raw result retained and no automatic replay"
+                "worker report failed validation; raw result retained and no automatic replay. "
+                "Completed worker operations: "
+                + json.dumps(dict(operations), sort_keys=True)
+                + ". Report rejection does not mean no data or arithmetic was performed."
             )
         for ident in report.evidence_ids:
             self.data.grant(session_id, ident)

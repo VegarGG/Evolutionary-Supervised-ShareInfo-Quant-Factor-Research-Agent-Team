@@ -444,3 +444,25 @@ model ID. The current role policy and running guard already enforce this; preser
 their existing ledger and reject any other model ID before provider dispatch.
 Make this restriction explicit in the scheduled continuation and trial docs.
 The 18:00 Beijing start, BaoStock scope and original 200 CNY total cap are unchanged.
+
+## 2026-11-12: real Flash/BaoStock result and boundary repair
+
+The authorized scheduled round dispatched at 18:01:22 Beijing. Seven actual Flash
+requests and one BaoStock query/login completed. A single JSON code fence caused
+the researcher's report to fail validation; the supervisor stopped, so the reviewer
+and draft never ran. Preserve that failed state and all usage. Do not use an offline
+format recheck to retroactively accept it or start a second paid trial automatically.
+
+Accept one entire JSON/unlabelled fence as presentation, with unchanged contents,
+size/schema/citation checks and raw-result retention. Submit worker settlement only
+once; failed/uncertain settlement is not grounds for a replacement write. Include
+completed worker-operation counts in failure messages so the supervisor can report
+actual work. Verify those changes in unit tests and native synthetic success/failure
+flows. Independent arithmetic found additional incorrect model calculations and
+an unsupported preregistration claim; JSON validity does not resolve those issues.
+
+The round's tariff estimate is 0.04310952 CNY, conservative debit 0.115572 CNY,
+remaining original budget 179.534428 CNY. Both account observations showed zero
+displayed delta, which does not prove free usage or verify actual invoiced cost.
+Keep the ledger unchanged by those observations. Readiness remains unaccepted
+pending a real complete three-role run; the UI is available to inspect the trace.

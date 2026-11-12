@@ -6,6 +6,8 @@ from datetime import datetime, time, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
+from qfh.research import parse_worker_report
+
 TOKEN_FIELDS = ("input_uncached", "input_cached", "input_cache_write", "output")
 
 
@@ -174,9 +176,10 @@ def work_metrics(member, events, draft):
     report = None
     if member["role"] != "supervisor" and member["state"] == "completed":
         result = json.loads(member["result"])
-        report = json.loads(
-            "".join(b.get("text", "") for b in result["output"] if b.get("type") == "text")
-        )
+        # Completion already enforced the configured size/citation limits. Use
+        # the same presentation decoder while retaining the original raw result.
+        report, _ = parse_worker_report(result, len(member["result"]))
+        report = report.model_dump()
     return {
         "model_authored_report": None
         if report is None

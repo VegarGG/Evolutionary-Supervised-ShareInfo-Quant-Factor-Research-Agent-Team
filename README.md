@@ -15,6 +15,12 @@ The [initial validation record](docs/harness/VALIDATION.md) and
 [native-team validation](docs/harness/INTERACTIVE_VALIDATION.md) distinguish each test scope.
 This is a prototype, not a completed Hybrid v1 system or an accepted alpha engine.
 
+The [first real native-team trial](docs/harness/LIVE_TRIAL_2026-11-12.md) ran at
+18:01 Beijing on 12 November: seven Flash requests, real BaoStock data and 31,074
+tokens. It stopped at a fenced-JSON report mismatch before the reviewer or draft.
+The boundary repair passes offline; a complete real three-role pass is still
+required before owner-trial readiness is accepted.
+
 ## Current deliverable
 
 - Pinned DSH SDK/runtime 0.2.2rc2 and a native Research data settings/tool plugin.
@@ -39,6 +45,9 @@ estimates under the unchanged **200 CNY** ceiling. The raw call history and old
 estimates are preserved. The first diagnostic pilot's input cache hit rate was 22.64%.
 The interactive-trial export reports each role's token usage, cache hits, TPM/RPM,
 tariff-estimated cost and shared-process resource observations separately.
+The failed interactive round adds a 0.115572 CNY conservative debit, leaving
+**179.534428 CNY** under the original cap. Its tariff estimate is 0.04310952 CNY;
+two balance snapshots did not resolve the actual billed amount.
 
 ## Local setup and checks
 

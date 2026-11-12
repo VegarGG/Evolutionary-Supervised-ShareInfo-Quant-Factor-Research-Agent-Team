@@ -80,8 +80,9 @@ class Response:
 
 
 class ScriptedClient:
-    def __init__(self, research, evidence_id):
+    def __init__(self, research, evidence_id, worker_format="bare"):
         self.research, self.evidence_id = research, evidence_id
+        self.worker_format = worker_format
         self.counts = {}
         self.lock = threading.Lock()
 
@@ -102,6 +103,8 @@ class ScriptedClient:
         )
         ident = f"synthetic-{sid}-{index}"
         if role == "supervisor":
+            if index == 2 and self.worker_format == "invalid":
+                return Response(text="OFFLINE EXPECTED WORKER FAILURE. No replay.", ident=ident)
             if index == 0:
                 return Response(tool="research_scope", arguments={}, ident=ident)
             if index in (1, 2):
@@ -161,13 +164,21 @@ class ScriptedClient:
             "recommended_changes": [],
             "limitations": ["Not real market evidence."],
         }
-        return Response(text=json.dumps(report), ident=ident)
+        text = json.dumps(report)
+        if self.worker_format == "json-fence":
+            text = "```json\n" + text + "\n```"
+        elif self.worker_format == "invalid":
+            text = "Invalid synthetic report; must remain rejected."
+        return Response(text=text, ident=ident)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--port", type=int, default=3081)
+    parser.add_argument(
+        "--worker-format", choices=("bare", "json-fence", "invalid"), default="bare"
+    )
     args = parser.parse_args()
     private = args.directory.resolve()
     private.mkdir(parents=True, exist_ok=False)
@@ -195,7 +206,7 @@ def main():
     key_file = private / "dummy-key.txt"
     key_file.write_text("sk-offline-placeholder-never-sent-to-any-provider")
     key_file.chmod(0o600)
-    client = ScriptedClient(research, data["evidence_id"])
+    client = ScriptedClient(research, data["evidence_id"], args.worker_format)
     with (
         patch("qfh.proxy.httpx.Client", return_value=client),
         patch("qfh.budget.admission_open", return_value=True),

@@ -1,0 +1,306 @@
+{
+  "trial_id": "session-c1ec8f89-16a6-40b4-8840-25a01dc18319",
+  "mode": "live_DeepSeek_with_BaoStock",
+  "status": "partial_or_failed",
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": false,
+    "both_workers_valid": false,
+    "draft_recorded": false,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": false,
+    "no_tool_failures": false,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "resource_samples_required_for_live": true,
+    "raw_data_transport_required_for_live": true
+  },
+  "started_utc": "2026-11-12T10:01:22.842882+00:00",
+  "finished_utc": "2026-11-12T10:02:32.620332+00:00",
+  "wall_seconds": 69.77745,
+  "model_usage": {
+    "provider": "deepseek",
+    "configured_model": "deepseek-flash",
+    "requests": 7,
+    "requests_with_known_usage": 7,
+    "all_usage_settled": true,
+    "tokens": {
+      "input_uncached": 7194,
+      "input_cached": 14976,
+      "input_cache_write": 0,
+      "output": 8904
+    },
+    "total_tokens": 31074,
+    "input_cache_hit_ratio": 0.6755074424898512,
+    "peak_rolling_60s_dispatch_rpm": 7,
+    "peak_rolling_60s_completion_rpm": 6,
+    "peak_rolling_60s_dispatch_tpm": 31074,
+    "peak_rolling_60s_completion_tpm": 26302,
+    "conservative_settled_cny": 0.115572,
+    "unresolved_reserved_cny": 0.0,
+    "published_price_estimate_cny": 0.04310952,
+    "unpriced_requests": 0,
+    "cost_invoice_verified": false,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "cost_basis": "Actual provider token counts at published off-peak rates; estimate, not invoice. The separate conservative amount remains the budget debit.",
+    "pricing": {
+      "id": "deepseek-flash-cn-offpeak-2026-11-12",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "documented_alias_target": "DeepSeek-V4.1-Flash-1017",
+      "source_url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+      "verified_on_utc": "2026-11-12",
+      "currency": "CNY",
+      "tokens_per_price_unit": 1000000,
+      "offpeak_per_million": {
+        "input_uncached": "1",
+        "input_cached": "0.02",
+        "output": "4"
+      },
+      "timezone": "Asia/Shanghai",
+      "possible_peak_hours": [
+        [
+          9,
+          12
+        ],
+        [
+          14,
+          18
+        ]
+      ],
+      "billing_observation": {
+        "endpoint": "https://api.deepseek.com/user/balance",
+        "documentation": "https://api-docs.deepseek.com/zh-cn/api/get-user-balance/",
+        "timeout_seconds": 15,
+        "max_response_bytes": 65536
+      },
+      "limitations": [
+        "Computed from measured token counts and published rates, not a provider invoice.",
+        "Alias documentation is not independent verification of the served model version.",
+        "Nonzero cache-creation tokens or incomplete usage leave the call unpriced.",
+        "An interval crossing possible peak hours is unpriced instead of guessing tariff timing."
+      ]
+    },
+    "pricing_sha256": "464cfc0c359d9cdf523faa706a90ca53ead7c402e025dc42e06a238f8cd278fa"
+  },
+  "accounting": {
+    "trial_conservative_cny": 0.115572,
+    "campaign": {
+      "carry_micro_cny": 56256735,
+      "new_settled_micro_cny": 943750,
+      "unresolved_micro_cny": 0,
+      "cumulative_micro_cny": 20465572,
+      "conservative_unreconciled_cumulative_micro_cny": 57200485,
+      "remaining_unreserved_micro_cny": 179534428,
+      "invoice_verified": false,
+      "billing_baseline": {
+        "id": 1,
+        "at": "2026-11-12T07:05:53.036243+00:00",
+        "actual": 20350000,
+        "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+        "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+      }
+    },
+    "basis": "Owner-reported official baseline + subsequent conservative charges. Original ceiling unchanged.",
+    "balance_observations": {
+      "read_requests": 2,
+      "statuses": [
+        "success",
+        "success"
+      ],
+      "inference_requests": 0,
+      "account_balance_decrease_by_currency": {
+        "CNY": "0.00",
+        "USD": "0.00"
+      },
+      "scope": "Account-level observation across the trial, not an invoice or per-agent charge. Other account activity, credits or delayed billing can affect it. Absolute balances remain in private snapshots; the ledger is unchanged."
+    }
+  },
+  "resources": {
+    "activity_windows_utc": [
+      [
+        "2026-11-12T10:01:22.842882+00:00",
+        "2026-11-12T10:02:32.620332+00:00"
+      ]
+    ],
+    "activity_wall_seconds": 69.77745,
+    "samples": 35,
+    "process_tree_peak_rss_bytes": 667369472,
+    "process_tree_peak_sampled_cpu_cores": 0.13717543328944115,
+    "process_tree_mean_sampled_cpu_cores": 0.06169164657461221,
+    "cpu_sample_coverage_seconds": 68.805391,
+    "host_cpu_max_percent": 8.9,
+    "swap_peak_bytes": 0,
+    "host_total_ram_bytes": 38654705664,
+    "host_available_ram_min_bytes": 12356059136,
+    "work_volume_min_free_bytes": 361529126912,
+    "measurement_errors": [],
+    "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+    "frozen_evidence_bytes": 4098406,
+    "trial_wire_bytes": 2436124,
+    "native_session_archive_bytes": 59216,
+    "disk_footprint_scope": "File lengths, not allocated filesystem blocks. Frozen evidence includes shared ledger snapshots and overlapping server logs; wire and session archives are trial-specific."
+  },
+  "data": {
+    "query": {
+      "symbols": [
+        "000001.XSHE"
+      ],
+      "start": "2026-10-19",
+      "end": "2026-10-30"
+    },
+    "requests_during_trial": [
+      {
+        "id": 7,
+        "cache_key": "b589d7eeba2e1143a2beeb8c696813f2fc80b0299cf61724becb4cb39dd642cf",
+        "provider": "baostock",
+        "kind": "bars",
+        "estimated_cells": 12,
+        "at": "2026-11-12T10:01:36.287013+00:00",
+        "result_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "outcome": "success"
+      },
+      {
+        "id": 8,
+        "cache_key": "baostock-auth:b589d7eeba2e1143a2beeb8c696813f2fc80b0299cf61724becb4cb39dd642cf",
+        "provider": "baostock",
+        "kind": "auth",
+        "estimated_cells": 0,
+        "at": "2026-11-12T10:01:36.442366+00:00",
+        "result_id": null,
+        "outcome": "success"
+      }
+    ],
+    "tool_fetches": 1,
+    "exact_cache_hits": 0,
+    "evidence_ids": [
+      "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108"
+    ]
+  },
+  "roles": {
+    "researcher": {
+      "session_id": "qfh-034f262fb08e4476920abc8411049eb9",
+      "report_state": "failed",
+      "requests": 4,
+      "tokens": {
+        "input_uncached": 4390,
+        "input_cached": 9984,
+        "input_cache_write": 0,
+        "output": 6693
+      },
+      "total_tokens": 21067,
+      "input_cache_hit_ratio": 0.6945874495617086,
+      "peak_rolling_60s_dispatch_rpm": 4,
+      "peak_rolling_60s_completion_rpm": 4,
+      "peak_rolling_60s_dispatch_tpm": 21067,
+      "peak_rolling_60s_completion_tpm": 21067,
+      "conservative_settled_cny": 0.082292,
+      "published_price_estimate_cny": 0.03136168,
+      "unresolved_reserved_cny": 0.0,
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-12T10:01:32.097586+00:00",
+            "2026-11-12T10:02:22.464218+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 50.366632,
+        "samples": 25,
+        "process_tree_peak_rss_bytes": 667369472,
+        "process_tree_peak_sampled_cpu_cores": 0.13717543328944115,
+        "process_tree_mean_sampled_cpu_cores": 0.061915056168808415,
+        "cpu_sample_coverage_seconds": 48.56298499999999,
+        "host_cpu_max_percent": 8.9,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 12356059136,
+        "work_volume_min_free_bytes": 361530372096,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 1816307,
+      "native_session_archive_bytes": 35971,
+      "observed_work": "Read scope, fetched 10 BaoStock bars, called deterministic descriptive metrics, proposed a five-lag reversal idea in a fenced report. The original receiver rejected its format; later arithmetic audit found incorrect added calculations."
+    },
+    "supervisor": {
+      "session_id": "session-c1ec8f89-16a6-40b4-8840-25a01dc18319",
+      "report_state": "active",
+      "requests": 3,
+      "tokens": {
+        "input_uncached": 2804,
+        "input_cached": 4992,
+        "input_cache_write": 0,
+        "output": 2211
+      },
+      "total_tokens": 10007,
+      "input_cache_hit_ratio": 0.6403283735248846,
+      "peak_rolling_60s_dispatch_rpm": 3,
+      "peak_rolling_60s_completion_rpm": 2,
+      "peak_rolling_60s_dispatch_tpm": 10007,
+      "peak_rolling_60s_completion_tpm": 5235,
+      "conservative_settled_cny": 0.03328,
+      "published_price_estimate_cny": 0.01174784,
+      "unresolved_reserved_cny": 0.0,
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-12T10:01:22.842882+00:00",
+            "2026-11-12T10:01:32.097586+00:00"
+          ],
+          [
+            "2026-11-12T10:02:22.464218+00:00",
+            "2026-11-12T10:02:32.620332+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 19.410818,
+        "samples": 10,
+        "process_tree_peak_rss_bytes": 594755584,
+        "process_tree_peak_sampled_cpu_cores": 0.11746846029038237,
+        "process_tree_mean_sampled_cpu_cores": 0.06558203520579474,
+        "cpu_sample_coverage_seconds": 16.184722,
+        "host_cpu_max_percent": 7.7,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 12459819008,
+        "work_volume_min_free_bytes": 361529126912,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 619817,
+      "native_session_archive_bytes": 23245,
+      "observed_work": "Read scope, assigned researcher, then stopped after rejected worker report; no reviewer or draft. Its statement that no data/arithmetic occurred is contradicted by the worker audit."
+    },
+    "reviewer": {
+      "report_state": "not_started",
+      "requests": 0,
+      "total_tokens": 0,
+      "input_cache_hit_ratio": null,
+      "published_price_estimate_cny": 0,
+      "conservative_settled_cny": 0,
+      "shared_resources_during_activity": null,
+      "observed_work": "Never activated; no independent critique occurred."
+    }
+  },
+  "live_source_commit": "48f3367c3e54da99901fc7c35bcfc76b23777a18",
+  "host": {
+    "logical_cpus": 18,
+    "machine": "arm64",
+    "platform": "macOS-27.2-arm64-arm-64bit"
+  },
+  "runtime": {
+    "baostock": "0.9.4",
+    "deepseek-harness-runtime-bin": "0.2.2rc2",
+    "deepseek-harness-sdk": "0.2.2rc2",
+    "psutil": "7.2.2"
+  },
+  "native_turn_completed": true,
+  "native_tasks": {
+    "in_progress": 1,
+    "completed": 0
+  },
+  "draft_recorded": false,
+  "readiness": "not accepted; a real complete three-role trial is still required",
+  "frozen_evidence_files": 40,
+  "raw_manifest_sha256": "cfb4dc12369b16cbd7f620f470e05c0f5bf2fbc9de80764314c0a7b9bfec3faa"
+}

@@ -101,7 +101,10 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
 - [ ] Capability card supports progression to the minimal core.
 - [x] Native DSH Agent Teams source and model-selection interfaces reviewed.
 - [x] Bounded chat/worker integration implemented and exercised with synthetic inference.
-- [ ] One combined live DeepSeek + BaoStock browser trial, full trace and resources.
+- [x] One real Flash/BaoStock browser attempt with full trace/resources recorded:
+  [failed before the reviewer and draft](LIVE_TRIAL_2026-11-12.md).
+- [x] Fenced-report boundary and duplicate-settlement fixes pass offline/native fixtures.
+- [ ] Complete real three-role workflow and owner-trial acceptance after those fixes.
 - [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
 - [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 
