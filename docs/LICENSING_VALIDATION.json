@@ -1,0 +1,178 @@
+{
+  "at_utc": "2026-11-12T06:23:42.049258+00:00",
+  "base_revision": "56be8001a8effa0368b17ffa0312b8218ba20bd0",
+  "license": "MIT",
+  "copyright_holder": "Ziwei Huang",
+  "copyright_year": 2026,
+  "dsh_upstream_revision": "e8f7b93a344964de3dca1ace9e72b6e4d6de87cb",
+  "dsh_license_sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be",
+  "checks": {
+    "repository_static": "pass",
+    "harness_static": "pass",
+    "harness_tests": {
+      "passed": 62,
+      "skipped": 0
+    },
+    "repository_tests": {
+      "passed": 862,
+      "skipped": 54,
+      "warnings": 1,
+      "skip_reason": "PostgreSQL and registry integration credentials not configured"
+    },
+    "python_wheels_verified": 5,
+    "python_sdists_verified": 5,
+    "plugin_archives_verified": 1,
+    "upstream_notice_exact_match": true,
+    "obsolete_permission_files_absent": true,
+    "paid_model_calls": 0,
+    "data_provider_calls": 0
+  },
+  "retained_attempts": [
+    {
+      "stage": "repository check",
+      "result": "environment failure",
+      "reason": "Sandbox DNS prevented resolving editable-build dependency; repeated with permitted dependency access and passed"
+    },
+    {
+      "stage": "plugin pack via npm",
+      "result": "environment failure",
+      "reason": "npm was unavailable in local runtime; existing pnpm packed the same package successfully"
+    }
+  ],
+  "source_manifest": [
+    {
+      "path": "LICENSE",
+      "sha256": "1ba48843bce9d0054fd71d3caede16e5de6f097c90e04367bae418de73bd25b4",
+      "bytes": 1068
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "ed90a4db1b76c3c12060ee16c4df26cb817dc7c566a0ba818c3a3cf27e5a2533",
+      "bytes": 334
+    },
+    {
+      "path": "THIRD-PARTY-NOTICES.md",
+      "sha256": "8c746e8384e2032c0f8754aa4f516e11f2a80ea8797f8913761c65481cf9674e",
+      "bytes": 5084
+    },
+    {
+      "path": "scripts/check_licenses.py",
+      "sha256": "9904b905249ad5a207a75b5c9254dc6a3d83121492d01cd5d8c588a2e1d8522f",
+      "bytes": 5033
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "ba7773b224d46b055e92c35eada392c3d4cf36df5faf942444c9ff05ea403737",
+      "bytes": 1305
+    },
+    {
+      "path": "harness/pyproject.toml",
+      "sha256": "16e916744fba774c32563b277d769f8d1430e16e98211f651447c302fbbcced7",
+      "bytes": 642
+    },
+    {
+      "path": "harness/dsh-plugin/package.json",
+      "sha256": "c9c7ad0555e026cbf51c4d2f5769b79a4b6a2b85cf7dabcfea6644ba7d1a3a84",
+      "bytes": 1250
+    }
+  ],
+  "artifacts": [
+    {
+      "path": ".qfh-private/license-transition/dist/.gitignore",
+      "sha256": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "bytes": 1
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_core-0.1.0-py3-none-any.whl",
+      "sha256": "21dc82fdf4d9c32b0b965afd6c8f662519966b4118152e30504bd75687786bd3",
+      "bytes": 83095
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_core-0.1.0.tar.gz",
+      "sha256": "63e01e206a10dd3ccda67151247ee9f9744c7e589c5376b4d6833824f3e4fe94",
+      "bytes": 65005
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_eval-0.1.0-py3-none-any.whl",
+      "sha256": "5d343d30fc83cba2ef8507a2a329f6f87751aabdb0b244635bc1103f00f72518",
+      "bytes": 24456
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_eval-0.1.0.tar.gz",
+      "sha256": "6908908ae2f80f7d360e5484aa77879d6c1599af69b50f15744e86dce7c63be2",
+      "bytes": 19568
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_mcp-0.0.1-py3-none-any.whl",
+      "sha256": "3a28f78bef047632b75c8fc2963863aca9b2aabd92c6af0cdcddd5366178dbdc",
+      "bytes": 28578
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_mcp-0.0.1.tar.gz",
+      "sha256": "95952a6edb7b900acc44164b2e37ec6db6937dbee2dae068363d9760701bbccd",
+      "bytes": 22055
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_registry-0.0.1-py3-none-any.whl",
+      "sha256": "a240aebb7a8f03033e8ef6d80f1635bdffb182bc71eaed09f971f7c725062332",
+      "bytes": 19965
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_registry-0.0.1.tar.gz",
+      "sha256": "bcba7ab043e2c0a4dc98d7d804ee481b7fc449293122b24cba1d6c49412f5848",
+      "bytes": 16529
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_research-0.0.1-py3-none-any.whl",
+      "sha256": "a9b6fa306316501754beb469c7cc51054bf5245dc24039c11c710b3df81b57d9",
+      "bytes": 5304
+    },
+    {
+      "path": ".qfh-private/license-transition/dist/qfr_research-0.0.1.tar.gz",
+      "sha256": "91dde40987bf7c3408d5e0350d8e8b27d5e5610062afc99f195a562d6cfe9bc8",
+      "bytes": 3442
+    },
+    {
+      "path": ".qfh-private/license-transition/qfh-dsh-data-0.1.0.tgz",
+      "sha256": "ed37a6981785b523dda96aff935292c3353348734ad64fd074357ff72bd00887",
+      "bytes": 7778
+    }
+  ],
+  "logs": [
+    {
+      "path": ".qfh-private/license-transition/artifact-check.log",
+      "sha256": "0955bd2e5c10cb8dd6f6072b2a4d7fac3591dffebb868098d60ada99fce0e056",
+      "bytes": 178
+    },
+    {
+      "path": ".qfh-private/license-transition/build.log",
+      "sha256": "7301b44280263f9e5307fe81f6ef5f59d77894e7fe33cd8d5b9e92c5d7446271",
+      "bytes": 1343
+    },
+    {
+      "path": ".qfh-private/license-transition/harness-check-test.log",
+      "sha256": "239d069aaeeb678f0c4a40debbcc6b020cd400a066084d34d2338fddf2a55b6e",
+      "bytes": 558
+    },
+    {
+      "path": ".qfh-private/license-transition/plugin-pack-retest.log",
+      "sha256": "04a3fd8ece0710212b6bf1b681780c96ef682c819181f458e1e7685820ba24ce",
+      "bytes": 306
+    },
+    {
+      "path": ".qfh-private/license-transition/plugin-pack.log",
+      "sha256": "4d8dc1155209ebd5bc1fc74c1c333077a07039b8d7ab96a5ade47a00ae773adf",
+      "bytes": 30
+    },
+    {
+      "path": ".qfh-private/license-transition/repository-check.log",
+      "sha256": "6d8b9d93ea9276a67a83e10a09b5011b943cdce9e4cb173f7a0c78d040fdcda1",
+      "bytes": 1897
+    },
+    {
+      "path": ".qfh-private/license-transition/repository-retest.log",
+      "sha256": "385b18f0db8e32824b6c793f725ab9162c893cc991e3115a78864620b6bce782",
+      "bytes": 10072
+    }
+  ]
+}

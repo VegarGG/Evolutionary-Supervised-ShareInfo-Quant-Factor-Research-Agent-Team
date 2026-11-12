@@ -372,3 +372,18 @@ which was not yet merged, as the owner asked.
    PDF extraction remain pending. Do not label tool schemas as completed research.
 8. Archive actual old deployment measurements and scientific failures separately
    from new prototype results. Process RSS on this Mac is not production VM sizing.
+
+
+## MIT license transition — 12 November 2026
+
+The owner directed: "Since DSH is using MIT license, and I don't want to violate
+anything or take any risk, let's change the license to MIT as well."
+This supersedes the earlier PolyForm/custom-permission choice for project-owned
+code from this revision. Use the standard MIT text with copyright 2026 Ziwei
+Huang across the workspace, all five Python packages, harness and DSH plugin.
+Remove the obsolete additional permission and commercial-use restrictions.
+Retain DeepSeek's own copyright and full MIT permission notice, other dependency
+licenses, and vendor-data terms. MIT does not require matching downstream
+licenses; this transition is the owner's affirmative licensing choice. Earlier
+commit/review records remain historical. See LICENSING_REVIEW.md for the exact
+source, scope and distribution verification.

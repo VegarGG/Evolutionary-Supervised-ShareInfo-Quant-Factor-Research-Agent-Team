@@ -116,4 +116,5 @@ Upstream: [DSH source pin](https://github.com/deepseek-ai/deepseek-harness/tree/
 [RQData API](https://www.ricequant.com/doc/rqdata/python/manual),
 [DeepSeek pricing](https://api-docs.deepseek.com/zh-cn/quick_start/pricing/) and
 [Messages usage](https://api-docs.deepseek.com/api/create-message/).
-Dependencies and vendor data retain their own terms; the project license is unchanged.
+Project-owned code uses the standard [MIT License](LICENSE). Dependencies and
+vendor data retain their own terms; see [third-party notices](THIRD-PARTY-NOTICES.md).

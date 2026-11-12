@@ -1,7 +1,6 @@
-Copyright 2026 Ziwei Huang.
+Copyright (c) 2026 Ziwei Huang
 
-Original project material is offered under the unchanged PolyForm Noncommercial
-License 1.0.0 in LICENSE, with the separate grant in ADDITIONAL-PERMISSION.md,
-only to the extent Ziwei Huang owns or is authorized to license the relevant
-rights. That grant does not relicense third-party material or dependency code.
-See THIRD-PARTY-NOTICES.md for distribution boundaries and third-party notices.
+Original project material is licensed under the MIT License in LICENSE, to the
+extent Ziwei Huang owns or is authorized to license the relevant rights.
+Third-party code and data retain their own copyrights and terms. See
+THIRD-PARTY-NOTICES.md, including the DeepSeek Harness copyright and MIT notice.

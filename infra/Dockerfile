@@ -39,7 +39,7 @@ RUN groupadd --gid 10001 qfr && useradd --uid 10001 --gid qfr --create-home qfr 
     && mkdir -p /var/log/qfr /app/configs /app/schemas /data/full /data/research /data/raw \
     && chown -R qfr:qfr /var/log/qfr /data
 COPY --from=build /app/.venv /app/.venv
-COPY LICENSE NOTICE ADDITIONAL-PERMISSION.md THIRD-PARTY-NOTICES.md /app/
+COPY LICENSE NOTICE THIRD-PARTY-NOTICES.md /app/
 COPY configs/logging.yaml configs/mcp.yaml configs/registry.yaml /app/configs/
 COPY configs/research /app/configs/research
 COPY configs/public_cards.json /app/configs/public_cards.json

@@ -3,7 +3,9 @@
 Status: implementation started on 12 November 2026 (Beijing). This is the current
 development direction in the existing QFR repository. The earlier implementation,
 plans and test outcomes remain historical evidence; they are not silently accepted
-or erased. The project license is unchanged. DSH retains its upstream MIT license.
+or erased. The owner subsequently selected the standard MIT License on
+12 November 2026. DSH retains its own copyright and MIT notice; see
+[the licensing record](../LICENSING_REVIEW.md).
 
 Authority: owner's approval of [Workflow capability experiments and modular
 development](https://chatgpt.com/space/page_5ff299fdf2208191ade3872b9916998a), followed

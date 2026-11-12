@@ -32,6 +32,10 @@ jobs:
           CI_POSTGRES_PASSWORD: ci-only-disposable-password
       - run: just check
       - run: just test
+      - name: Verify wheel and source-distribution license payloads
+        run: |
+          uv build --all-packages --out-dir dist
+          uv run --locked python scripts/check_licenses.py --distributions dist
       - uses: actions/upload-artifact@v4
         if: always()
         with:
