@@ -6,26 +6,22 @@ import json
 import shutil
 import sqlite3
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
+
+import yaml
 
 from qfh.budget import admission_open
 from qfh.research import Research
+from qfh.trial_metrics import model_metrics, resource_metrics, role_windows, work_metrics
 
 
-def peak_rate(calls, field, weighted=False):
-    points = sorted(
-        (
-            datetime.fromisoformat(c[field]).timestamp(),
-            (sum(c["usage"].values()) if c["usage"] else 0) if weighted else 1,
-        )
-        for c in calls
-        if c[field]
-    )
-    return max((sum(n for t, n in points if end - 60 < t <= end) for end, _ in points), default=0)
-
-
-def summarize(config, private, trial_id):
+def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
     research = Research(config, private)
+    pricing_path = pricing_path or config.parent / "deepseek-flash-pricing-2026-11-12.yaml"
+    pricing = yaml.safe_load(pricing_path.read_text())
+    if any(r.model != pricing["model"] for r in research.policy.roles.values()):
+        raise ValueError("reporting tariff does not match the configured model")
     budget = research.ledger.snapshot()
     synthetic = (private / "OFFLINE_ONLY").exists()
     calls = [c for c in budget["calls"] if c["step"].startswith(f"research:{trial_id}:")]
@@ -41,14 +37,12 @@ def summarize(config, private, trial_id):
             if r["principal"] in ids
         ]
     draft = json.loads(trial["draft"]) if trial["draft"] else None
-    total = {
-        key: sum(c["usage"][key] for c in calls if c["usage"])
-        for key in ("input_uncached", "input_cached", "input_cache_write", "output")
-    }
-    inputs = total["input_uncached"] + total["input_cached"] + total["input_cache_write"]
+    usage = model_metrics(calls, pricing, synthetic=synthetic)
     started = datetime.fromisoformat(trial["at"])
     finished = max(
-        (datetime.fromisoformat(c["finished"]) for c in calls if c["finished"]), default=started
+        [started]
+        + [datetime.fromisoformat(c["finished"]) for c in calls if c["finished"]]
+        + [datetime.fromisoformat(e["at"]) for e in events]
     )
     samples, manifests = [], []
     for server in (private / "research/servers").iterdir():
@@ -74,21 +68,7 @@ def summarize(config, private, trial_id):
             samples.extend(selected)
             manifests.append({"path": str(server / "manifest.json"), "manifest": manifest})
     samples.sort(key=lambda sample: sample["at"])
-    peak_rss = max((s["process_tree_rss_bytes"] for s in samples), default=None)
-    cpu_percent = [s["host_cpu_percent"] for s in samples if s.get("host_cpu_percent") is not None]
-    swap = [s["host_swap"]["used"] for s in samples if s.get("host_swap")]
-    memory = [s["host_memory"] for s in samples if s.get("host_memory")]
-    free_disk = [s["disk_free_bytes"] for s in samples if s.get("disk_free_bytes") is not None]
-    sampled_core_rates = []
-    for first, second in zip(samples, samples[1:], strict=False):
-        elapsed = (
-            datetime.fromisoformat(second["at"]) - datetime.fromisoformat(first["at"])
-        ).total_seconds()
-        previous = first.get("process_cpu_seconds_by_pid", {})
-        current = second.get("process_cpu_seconds_by_pid", {})
-        if elapsed > 0 and previous and current:
-            cpu = sum(max(0, seconds - previous.get(pid, 0)) for pid, seconds in current.items())
-            sampled_core_rates.append(cpu / elapsed)
+    windows = role_windows(members, events, started, finished)
     by_role = {}
     for member in members:
         own = [c for c in calls if c["step"] == f"research:{trial_id}:{member['role']}"]
@@ -97,13 +77,17 @@ def summarize(config, private, trial_id):
             "report_state": member["state"],
             "provider_requests": len(own),
             "conservative_cny": sum(c["charged"] or 0 for c in own) / 1_000_000,
-            "tokens": {key: sum(c["usage"][key] for c in own if c["usage"]) for key in total},
+            **model_metrics(own, pricing, synthetic=synthetic),
+            "work": work_metrics(member, events, draft),
+            "shared_resources_during_activity": resource_metrics(samples, windows[member["role"]]),
         }
     with research.data.db() as db:
         data_calls = []  # DataGuard connections do not use Row factories.
+        data_history = []
         columns = [r[1] for r in db.execute("PRAGMA table_info(requests)")]
         for row in db.execute("SELECT * FROM requests ORDER BY id"):
             call = dict(zip(columns, row, strict=True))
+            data_history.append(call)
             if started <= datetime.fromisoformat(call["at"]) <= finished:
                 data_calls.append(call)
     data_results = [
@@ -114,7 +98,20 @@ def summarize(config, private, trial_id):
         and e["body"]["args"].get("kind") == "bars"
     ]
     failures = [e for e in events if e["kind"] == "tool_failure"]
+    evidence_ids = sorted({r["evidence_id"] for r in data_results})
+    data_wire_keys = {
+        c["cache_key"]
+        for c in data_history
+        if c["provider"] == "baostock"
+        and c["kind"] == "bars"
+        and (c in data_calls or c["result_id"] in evidence_ids)
+    }
+    mode_verified = bool(manifests) and all(
+        m["manifest"]["mode"] == ("synthetic_model_and_data" if synthetic else "live")
+        for m in manifests
+    )
     checks = {
+        "execution_mode_matches_manifests": mode_verified,
         "exactly_three_roles": set(by_role) == {"supervisor", "researcher", "reviewer"},
         "both_workers_valid": all(
             m["state"] == "completed" for m in members if m["role"] != "supervisor"
@@ -140,10 +137,22 @@ def summarize(config, private, trial_id):
         "authorized_dispatch_windows": synthetic
         or all(admission_open(datetime.fromisoformat(c["started"])) for c in calls),
         "resource_samples_required_for_live": synthetic or bool(samples),
+        "raw_data_transport_required_for_live": synthetic
+        or (
+            bool(evidence_ids)
+            and bool(data_wire_keys)
+            and all(
+                (private / "data/baostock-wire" / f"{key}.{suffix}").exists()
+                for key in data_wire_keys
+                for suffix in ("json", "bin")
+            )
+        ),
     }
     summary = {
         "trial_id": trial_id,
-        "mode": "synthetic_model_and_data" if synthetic else "live_DeepSeek_with_BaoStock",
+        "mode": ("synthetic_model_and_data" if synthetic else "live_DeepSeek_with_BaoStock")
+        if mode_verified
+        else "unverified_execution_mode",
         "status": "pass" if all(checks.values()) else "partial_or_failed",
         "checks": checks,
         "started_utc": started.isoformat(),
@@ -153,16 +162,9 @@ def summarize(config, private, trial_id):
         "model_usage": {
             "provider": "deepseek",
             "configured_model": research.policy.roles["supervisor"].model,
-            "requests": len(calls),
-            "tokens": total,
-            "total_tokens": sum(total.values()),
-            "input_cache_hit_ratio": total["input_cached"] / inputs if inputs else None,
-            "peak_rolling_60s_dispatch_rpm": peak_rate(calls, "started"),
-            "peak_rolling_60s_completion_rpm": peak_rate(calls, "finished"),
-            "peak_rolling_60s_dispatch_tpm": peak_rate(calls, "started", True),
-            "peak_rolling_60s_completion_tpm": peak_rate(calls, "finished", True),
-            "rate_definition": "Call totals attributed to dispatch/completion, "
-            "not per-token arrival.",
+            **usage,
+            "pricing": pricing,
+            "pricing_sha256": hashlib.sha256(pricing_path.read_bytes()).hexdigest(),
         },
         "accounting": {
             "trial_conservative_cny": sum(c["charged"] or 0 for c in calls) / 1_000_000,
@@ -178,24 +180,9 @@ def summarize(config, private, trial_id):
             "requests_during_trial": data_calls,
             "tool_fetches": len(data_results),
             "exact_cache_hits": sum(r.get("cache_reused") is True for r in data_results),
-            "evidence_ids": sorted({r["evidence_id"] for r in data_results}),
+            "evidence_ids": evidence_ids,
         },
-        "resources": {
-            "samples": len(samples),
-            "process_tree_peak_rss_bytes": peak_rss,
-            "host_cpu_max_percent": max(cpu_percent, default=None),
-            "process_tree_peak_sampled_cpu_cores": max(sampled_core_rates, default=None),
-            "swap_peak_bytes": max(swap, default=None),
-            "host_total_ram_bytes": memory[0]["total"] if memory else None,
-            "host_available_ram_min_bytes": min((m["available"] for m in memory), default=None),
-            "work_volume_min_free_bytes": min(free_disk, default=None),
-            "measurement_errors": sorted(
-                {e for s in samples for e in s.get("measurement_errors", [])}
-            ),
-            "scope": "Guard and DSH/data child process tree. Host readings include unrelated work. "
-            "Short-lived children between samples may be missed. Not production sizing. "
-            "A null metric means no measurement, never zero usage.",
-        },
+        "resources": resource_metrics(samples, [(started, finished)]),
         "draft": None
         if draft is None
         else {
@@ -228,11 +215,44 @@ def summarize(config, private, trial_id):
         ],
     }
     paths = [research.path, research.ledger.path, research.data.path]
+    if balance_paths:
+        observations = [
+            [json.loads(line) for line in path.read_text().splitlines()] for path in balance_paths
+        ]
+        result = {
+            "read_requests": len(observations),
+            "statuses": [rows[-1]["status"] for rows in observations],
+            "inference_requests": 0,
+            "account_balance_decrease_by_currency": None,
+            "scope": "Account-level observation across the trial, not an invoice or "
+            "per-agent charge. Other account activity, credits or delayed billing can affect it. "
+            "Absolute balances remain in private snapshots; the ledger is unchanged.",
+        }
+        if len(observations) == 2 and result["statuses"] == ["success", "success"]:
+            balances = [
+                {
+                    row["currency"]: Decimal(row["total_balance"])
+                    for row in rows[-1]["account"]["balance_infos"]
+                }
+                for rows in observations
+            ]
+            result["account_balance_decrease_by_currency"] = {
+                currency: str(balances[0][currency] - balances[1][currency])
+                for currency in sorted(balances[0].keys() & balances[1].keys())
+            }
+        summary["accounting"]["balance_observations"] = result
+        paths += list(balance_paths)
     paths += [
         p for c in calls for p in (private / "campaign/wire" / c["id"]).glob("*") if p.is_file()
     ]
     paths += [
         private / "data/evidence" / f"{ident}.json" for ident in summary["data"]["evidence_ids"]
+    ]
+    paths += [
+        path
+        for key in data_wire_keys
+        for suffix in ("json", "bin")
+        if (path := private / "data/baostock-wire" / f"{key}.{suffix}").exists()
     ]
     for m in manifests:
         paths += list(Path(m["path"]).parent.glob("*.json*"))
@@ -279,6 +299,17 @@ def summarize(config, private, trial_id):
         "File lengths, not allocated filesystem blocks. Frozen evidence includes shared ledger "
         "snapshots and overlapping server logs; wire and session archives are trial-specific."
     )
+    for role, values in by_role.items():
+        call_ids = {c["id"] for c in calls if c["step"] == f"research:{trial_id}:{role}"}
+        values["wire_bytes"] = sum(
+            r["size_bytes"] for r in raw_manifest if Path(r["source_path"]).parent.name in call_ids
+        )
+        values["native_session_archive_bytes"] = sum(
+            r["size_bytes"]
+            for r in raw_manifest
+            if "/sessions/" in r["source_path"]
+            and Path(r["source_path"]).parent.name == values["session_id"]
+        )
     return summary, raw_manifest
 
 
@@ -292,8 +323,21 @@ def main():
     parser.add_argument("--private", type=Path, required=True)
     parser.add_argument("--trial-id", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--pricing", type=Path)
+    parser.add_argument("--balance-before", type=Path)
+    parser.add_argument("--balance-after", type=Path)
     args = parser.parse_args()
-    summary, manifest = summarize(args.config.resolve(), args.private.resolve(), args.trial_id)
+    if bool(args.balance_before) != bool(args.balance_after):
+        parser.error("supply both balance observations, including failed attempts, or neither")
+    summary, manifest = summarize(
+        args.config.resolve(),
+        args.private.resolve(),
+        args.trial_id,
+        args.pricing.resolve() if args.pricing else None,
+        (args.balance_before.resolve(), args.balance_after.resolve())
+        if args.balance_before
+        else (),
+    )
     args.output.mkdir(parents=True, exist_ok=False)
     (args.output / "RESULTS.json").write_text(
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n"

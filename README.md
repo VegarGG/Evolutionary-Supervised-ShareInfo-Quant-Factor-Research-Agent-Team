@@ -37,6 +37,8 @@ The owner reported an official cumulative API charge of **20.35 CNY** on
 That observation is now the billing baseline; subsequent requests add conservative
 estimates under the unchanged **200 CNY** ceiling. The raw call history and old
 estimates are preserved. The first diagnostic pilot's input cache hit rate was 22.64%.
+The interactive-trial export reports each role's token usage, cache hits, TPM/RPM,
+tariff-estimated cost and shared-process resource observations separately.
 
 ## Local setup and checks
 

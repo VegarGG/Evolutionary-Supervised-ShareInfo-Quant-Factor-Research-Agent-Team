@@ -99,6 +99,40 @@ labelled host RAM/CPU/swap/free disk readings. They do not establish VM sizing o
 500-concurrency throughput. TPM/RPM use rolling 60-second call totals attributed
 at dispatch/completion, not per-token streaming rates.
 
+The export breaks usage down by supervisor, researcher and reviewer: actual wire
+requests, cached/uncached input, output, weighted cache-hit ratio, peak rolling
+TPM/RPM, contribution decisions and observed backend operations. It also records
+each role's wire/session file sizes. Worker activity spans their start/finish
+events; supervisor activity excludes its waits for those workers. CPU/RAM readings
+describe the shared local process tree during those spans. They are not isolated
+per-agent allocations, and CPU samples crossing a role boundary are excluded.
+Missing measurements remain null, with coverage reported.
+
+Cost has two separate calculations. The original guard keeps its conservative
+debit. Reporting uses measured token counts and the versioned
+[official DeepSeek tariff](https://api-docs.deepseek.com/zh-cn/quick_start/pricing/):
+for this off-peak Flash trial, CNY 1 per million uncached input tokens, 0.02 per
+million cached input tokens and 4 per million output tokens, verified on
+12 November. This is a tariff estimate, not a downloaded invoice. Unknown usage,
+unpriced cache-creation tokens and intervals crossing possible peak hours do not
+receive an invented cost. The configured alias is not proof of the backend version.
+
+The operator can make one read-only
+[balance observation](https://api-docs.deepseek.com/zh-cn/api/get-user-balance/)
+before and one after the trial using `harness/scripts/balance_snapshot.py`.
+Those two administrative GET requests are counted separately from inference.
+Absolute balances stay private; the report may compare their difference with
+the tariff calculation. An account balance change can include other account
+activity and is not allocated to individual agents or used to reset the ledger.
+Pass both files to the exporter with `--balance-before` and `--balance-after`.
+
+Owner-trial readiness requires a real completion by all three roles, two valid
+worker reports and native tasks, one cited draft with contribution decisions,
+settled usage under the original bounds, captured resources, and usable desktop
+history after reload. Failure of those checks must remain visible before declaring
+the workflow ready. A successful small trial still does not validate alpha quality
+or production capacity.
+
 ## Recovery and remaining work
 
 Completed workers and drafts are not automatically rerun. Failed or interrupted

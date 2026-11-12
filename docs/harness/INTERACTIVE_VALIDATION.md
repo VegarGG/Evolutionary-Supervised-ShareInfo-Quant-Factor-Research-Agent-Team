@@ -7,7 +7,7 @@ counted as real inference or evidence of research quality.
 | Check | Result | Evidence and limits |
 |---|---|---|
 | Harness lint, format, JavaScript and MIT notices | Pass | `just harness-check`; three JavaScript entrypoints and all package notices |
-| Harness offline regressions | 75 passed | Budget reconciliation/grants, shared caps, request attribution, disconnect drain, window closure, citations, worker/draft immutability and existing data tests |
+| Harness offline regressions | 82 passed | Original 75 plus seven per-agent measurement/balance-observation regressions; actual token weighting, rolling boundaries, unknown usage, tariff boundaries, activity attribution and secret-safe non-replay |
 | Legacy checks | Pass | Ruff, mypy, import contracts, schemas/cards and package license checks |
 | Legacy tests | 862 passed, 54 skipped | No PostgreSQL integration credentials; one existing deprecation warning |
 | Native DSH chat/team loop | Pass with fixtures | Actual pinned DSH runtime, one root and two spawned children, 11 scripted requests, two completed native Team tasks, one validated draft |
@@ -25,6 +25,12 @@ are synthetic; the offline driver rejects any uncached provider read. The model
 request fixture's token/cache values are not model-performance measurements.
 The 1.06-second fixture loop fell between two-second resource samples, so its
 resource values are null. The separate live run must capture resource samples.
+
+The later per-agent export was replayed on the retained offline trace without
+running new model/data calls. It separates role usage, shared-process activity
+observations and file sizes. A versioned public tariff supports a reporting cost;
+the original conservative budget debit remains unchanged. Account-balance helpers
+were tested with synthetic responses only before the authorized live window.
 
 ## Retained failures and corrections
 

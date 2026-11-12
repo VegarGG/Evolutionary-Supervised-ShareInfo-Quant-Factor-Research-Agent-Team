@@ -414,3 +414,23 @@ different model/provider choices for different roles, plus limited market data
 and news for researchers. Review the pinned native Team/subagent implementation
 and stage these modules in `docs/harness/ROLE_MODELS_AND_CONTEXT.md`. Additional
 provider designs do not authorize additional live providers in this trial.
+
+## 2026-11-12: per-agent evidence for the scheduled real trial
+
+Owner: "Proceed with the real DeepSeek/BaoStock trial at 18:00 Beijing. Report each
+agent’s actual work, cost, TPM/RPM, cache hit rate and machine usage, and tell me
+whether DSH is ready for my own trials."
+
+Keep the existing one-time continuation and all budget/data/time limits. Extend
+the export with measured per-role request/token totals, weighted cache hits,
+rolling rates, observed operations and contribution decisions. Because native DSH
+agents share a process, report shared CPU/RAM during activity windows and the
+sampling coverage; do not label these isolated per-agent allocations. Record wire
+and native-session file sizes separately.
+
+Price measured tokens using a dated official tariff for reporting while preserving
+the conservative ledger debit. Two read-only account-balance observations may
+compare the account-level change before/after the trial; keep absolute balances
+private, count those requests separately, and never use them as an automatic
+billing reconciliation. Readiness remains pending the actual three-role desktop
+trial, settled accounting and retained evidence. Synthetic tests do not establish it.
