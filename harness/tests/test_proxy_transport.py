@@ -97,7 +97,7 @@ def test_every_loop_request_is_attributed_and_settled_before_terminal_event(tmp_
                             break
             with pytest.raises(urllib.error.HTTPError) as err:
                 urllib.request.urlopen(request(proxy), timeout=10)
-            assert err.value.code == 403
+            assert err.value.code == 409
     assert len(book.snapshot()["calls"]) == 2
 
 
@@ -109,7 +109,7 @@ def test_invalid_local_credential_never_dispatches(tmp_path):
         ) as proxy:
             with pytest.raises(urllib.error.HTTPError) as err:
                 urllib.request.urlopen(request(proxy, "wrong-key"), timeout=10)
-            assert err.value.code == 403
+            assert err.value.code == 401
     assert not book.snapshot()["calls"]
 
 
@@ -181,5 +181,6 @@ def test_window_close_drains_inflight_and_refuses_next_call(tmp_path):
             proxy.step = "second"
             with pytest.raises(urllib.error.HTTPError) as err:
                 urllib.request.urlopen(request(proxy), timeout=10)
-            assert err.value.code == 403
+            assert err.value.code == 409
+            assert "window" in json.load(err.value)["error"]["message"]
     assert len(book.snapshot()["calls"]) == 1

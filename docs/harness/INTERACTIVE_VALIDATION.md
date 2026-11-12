@@ -13,6 +13,8 @@ counted as real inference or evidence of research quality.
 | Native DSH chat/team loop | Pass with fixtures | Actual pinned DSH runtime, one root and two spawned children, 11 scripted requests, two completed native Team tasks, one validated draft |
 | Desktop persistence | Pass | 1440×1000 Chrome via Playwright; draft and both native workers/tasks survive reload; no browser console errors |
 | Local workspace placement | Pass | Fresh profile stores its default workspace under the private Work-volume directory |
+| Actual UI window refusal | Pass after display fix | Two closed-window attempts added zero provider calls, data queries or trial allocations; fixed UI shows the window reason |
+| Research settings | Pass | BaoStock is selected and locked; bounded-trial instructions and masked paid-source fields are visible; no credentials changed and no provider query |
 | Package and secret scan | Pass | Packed plugin includes `research.js`, MIT license and notices; 341 publishable files checked against the actual authorized key, with zero matches |
 | Mobile conversation | Known limitation | 390×844 view clips content horizontally; capture retained, mobile not accepted |
 | Live inference/data/resource result | Pending | One combined trial at 18:00 Beijing; original shared 200 CNY ledger and owner-reported 20.35 CNY baseline |
@@ -42,6 +44,11 @@ resource values are null. The separate live run must capture resource samples.
 - A potential accounting race was fixed before live testing: terminal response
   delivery now follows ledger settlement. Browser disconnection, including before
   response headers, drains the admitted upstream request and captures its usage.
+- An actual closed-window UI probe exposed a misleading invalid-key message.
+  DSH classifies HTTP 403 as authentication failure and suppresses its message.
+  The guard now returns HTTP 409 for policy conflicts and HTTP 401 for invalid
+  local credentials. A browser rerun shows the actual admission-window reason;
+  both attempts retain zero dispatched provider requests and zero trial allocations.
 - The earlier desktop-to-mobile screenshot was captured during a sidebar
   transition. A stable-state retest exposed the native horizontal clipping and
   changed the mobile conclusion to a known limitation.
@@ -52,6 +59,7 @@ worker outputs and mutable-ledger states. Public evidence contains only the
 synthetic verification summary and screenshots; live raw vendor rows stay private.
 
 [Offline result](evidence/interactive-2026-11-12/OFFLINE_RESULTS.json)
+· [Actual-window refusal](evidence/interactive-2026-11-12/WINDOW_REFUSAL_RESULTS.json)
 
 ![Native Agent Teams with two completed workers and tasks](evidence/interactive-2026-11-12/offline-team-board.png)
 

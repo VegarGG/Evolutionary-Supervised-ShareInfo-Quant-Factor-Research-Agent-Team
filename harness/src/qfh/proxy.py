@@ -236,7 +236,17 @@ class GuardProxy:
                             + "\n"
                         )
                     if not response_started:
-                        self.send_response(403)
+                        # DSH sanitizes AUTH failures and displays "invalid key".
+                        # A valid local credential conflicting with time/budget
+                        # policy is a 409, so the actual refusal stays visible.
+                        status = (
+                            401
+                            if str(exc) == "invalid local credential"
+                            else 409
+                            if isinstance(exc, BudgetRefused)
+                            else 500
+                        )
+                        self.send_response(status)
                         self.send_header("Content-Type", "application/json")
                         self.end_headers()
                         self.wfile.write(
