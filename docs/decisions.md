@@ -501,3 +501,27 @@ further research tools after a final worker failure, apart from status and settl
 Keep native final chat brief; only host-validated reports/facts constitute the record.
 The third and final configured pilot slot is used for the fresh full rerun after
 offline validation. No automatic extension or reset of the three-trial cap is allowed.
+
+## 2026-11-12: full real rerun completed, with separate quality audit
+
+The frozen `69053ae` source completed the full round at 21:29:22–21:31:49 Beijing.
+Sixteen actual Flash calls settled: seven supervisor, four researcher and five
+reviewer. The reviewer corrected the same nine-findings error through the new
+submission tool inside its active turn. Both workers and native tasks completed;
+one immutable draft contains twenty-eight host-resolved fact references. All three
+data reads reused the real BaoStock cache; no new vendor query or quota expansion.
+
+Keep workflow and scientific acceptance separate. Independent exact-rational
+checks verified all forty-four calculator facts and alignment, with seventy-seven
+frozen-file hashes verified. The draft still overstates label overlap and the
+meaning of non-significance, and leaves an incomplete executable specification.
+Those issues are append-only audit findings; do not rewrite the model draft or
+claim an evaluator/backtest/alpha pass. See `LIVE_RERUN_2026-11-12.md`.
+
+The final round's published-tariff estimate is 0.11078532 CNY; its conservative
+debit is 0.427794 CNY. Accounted cumulative spending is 21.253244 CNY, leaving
+178.746756 CNY under the original total. There are no unsettled reservations.
+Account observations are not reconciled invoices. All three pilot sessions are
+now used; no fourth run or automatic allowance increase was made. The tested
+desktop remains available for history inspection. Further paid trials require a
+deliberate allowance amendment preserving the existing ledger and original bounds.

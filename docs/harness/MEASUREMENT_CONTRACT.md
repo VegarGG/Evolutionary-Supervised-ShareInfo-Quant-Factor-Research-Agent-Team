@@ -72,3 +72,11 @@ Native DSH with synthetic inference/data completed both workers, recorded six
 host-derived facts in one draft and produced no tool failures. The exporter
 preserved verified facts for each worker. See the
 [native fixture record](evidence/interactive-2026-11-12/MEASUREMENT_OFFLINE.json).
+
+After adding active-worker submission validation, 108 offline tests passed. The
+native synthetic correction test rejected then accepted each worker's report without
+restarting either worker. The [real rerun](LIVE_RERUN_2026-11-12.md) then completed
+both workers and a draft; the reviewer corrected the same array-limit error within
+its existing call cap. All 44 measured facts and 28 draft references passed the
+independent post-run audit. Qualitative statistical claims still require revision;
+validated numbers alone do not establish research validity.

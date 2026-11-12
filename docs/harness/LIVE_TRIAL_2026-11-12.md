@@ -1,5 +1,9 @@
 # First real native-team trial — 12 November 2026
 
+Historical first attempt. The later owner-authorized arithmetic/submission repair
+and successful three-role round are recorded in the [rerun report](LIVE_RERUN_2026-11-12.md).
+Statements below describe the state immediately after this first attempt.
+
 **Result: failed at the researcher-report boundary. DSH is available for
 inspection, but the complete three-role workflow is not yet accepted for owner
 research trials.** This was actual DeepSeek inference and a real BaoStock query.

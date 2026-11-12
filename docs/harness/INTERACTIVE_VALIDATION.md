@@ -1,15 +1,16 @@
 # Native-team integration verification — 12 November 2026
 
-The guarded desktop workflow passes offline integration. The real DeepSeek Flash
-and BaoStock round ran after 18:00 Beijing but failed at the researcher-report
-boundary; the reviewer and draft did not run. See the [full live result and
-repair checks](LIVE_TRIAL_2026-11-12.md). No scripted response is counted as real
-inference or evidence of research quality.
+The guarded desktop workflow now passes both offline and real bounded integration.
+The [full Flash/BaoStock rerun](LIVE_RERUN_2026-11-12.md) completed both workers,
+both native Team tasks and a cited draft at 21:29–21:31 Beijing. The two earlier
+failed attempts remain recorded, including the [first live result](LIVE_TRIAL_2026-11-12.md).
+No scripted response is counted as real inference. Workflow completion does not
+establish scientific quality; the independent draft audit flags remaining issues.
 
 | Check | Result | Evidence and limits |
 |---|---|---|
 | Harness lint, format, JavaScript and MIT notices | Pass | `just harness-check`; three JavaScript entrypoints and all package notices |
-| Harness offline regressions | 91 passed | Includes per-agent accounting and nine report-wrapper/validation/audit regressions |
+| Harness offline regressions | 108 passed | Arithmetic, provenance, immutable active-worker submission, validation correction and failed-worker stop regressions |
 | Legacy checks | Pass | Ruff, mypy, import contracts, schemas/cards and package license checks |
 | Legacy tests | 862 passed, 54 skipped | No PostgreSQL integration credentials; one existing deprecation warning |
 | Native DSH chat/team loop | Pass with fixtures | Actual pinned DSH runtime, one root and two spawned children, 11 scripted requests, two completed native Team tasks, one validated draft |
@@ -19,7 +20,12 @@ inference or evidence of research quality.
 | Research settings | Pass after display fix | BaoStock selected and locked, bounded-trial instructions visible, paid credential fields masked; no credentials changed and no provider query occurred |
 | Package and secret scan | Pass before live run | Packed plugin includes `research.js`, MIT license and notices; 350 publishable files checked against the actual authorized key, with zero matches |
 | Mobile conversation | Known limitation | 390×844 view clips content horizontally; capture retained, mobile not accepted |
-| Live inference/data/resource result | Partial / failed | Seven settled Flash requests, one BaoStock query/login, 35 resource samples; researcher report rejected, reviewer not started, no draft |
+| First live attempt | Retained failure | Seven Flash requests, one BaoStock query/login; researcher rejected, no reviewer or draft |
+| Second live attempt | Retained failure | Sixteen Flash requests; both workers did data/metrics work, reviewer report exceeded list limit, no draft |
+| Third live attempt | Bounded workflow pass | Sixteen settled Flash calls, two completed workers/tasks, one draft, 73 resource samples; three exact-cache BaoStock reads, no new vendor query |
+| Active-worker submission repair | Pass offline and live | Reviewer corrected nine findings to eight within the same native turn/call cap; no worker restart or schema relaxation |
+| Independent measured-fact audit | Pass | 77 frozen hashes; all 44 facts and alignment rows checked independently, all 28 draft references matched |
+| Scientific acceptance | Not accepted | Incorrect label-overlap reasoning, overstrong hypothesis-test conclusion and unresolved executable parameters remain |
 | Report-wrapper repair | Pass offline | Native DSH accepts two fenced synthetic reports and records one draft; retained real report passes offline schema/citation recheck only |
 | Malformed report settlement | Pass offline | Native DSH rejects the synthetic report exactly once and includes completed-operation counts; no replay or draft |
 
@@ -28,8 +34,9 @@ with the bundled Playwright runtime. Both offline model transport and market dat
 are synthetic; the offline driver rejects any uncached provider read. The model
 request fixture's token/cache values are not model-performance measurements.
 The 1.06-second fixture loop fell between two-second resource samples, so its
-resource values are null. The separate live run captured 35 resource samples;
-the whole-run peak shared process RSS was 636.5 MiB.
+resource values are null. The first live run captured 35 resource samples and
+636.5 MiB peak shared RSS. The successful third run captured 73 samples and
+597.8 MiB peak shared RSS; these small sequential samples do not establish sizing.
 
 The later per-agent export was replayed on the retained offline trace without
 running new model/data calls. It separates role usage, shared-process activity
@@ -48,7 +55,14 @@ were tested with synthetic responses only before the authorized live window.
   remains incorrect and is identified as such in the report.
 - Independent arithmetic checks found errors in the worker's added daily returns
   and five-lag indexing. Those scientific-quality issues are not repaired by JSON
-  normalization; no reviewer or evaluator assessed the real proposal.
+  normalization. The later deterministic calculator/reference contract repairs
+  recorded observations, and the successful rerun includes an independent worker.
+  Its qualitative/statistical claims still need review; no evaluator ran.
+- The second session rejected nine findings against the schema's eight-item bound.
+  Validating through an active-worker submission tool now permits precise correction
+  within the existing call allowance. The real third session exercised this path;
+  all limits and failed records remain intact. Further tools after a final worker
+  failure are refused by the host, rather than relying only on a prompt.
 - Post-fix fresh-profile browser attempts encountered workspace initialization and
   a disappearing disabled Preview Notice button before submission. Both allocated
   zero trials/requests; subsequent offline runs passed. The private driver now
@@ -95,6 +109,10 @@ synthetic verification summary and screenshots; live raw vendor rows stay privat
 · [Research settings](evidence/interactive-2026-11-12/RESEARCH_SETTINGS.json)
 
 ![Native Agent Teams with two completed workers and tasks](evidence/interactive-2026-11-12/offline-team-board.png)
+
+Latest [live result and readiness boundary](LIVE_RERUN_2026-11-12.md): the three
+configured pilot sessions are exhausted, so new paid trials need an explicit
+allowance amendment. History remains available without model calls.
 
 ## Acceptance boundary
 

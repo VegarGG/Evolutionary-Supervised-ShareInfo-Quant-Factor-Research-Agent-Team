@@ -104,7 +104,12 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
 - [x] One real Flash/BaoStock browser attempt with full trace/resources recorded:
   [failed before the reviewer and draft](LIVE_TRIAL_2026-11-12.md).
 - [x] Fenced-report boundary and duplicate-settlement fixes pass offline/native fixtures.
-- [ ] Complete real three-role workflow and owner-trial acceptance after those fixes.
+- [x] Complete real three-role workflow after arithmetic/submission fixes:
+  [sixteen Flash calls, two workers and one draft](LIVE_RERUN_2026-11-12.md).
+- [ ] Extend the exhausted pilot allowance explicitly before further owner trials;
+  retain the existing ledger and original spending/data bounds.
+- [ ] Resolve the draft's statistical claims and executable-specification gaps;
+  workflow integration does not establish research-quality acceptance.
 - [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
 - [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 

@@ -15,16 +15,17 @@ The [initial validation record](docs/harness/VALIDATION.md) and
 [native-team validation](docs/harness/INTERACTIVE_VALIDATION.md) distinguish each test scope.
 This is a prototype, not a completed Hybrid v1 system or an accepted alpha engine.
 
-The [first real native-team trial](docs/harness/LIVE_TRIAL_2026-11-12.md) ran at
-18:01 Beijing on 12 November: seven Flash requests, real BaoStock data and 31,074
-tokens. It stopped at a fenced-JSON report mismatch before the reviewer or draft.
-The boundary repair passes offline; a complete real three-role pass is still
-required before owner-trial readiness is accepted.
-The authorized rerun adds [deterministic measurements and audited reporting](docs/harness/MEASUREMENT_CONTRACT.md).
-Its first attempt reached both workers but rejected a reviewer report with nine
-findings against an eight-item limit. The next attempt validates submissions inside
-the active worker, allowing precise correction within unchanged call limits.
-Both failed attempts remain recorded; a real complete pass is still required.
+The [full real rerun](docs/harness/LIVE_RERUN_2026-11-12.md) passed at 21:29–21:31
+Beijing on 12 November: one Flash supervisor, two Flash workers, 16 actual requests,
+156,549 tokens and a cited immutable draft. Input cache hit rate was 76.56%.
+[Deterministic measurements and validated submissions](docs/harness/MEASUREMENT_CONTRACT.md)
+fixed the arithmetic/report boundaries; the reviewer corrected an oversized report
+inside its active turn. The earlier two failures remain recorded, including the
+[first live attempt](docs/harness/LIVE_TRIAL_2026-11-12.md).
+This is a bounded workflow pass; the audit flags unresolved statistical claims and
+an incomplete formula specification. All three configured pilot sessions are now
+used. History is available; further trials require a deliberate allowance amendment
+preserving the same budget ledger.
 
 ## Current deliverable
 
@@ -50,9 +51,10 @@ estimates under the unchanged **200 CNY** ceiling. The raw call history and old
 estimates are preserved. The first diagnostic pilot's input cache hit rate was 22.64%.
 The interactive-trial export reports each role's token usage, cache hits, TPM/RPM,
 tariff-estimated cost and shared-process resource observations separately.
-The first two interactive rounds add 0.475450 CNY in conservative debits, leaving
-**179.174550 CNY** under the original cap before the next attempt. Their combined
-tariff estimate is 0.14163796 CNY; account snapshots do not verify per-trial invoices.
+The three interactive rounds add 0.903244 CNY in conservative debits: **21.253244
+CNY accounted**, leaving **178.746756 CNY** under the original cap. The successful
+round's tariff estimate is 0.11078532 CNY, while its conservative debit is
+0.427794 CNY. Account snapshots do not verify per-trial invoices.
 
 ## Local setup and checks
 

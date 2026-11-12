@@ -1,15 +1,19 @@
 # Bounded interactive research trial
 
-Status: the [real Flash/BaoStock trial](LIVE_TRIAL_2026-11-12.md) started at 18:01
-Beijing on 12 November and stopped after the researcher's fenced JSON report was
-rejected. Seven requests settled; the reviewer never ran and no draft exists.
-The presentation boundary is repaired and passes native offline tests, but a full
-real three-role pass is still required before owner-trial readiness is accepted.
+Status: the [full real Flash/BaoStock rerun](LIVE_RERUN_2026-11-12.md) passed at
+21:29–21:31 Beijing on 12 November. Both workers, both native Team tasks and a
+cited draft completed; sixteen requests settled. The first two failed attempts
+remain preserved. The desktop workflow passes bounded integration, while the draft
+still needs scientific/specification revision. All three configured pilot sessions
+are used; history is available, and new trials need an explicit allowance amendment
+without resetting the budget ledger.
 
-The owner has authorized that rerun after arithmetic/reporting repairs. New
+The owner authorized that rerun after arithmetic/reporting repairs. New
 reports use the [measurement contract](MEASUREMENT_CONTRACT.md): deterministic
 statistics and alignment, worker-observed fact references, host-derived numerical
-draft facts and activity summaries. The original failed record remains unchanged.
+draft facts and activity summaries. Workers validate submissions before ending and
+can correct rejected fields within their existing active turn/call cap. The original
+failed records remain unchanged.
 
 ## What you can test
 
@@ -60,9 +64,9 @@ remain available for preparation, while this trial's active source is BaoStock.
 | Model routes | `deepseek-flash` only for supervisor, researcher and reviewer; other model IDs are rejected |
 | Team | Supervisor + researcher + reviewer, one activation each; sequential workers |
 | Requests | At most 8 supervisor, 6 researcher and 6 reviewer; 20 per trial including retries |
-| Trials | Three small sessions: this integration trial and two owner trials |
+| Trials | Three cumulative pilot sessions; all consumed by the retained attempts; no automatic increase |
 | Data | `000001.XSHE`, 2026-10-19..30, unadjusted daily closes |
-| New BaoStock access | One additional business query and one login; later reads reuse its exact cache |
+| New BaoStock access | The one additional business query/login was used by the first trial; reruns reused its exact cache |
 | Data history | Prior 3 business attempts/3 logins/9 estimated cells retained; new cumulative caps 4/4/21 |
 | Paid data | No iFind or RQData call in this research profile; original quotas unchanged |
 | Time | New model wire requests only 12:00–14:00 and 18:00–24:00 Beijing |
@@ -92,10 +96,12 @@ claim that Codex independently downloaded an invoice. Subsequent charges use
 conservative peak cache-miss input and output rates, with the remaining cap
 calculated from the official baseline plus those newer estimates/reservations.
 
-The first interactive round adds 0.115572 CNY conservatively, leaving 179.534428 CNY.
-Its published-tariff estimate is 0.04310952 CNY. Two private balance observations
-returned no displayed change and did not establish the actual charge. The failed
-round occupies one of the three slots; two owner slots remain. No paid replay ran.
+The three recorded interactive rounds add 0.903244 CNY conservatively, yielding
+21.253244 CNY accounted and 178.746756 CNY remaining. The final round's tariff
+estimate is 0.11078532 CNY; its conservative debit is 0.427794 CNY. Account balance
+observations did not reconcile per-trial invoices and do not replace the ledger.
+All three slots are now used. The [rerun report](LIVE_RERUN_2026-11-12.md) separates
+each attempt, each agent, actual work, resource observations and cost estimates.
 
 Private evidence includes raw request/SSE records, event timings, native DSH
 session archives, append-only research events, source hashes, role assignments,
@@ -148,11 +154,14 @@ or production capacity.
 
 Completed workers and drafts are not automatically rerun. Failed or interrupted
 workers keep their task, raw result or start marker; the trial stops for inspection.
-Reports now accept bare JSON or one complete JSON/unlabelled code fence. The
-contents still pass the same size, schema and citation checks; text outside the
-object/fence is rejected. Failure messages include completed-operation counts,
-and a rejected/uncertain settlement is not sent twice. These repairs do not alter
-the failed live round or verify the arithmetic in a model-authored report.
+Current workers use `submit_worker_report` to validate and freeze reports before
+native completion. A rejected submission supplies exact diagnostics for correction
+inside the same active turn; a completed or failed worker is never replayed.
+Historical reports keep their original bare/fenced-JSON parser. Size, schema,
+citations and worker-observed measurement references remain mandatory. Failure
+messages include completed-operation counts, and rejected/uncertain settlement is
+not sent twice. After final worker failure, further research tools are refused.
+These repairs do not alter failed records or prove the scientific arguments in prose.
 There is no production job scheduler or automatic cross-window recovery in this
 first UI. A stopped native task can remain in progress on the Team board; that
 must not be mistaken for successful research. Reopen history to inspect, and

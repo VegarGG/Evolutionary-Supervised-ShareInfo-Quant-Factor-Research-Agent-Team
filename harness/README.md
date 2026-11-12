@@ -7,9 +7,12 @@ This module uses DSH through its SDK and native plugin APIs. It does not fork th
 agent loop or claim that the original multi-agent framework is complete.
 The new [interactive trial profile](../docs/harness/INTERACTIVE_TRIAL.md) uses the
 native DSH chat, Agent Teams board and two child sessions through the same guard.
-The [first real attempt](../docs/harness/LIVE_TRIAL_2026-11-12.md) used Flash and
-BaoStock but stopped at a fenced-report mismatch. That boundary is fixed offline;
-the reviewer/draft path still needs a complete real pass before trial acceptance.
+The [real rerun](../docs/harness/LIVE_RERUN_2026-11-12.md) completed both workers and
+a cited draft with Flash-only inference and real cached BaoStock evidence. The
+measurement/submission fixes pass 108 offline tests and the live workflow. Earlier
+failures remain recorded; scientific/specification problems remain in the draft.
+The three-session pilot cap is exhausted, so further trials need an explicit
+allowance amendment preserving the original ledger and spending limits.
 
 ## Install and verify
 
