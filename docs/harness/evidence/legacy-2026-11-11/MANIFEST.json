@@ -1,0 +1,68 @@
+[
+  {
+    "source": "qrs-review-2026-11-10/RESOURCE_RECOMMENDATION.md",
+    "file": "qrs-review-2026-11-10--RESOURCE_RECOMMENDATION.md",
+    "bytes": 7396,
+    "sha256": "71a06e047a468de9eb22979b638f5488c9abc28a10cae4024cf9bafdc3e9cb49"
+  },
+  {
+    "source": "qrs-review-2026-11-10/PHASE3_METRICS.json",
+    "file": "qrs-review-2026-11-10--PHASE3_METRICS.json",
+    "bytes": 38404,
+    "sha256": "755f676ebd5a941b76cfeb4610841eccd0c2c10bfa47d8e27399546f37265fb3"
+  },
+  {
+    "source": "qrs-remediation-2026-11-10/REMEDIATION_REPORT.md",
+    "file": "qrs-remediation-2026-11-10--REMEDIATION_REPORT.md",
+    "bytes": 13429,
+    "sha256": "67ba0a967197c8b47c7b87d0295b737833b6f0b802988e70016ff59034fc46b6"
+  },
+  {
+    "source": "qrs-live-deepseek-2026-11-11/REPORT.md",
+    "file": "qrs-live-deepseek-2026-11-11--REPORT.md",
+    "bytes": 31893,
+    "sha256": "487859bb9991a48a6693f0ba3adcead10fa080a66afb11391e4fdaa29ccc0ae3"
+  },
+  {
+    "source": "qrs-live-deepseek-2026-11-11/RESULT_TABLES.md",
+    "file": "qrs-live-deepseek-2026-11-11--RESULT_TABLES.md",
+    "bytes": 4216,
+    "sha256": "461b17889624fe123beac00b31f9faea0bdb385d72f067ac700006c1d29df0f2"
+  },
+  {
+    "source": "qrs-live-deepseek-2026-11-11/OUTCOME.json",
+    "file": "qrs-live-deepseek-2026-11-11--OUTCOME.json",
+    "bytes": 3754,
+    "sha256": "8d0359ca15e021704f2bac32736523c5bac15fe8b46a3d44c5baf830db9dcab6"
+  },
+  {
+    "source": "qrs-live-deepseek-2026-11-11/METRICS.json",
+    "file": "qrs-live-deepseek-2026-11-11--METRICS.json",
+    "bytes": 288087,
+    "sha256": "f90894816e05ddc7ea8f7baef0bfd4d3dfa39789f7d309f62beea9f579117962"
+  },
+  {
+    "source": "qrs-live-deepseek-2026-11-11/GENERATIONS.json",
+    "file": "qrs-live-deepseek-2026-11-11--GENERATIONS.json",
+    "bytes": 260036,
+    "sha256": "bfe92383850c907c598b4a9b95681afa8836e65e7ec564e03b7a494d07765940"
+  },
+  {
+    "source": "qrs-live-deepseek-2026-11-11/PHASES.json",
+    "file": "qrs-live-deepseek-2026-11-11--PHASES.json",
+    "bytes": 33197,
+    "sha256": "0cc3b69ce48e3ad5f080dfabb647d82c4a3dd87aea89269868d0e38294d97b1d"
+  },
+  {
+    "source": "qrs-live-deepseek-2026-11-11/SCIENTIFIC_RESULTS.json",
+    "file": "qrs-live-deepseek-2026-11-11--SCIENTIFIC_RESULTS.json",
+    "bytes": 10200,
+    "sha256": "0398aa81db14a481f676399271e79d2344518d01c626c99d5b952d658f60b600"
+  },
+  {
+    "source": "qrs-live-deepseek-2026-11-11/SOURCE_PROVENANCE.json",
+    "file": "qrs-live-deepseek-2026-11-11--SOURCE_PROVENANCE.json",
+    "bytes": 6432,
+    "sha256": "30f78915d06ba8734bf94d8685924be2827f8f7675a27091106dabc40606fe57"
+  }
+]

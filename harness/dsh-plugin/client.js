@@ -1,0 +1,139 @@
+/* DSH's documented lazy client-module factory; no build-time runtime copy. */
+globalThis.__ModuleLoader__.load({
+  id: '@qfh/dsh-data',
+  factory(require) {
+    const React = require('react')
+    const { createElement: h, useEffect, useState, useCallback } = React
+    const refs = ['QFH_IFIND_CREDENTIAL', 'QFH_RQDATA_LICENSE']
+    const fieldStyle = { width: '100%', border: '1px solid #aaa', borderRadius: 6,
+      padding: '9px 12px', background: 'transparent', color: 'inherit', boxSizing: 'border-box' }
+    const buttonStyle = { ...fieldStyle, width: 'auto', cursor: 'pointer' }
+
+    function CredentialForm({ provider, configured, operations, refresh }) {
+      const [value, setValue] = useState('')
+      const [method, setMethod] = useState('refresh_token')
+      const [busy, setBusy] = useState(false)
+      const [message, setMessage] = useState('')
+      const ref = provider === 'ifind' ? refs[0] : refs[1]
+      const label = provider === 'ifind' ? 'iFind' : 'RQData'
+      async function save(event) {
+        event.preventDefault()
+        if (!value.trim() || busy) return
+        setBusy(true); setMessage('')
+        try {
+          await operations.save(ref, provider === 'ifind'
+            ? JSON.stringify({ [method]: value.trim() }) : value.trim())
+          setValue('')
+          await refresh()
+          setMessage('Saved locally. No data request was sent.')
+        } catch { setMessage('Could not save. Check the local DSH connection and try again.') }
+        finally { setBusy(false) }
+      }
+      async function remove() {
+        setBusy(true); setMessage(''); setValue('')
+        try { await operations.remove(ref); await refresh(); setMessage('Credential removed locally.') }
+        catch { setMessage('Could not remove the credential. Please retry.') }
+        finally { setBusy(false) }
+      }
+      return h('form', { onSubmit: save, 'aria-label': label + ' credentials',
+        style: { display: 'grid', gap: 12, border: '1px solid #bbb', borderRadius: 10, padding: 20 } },
+        h('h3', { style: { margin: 0 } }, label + ' credentials'),
+        h('p', { role: 'status', style: { margin: 0 } }, configured ? 'Configured' : 'Not configured'),
+        provider === 'ifind' ? h('label', null, 'Token type',
+          h('select', { 'aria-label': 'iFind token type', value: method, disabled: busy,
+            onChange: event => setMethod(event.target.value), style: fieldStyle },
+            h('option', { value: 'refresh_token' }, 'Refresh token'),
+            h('option', { value: 'access_token' }, 'Access token'))) : null,
+        h('label', null, label + (provider === 'ifind' ? ' token' : ' license'),
+          h('input', { type: 'password', 'aria-label': label + ' credential', value,
+            autoComplete: 'off', spellCheck: false, disabled: busy, style: fieldStyle,
+            onChange: event => setValue(event.target.value) })),
+        h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+          h('button', { type: 'submit', disabled: busy || !value.trim(), style: buttonStyle }, 'Save ' + label),
+          h('button', { type: 'button', onClick: remove, disabled: busy || !configured,
+            style: buttonStyle }, 'Remove ' + label)),
+        message ? h('p', { role: 'status', style: { margin: 0 } }, message) : null)
+    }
+
+    function DataSettings({ operations }) {
+      const [state, setState] = useState(null)
+      const [error, setError] = useState('')
+      const [busy, setBusy] = useState(false)
+      const refresh = useCallback(async () => {
+        const next = await operations.read()
+        setState(next)
+        setError('')
+      }, [operations])
+      useEffect(() => {
+        let active = true
+        operations.read().then(next => { if (active) setState(next) })
+          .catch(() => { if (active) setError('Could not load data settings.') })
+        return () => { active = false }
+      }, [operations])
+      async function select(provider) {
+        if (!state || busy) return
+        setBusy(true)
+        try { await operations.select(provider, state.revision); await refresh() }
+        catch { setError('Could not change source. Refresh settings before retrying.') }
+        finally { setBusy(false) }
+      }
+      return h('section', { 'aria-label': 'Research data settings',
+        style: { display: 'grid', gap: 20, maxWidth: 640, minWidth: 0, padding: '0 4px' } },
+        h('h2', { style: { margin: 0 } }, 'Research data'),
+        h('p', { style: { margin: 0 } },
+          'Daily China A shares. Each research session uses one data source. Saving credentials makes no provider request.'),
+        error ? h('p', { role: 'alert' }, error) : null,
+        !state ? h('p', null, 'Loading settings…') : h(React.Fragment, null,
+          h('label', null, 'Active data source',
+            h('select', { 'aria-label': 'Active data source', value: state.provider, disabled: busy,
+              onChange: event => { void select(event.target.value) }, style: fieldStyle },
+              h('option', { value: 'baostock' }, 'BaoStock — free testing'),
+              h('option', { value: 'ifind' }, 'iFind'),
+              h('option', { value: 'rqdata' }, 'RiceQuant RQData'))),
+          h('p', { style: { margin: 0, fontSize: 13 } },
+            'Change source before starting a new session. An existing session refuses source changes.'),
+          h('div', { style: { border: '1px solid #bbb', borderRadius: 10, padding: 20 } },
+            h('h3', { style: { margin: '0 0 8px' } }, 'BaoStock free testing'),
+            h('p', { style: { margin: 0 } },
+              'Ready without an account or token. Daily close prices only. Reports and news are unavailable from this adapter.')),
+          h(CredentialForm, { provider: 'ifind', configured: state.credentials[refs[0]]?.configured,
+            operations, refresh }),
+          h(CredentialForm, { provider: 'rqdata', configured: state.credentials[refs[1]]?.configured,
+            operations, refresh }),
+          h('p', { style: { margin: 0, fontSize: 13 } },
+            'Initial scope: one symbol, up to three calendar days, close price only. iFind and RQData each allow one data query and one authentication request. BaoStock allows three attempts, including two retained failed attempts. Exact repeats reuse saved results.'),
+          h('p', { style: { margin: 0, fontSize: 13 } },
+            'Credentials stay in the local DSH credential store. iFind uses the current access token and never rotates it automatically.')))
+    }
+
+    return {
+      inject: ['slots', 'remote', 'remote.credentials', 'remote.settings'],
+      apply(ctx) {
+        const checked = response => {
+          if (!response.ok) throw new Error('DSH settings operation failed')
+          return response.value
+        }
+        const operations = {
+          async read() {
+            const [credentials, settings] = await Promise.all([
+              ctx.remote.credentials.describe(refs), ctx.remote.settings.describe(),
+            ])
+            const form = checked(settings).namespaces.find(x => x.ns === 'qfh-data')
+            if (!form) throw new Error('QFH settings are unavailable')
+            return { provider: form.value.activeProvider, revision: form.revision,
+              credentials: checked(credentials) }
+          },
+          async save(ref, value) { checked(await ctx.remote.credentials.set(ref, value)) },
+          async remove(ref) { checked(await ctx.remote.credentials.unset(ref)) },
+          async select(provider, revision) {
+            checked(await ctx.remote.settings.update('qfh-data', { activeProvider: provider }, revision))
+          },
+        }
+        ctx.slots.inject('settings.section', () => ctx.slots.register({
+          name: 'settings.section', id: 'qfh-data', label: () => 'Research data', order: 15,
+          inject: () => ({ operations }),
+        }, DataSettings))
+      },
+    }
+  },
+})

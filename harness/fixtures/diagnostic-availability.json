@@ -1,0 +1,21 @@
+{
+  "id": "availability-001",
+  "category": "diagnostic",
+  "synthetic": true,
+  "task": "Revise the initial factor using the frozen source evidence. Define the earliest eligible signal and execution dates for this observation, its economic interpretation and limitations. The framework computes at close t and executes at the next trading close. No outside facts are needed.",
+  "initial_factor": "Rank companies by Q1 operating cash flow divided by Q1 total assets, starting from the Q1 period-end date.",
+  "sources": [
+    {
+      "id": "S1",
+      "text": "Synthetic vendor record for company A: report period end 2024-03-31; Q1 operating cash flow 6000 in units of CNY ten-thousand; Q1 total assets 3000000000 in units of CNY; nominal observation date 2024-03-31. This is a deliberately constructed diagnostic, not RiceQuant data."
+    },
+    {
+      "id": "S2",
+      "text": "Synthetic disclosure archive: the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai; the vendor first ingested this exact version on 2024-04-30 at 08:10 Asia/Shanghai. Neither timestamp may be replaced by the fiscal period end. A close snapshot is taken at 15:00 Asia/Shanghai."
+    },
+    {
+      "id": "S3",
+      "text": "The task's frozen trading calendar around publication is 2024-04-26, 2024-04-29, 2024-04-30, 2024-05-06, 2024-05-07. Prices/returns and other companies' financials have not been supplied. No cross-sectional performance or profitability claim can be measured from this evidence."
+    }
+  ]
+}

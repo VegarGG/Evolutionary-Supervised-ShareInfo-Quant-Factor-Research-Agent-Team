@@ -1,0 +1,72 @@
+{
+  "repository": "VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team",
+  "reason": "Owner directed closure while approving modular DSH harness experiments. Branches preserved; no merge or deletion.",
+  "pull_requests": [
+    {
+      "number": 19,
+      "title": "Phase 8: hardening and extensions",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/pull/19",
+      "head": "claude/project-thread-jut2r1",
+      "head_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+      "base": "claude/project-thread-uwdpk6",
+      "state": "closed",
+      "closed_at": "2026-11-12T04:34:30Z",
+      "merged": false
+    },
+    {
+      "number": 18,
+      "title": "Phase 7: operator experience through the MCP front door",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/pull/18",
+      "head": "claude/project-thread-uwdpk6",
+      "head_sha": "7c0034beacbe3872cb0d6fd4a0aeaaf0154477d2",
+      "base": "claude/project-thread-0dbcgd",
+      "state": "closed",
+      "closed_at": "2026-11-12T04:34:34Z",
+      "merged": false
+    },
+    {
+      "number": 17,
+      "title": "Phase 6: validation, holdout, simulated trading, acceptance and pools",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/pull/17",
+      "head": "claude/project-thread-0dbcgd",
+      "head_sha": "5d426947e66d360019da1bab2be1f65817d6d22f",
+      "base": "claude/project-thread-l7m6rq",
+      "state": "closed",
+      "closed_at": "2026-11-12T04:34:39Z",
+      "merged": false
+    },
+    {
+      "number": 16,
+      "title": "Phase 5: evolutionary engine (islands, fitness, variation, bandit, lineage, benchmarks)",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/pull/16",
+      "head": "claude/project-thread-l7m6rq",
+      "head_sha": "63040e7f5eef92d26c13072b166456654dcb22d6",
+      "base": "claude/project-thread-6u818y",
+      "state": "closed",
+      "closed_at": "2026-11-12T04:34:43Z",
+      "merged": false
+    },
+    {
+      "number": 15,
+      "title": "Phase 4: research system and the owner's job workflow",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/pull/15",
+      "head": "claude/project-thread-6u818y",
+      "head_sha": "5ce09e11e10531d9e2cd53c91b1d1a020e74642d",
+      "base": "claude/project-thread-e4uzhe",
+      "state": "closed",
+      "closed_at": "2026-11-12T04:34:48Z",
+      "merged": false
+    },
+    {
+      "number": 14,
+      "title": "Phase 3: independent evaluation, release and feedback",
+      "url": "https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/pull/14",
+      "head": "claude/project-thread-e4uzhe",
+      "head_sha": "86584ea87ae4491296523f0ee24f662611aae32d",
+      "base": "main",
+      "state": "closed",
+      "closed_at": "2026-11-12T04:34:52Z",
+      "merged": false
+    }
+  ]
+}

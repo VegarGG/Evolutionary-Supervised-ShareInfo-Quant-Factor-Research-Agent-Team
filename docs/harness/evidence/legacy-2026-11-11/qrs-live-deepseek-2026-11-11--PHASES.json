@@ -1,0 +1,954 @@
+{
+  "generated_at": "2026-11-11T12:36:15.454501+00:00",
+  "export": "/Volumes/Work/Evolutionary Supervised ShareInfo Quant Factor Research Agent Team/qrs-live-deepseek-2026-11-11/private/exports/20261111T123213Z-pilot-final",
+  "generations": [
+    {
+      "generation_id": "01a1c8c3-4cef-757f-9786-507155d40b1d",
+      "job": "J-0001",
+      "seq": 1,
+      "generation_elapsed_seconds": 40.06629014015198,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T12:00:14.049647+08:00",
+          "ended_at": "2026-11-11T12:00:14.073722+08:00",
+          "wall_seconds": 0.024074792861938477,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T12:00:14.073722+08:00",
+          "ended_at": "2026-11-11T12:00:14.084762+08:00",
+          "wall_seconds": 0.011040210723876953,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T12:00:14.084762+08:00",
+          "ended_at": "2026-11-11T12:00:54.08149+08:00",
+          "wall_seconds": 39.99672794342041,
+          "dispatched_chat_requests": 1
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T12:00:54.08149+08:00",
+          "ended_at": "2026-11-11T12:00:54.102369+08:00",
+          "wall_seconds": 0.020879030227661133,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T12:00:54.102369+08:00",
+          "ended_at": "2026-11-11T12:00:54.105427+08:00",
+          "wall_seconds": 0.0030579566955566406,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T12:00:54.105427+08:00",
+          "ended_at": "2026-11-11T12:00:54.113925+08:00",
+          "wall_seconds": 0.008497953414916992,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": [
+        {
+          "request_id": "2c1d843dc1f045b6b7f143bc7b00e291",
+          "role": "probe",
+          "at": "2026-11-11T04:00:06.393433+00:00"
+        },
+        {
+          "request_id": "2f3c6cb687224e40a6d9a21a0c75ca06",
+          "role": "probe",
+          "at": "2026-11-11T04:00:08.063682+00:00"
+        },
+        {
+          "request_id": "f299abdaeab349d19da0d8c0936901f2",
+          "role": "probe",
+          "at": "2026-11-11T04:00:09.852924+00:00"
+        },
+        {
+          "request_id": "2646dfcf8fbe4dbeb9c23aba32786927",
+          "role": "probe",
+          "at": "2026-11-11T04:00:12.347476+00:00"
+        }
+      ]
+    },
+    {
+      "generation_id": "01a1c8cb-9fcf-75fb-874e-191bdea7efe3",
+      "job": "J-0002",
+      "seq": 1,
+      "generation_elapsed_seconds": 260.23586320877075,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T12:09:17.922163+08:00",
+          "ended_at": "2026-11-11T12:09:17.93923+08:00",
+          "wall_seconds": 0.01706695556640625,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T12:09:17.93923+08:00",
+          "ended_at": "2026-11-11T12:09:17.948692+08:00",
+          "wall_seconds": 0.009462118148803711,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T12:09:17.948692+08:00",
+          "ended_at": "2026-11-11T12:10:07.625676+08:00",
+          "wall_seconds": 49.67698383331299,
+          "dispatched_chat_requests": 3
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T12:10:07.625676+08:00",
+          "ended_at": "2026-11-11T12:13:38.111294+08:00",
+          "wall_seconds": 210.48561811447144,
+          "dispatched_chat_requests": 18
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T12:13:38.111294+08:00",
+          "ended_at": "2026-11-11T12:13:38.122021+08:00",
+          "wall_seconds": 0.0107269287109375,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T12:13:38.122021+08:00",
+          "ended_at": "2026-11-11T12:13:38.157368+08:00",
+          "wall_seconds": 0.03534698486328125,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": [
+        {
+          "request_id": "3b67af47c12746df952c1182c7be5fc1",
+          "role": "probe",
+          "at": "2026-11-11T04:09:11.756094+00:00"
+        },
+        {
+          "request_id": "4a734d00664e4c849527da2f4cdfb6d1",
+          "role": "probe",
+          "at": "2026-11-11T04:09:13.194018+00:00"
+        },
+        {
+          "request_id": "821aebd82dfa4e4399de88f1c8d16dda",
+          "role": "probe",
+          "at": "2026-11-11T04:09:14.313025+00:00"
+        },
+        {
+          "request_id": "b7b95b2b7d184da29cec81b7de0d6bf1",
+          "role": "probe",
+          "at": "2026-11-11T04:09:16.191499+00:00"
+        }
+      ]
+    },
+    {
+      "generation_id": "01a1c8d1-be38-735d-b01c-46d0aba8f4b0",
+      "job": "J-0003",
+      "seq": 1,
+      "generation_elapsed_seconds": 272.9378819465637,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T12:15:58.185295+08:00",
+          "ended_at": "2026-11-11T12:15:58.205955+08:00",
+          "wall_seconds": 0.020659923553466797,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T12:15:58.205955+08:00",
+          "ended_at": "2026-11-11T12:15:58.226216+08:00",
+          "wall_seconds": 0.020261049270629883,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T12:15:58.226216+08:00",
+          "ended_at": "2026-11-11T12:16:41.128145+08:00",
+          "wall_seconds": 42.90192890167236,
+          "dispatched_chat_requests": 1
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T12:16:41.128145+08:00",
+          "ended_at": "2026-11-11T12:20:31.102771+08:00",
+          "wall_seconds": 229.97462606430054,
+          "dispatched_chat_requests": 19
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T12:20:31.102771+08:00",
+          "ended_at": "2026-11-11T12:20:31.112259+08:00",
+          "wall_seconds": 0.00948786735534668,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T12:20:31.112259+08:00",
+          "ended_at": "2026-11-11T12:20:31.122487+08:00",
+          "wall_seconds": 0.010228157043457031,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": [
+        {
+          "request_id": "21633c7011704b54b09dad260ca3828c",
+          "role": "probe",
+          "at": "2026-11-11T04:15:52.742760+00:00"
+        },
+        {
+          "request_id": "10ee69bc7a944f9e9e8c2da5ce478d94",
+          "role": "probe",
+          "at": "2026-11-11T04:15:53.769489+00:00"
+        },
+        {
+          "request_id": "d53ab5e127ae4049a3f6d36c290f9c1a",
+          "role": "probe",
+          "at": "2026-11-11T04:15:54.622683+00:00"
+        },
+        {
+          "request_id": "208233a0887846d0bddd62ffe9c9ff0a",
+          "role": "probe",
+          "at": "2026-11-11T04:15:56.294810+00:00"
+        }
+      ]
+    },
+    {
+      "generation_id": "01a1c8d7-d149-77d5-8275-79ec90e0598e",
+      "job": "J-0003",
+      "seq": 2,
+      "generation_elapsed_seconds": 186.88499402999878,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T12:22:29.45399+08:00",
+          "ended_at": "2026-11-11T12:22:29.46515+08:00",
+          "wall_seconds": 0.011160135269165039,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T12:22:29.46515+08:00",
+          "ended_at": "2026-11-11T12:22:29.488412+08:00",
+          "wall_seconds": 0.02326178550720215,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T12:22:29.488412+08:00",
+          "ended_at": "2026-11-11T12:23:45.417494+08:00",
+          "wall_seconds": 75.92908215522766,
+          "dispatched_chat_requests": 1
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T12:23:45.417494+08:00",
+          "ended_at": "2026-11-11T12:25:36.323195+08:00",
+          "wall_seconds": 110.90570092201233,
+          "dispatched_chat_requests": 10
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T12:25:36.323195+08:00",
+          "ended_at": "2026-11-11T12:25:36.329429+08:00",
+          "wall_seconds": 0.006233930587768555,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T12:25:36.329429+08:00",
+          "ended_at": "2026-11-11T12:25:36.338772+08:00",
+          "wall_seconds": 0.009343147277832031,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    },
+    {
+      "generation_id": "01a1c8da-bf03-7527-90ce-44f41fb259b0",
+      "job": "J-0003",
+      "seq": 3,
+      "generation_elapsed_seconds": 395.17240595817566,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T12:25:41.386268+08:00",
+          "ended_at": "2026-11-11T12:25:41.402324+08:00",
+          "wall_seconds": 0.016056060791015625,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T12:25:41.402324+08:00",
+          "ended_at": "2026-11-11T12:25:41.413679+08:00",
+          "wall_seconds": 0.011354923248291016,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T12:25:41.413679+08:00",
+          "ended_at": "2026-11-11T12:27:18.045735+08:00",
+          "wall_seconds": 96.63205599784851,
+          "dispatched_chat_requests": 3
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T12:27:18.045735+08:00",
+          "ended_at": "2026-11-11T12:32:16.530085+08:00",
+          "wall_seconds": 298.4843502044678,
+          "dispatched_chat_requests": 43
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T12:32:16.530085+08:00",
+          "ended_at": "2026-11-11T12:32:16.538765+08:00",
+          "wall_seconds": 0.008679866790771484,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T12:32:16.538765+08:00",
+          "ended_at": "2026-11-11T12:32:16.558547+08:00",
+          "wall_seconds": 0.019782066345214844,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    },
+    {
+      "generation_id": "01a1c8e7-34bc-71cb-ab05-e14d614f46b8",
+      "job": "J-0004",
+      "seq": 1,
+      "generation_elapsed_seconds": 953.3710021972656,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T12:39:25.701733+08:00",
+          "ended_at": "2026-11-11T12:39:25.718902+08:00",
+          "wall_seconds": 0.01716899871826172,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T12:39:25.718902+08:00",
+          "ended_at": "2026-11-11T12:39:25.774455+08:00",
+          "wall_seconds": 0.05555295944213867,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T12:39:25.774455+08:00",
+          "ended_at": "2026-11-11T12:40:24.704795+08:00",
+          "wall_seconds": 58.93033981323242,
+          "dispatched_chat_requests": 1
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T12:40:24.704795+08:00",
+          "ended_at": "2026-11-11T12:55:19.054866+08:00",
+          "wall_seconds": 894.3500711917877,
+          "dispatched_chat_requests": 74
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T12:55:19.054866+08:00",
+          "ended_at": "2026-11-11T12:55:19.061798+08:00",
+          "wall_seconds": 0.00693202018737793,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T12:55:19.061798+08:00",
+          "ended_at": "2026-11-11T12:55:19.072112+08:00",
+          "wall_seconds": 0.010313987731933594,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": [
+        {
+          "request_id": "5a3a98531c244a4f9bbdca1fbc4e5e74",
+          "role": "probe",
+          "at": "2026-11-11T04:39:19.301770+00:00"
+        },
+        {
+          "request_id": "f14e19c000d24c4caabfaca6c027d48e",
+          "role": "probe",
+          "at": "2026-11-11T04:39:20.624868+00:00"
+        },
+        {
+          "request_id": "18f9d636b22e4d598dffae5af5dbe96a",
+          "role": "probe",
+          "at": "2026-11-11T04:39:22.227784+00:00"
+        },
+        {
+          "request_id": "97392ffefea64cdaa80f1c1fe5f1f43a",
+          "role": "probe",
+          "at": "2026-11-11T04:39:24.150767+00:00"
+        }
+      ]
+    },
+    {
+      "generation_id": "01a1c8f7-b7ac-7358-9d45-63d0fc4e4f0e",
+      "job": "J-0004",
+      "seq": 2,
+      "generation_elapsed_seconds": 683.4909608364105,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T12:57:20.048666+08:00",
+          "ended_at": "2026-11-11T12:57:20.06135+08:00",
+          "wall_seconds": 0.012684106826782227,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T12:57:20.06135+08:00",
+          "ended_at": "2026-11-11T12:57:20.114477+08:00",
+          "wall_seconds": 0.05312681198120117,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T12:57:20.114477+08:00",
+          "ended_at": "2026-11-11T13:01:12.286754+08:00",
+          "wall_seconds": 232.17227697372437,
+          "dispatched_chat_requests": 5
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T13:01:12.286754+08:00",
+          "ended_at": "2026-11-11T13:08:43.510288+08:00",
+          "wall_seconds": 451.22353410720825,
+          "dispatched_chat_requests": 27
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T13:08:43.510288+08:00",
+          "ended_at": "2026-11-11T13:08:43.521852+08:00",
+          "wall_seconds": 0.011564016342163086,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T13:08:43.521852+08:00",
+          "ended_at": "2026-11-11T13:08:43.539359+08:00",
+          "wall_seconds": 0.017507076263427734,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    },
+    {
+      "generation_id": "01a1c904-99fc-7463-a5eb-30584057c0b3",
+      "job": "J-0004",
+      "seq": 3,
+      "generation_elapsed_seconds": 717.9185590744019,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T13:11:24.416907+08:00",
+          "ended_at": "2026-11-11T13:14:45.56395+08:00",
+          "wall_seconds": 201.14704298973083,
+          "dispatched_chat_requests": 6
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T13:14:45.56395+08:00",
+          "ended_at": "2026-11-11T13:14:45.63467+08:00",
+          "wall_seconds": 0.07071995735168457,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T13:14:45.63467+08:00",
+          "ended_at": "2026-11-11T13:16:53.092936+08:00",
+          "wall_seconds": 127.45826601982117,
+          "dispatched_chat_requests": 2
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T13:16:53.092936+08:00",
+          "ended_at": "2026-11-11T13:23:22.310457+08:00",
+          "wall_seconds": 389.21752095222473,
+          "dispatched_chat_requests": 33
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T13:23:22.310457+08:00",
+          "ended_at": "2026-11-11T13:23:22.31823+08:00",
+          "wall_seconds": 0.007772922515869141,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T13:23:22.31823+08:00",
+          "ended_at": "2026-11-11T13:23:22.3353+08:00",
+          "wall_seconds": 0.01707005500793457,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    },
+    {
+      "generation_id": "01a1c925-0e0f-710d-86d6-25e9caf891c8",
+      "job": "J-0005",
+      "seq": 1,
+      "generation_elapsed_seconds": 654.2802670001984,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T13:46:59.625635+08:00",
+          "ended_at": "2026-11-11T13:46:59.643626+08:00",
+          "wall_seconds": 0.017991065979003906,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T13:46:59.643626+08:00",
+          "ended_at": "2026-11-11T13:46:59.711002+08:00",
+          "wall_seconds": 0.06737613677978516,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T13:46:59.711002+08:00",
+          "ended_at": "2026-11-11T13:50:06.352609+08:00",
+          "wall_seconds": 186.64160680770874,
+          "dispatched_chat_requests": 5
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T13:50:06.352609+08:00",
+          "ended_at": "2026-11-11T13:57:53.894049+08:00",
+          "wall_seconds": 467.5414400100708,
+          "dispatched_chat_requests": 42
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T13:57:53.894049+08:00",
+          "ended_at": "2026-11-11T13:57:53.898698+08:00",
+          "wall_seconds": 0.004649162292480469,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T13:57:53.898698+08:00",
+          "ended_at": "2026-11-11T13:57:53.905639+08:00",
+          "wall_seconds": 0.0069408416748046875,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": [
+        {
+          "request_id": "efd85fd6ed4c4fb88f83196bc1c8e9d9",
+          "role": "probe",
+          "at": "2026-11-11T05:46:52.655742+00:00"
+        },
+        {
+          "request_id": "f81e6e48ed764e5f8fd11fc13ce1fd86",
+          "role": "probe",
+          "at": "2026-11-11T05:46:54.109498+00:00"
+        },
+        {
+          "request_id": "321c26dc31af466d9ff0f8184d6146d7",
+          "role": "probe",
+          "at": "2026-11-11T05:46:55.515813+00:00"
+        },
+        {
+          "request_id": "872d76a4071149019f8ea47cd7bc8c10",
+          "role": "probe",
+          "at": "2026-11-11T05:46:57.586263+00:00"
+        }
+      ]
+    },
+    {
+      "generation_id": "01a1ca0e-59c6-778a-9cbe-1daebd4d99d8",
+      "job": "J-0005",
+      "seq": 2,
+      "generation_elapsed_seconds": 984.0275981426239,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T18:01:40.555042+08:00",
+          "ended_at": "2026-11-11T18:01:40.570287+08:00",
+          "wall_seconds": 0.01524496078491211,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T18:01:40.570287+08:00",
+          "ended_at": "2026-11-11T18:01:40.641748+08:00",
+          "wall_seconds": 0.07146096229553223,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T18:01:40.641748+08:00",
+          "ended_at": "2026-11-11T18:06:04.639741+08:00",
+          "wall_seconds": 263.9979929924011,
+          "dispatched_chat_requests": 4
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T18:06:04.639741+08:00",
+          "ended_at": "2026-11-11T18:18:04.564477+08:00",
+          "wall_seconds": 719.9247360229492,
+          "dispatched_chat_requests": 73
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T18:18:04.564477+08:00",
+          "ended_at": "2026-11-11T18:18:04.573395+08:00",
+          "wall_seconds": 0.008918046951293945,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T18:18:04.573395+08:00",
+          "ended_at": "2026-11-11T18:18:04.582507+08:00",
+          "wall_seconds": 0.009111881256103516,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    },
+    {
+      "generation_id": "01a1ca1e-96e2-7147-a80e-c02dfcf8dc33",
+      "job": "J-0005",
+      "seq": 3,
+      "generation_elapsed_seconds": 567.407173871994,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T18:19:24.775867+08:00",
+          "ended_at": "2026-11-11T18:19:24.793073+08:00",
+          "wall_seconds": 0.01720595359802246,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T18:19:24.793073+08:00",
+          "ended_at": "2026-11-11T18:19:24.806203+08:00",
+          "wall_seconds": 0.013129949569702148,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T18:19:24.806203+08:00",
+          "ended_at": "2026-11-11T18:21:10.922047+08:00",
+          "wall_seconds": 106.11584401130676,
+          "dispatched_chat_requests": 1
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T18:21:10.922047+08:00",
+          "ended_at": "2026-11-11T18:28:52.148803+08:00",
+          "wall_seconds": 461.22675609588623,
+          "dispatched_chat_requests": 62
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T18:28:52.148803+08:00",
+          "ended_at": "2026-11-11T18:28:52.158175+08:00",
+          "wall_seconds": 0.00937199592590332,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T18:28:52.158175+08:00",
+          "ended_at": "2026-11-11T18:28:52.182747+08:00",
+          "wall_seconds": 0.024571895599365234,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    },
+    {
+      "generation_id": "01a1ca2e-2ca0-77eb-bfe2-5e6ae036b2a4",
+      "job": "J-0005",
+      "seq": 4,
+      "generation_elapsed_seconds": 1611.4062387943268,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T18:36:26.149131+08:00",
+          "ended_at": "2026-11-11T18:39:40.332935+08:00",
+          "wall_seconds": 194.18380403518677,
+          "dispatched_chat_requests": 5
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T18:39:40.332935+08:00",
+          "ended_at": "2026-11-11T18:39:40.411542+08:00",
+          "wall_seconds": 0.07860684394836426,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T18:39:40.411542+08:00",
+          "ended_at": "2026-11-11T18:46:36.766781+08:00",
+          "wall_seconds": 416.3552391529083,
+          "dispatched_chat_requests": 9
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T18:46:36.766781+08:00",
+          "ended_at": "2026-11-11T18:50:53.260587+08:00",
+          "wall_seconds": 256.49380588531494,
+          "dispatched_chat_requests": 29
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T18:50:53.260587+08:00",
+          "ended_at": "2026-11-11T18:50:53.277757+08:00",
+          "wall_seconds": 0.017169952392578125,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T18:50:53.277757+08:00",
+          "ended_at": "2026-11-11T19:03:17.555145+08:00",
+          "wall_seconds": 744.2773880958557,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    },
+    {
+      "generation_id": "01a1ca48-d3c9-7644-b65e-46fe75046de8",
+      "job": "J-0005",
+      "seq": 5,
+      "generation_elapsed_seconds": 1028.4547579288483,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T19:05:32.876566+08:00",
+          "ended_at": "2026-11-11T19:09:37.156452+08:00",
+          "wall_seconds": 244.27988600730896,
+          "dispatched_chat_requests": 4
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T19:09:37.156452+08:00",
+          "ended_at": "2026-11-11T19:09:37.24856+08:00",
+          "wall_seconds": 0.09210801124572754,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T19:09:37.24856+08:00",
+          "ended_at": "2026-11-11T19:12:27.987752+08:00",
+          "wall_seconds": 170.73919200897217,
+          "dispatched_chat_requests": 1
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T19:12:27.987752+08:00",
+          "ended_at": "2026-11-11T19:22:41.305114+08:00",
+          "wall_seconds": 613.3173620700836,
+          "dispatched_chat_requests": 88
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T19:22:41.305114+08:00",
+          "ended_at": "2026-11-11T19:22:41.315162+08:00",
+          "wall_seconds": 0.01004791259765625,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T19:22:41.315162+08:00",
+          "ended_at": "2026-11-11T19:22:41.331244+08:00",
+          "wall_seconds": 0.016082048416137695,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    },
+    {
+      "generation_id": "01a1ca61-1875-7597-b0a9-4c3db8873759",
+      "job": "J-0006",
+      "seq": 1,
+      "generation_elapsed_seconds": 605.8640699386597,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T19:32:11.397333+08:00",
+          "ended_at": "2026-11-11T19:32:11.427703+08:00",
+          "wall_seconds": 0.030369997024536133,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T19:32:11.427703+08:00",
+          "ended_at": "2026-11-11T19:32:11.515617+08:00",
+          "wall_seconds": 0.08791399002075195,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T19:32:11.515617+08:00",
+          "ended_at": "2026-11-11T19:33:53.661551+08:00",
+          "wall_seconds": 102.14593410491943,
+          "dispatched_chat_requests": 2
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T19:33:53.661551+08:00",
+          "ended_at": "2026-11-11T19:42:17.232934+08:00",
+          "wall_seconds": 503.57138299942017,
+          "dispatched_chat_requests": 89
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T19:42:17.232934+08:00",
+          "ended_at": "2026-11-11T19:42:17.240595+08:00",
+          "wall_seconds": 0.007661104202270508,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T19:42:17.240595+08:00",
+          "ended_at": "2026-11-11T19:42:17.260805+08:00",
+          "wall_seconds": 0.020209789276123047,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": [
+        {
+          "request_id": "025da7c9858f401e86f0720863624e5d",
+          "role": "probe",
+          "at": "2026-11-11T11:32:04.736788+00:00"
+        },
+        {
+          "request_id": "86ec6eff14534277b0070eea7fb2cd64",
+          "role": "probe",
+          "at": "2026-11-11T11:32:05.827441+00:00"
+        },
+        {
+          "request_id": "2f733c462a84490ca47b9351a3bcbcdc",
+          "role": "probe",
+          "at": "2026-11-11T11:32:07.065916+00:00"
+        },
+        {
+          "request_id": "32f7262287ba4d4a858f39a2ed53ad15",
+          "role": "probe",
+          "at": "2026-11-11T11:32:09.428736+00:00"
+        }
+      ]
+    },
+    {
+      "generation_id": "01a1ca6c-11c3-728e-bc00-0cd32b813e21",
+      "job": "J-0006",
+      "seq": 2,
+      "generation_elapsed_seconds": 825.6612000465393,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T19:44:02.508548+08:00",
+          "ended_at": "2026-11-11T19:47:32.175239+08:00",
+          "wall_seconds": 209.6666910648346,
+          "dispatched_chat_requests": 5
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T19:47:32.175239+08:00",
+          "ended_at": "2026-11-11T19:47:32.198799+08:00",
+          "wall_seconds": 0.0235598087310791,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T19:47:32.198799+08:00",
+          "ended_at": "2026-11-11T19:48:59.961889+08:00",
+          "wall_seconds": 87.76309013366699,
+          "dispatched_chat_requests": 2
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T19:48:59.961889+08:00",
+          "ended_at": "2026-11-11T19:57:48.112099+08:00",
+          "wall_seconds": 528.150209903717,
+          "dispatched_chat_requests": 76
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T19:57:48.112099+08:00",
+          "ended_at": "2026-11-11T19:57:48.12771+08:00",
+          "wall_seconds": 0.01561117172241211,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T19:57:48.12771+08:00",
+          "ended_at": "2026-11-11T19:57:48.169531+08:00",
+          "wall_seconds": 0.04182100296020508,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    },
+    {
+      "generation_id": "01a1ca7b-6be5-706a-904c-1e28489dad7f",
+      "job": "J-0006",
+      "seq": 3,
+      "generation_elapsed_seconds": 1744.6091849803925,
+      "phases": [
+        {
+          "state": "SYNCING",
+          "started_at": "2026-11-11T20:00:48.618293+08:00",
+          "ended_at": "2026-11-11T20:12:11.038192+08:00",
+          "wall_seconds": 682.4198989868164,
+          "dispatched_chat_requests": 12
+        },
+        {
+          "state": "PROPOSING",
+          "started_at": "2026-11-11T20:12:11.038192+08:00",
+          "ended_at": "2026-11-11T20:12:11.075934+08:00",
+          "wall_seconds": 0.037741899490356445,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PLANNING",
+          "started_at": "2026-11-11T20:12:11.075934+08:00",
+          "ended_at": "2026-11-11T20:15:35.794625+08:00",
+          "wall_seconds": 204.71869111061096,
+          "dispatched_chat_requests": 3
+        },
+        {
+          "state": "DEVELOPING",
+          "started_at": "2026-11-11T20:15:35.794625+08:00",
+          "ended_at": "2026-11-11T20:29:53.193538+08:00",
+          "wall_seconds": 857.3989129066467,
+          "dispatched_chat_requests": 90
+        },
+        {
+          "state": "SELECTING",
+          "started_at": "2026-11-11T20:29:53.193538+08:00",
+          "ended_at": "2026-11-11T20:29:53.201466+08:00",
+          "wall_seconds": 0.007928133010864258,
+          "dispatched_chat_requests": 0
+        },
+        {
+          "state": "PUBLISHING",
+          "started_at": "2026-11-11T20:29:53.201466+08:00",
+          "ended_at": "2026-11-11T20:29:53.227251+08:00",
+          "wall_seconds": 0.025784969329833984,
+          "dispatched_chat_requests": 0
+        }
+      ],
+      "outside_phase_requests": []
+    }
+  ],
+  "definitions": {
+    "time": "Wall time between durable GENERATION_STATE_CHANGED events; includes provider waiting, tool work and any repair/idle pause within the phase.",
+    "syncing": "Released reports are batched by artifact version and processed sequentially by analyst then interpretation reviewer before planning.",
+    "outside_phase_requests": "Usually startup provider probes sent before the generation enters SYNCING; listed explicitly instead of assigning them to a fabricated phase.",
+    "recovered_publication": "J-0005 generation4 PUBLISHING includes the recorded offline repair pause; use its separate attempt evidence for active performance."
+  }
+}

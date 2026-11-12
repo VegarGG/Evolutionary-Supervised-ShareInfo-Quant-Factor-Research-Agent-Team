@@ -1,0 +1,16 @@
+{
+  "case_id": "availability-001",
+  "must_support": {
+    "first_signal_date": "2024-04-30",
+    "first_execution_date": "2024-05-06",
+    "operating_cash_flow_cny": 60000000,
+    "cash_flow_to_assets": 0.02
+  },
+  "requirements": [
+    "Use actual public availability and vendor ingestion, not period end.",
+    "Normalize CNY ten-thousand against CNY before calculating the ratio.",
+    "Do not invent cross-sectional results or profitability.",
+    "Cite S1 for units and S2/S3 for eligibility and execution."
+  ],
+  "exposure": "Controller-only answer key. Never copy to the DSH cwd, prompt, tool store or wire."
+}

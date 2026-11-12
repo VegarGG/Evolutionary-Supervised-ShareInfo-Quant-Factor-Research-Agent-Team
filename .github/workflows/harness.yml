@@ -1,0 +1,21 @@
+name: Harness offline checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.11.19'
+          python-version: '3.12'
+      - uses: extractions/setup-just@v3
+      - run: uv sync --project harness --locked
+      - run: just harness-check
+      - run: just harness-test

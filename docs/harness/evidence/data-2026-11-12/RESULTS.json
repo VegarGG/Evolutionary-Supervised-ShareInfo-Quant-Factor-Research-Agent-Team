@@ -1,0 +1,424 @@
+{
+  "status": "bounded_baostock_pilot_complete",
+  "default_provider": "baostock",
+  "paid_data_requests": 0,
+  "paid_model_requests": 0,
+  "comparison_closes_match": true,
+  "comparison_probes": [
+    {
+      "provider": "akshare-eastmoney",
+      "at": "2026-11-12T05:35:39.938979+00:00",
+      "query": {
+        "symbol": "000001.XSHE",
+        "start": "2026-10-28",
+        "end": "2026-10-30"
+      },
+      "adjustment": "none",
+      "paid_calls": 0,
+      "automatic_retries": 0,
+      "business_calls_attempted": 1,
+      "auth_calls_attempted": 0,
+      "source_sha256": "08ee8abe6993ac31a9f9a5bc2a99e222eb5945681c7a7b28f7f714b29578c0c4",
+      "protocol_reference": "akshare@f5324effb9419cba50bba423b4bd33073c79bdc2/akshare/stock/quote/stock_hist_em.py",
+      "http_status": 200,
+      "status": "pass",
+      "latency_seconds": 2.8080500829964876,
+      "row_count": 3,
+      "resources": {
+        "sample_count": 6,
+        "peak_process_tree_rss_bytes": 49692672,
+        "peak_host_cpu_percent": 9.5,
+        "minimum_disk_free_bytes": 367597637632,
+        "measurement_errors": []
+      }
+    },
+    {
+      "provider": "baostock",
+      "at": "2026-11-12T05:35:22.863059+00:00",
+      "query": {
+        "symbol": "000001.XSHE",
+        "start": "2026-10-28",
+        "end": "2026-10-30"
+      },
+      "adjustment": "none",
+      "paid_calls": 0,
+      "automatic_retries": 0,
+      "business_calls_attempted": 1,
+      "auth_calls_attempted": 1,
+      "source_sha256": "08ee8abe6993ac31a9f9a5bc2a99e222eb5945681c7a7b28f7f714b29578c0c4",
+      "sdk_version": "0.9.4",
+      "login_code": "0",
+      "query_code": "0",
+      "fields": [
+        "date",
+        "code",
+        "close"
+      ],
+      "logout_code": "0",
+      "status": "pass",
+      "latency_seconds": 3.4293181248940527,
+      "row_count": 3,
+      "resources": {
+        "sample_count": 7,
+        "peak_process_tree_rss_bytes": 91471872,
+        "peak_host_cpu_percent": 9.1,
+        "minimum_disk_free_bytes": 367599165440,
+        "measurement_errors": []
+      }
+    }
+  ],
+  "guarded_attempts": [
+    {
+      "adjustment": "none",
+      "at": "2026-11-12T05:39:24.792568+00:00",
+      "error_class": "DataUnavailable",
+      "fields": [
+        "close"
+      ],
+      "kind": "bars",
+      "latency_seconds": 0.0015923329629004002,
+      "llm_calls": 0,
+      "max_auth_requests": 1,
+      "max_business_requests": 1,
+      "policy_sha256": "ab184caac28c606c9e7caa934a7df0db9b30aaf0a33bf95d1359abe63c484877",
+      "provider": "baostock",
+      "query": {
+        "end": "2026-10-30",
+        "start": "2026-10-28",
+        "symbols": [
+          "000001.XSHE"
+        ]
+      },
+      "run_id": "baostock-cache-check-001",
+      "source_sha256": {
+        "scripts/data_pilot.py": "ff78ffff0dae99376e7cbc293524b4d50fa4ea82e642f0e349c05c234cca18a3",
+        "src/qfh/baostock_source.py": "4755bd9b5fbc19da8a1c436dcd36e301851fadba8c281f01b113d578bfc006fc",
+        "src/qfh/data_gateway.py": "5b0895a865bb725043477a8cef9715544738c32caa09454e08894d8ff7842525"
+      },
+      "status": "failed_or_unknown",
+      "result_metadata": null,
+      "resources": {
+        "sample_count": 0,
+        "peak_process_tree_rss_bytes": null,
+        "peak_host_cpu_percent": null,
+        "minimum_disk_free_bytes": null,
+        "measurement_errors": []
+      }
+    },
+    {
+      "adjustment": "none",
+      "at": "2026-11-12T05:43:19.199999+00:00",
+      "data_checks": {
+        "all_closes_positive": true,
+        "all_dates_present": true,
+        "expected_three_rows": true
+      },
+      "fields": [
+        "close"
+      ],
+      "kind": "bars",
+      "latency_seconds": 0.010005041025578976,
+      "llm_calls": 0,
+      "max_auth_requests": 3,
+      "max_business_requests": 3,
+      "policy_sha256": "234addf6febe37c6eb36e6ec484c3437aefecf0ec5a752ff21ffaca352273ac8",
+      "provider": "baostock",
+      "query": {
+        "end": "2026-10-30",
+        "start": "2026-10-28",
+        "symbols": [
+          "000001.XSHE"
+        ]
+      },
+      "run_id": "baostock-cache-check-002",
+      "source_sha256": {
+        "scripts/data_pilot.py": "a1618486c4c0fb7a225a6515f0ff18cd9b01191a552db237ba39e74b4015474d",
+        "src/qfh/baostock_source.py": "bf4cb4f1d70ef4a55df14d34dbf4192ac274aa20995f620f73c797a620a8b6cf",
+        "src/qfh/data_gateway.py": "f4549f98d78af2fc81e8665583a51fb3dbf0ba1d12fff8f0edf8f20fcad9d018"
+      },
+      "status": "completed",
+      "result_metadata": {
+        "adjustment": "none",
+        "cache_reused": true,
+        "evidence_id": "f8c52794cc38517c5e258e67795acc7467b40b0c02576b6e65f43f5b2fb44366",
+        "kind": "bars",
+        "provider": "baostock",
+        "query": {
+          "end": "2026-10-30",
+          "start": "2026-10-28",
+          "symbols": [
+            "000001.XSHE"
+          ]
+        },
+        "research_cutoff": "2026-10-30T23:59:59.999999+08:00",
+        "retrieved_at": "2026-11-12T05:42:52.585513+00:00",
+        "row_count": 3,
+        "timing_limit": "Current download of historical daily data; not a vintage archive.",
+        "transport": {
+          "endpoint": "public-api.baostock.com:10030",
+          "logout_succeeded": true,
+          "received_bytes": 365,
+          "requests": [
+            {
+              "kind": "auth",
+              "request_bytes": 57,
+              "request_sha256": "195d37a6b7cd0965d1be93c5794cdd0bc69cf74418ecfd76a7a3803b5e79b984"
+            },
+            {
+              "kind": "bars",
+              "request_bytes": 127,
+              "request_sha256": "433cd07293747f0c877aa9ee51b08ac0b8af8de6e6b5594c0661b2b6191c101c"
+            },
+            {
+              "kind": "logout",
+              "request_bytes": 64,
+              "request_sha256": "e299b43f776e897127e777e077d11caada9ad1655b7647ec9fea0e0dc8ad1472"
+            }
+          ],
+          "response_sha256": "841fbc2937e639c6add53895d5a9ee3dbf783b0cd579de964b42835de246e004",
+          "sdk": "baostock==0.9.4"
+        }
+      },
+      "resources": {
+        "sample_count": 1,
+        "peak_process_tree_rss_bytes": 44793856,
+        "peak_host_cpu_percent": 0.0,
+        "minimum_disk_free_bytes": 367218896896,
+        "measurement_errors": []
+      }
+    },
+    {
+      "adjustment": "none",
+      "at": "2026-11-12T05:39:10.136503+00:00",
+      "error_class": "DataUnavailable",
+      "fields": [
+        "close"
+      ],
+      "kind": "bars",
+      "latency_seconds": 1.7940360408974811,
+      "llm_calls": 0,
+      "max_auth_requests": 1,
+      "max_business_requests": 1,
+      "policy_sha256": "ab184caac28c606c9e7caa934a7df0db9b30aaf0a33bf95d1359abe63c484877",
+      "provider": "baostock",
+      "query": {
+        "end": "2026-10-30",
+        "start": "2026-10-28",
+        "symbols": [
+          "000001.XSHE"
+        ]
+      },
+      "run_id": "baostock-data-pilot-001",
+      "source_sha256": {
+        "scripts/data_pilot.py": "ff78ffff0dae99376e7cbc293524b4d50fa4ea82e642f0e349c05c234cca18a3",
+        "src/qfh/baostock_source.py": "4755bd9b5fbc19da8a1c436dcd36e301851fadba8c281f01b113d578bfc006fc",
+        "src/qfh/data_gateway.py": "5b0895a865bb725043477a8cef9715544738c32caa09454e08894d8ff7842525"
+      },
+      "status": "failed_or_unknown",
+      "result_metadata": null,
+      "resources": {
+        "sample_count": 4,
+        "peak_process_tree_rss_bytes": 91848704,
+        "peak_host_cpu_percent": 9.4,
+        "minimum_disk_free_bytes": 367368118272,
+        "measurement_errors": []
+      }
+    },
+    {
+      "adjustment": "none",
+      "at": "2026-11-12T05:41:24.164896+00:00",
+      "error_class": "DataUnavailable",
+      "fields": [
+        "close"
+      ],
+      "kind": "bars",
+      "latency_seconds": 3.6646887089591473,
+      "llm_calls": 0,
+      "max_auth_requests": 2,
+      "max_business_requests": 2,
+      "policy_sha256": "cc908f914804ec08d616779de57c38ea4ce6f97b562846ddd3311afc64368c7c",
+      "provider": "baostock",
+      "query": {
+        "end": "2026-10-30",
+        "start": "2026-10-28",
+        "symbols": [
+          "000001.XSHE"
+        ]
+      },
+      "run_id": "baostock-data-pilot-002",
+      "safe_error": "BaoStock DataUnavailable; no replay",
+      "source_sha256": {
+        "scripts/data_pilot.py": "a1618486c4c0fb7a225a6515f0ff18cd9b01191a552db237ba39e74b4015474d",
+        "src/qfh/baostock_source.py": "46d55499165c896fc9e323f994b458ef66a4354cd2129084062608d2a4f0fae8",
+        "src/qfh/data_gateway.py": "f08c2e2feed3701cb10a3f13c09941e261acaeeac128877b884a5cc05bc92954"
+      },
+      "status": "failed_or_unknown",
+      "result_metadata": null,
+      "resources": {
+        "sample_count": 8,
+        "peak_process_tree_rss_bytes": 92717056,
+        "peak_host_cpu_percent": 10.2,
+        "minimum_disk_free_bytes": 367235461120,
+        "measurement_errors": []
+      }
+    },
+    {
+      "adjustment": "none",
+      "at": "2026-11-12T05:42:52.588465+00:00",
+      "data_checks": {
+        "all_closes_positive": true,
+        "all_dates_present": true,
+        "expected_three_rows": true
+      },
+      "fields": [
+        "close"
+      ],
+      "kind": "bars",
+      "latency_seconds": 6.167832167004235,
+      "llm_calls": 0,
+      "max_auth_requests": 3,
+      "max_business_requests": 3,
+      "policy_sha256": "234addf6febe37c6eb36e6ec484c3437aefecf0ec5a752ff21ffaca352273ac8",
+      "provider": "baostock",
+      "query": {
+        "end": "2026-10-30",
+        "start": "2026-10-28",
+        "symbols": [
+          "000001.XSHE"
+        ]
+      },
+      "run_id": "baostock-data-pilot-003",
+      "source_sha256": {
+        "scripts/data_pilot.py": "a1618486c4c0fb7a225a6515f0ff18cd9b01191a552db237ba39e74b4015474d",
+        "src/qfh/baostock_source.py": "bf4cb4f1d70ef4a55df14d34dbf4192ac274aa20995f620f73c797a620a8b6cf",
+        "src/qfh/data_gateway.py": "f4549f98d78af2fc81e8665583a51fb3dbf0ba1d12fff8f0edf8f20fcad9d018"
+      },
+      "status": "completed",
+      "result_metadata": {
+        "adjustment": "none",
+        "cache_reused": false,
+        "evidence_id": "f8c52794cc38517c5e258e67795acc7467b40b0c02576b6e65f43f5b2fb44366",
+        "kind": "bars",
+        "provider": "baostock",
+        "query": {
+          "end": "2026-10-30",
+          "start": "2026-10-28",
+          "symbols": [
+            "000001.XSHE"
+          ]
+        },
+        "research_cutoff": "2026-10-30T23:59:59.999999+08:00",
+        "retrieved_at": "2026-11-12T05:42:52.585513+00:00",
+        "row_count": 3,
+        "timing_limit": "Current download of historical daily data; not a vintage archive.",
+        "transport": {
+          "endpoint": "public-api.baostock.com:10030",
+          "logout_succeeded": true,
+          "received_bytes": 365,
+          "requests": [
+            {
+              "kind": "auth",
+              "request_bytes": 57,
+              "request_sha256": "195d37a6b7cd0965d1be93c5794cdd0bc69cf74418ecfd76a7a3803b5e79b984"
+            },
+            {
+              "kind": "bars",
+              "request_bytes": 127,
+              "request_sha256": "433cd07293747f0c877aa9ee51b08ac0b8af8de6e6b5594c0661b2b6191c101c"
+            },
+            {
+              "kind": "logout",
+              "request_bytes": 64,
+              "request_sha256": "e299b43f776e897127e777e077d11caada9ad1655b7647ec9fea0e0dc8ad1472"
+            }
+          ],
+          "response_sha256": "841fbc2937e639c6add53895d5a9ee3dbf783b0cd579de964b42835de246e004",
+          "sdk": "baostock==0.9.4"
+        }
+      },
+      "resources": {
+        "sample_count": 12,
+        "peak_process_tree_rss_bytes": 92684288,
+        "peak_host_cpu_percent": 8.0,
+        "minimum_disk_free_bytes": 367219671040,
+        "measurement_errors": []
+      }
+    }
+  ],
+  "persistent_usage": [
+    {
+      "provider": "baostock",
+      "kind": "auth",
+      "outcome": "success",
+      "count": 3,
+      "estimated_cells": 0
+    },
+    {
+      "provider": "baostock",
+      "kind": "bars",
+      "outcome": "failed_or_unknown",
+      "count": 2,
+      "estimated_cells": 6
+    },
+    {
+      "provider": "baostock",
+      "kind": "bars",
+      "outcome": "success",
+      "count": 1,
+      "estimated_cells": 3
+    }
+  ],
+  "native_tool_check": {
+    "status": "pass",
+    "actual_runtime": "DSH 0.2.2rc2",
+    "tools": [
+      "company_announcements",
+      "market_daily_bars",
+      "read_research_evidence",
+      "research_news",
+      "research_reports"
+    ],
+    "provider_requests": 0,
+    "data_requests": 0,
+    "source": "real BaoStock cached evidence",
+    "model": "synthetic response through the actual DSH runtime"
+  },
+  "ui_check": {
+    "status": "pass",
+    "at": "2026-11-12T05:46:51.112Z",
+    "url": "http://127.0.0.1:3080/",
+    "browser": "installed Chrome through bundled Playwright",
+    "browser_plugin": "unavailable",
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no error overlay",
+      "console clean",
+      "masked inputs",
+      "save and reload persistence",
+      "all three sources selectable",
+      "BaoStock selection persistence",
+      "BaoStock requires no personal credential",
+      "remove dummy credentials"
+    ],
+    "default_provider": "baostock",
+    "dummy_credentials_removed": true,
+    "viewports": [
+      {
+        "width": 1440,
+        "height": 1000
+      },
+      {
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "mobile_section_bounds": {
+      "x": 16,
+      "y": 114,
+      "width": 358,
+      "height": 1068
+    },
+    "errors": []
+  }
+}

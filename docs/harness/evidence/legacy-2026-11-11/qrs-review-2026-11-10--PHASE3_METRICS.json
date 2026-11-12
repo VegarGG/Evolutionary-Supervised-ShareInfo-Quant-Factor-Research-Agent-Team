@@ -1,0 +1,1051 @@
+[
+  {
+    "run_id": "C04-20261110T054231229272Z-small-bootstrap",
+    "samples": 4,
+    "simultaneous_sampled_peak_mib": 71.7,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-small-migrate-1": 0.0,
+      "qrs-r759772b-small-postgres-1": 71.7
+    }
+  },
+  {
+    "run_id": "C04-20261110T054304749184Z-small-bootstrap-oneshots",
+    "samples": 2,
+    "simultaneous_sampled_peak_mib": 74.72,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-small-migrate-1": 0.0,
+      "qrs-r759772b-small-postgres-1": 74.72
+    }
+  },
+  {
+    "run_id": "C04-20261110T054312243591Z-idle-one-worker",
+    "samples": 6,
+    "simultaneous_sampled_peak_mib": 1011.54,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-small-eval-admin-api-1": 108.8,
+      "qrs-r759772b-small-eval-sandbox-1": 65.27,
+      "qrs-r759772b-small-eval-scheduler-1": 141.5,
+      "qrs-r759772b-small-eval-worker-1": 79.11,
+      "qrs-r759772b-small-feedback-api-1": 91.52,
+      "qrs-r759772b-small-postgres-1": 95.24,
+      "qrs-r759772b-small-qfr-mcp-1": 109.5,
+      "qrs-r759772b-small-registry-api-1": 116.0,
+      "qrs-r759772b-small-release-worker-1": 85.92,
+      "qrs-r759772b-small-research-api-1": 125.8
+    }
+  },
+  {
+    "run_id": "C05-20261110T054308219583Z-small-ingest-80x700",
+    "samples": 1,
+    "simultaneous_sampled_peak_mib": 74.59,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-small-postgres-1": 74.59
+    }
+  },
+  {
+    "run_id": "C05-20261110T055207502977Z-full-bootstrap",
+    "samples": 4,
+    "simultaneous_sampled_peak_mib": 37.51,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-postgres-1": 37.51
+    }
+  },
+  {
+    "run_id": "C05-20261110T055215491894Z-full-ingest-300x2600",
+    "samples": 6,
+    "simultaneous_sampled_peak_mib": 308.21,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-data-ingest-run-760b2f32d1f8": 268.7,
+      "qrs-r759772b-full-postgres-1": 39.63
+    }
+  },
+  {
+    "run_id": "C06-20261110T054324656811Z-one-factor",
+    "samples": 1,
+    "simultaneous_sampled_peak_mib": 1013.05,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-small-eval-admin-api-1": 109.0,
+      "qrs-r759772b-small-eval-sandbox-1": 64.19,
+      "qrs-r759772b-small-eval-scheduler-1": 140.7,
+      "qrs-r759772b-small-eval-worker-1": 78.97,
+      "qrs-r759772b-small-feedback-api-1": 91.02,
+      "qrs-r759772b-small-postgres-1": 95.38,
+      "qrs-r759772b-small-qfr-mcp-1": 110.2,
+      "qrs-r759772b-small-registry-api-1": 115.5,
+      "qrs-r759772b-small-release-worker-1": 83.99,
+      "qrs-r759772b-small-research-api-1": 124.1
+    }
+  },
+  {
+    "run_id": "C06-20261110T054353766910Z-one-factor-retry",
+    "samples": 42,
+    "simultaneous_sampled_peak_mib": 1095.13,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-small-eval-admin-api-1": 114.3,
+      "qrs-r759772b-small-eval-sandbox-1": 74.82,
+      "qrs-r759772b-small-eval-scheduler-1": 142.3,
+      "qrs-r759772b-small-eval-worker-1": 132.2,
+      "qrs-r759772b-small-feedback-api-1": 97.98,
+      "qrs-r759772b-small-postgres-1": 100.7,
+      "qrs-r759772b-small-qfr-mcp-1": 122.4,
+      "qrs-r759772b-small-registry-api-1": 122.4,
+      "qrs-r759772b-small-release-worker-1": 85.39,
+      "qrs-r759772b-small-research-api-1": 131.3
+    },
+    "published": 1,
+    "w1_evaluated": 1,
+    "records": 1,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      0,
+      1
+    ],
+    "w1_decision_to_visible_seconds": [
+      1.418058
+    ],
+    "w1_median_decision_to_visible_seconds": 1.418058
+  },
+  {
+    "run_id": "C06-20261110T054537078351Z-five-total",
+    "samples": 52,
+    "simultaneous_sampled_peak_mib": 1188.48,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-small-eval-admin-api-1": 125.5,
+      "qrs-r759772b-small-eval-sandbox-1": 85.54,
+      "qrs-r759772b-small-eval-scheduler-1": 149.2,
+      "qrs-r759772b-small-eval-worker-1": 188.7,
+      "qrs-r759772b-small-feedback-api-1": 105.8,
+      "qrs-r759772b-small-postgres-1": 100.3,
+      "qrs-r759772b-small-qfr-mcp-1": 124.5,
+      "qrs-r759772b-small-registry-api-1": 131.6,
+      "qrs-r759772b-small-release-worker-1": 85.38,
+      "qrs-r759772b-small-research-api-1": 135.3
+    },
+    "published": 4,
+    "w1_evaluated": 4,
+    "records": 4,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      1,
+      5
+    ],
+    "w1_decision_to_visible_seconds": [
+      0.46117,
+      0.502243,
+      0.76506,
+      1.154463
+    ],
+    "w1_median_decision_to_visible_seconds": 0.6336515
+  },
+  {
+    "run_id": "C06-20261110T054812288021Z-ten-total",
+    "samples": 36,
+    "simultaneous_sampled_peak_mib": 1201.94,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-small-eval-admin-api-1": 124.4,
+      "qrs-r759772b-small-eval-sandbox-1": 75.24,
+      "qrs-r759772b-small-eval-scheduler-1": 142.0,
+      "qrs-r759772b-small-eval-worker-1": 240.6,
+      "qrs-r759772b-small-feedback-api-1": 103.1,
+      "qrs-r759772b-small-postgres-1": 100.9,
+      "qrs-r759772b-small-qfr-mcp-1": 121.4,
+      "qrs-r759772b-small-registry-api-1": 133.1,
+      "qrs-r759772b-small-release-worker-1": 85.3,
+      "qrs-r759772b-small-research-api-1": 139.1
+    },
+    "published": 5,
+    "w1_evaluated": 5,
+    "records": 5,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      5,
+      10
+    ],
+    "w1_decision_to_visible_seconds": [
+      0.293725,
+      0.598634,
+      0.681123,
+      0.926451,
+      0.984203
+    ],
+    "w1_median_decision_to_visible_seconds": 0.681123
+  },
+  {
+    "run_id": "C06-20261110T054942948990Z-thirty-total",
+    "samples": 55,
+    "simultaneous_sampled_peak_mib": 1206.64,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-small-eval-admin-api-1": 124.4,
+      "qrs-r759772b-small-eval-sandbox-1": 75.61,
+      "qrs-r759772b-small-eval-scheduler-1": 142.4,
+      "qrs-r759772b-small-eval-worker-1": 243.6,
+      "qrs-r759772b-small-feedback-api-1": 103.8,
+      "qrs-r759772b-small-postgres-1": 102.1,
+      "qrs-r759772b-small-qfr-mcp-1": 125.3,
+      "qrs-r759772b-small-registry-api-1": 131.4,
+      "qrs-r759772b-small-release-worker-1": 85.29,
+      "qrs-r759772b-small-research-api-1": 138.8
+    },
+    "published": 20,
+    "w1_evaluated": 20,
+    "records": 20,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      10,
+      30
+    ],
+    "w1_decision_to_visible_seconds": [
+      0.417566,
+      0.573644,
+      0.597294,
+      0.677947,
+      0.737694,
+      0.776517,
+      0.814645,
+      0.83096,
+      0.831702,
+      0.989522,
+      1.043134,
+      1.057909,
+      1.060402,
+      1.090626,
+      1.214488,
+      1.269289,
+      1.389402,
+      1.459376,
+      1.463384,
+      1.513553
+    ],
+    "w1_median_decision_to_visible_seconds": 1.0163280000000001
+  },
+  {
+    "run_id": "C06-20261110T055229606400Z-full-idle",
+    "samples": 6,
+    "simultaneous_sampled_peak_mib": 1006.04,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 102.8,
+      "qrs-r759772b-full-eval-sandbox-1": 73.01,
+      "qrs-r759772b-full-eval-scheduler-1": 107.0,
+      "qrs-r759772b-full-eval-worker-1": 86.21,
+      "qrs-r759772b-full-feedback-api-1": 99.06,
+      "qrs-r759772b-full-postgres-1": 60.05,
+      "qrs-r759772b-full-qfr-mcp-1": 107.5,
+      "qrs-r759772b-full-registry-api-1": 99.58,
+      "qrs-r759772b-full-release-worker-1": 85.78,
+      "qrs-r759772b-full-research-api-1": 191.3
+    }
+  },
+  {
+    "run_id": "C06-20261110T055242125606Z-full-one-factor",
+    "samples": 57,
+    "simultaneous_sampled_peak_mib": 1128.0,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 110.3,
+      "qrs-r759772b-full-eval-sandbox-1": 85.54,
+      "qrs-r759772b-full-eval-scheduler-1": 108.3,
+      "qrs-r759772b-full-eval-worker-1": 196.5,
+      "qrs-r759772b-full-feedback-api-1": 106.1,
+      "qrs-r759772b-full-postgres-1": 64.4,
+      "qrs-r759772b-full-qfr-mcp-1": 118.3,
+      "qrs-r759772b-full-registry-api-1": 106.4,
+      "qrs-r759772b-full-release-worker-1": 95.96,
+      "qrs-r759772b-full-research-api-1": 206.3
+    },
+    "published": 1,
+    "w1_evaluated": 1,
+    "records": 1,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      0,
+      1
+    ],
+    "w1_decision_to_visible_seconds": [
+      1.344565
+    ],
+    "w1_median_decision_to_visible_seconds": 1.344565
+  },
+  {
+    "run_id": "C06-20261110T060500478976Z-full-replay-1cpu",
+    "samples": 1,
+    "simultaneous_sampled_peak_mib": 1167.7,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 104.1,
+      "qrs-r759772b-full-eval-sandbox-1": 77.71,
+      "qrs-r759772b-full-eval-scheduler-1": 107.0,
+      "qrs-r759772b-full-eval-worker-1": 285.9,
+      "qrs-r759772b-full-feedback-api-1": 97.69,
+      "qrs-r759772b-full-postgres-1": 76.86,
+      "qrs-r759772b-full-qfr-mcp-1": 106.4,
+      "qrs-r759772b-full-registry-api-1": 98.03,
+      "qrs-r759772b-full-release-worker-1": 84.51,
+      "qrs-r759772b-full-research-api-1": 129.5
+    }
+  },
+  {
+    "run_id": "C06-20261110T060503408840Z-full-replay-2cpu",
+    "samples": 1,
+    "simultaneous_sampled_peak_mib": 1170.09,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 104.3,
+      "qrs-r759772b-full-eval-sandbox-1": 77.38,
+      "qrs-r759772b-full-eval-scheduler-1": 107.6,
+      "qrs-r759772b-full-eval-worker-1": 286.4,
+      "qrs-r759772b-full-feedback-api-1": 98.13,
+      "qrs-r759772b-full-postgres-1": 76.52,
+      "qrs-r759772b-full-qfr-mcp-1": 107.3,
+      "qrs-r759772b-full-registry-api-1": 98.34,
+      "qrs-r759772b-full-release-worker-1": 84.02,
+      "qrs-r759772b-full-research-api-1": 130.1
+    }
+  },
+  {
+    "run_id": "C06-20261110T064247518935Z-two-worker-start",
+    "samples": 3,
+    "simultaneous_sampled_peak_mib": 1372.06,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 114.7,
+      "qrs-r759772b-full-eval-sandbox-1": 94.07,
+      "qrs-r759772b-full-eval-scheduler-1": 109.6,
+      "qrs-r759772b-full-eval-worker-1": 309.2,
+      "qrs-r759772b-full-eval-worker-2": 103.3,
+      "qrs-r759772b-full-feedback-api-1": 115.9,
+      "qrs-r759772b-full-postgres-1": 76.73,
+      "qrs-r759772b-full-qfr-mcp-1": 118.7,
+      "qrs-r759772b-full-registry-api-1": 109.0,
+      "qrs-r759772b-full-release-worker-1": 87.14,
+      "qrs-r759772b-full-research-api-1": 139.1
+    }
+  },
+  {
+    "run_id": "C06-20261110T064253671603Z-two-worker-five-full",
+    "samples": 55,
+    "simultaneous_sampled_peak_mib": 2120.91,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 105.9,
+      "qrs-r759772b-full-eval-sandbox-1": 101.6,
+      "qrs-r759772b-full-eval-scheduler-1": 110.8,
+      "qrs-r759772b-full-eval-worker-1": 685.2,
+      "qrs-r759772b-full-eval-worker-2": 530.2,
+      "qrs-r759772b-full-eval-worker-run-9edc8557feb9": 458.5,
+      "qrs-r759772b-full-feedback-api-1": 102.4,
+      "qrs-r759772b-full-postgres-1": 80.71,
+      "qrs-r759772b-full-qfr-mcp-1": 114.2,
+      "qrs-r759772b-full-registry-api-1": 102.7,
+      "qrs-r759772b-full-release-worker-1": 88.36,
+      "qrs-r759772b-full-research-api-1": 132.0
+    },
+    "published": 5,
+    "w1_evaluated": 5,
+    "records": 5,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      2,
+      7
+    ],
+    "pending": [],
+    "w1_decision_to_visible_seconds": [
+      0.428375,
+      0.49098,
+      0.814024,
+      1.309759,
+      1.332058
+    ],
+    "w1_median_decision_to_visible_seconds": 0.814024
+  },
+  {
+    "run_id": "C06-20261110T064445975939Z-return-one-worker",
+    "samples": 2,
+    "simultaneous_sampled_peak_mib": 1445.21,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 104.5,
+      "qrs-r759772b-full-eval-sandbox-1": 94.68,
+      "qrs-r759772b-full-eval-scheduler-1": 110.6,
+      "qrs-r759772b-full-eval-worker-1": 319.2,
+      "qrs-r759772b-full-eval-worker-2": 208.1,
+      "qrs-r759772b-full-feedback-api-1": 100.8,
+      "qrs-r759772b-full-postgres-1": 77.93,
+      "qrs-r759772b-full-qfr-mcp-1": 112.6,
+      "qrs-r759772b-full-registry-api-1": 101.1,
+      "qrs-r759772b-full-release-worker-1": 87.32,
+      "qrs-r759772b-full-research-api-1": 129.9
+    }
+  },
+  {
+    "run_id": "C06-20261110T064506788125Z-synthetic-storage",
+    "samples": 1,
+    "simultaneous_sampled_peak_mib": 1589.92,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-backup-1": 3.53,
+      "qrs-r759772b-full-data-ingest-1": 80.19,
+      "qrs-r759772b-full-eval-admin-api-1": 103.9,
+      "qrs-r759772b-full-eval-sandbox-1": 93.41,
+      "qrs-r759772b-full-eval-scheduler-1": 108.9,
+      "qrs-r759772b-full-eval-worker-1": 317.2,
+      "qrs-r759772b-full-feedback-api-1": 100.3,
+      "qrs-r759772b-full-ops-nightly-1": 54.09,
+      "qrs-r759772b-full-postgres-1": 79.59,
+      "qrs-r759772b-full-qfr-mcp-1": 107.4,
+      "qrs-r759772b-full-registry-api-1": 100.8,
+      "qrs-r759772b-full-release-worker-1": 85.91,
+      "qrs-r759772b-full-research-api-1": 129.6,
+      "qrs-r759772b-full-research-worker-1": 138.5,
+      "qrs-r759772b-full-sim-engine-1": 86.6
+    }
+  },
+  {
+    "run_id": "C06-20261110T070641127277Z-cn-reproduce-35-with-cgroups",
+    "samples": 4,
+    "simultaneous_sampled_peak_mib": 4324.46,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-eval-admin-api-1": 73.18,
+      "qrs-r759772b-cn-fit35-eval-sandbox-1": 7.94,
+      "qrs-r759772b-cn-fit35-eval-scheduler-1": 65.07,
+      "qrs-r759772b-cn-fit35-eval-worker-1": 624.2,
+      "qrs-r759772b-cn-fit35-eval-worker-run-912e1115dd49": 3155.97,
+      "qrs-r759772b-cn-fit35-feedback-api-1": 65.68,
+      "qrs-r759772b-cn-fit35-postgres-1": 58.89,
+      "qrs-r759772b-cn-fit35-qfr-mcp-1": 104.7,
+      "qrs-r759772b-cn-fit35-registry-api-1": 23.71,
+      "qrs-r759772b-cn-fit35-release-worker-1": 55.72,
+      "qrs-r759772b-cn-fit35-research-api-1": 108.1
+    }
+  },
+  {
+    "run_id": "C06-20261110T070824355915Z-cn-replay-45-1",
+    "samples": 6,
+    "simultaneous_sampled_peak_mib": 4029.72,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-eval-admin-api-1": 74.77,
+      "qrs-r759772b-cn-fit35-eval-sandbox-1": 9.58,
+      "qrs-r759772b-cn-fit35-eval-scheduler-1": 64.99,
+      "qrs-r759772b-cn-fit35-eval-worker-run-c7b3a6057ebb": 3479.55,
+      "qrs-r759772b-cn-fit35-feedback-api-1": 66.89,
+      "qrs-r759772b-cn-fit35-postgres-1": 55.15,
+      "qrs-r759772b-cn-fit35-qfr-mcp-1": 93.0,
+      "qrs-r759772b-cn-fit35-registry-api-1": 26.05,
+      "qrs-r759772b-cn-fit35-release-worker-1": 56.16,
+      "qrs-r759772b-cn-fit35-research-api-1": 106.8
+    }
+  },
+  {
+    "run_id": "C06-20261110T070836950506Z-cn-replay-45-2",
+    "samples": 5,
+    "simultaneous_sampled_peak_mib": 4207.42,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-eval-admin-api-1": 74.85,
+      "qrs-r759772b-cn-fit35-eval-sandbox-1": 9.47,
+      "qrs-r759772b-cn-fit35-eval-scheduler-1": 65.05,
+      "qrs-r759772b-cn-fit35-eval-worker-run-686813debf30": 3656.7,
+      "qrs-r759772b-cn-fit35-feedback-api-1": 67.38,
+      "qrs-r759772b-cn-fit35-postgres-1": 55.61,
+      "qrs-r759772b-cn-fit35-qfr-mcp-1": 92.71,
+      "qrs-r759772b-cn-fit35-registry-api-1": 25.82,
+      "qrs-r759772b-cn-fit35-release-worker-1": 56.43,
+      "qrs-r759772b-cn-fit35-research-api-1": 106.8
+    }
+  },
+  {
+    "run_id": "C06-20261110T070849042674Z-cn-replay-45-3",
+    "samples": 5,
+    "simultaneous_sampled_peak_mib": 4205.6,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-eval-admin-api-1": 86.18,
+      "qrs-r759772b-cn-fit35-eval-sandbox-1": 9.69,
+      "qrs-r759772b-cn-fit35-eval-scheduler-1": 65.02,
+      "qrs-r759772b-cn-fit35-eval-worker-run-3b7ad608784c": 3655.68,
+      "qrs-r759772b-cn-fit35-feedback-api-1": 78.65,
+      "qrs-r759772b-cn-fit35-postgres-1": 56.2,
+      "qrs-r759772b-cn-fit35-qfr-mcp-1": 105.4,
+      "qrs-r759772b-cn-fit35-registry-api-1": 36.11,
+      "qrs-r759772b-cn-fit35-release-worker-1": 56.56,
+      "qrs-r759772b-cn-fit35-research-api-1": 116.7
+    }
+  },
+  {
+    "run_id": "C06-20261110T070901182348Z-cn-worker-45-start",
+    "samples": 3,
+    "simultaneous_sampled_peak_mib": 639.7,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-eval-admin-api-1": 74.54,
+      "qrs-r759772b-cn-fit35-eval-sandbox-1": 9.68,
+      "qrs-r759772b-cn-fit35-eval-scheduler-1": 65.43,
+      "qrs-r759772b-cn-fit35-eval-worker-1": 87.66,
+      "qrs-r759772b-cn-fit35-feedback-api-1": 67.15,
+      "qrs-r759772b-cn-fit35-postgres-1": 55.95,
+      "qrs-r759772b-cn-fit35-qfr-mcp-1": 94.59,
+      "qrs-r759772b-cn-fit35-registry-api-1": 25.38,
+      "qrs-r759772b-cn-fit35-release-worker-1": 57.29,
+      "qrs-r759772b-cn-fit35-research-api-1": 106.6
+    }
+  },
+  {
+    "run_id": "C06-20261110T071137609803Z-cn-fit45-storage",
+    "samples": 1,
+    "simultaneous_sampled_peak_mib": 647.4,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-eval-admin-api-1": 76.59,
+      "qrs-r759772b-cn-fit35-eval-sandbox-1": 8.32,
+      "qrs-r759772b-cn-fit35-eval-scheduler-1": 65.65,
+      "qrs-r759772b-cn-fit35-eval-worker-1": 84.16,
+      "qrs-r759772b-cn-fit35-feedback-api-1": 66.53,
+      "qrs-r759772b-cn-fit35-postgres-1": 56.14,
+      "qrs-r759772b-cn-fit35-qfr-mcp-1": 97.41,
+      "qrs-r759772b-cn-fit35-registry-api-1": 28.68,
+      "qrs-r759772b-cn-fit35-release-worker-1": 58.52,
+      "qrs-r759772b-cn-fit35-research-api-1": 105.4
+    }
+  },
+  {
+    "run_id": "C07-20261110T064737990877Z-cn-bootstrap",
+    "samples": 4,
+    "simultaneous_sampled_peak_mib": 37.22,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-postgres-1": 37.22
+    }
+  },
+  {
+    "run_id": "C07-20261110T064745978262Z-cn-verified-ingest",
+    "samples": 9,
+    "simultaneous_sampled_peak_mib": 1331.86,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-data-ingest-run-4bae1703ee98": 1293.31,
+      "qrs-r759772b-cn-postgres-1": 38.55
+    }
+  },
+  {
+    "run_id": "C07-20261110T064806157116Z-cn-boot-on-snapshot",
+    "samples": 7,
+    "simultaneous_sampled_peak_mib": 1017.53,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-eval-admin-api-1": 110.7,
+      "qrs-r759772b-cn-eval-sandbox-1": 92.81,
+      "qrs-r759772b-cn-eval-scheduler-1": 108.3,
+      "qrs-r759772b-cn-eval-worker-1": 85.74,
+      "qrs-r759772b-cn-feedback-api-1": 98.65,
+      "qrs-r759772b-cn-postgres-1": 58.23,
+      "qrs-r759772b-cn-qfr-mcp-1": 114.6,
+      "qrs-r759772b-cn-registry-api-1": 143.2,
+      "qrs-r759772b-cn-release-worker-1": 83.77,
+      "qrs-r759772b-cn-research-api-1": 128.7
+    }
+  },
+  {
+    "run_id": "C07-20261110T064820262180Z-cn-one-w1-factor",
+    "samples": 63,
+    "simultaneous_sampled_peak_mib": 2540.91,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-eval-admin-api-1": 121.6,
+      "qrs-r759772b-cn-eval-sandbox-1": 100.1,
+      "qrs-r759772b-cn-eval-scheduler-1": 108.6,
+      "qrs-r759772b-cn-eval-worker-1": 1536.0,
+      "qrs-r759772b-cn-eval-worker-run-6e7a01547a04": 1530.88,
+      "qrs-r759772b-cn-feedback-api-1": 109.2,
+      "qrs-r759772b-cn-postgres-1": 70.3,
+      "qrs-r759772b-cn-qfr-mcp-1": 118.5,
+      "qrs-r759772b-cn-registry-api-1": 154.0,
+      "qrs-r759772b-cn-release-worker-1": 83.45,
+      "qrs-r759772b-cn-research-api-1": 141.5
+    },
+    "published": 1,
+    "w1_evaluated": 1,
+    "records": 1,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      0,
+      1
+    ],
+    "pending": [],
+    "w1_decision_to_visible_seconds": [
+      0.785319
+    ],
+    "w1_median_decision_to_visible_seconds": 0.785319
+  },
+  {
+    "run_id": "C07-20261110T065028203867Z-cn-five-w1-factors",
+    "samples": 70,
+    "simultaneous_sampled_peak_mib": 2451.04,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-eval-admin-api-1": 115.3,
+      "qrs-r759772b-cn-eval-sandbox-1": 72.71,
+      "qrs-r759772b-cn-eval-scheduler-1": 109.2,
+      "qrs-r759772b-cn-eval-worker-1": 1536.0,
+      "qrs-r759772b-cn-eval-worker-run-b0ccdfa77466": 1486.85,
+      "qrs-r759772b-cn-feedback-api-1": 110.3,
+      "qrs-r759772b-cn-postgres-1": 73.65,
+      "qrs-r759772b-cn-qfr-mcp-1": 122.6,
+      "qrs-r759772b-cn-registry-api-1": 110.2,
+      "qrs-r759772b-cn-release-worker-1": 84.23,
+      "qrs-r759772b-cn-research-api-1": 139.7
+    },
+    "published": 4,
+    "w1_evaluated": 4,
+    "records": 4,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      1,
+      5
+    ],
+    "pending": [],
+    "w1_decision_to_visible_seconds": [
+      1.211952,
+      1.462679,
+      1.79267,
+      2.125246
+    ],
+    "w1_median_decision_to_visible_seconds": 1.6276745
+  },
+  {
+    "run_id": "C07-20261110T065300546076Z-cn-full-bootstrap",
+    "samples": 4,
+    "simultaneous_sampled_peak_mib": 68.0,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-full-postgres-1": 68.0
+    }
+  },
+  {
+    "run_id": "C07-20261110T065308593902Z-cn-full-verified-ingest",
+    "samples": 15,
+    "simultaneous_sampled_peak_mib": 2152.38,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-full-data-ingest-run-b84bbce052fb": 2116.61,
+      "qrs-r759772b-cn-full-postgres-1": 68.89
+    }
+  },
+  {
+    "run_id": "C07-20261110T065338769868Z-cn-full-boot-on-snapshot",
+    "samples": 7,
+    "simultaneous_sampled_peak_mib": 1231.56,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-full-eval-admin-api-1": 101.0,
+      "qrs-r759772b-cn-full-eval-sandbox-1": 113.8,
+      "qrs-r759772b-cn-full-eval-scheduler-1": 94.43,
+      "qrs-r759772b-cn-full-eval-worker-1": 84.39,
+      "qrs-r759772b-cn-full-feedback-api-1": 97.87,
+      "qrs-r759772b-cn-full-postgres-1": 57.89,
+      "qrs-r759772b-cn-full-qfr-mcp-1": 196.0,
+      "qrs-r759772b-cn-full-registry-api-1": 205.8,
+      "qrs-r759772b-cn-full-release-worker-1": 93.57,
+      "qrs-r759772b-cn-full-research-api-1": 203.6
+    }
+  },
+  {
+    "run_id": "C07-20261110T065352914521Z-cn-full-one-w1-factor",
+    "samples": 129,
+    "simultaneous_sampled_peak_mib": 2212.23,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-full-eval-admin-api-1": 113.5,
+      "qrs-r759772b-cn-full-eval-sandbox-1": 114.8,
+      "qrs-r759772b-cn-full-eval-scheduler-1": 103.4,
+      "qrs-r759772b-cn-full-eval-worker-1": 1376.26,
+      "qrs-r759772b-cn-full-feedback-api-1": 111.3,
+      "qrs-r759772b-cn-full-postgres-1": 64.47,
+      "qrs-r759772b-cn-full-qfr-mcp-1": 203.8,
+      "qrs-r759772b-cn-full-registry-api-1": 193.6,
+      "qrs-r759772b-cn-full-release-worker-1": 93.79,
+      "qrs-r759772b-cn-full-research-api-1": 215.9
+    },
+    "published": 1,
+    "w1_evaluated": 0,
+    "records": 0,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      0,
+      1
+    ],
+    "pending": [
+      "01a1c43c-107a-71a9-bdd7-c8b623553588"
+    ],
+    "w1_decision_to_visible_seconds": [],
+    "w1_median_decision_to_visible_seconds": null
+  },
+  {
+    "run_id": "C07-20261110T065846695765Z-cn-fit-bootstrap",
+    "samples": 4,
+    "simultaneous_sampled_peak_mib": 71.28,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit-postgres-1": 71.28
+    }
+  },
+  {
+    "run_id": "C07-20261110T065854690295Z-cn-fit-verified-ingest",
+    "samples": 13,
+    "simultaneous_sampled_peak_mib": 2803.05,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit-data-ingest-run-4d29f12c5f36": 2729.98,
+      "qrs-r759772b-cn-fit-postgres-1": 73.7
+    }
+  },
+  {
+    "run_id": "C07-20261110T065922833316Z-cn-fit-boot-on-snapshot",
+    "samples": 7,
+    "simultaneous_sampled_peak_mib": 969.72,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit-eval-admin-api-1": 102.8,
+      "qrs-r759772b-cn-fit-eval-sandbox-1": 83.69,
+      "qrs-r759772b-cn-fit-eval-scheduler-1": 94.69,
+      "qrs-r759772b-cn-fit-eval-worker-1": 84.55,
+      "qrs-r759772b-cn-fit-feedback-api-1": 98.55,
+      "qrs-r759772b-cn-fit-postgres-1": 93.62,
+      "qrs-r759772b-cn-fit-qfr-mcp-1": 106.7,
+      "qrs-r759772b-cn-fit-registry-api-1": 109.7,
+      "qrs-r759772b-cn-fit-release-worker-1": 83.52,
+      "qrs-r759772b-cn-fit-research-api-1": 129.6
+    }
+  },
+  {
+    "run_id": "C07-20261110T065936982764Z-cn-fit-one-w1-factor",
+    "samples": 59,
+    "simultaneous_sampled_peak_mib": 3306.25,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit-eval-admin-api-1": 113.4,
+      "qrs-r759772b-cn-fit-eval-sandbox-1": 94.17,
+      "qrs-r759772b-cn-fit-eval-scheduler-1": 95.11,
+      "qrs-r759772b-cn-fit-eval-worker-1": 2417.66,
+      "qrs-r759772b-cn-fit-feedback-api-1": 109.2,
+      "qrs-r759772b-cn-fit-postgres-1": 98.73,
+      "qrs-r759772b-cn-fit-qfr-mcp-1": 120.7,
+      "qrs-r759772b-cn-fit-registry-api-1": 109.1,
+      "qrs-r759772b-cn-fit-release-worker-1": 89.45,
+      "qrs-r759772b-cn-fit-research-api-1": 140.4
+    },
+    "published": 1,
+    "w1_evaluated": 0,
+    "records": 0,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      0,
+      1
+    ],
+    "pending": [],
+    "w1_decision_to_visible_seconds": [],
+    "w1_median_decision_to_visible_seconds": null
+  },
+  {
+    "run_id": "C07-20261110T070245606570Z-cn-fit35-bootstrap",
+    "samples": 4,
+    "simultaneous_sampled_peak_mib": 37.21,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-postgres-1": 37.21
+    }
+  },
+  {
+    "run_id": "C07-20261110T070253636232Z-cn-fit35-verified-ingest",
+    "samples": 14,
+    "simultaneous_sampled_peak_mib": 2360.79,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-data-ingest-run-dbc3de74b785": 2321.41,
+      "qrs-r759772b-cn-fit35-postgres-1": 40.05
+    }
+  },
+  {
+    "run_id": "C07-20261110T070321763855Z-cn-fit35-boot-on-snapshot",
+    "samples": 7,
+    "simultaneous_sampled_peak_mib": 1069.88,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-eval-admin-api-1": 110.8,
+      "qrs-r759772b-cn-fit35-eval-sandbox-1": 95.48,
+      "qrs-r759772b-cn-fit35-eval-scheduler-1": 94.67,
+      "qrs-r759772b-cn-fit35-eval-worker-1": 85.66,
+      "qrs-r759772b-cn-fit35-feedback-api-1": 98.96,
+      "qrs-r759772b-cn-fit35-postgres-1": 59.88,
+      "qrs-r759772b-cn-fit35-qfr-mcp-1": 136.5,
+      "qrs-r759772b-cn-fit35-registry-api-1": 138.5,
+      "qrs-r759772b-cn-fit35-release-worker-1": 83.19,
+      "qrs-r759772b-cn-fit35-research-api-1": 171.2
+    }
+  },
+  {
+    "run_id": "C07-20261110T070335988861Z-cn-fit35-one-w1-factor",
+    "samples": 64,
+    "simultaneous_sampled_peak_mib": 4237.86,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-eval-admin-api-1": 118.5,
+      "qrs-r759772b-cn-fit35-eval-sandbox-1": 105.4,
+      "qrs-r759772b-cn-fit35-eval-scheduler-1": 95.03,
+      "qrs-r759772b-cn-fit35-eval-worker-1": 3022.85,
+      "qrs-r759772b-cn-fit35-eval-worker-run-a81eaf574eb7": 3019.78,
+      "qrs-r759772b-cn-fit35-feedback-api-1": 111.7,
+      "qrs-r759772b-cn-fit35-postgres-1": 65.89,
+      "qrs-r759772b-cn-fit35-qfr-mcp-1": 137.8,
+      "qrs-r759772b-cn-fit35-registry-api-1": 148.3,
+      "qrs-r759772b-cn-fit35-release-worker-1": 93.99,
+      "qrs-r759772b-cn-fit35-research-api-1": 182.3
+    },
+    "published": 1,
+    "w1_evaluated": 1,
+    "records": 1,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      0,
+      1
+    ],
+    "pending": [],
+    "w1_decision_to_visible_seconds": [
+      0.682354
+    ],
+    "w1_median_decision_to_visible_seconds": 0.682354
+  },
+  {
+    "run_id": "C07-20261110T070907425567Z-cn-fit45-five-w1-factors",
+    "samples": 74,
+    "simultaneous_sampled_peak_mib": 4734.67,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-cn-fit35-eval-admin-api-1": 83.93,
+      "qrs-r759772b-cn-fit35-eval-sandbox-1": 9.93,
+      "qrs-r759772b-cn-fit35-eval-scheduler-1": 72.7,
+      "qrs-r759772b-cn-fit35-eval-worker-1": 4166.66,
+      "qrs-r759772b-cn-fit35-eval-worker-run-5b6e8fab7bfe": 3264.51,
+      "qrs-r759772b-cn-fit35-feedback-api-1": 81.71,
+      "qrs-r759772b-cn-fit35-postgres-1": 66.07,
+      "qrs-r759772b-cn-fit35-qfr-mcp-1": 111.2,
+      "qrs-r759772b-cn-fit35-registry-api-1": 36.74,
+      "qrs-r759772b-cn-fit35-release-worker-1": 60.23,
+      "qrs-r759772b-cn-fit35-research-api-1": 117.6
+    },
+    "published": 4,
+    "w1_evaluated": 4,
+    "records": 4,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      1,
+      5
+    ],
+    "pending": [],
+    "w1_decision_to_visible_seconds": [
+      0.555744,
+      1.225871,
+      1.332742,
+      1.653031
+    ],
+    "w1_median_decision_to_visible_seconds": 1.2793065000000001
+  },
+  {
+    "run_id": "C21-20261110T064509249625Z-restart-two-minutes",
+    "samples": 17,
+    "simultaneous_sampled_peak_mib": 1594.44,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-backup-1": 3.48,
+      "qrs-r759772b-full-data-ingest-1": 82.25,
+      "qrs-r759772b-full-eval-admin-api-1": 105.8,
+      "qrs-r759772b-full-eval-sandbox-1": 94.91,
+      "qrs-r759772b-full-eval-scheduler-1": 110.8,
+      "qrs-r759772b-full-eval-worker-1": 317.4,
+      "qrs-r759772b-full-feedback-api-1": 101.6,
+      "qrs-r759772b-full-ops-nightly-1": 55.95,
+      "qrs-r759772b-full-postgres-1": 81.28,
+      "qrs-r759772b-full-qfr-mcp-1": 110.7,
+      "qrs-r759772b-full-registry-api-1": 102.7,
+      "qrs-r759772b-full-release-worker-1": 87.73,
+      "qrs-r759772b-full-research-api-1": 131.5,
+      "qrs-r759772b-full-research-worker-1": 139.5,
+      "qrs-r759772b-full-sim-engine-1": 87.19
+    }
+  },
+  {
+    "run_id": "C21-20261110T071445269897Z-thirty-minute-soak",
+    "samples": 105,
+    "simultaneous_sampled_peak_mib": 1755.19,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-backup-1": 3.82,
+      "qrs-r759772b-full-data-ingest-1": 90.1,
+      "qrs-r759772b-full-eval-admin-api-1": 104.6,
+      "qrs-r759772b-full-eval-sandbox-1": 77.79,
+      "qrs-r759772b-full-eval-scheduler-1": 97.01,
+      "qrs-r759772b-full-eval-worker-1": 323.6,
+      "qrs-r759772b-full-feedback-api-1": 112.6,
+      "qrs-r759772b-full-ops-nightly-1": 77.22,
+      "qrs-r759772b-full-postgres-1": 74.38,
+      "qrs-r759772b-full-qfr-mcp-1": 156.4,
+      "qrs-r759772b-full-registry-api-1": 175.3,
+      "qrs-r759772b-full-release-worker-1": 88.16,
+      "qrs-r759772b-full-research-api-1": 141.2,
+      "qrs-r759772b-full-research-worker-1": 186.9,
+      "qrs-r759772b-full-sim-engine-1": 88.91
+    }
+  },
+  {
+    "run_id": "C21-20261110T074445955944Z-two-hour-soak",
+    "samples": 224,
+    "simultaneous_sampled_peak_mib": 1860.21,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-backup-1": 10.07,
+      "qrs-r759772b-full-data-ingest-1": 92.0,
+      "qrs-r759772b-full-eval-admin-api-1": 119.3,
+      "qrs-r759772b-full-eval-sandbox-1": 86.45,
+      "qrs-r759772b-full-eval-scheduler-1": 105.0,
+      "qrs-r759772b-full-eval-worker-1": 330.8,
+      "qrs-r759772b-full-feedback-api-1": 115.4,
+      "qrs-r759772b-full-ops-nightly-1": 89.41,
+      "qrs-r759772b-full-postgres-1": 82.98,
+      "qrs-r759772b-full-qfr-mcp-1": 161.6,
+      "qrs-r759772b-full-registry-api-1": 187.9,
+      "qrs-r759772b-full-release-worker-1": 99.22,
+      "qrs-r759772b-full-research-api-1": 144.7,
+      "qrs-r759772b-full-research-worker-1": 194.7,
+      "qrs-r759772b-full-sim-engine-1": 98.54
+    }
+  },
+  {
+    "run_id": "C22-20261110T055902653191Z-deployed-one-python-factor",
+    "samples": 50,
+    "simultaneous_sampled_peak_mib": 1627.98,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 115.9,
+      "qrs-r759772b-full-eval-sandbox-1": 142.0,
+      "qrs-r759772b-full-eval-scheduler-1": 116.2,
+      "qrs-r759772b-full-eval-worker-1": 419.5,
+      "qrs-r759772b-full-eval-worker-run-fd33072d1c61": 345.0,
+      "qrs-r759772b-full-feedback-api-1": 110.9,
+      "qrs-r759772b-full-postgres-1": 67.83,
+      "qrs-r759772b-full-qfr-mcp-1": 119.9,
+      "qrs-r759772b-full-registry-api-1": 112.9,
+      "qrs-r759772b-full-release-worker-1": 91.78,
+      "qrs-r759772b-full-research-api-1": 204.6
+    },
+    "published": 1,
+    "w1_evaluated": 1,
+    "records": 1,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": [
+      "docs/examples/pool_import_phase8.yaml",
+      1
+    ],
+    "w1_decision_to_visible_seconds": [
+      1.197855
+    ],
+    "w1_median_decision_to_visible_seconds": 1.197855
+  },
+  {
+    "run_id": "C22-20261110T064048827077Z-deployed-lookahead",
+    "samples": 55,
+    "simultaneous_sampled_peak_mib": 1275.72,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 119.0,
+      "qrs-r759772b-full-eval-sandbox-1": 156.9,
+      "qrs-r759772b-full-eval-scheduler-1": 110.6,
+      "qrs-r759772b-full-eval-worker-1": 300.0,
+      "qrs-r759772b-full-feedback-api-1": 115.3,
+      "qrs-r759772b-full-postgres-1": 75.46,
+      "qrs-r759772b-full-qfr-mcp-1": 125.0,
+      "qrs-r759772b-full-registry-api-1": 116.1,
+      "qrs-r759772b-full-release-worker-1": 88.25,
+      "qrs-r759772b-full-research-api-1": 144.7
+    },
+    "published": 1,
+    "w1_evaluated": 0,
+    "records": 0,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": "LOOKAHEAD_PY",
+    "w1_decision_to_visible_seconds": [],
+    "w1_median_decision_to_visible_seconds": null
+  },
+  {
+    "run_id": "C23-20261110T064245069840Z-deployed-v2-strategy",
+    "samples": 1,
+    "simultaneous_sampled_peak_mib": 1222.78,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-eval-admin-api-1": 104.2,
+      "qrs-r759772b-full-eval-sandbox-1": 94.89,
+      "qrs-r759772b-full-eval-scheduler-1": 110.1,
+      "qrs-r759772b-full-eval-worker-1": 309.1,
+      "qrs-r759772b-full-feedback-api-1": 100.1,
+      "qrs-r759772b-full-postgres-1": 74.4,
+      "qrs-r759772b-full-qfr-mcp-1": 111.5,
+      "qrs-r759772b-full-registry-api-1": 101.1,
+      "qrs-r759772b-full-release-worker-1": 87.39,
+      "qrs-r759772b-full-research-api-1": 130.0
+    }
+  },
+  {
+    "run_id": "C23-20261110T071233704456Z-deployed-v2-example",
+    "samples": 56,
+    "simultaneous_sampled_peak_mib": 2097.76,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-backup-1": 3.35,
+      "qrs-r759772b-full-data-ingest-1": 82.36,
+      "qrs-r759772b-full-eval-admin-api-1": 116.0,
+      "qrs-r759772b-full-eval-sandbox-1": 128.8,
+      "qrs-r759772b-full-eval-scheduler-1": 94.37,
+      "qrs-r759772b-full-eval-worker-1": 711.5,
+      "qrs-r759772b-full-eval-worker-run-15e98f2a5b3c": 323.6,
+      "qrs-r759772b-full-feedback-api-1": 109.5,
+      "qrs-r759772b-full-ops-nightly-1": 82.72,
+      "qrs-r759772b-full-postgres-1": 71.34,
+      "qrs-r759772b-full-qfr-mcp-1": 150.5,
+      "qrs-r759772b-full-registry-api-1": 179.9,
+      "qrs-r759772b-full-release-worker-1": 85.03,
+      "qrs-r759772b-full-research-api-1": 139.6,
+      "qrs-r759772b-full-research-worker-1": 186.2,
+      "qrs-r759772b-full-sim-engine-1": 86.73
+    },
+    "published": 1,
+    "w1_evaluated": 1,
+    "records": 1,
+    "code_sha": "759772b1705d53951b42bee3aab2816dca7aad35",
+    "image_digest": "sha256:d04def4a7658b0e199ce270649c306a38b65943f2d9c13eb10ce2b7ab63c0978",
+    "batch": "docs/examples/pool_import_phase8.yaml",
+    "pending": [],
+    "w1_decision_to_visible_seconds": [
+      1.194539
+    ],
+    "w1_median_decision_to_visible_seconds": 1.194539
+  },
+  {
+    "run_id": "C26-20261110T064458299718Z-synthetic-all-services",
+    "samples": 3,
+    "simultaneous_sampled_peak_mib": 1591.06,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-backup-1": 3.05,
+      "qrs-r759772b-full-data-ingest-1": 81.42,
+      "qrs-r759772b-full-eval-admin-api-1": 105.4,
+      "qrs-r759772b-full-eval-sandbox-1": 93.65,
+      "qrs-r759772b-full-eval-scheduler-1": 109.7,
+      "qrs-r759772b-full-eval-worker-1": 318.0,
+      "qrs-r759772b-full-feedback-api-1": 102.1,
+      "qrs-r759772b-full-ops-nightly-1": 54.24,
+      "qrs-r759772b-full-postgres-1": 79.05,
+      "qrs-r759772b-full-qfr-mcp-1": 107.0,
+      "qrs-r759772b-full-registry-api-1": 102.4,
+      "qrs-r759772b-full-release-worker-1": 86.68,
+      "qrs-r759772b-full-research-api-1": 131.3,
+      "qrs-r759772b-full-research-worker-1": 137.6,
+      "qrs-r759772b-full-sim-engine-1": 86.7
+    }
+  },
+  {
+    "run_id": "C26-20261110T071207546198Z-synthetic-resume-after-cn",
+    "samples": 8,
+    "simultaneous_sampled_peak_mib": 1458.5,
+    "container_sampled_peaks_mib": {
+      "qrs-r759772b-full-backup-1": 1.41,
+      "qrs-r759772b-full-data-ingest-1": 81.63,
+      "qrs-r759772b-full-eval-admin-api-1": 107.8,
+      "qrs-r759772b-full-eval-sandbox-1": 73.05,
+      "qrs-r759772b-full-eval-scheduler-1": 92.43,
+      "qrs-r759772b-full-eval-worker-1": 85.13,
+      "qrs-r759772b-full-feedback-api-1": 99.54,
+      "qrs-r759772b-full-ops-nightly-1": 75.32,
+      "qrs-r759772b-full-postgres-1": 61.25,
+      "qrs-r759772b-full-qfr-mcp-1": 138.1,
+      "qrs-r759772b-full-registry-api-1": 171.4,
+      "qrs-r759772b-full-release-worker-1": 83.35,
+      "qrs-r759772b-full-research-api-1": 127.7,
+      "qrs-r759772b-full-research-worker-1": 185.4,
+      "qrs-r759772b-full-sim-engine-1": 84.95
+    }
+  }
+]

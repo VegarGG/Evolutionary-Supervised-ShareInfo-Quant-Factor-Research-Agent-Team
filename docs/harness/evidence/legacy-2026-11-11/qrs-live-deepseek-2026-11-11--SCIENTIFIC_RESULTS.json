@@ -1,0 +1,426 @@
+{
+  "generated_at": "2026-11-11T12:36:15.526637+00:00",
+  "export": "/Volumes/Work/Evolutionary Supervised ShareInfo Quant Factor Research Agent Team/qrs-live-deepseek-2026-11-11/private/exports/20261111T123213Z-pilot-final",
+  "counts_by_kind": {
+    "factor": 10,
+    "research_note": 5
+  },
+  "counts_by_state": {
+    "W2Failed": 5,
+    "NoteFailed": 1,
+    "W1GateFailed": 4,
+    "NoteChecked": 4,
+    "Incubating": 1
+  },
+  "factor_w1_passes": 6,
+  "factor_w2_passes": 1,
+  "versions": [
+    {
+      "version_id": "01a1c8cf-b5e2-77b4-a32d-42f6140b11e8",
+      "kind": "factor",
+      "state": "W2Failed",
+      "reason_code": null,
+      "w1_passed": true,
+      "w2_passed": false,
+      "job": "J-0002",
+      "generation_seq": 1,
+      "generation_id": "01a1c8cb-9fcf-75fb-874e-191bdea7efe3",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": []
+        },
+        {
+          "type": "w2",
+          "status": "FAIL"
+        }
+      ]
+    },
+    {
+      "version_id": "01a1c8e0-c6a3-73ce-8c56-60563d6b043c",
+      "kind": "factor",
+      "state": "W2Failed",
+      "reason_code": null,
+      "w1_passed": true,
+      "w2_passed": false,
+      "job": "J-0003",
+      "generation_seq": 3,
+      "generation_id": "01a1c8da-bf03-7527-90ce-44f41fb259b0",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": []
+        },
+        {
+          "type": "w2",
+          "status": "FAIL"
+        }
+      ]
+    },
+    {
+      "version_id": "01a1c902-2589-7316-85c2-cb4261f43e8f",
+      "kind": "factor",
+      "state": "W2Failed",
+      "reason_code": null,
+      "w1_passed": true,
+      "w2_passed": false,
+      "job": "J-0004",
+      "generation_seq": 2,
+      "generation_id": "01a1c8f7-b7ac-7358-9d45-63d0fc4e4f0e",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": []
+        },
+        {
+          "type": "w2",
+          "status": "FAIL"
+        }
+      ]
+    },
+    {
+      "version_id": "01a1c90f-8e59-720f-8187-af4b31f61a97",
+      "kind": "research_note",
+      "state": "NoteFailed",
+      "reason_code": null,
+      "w1_passed": null,
+      "w2_passed": null,
+      "job": "J-0004",
+      "generation_seq": 3,
+      "generation_id": "01a1c904-99fc-7463-a5eb-30584057c0b3",
+      "released_outcomes": [
+        {
+          "type": "note",
+          "status": "FAIL",
+          "checks": [
+            "UNDISCLOSED_WINDOW"
+          ],
+          "claims": 12,
+          "claims_matched": 12,
+          "citations": 2
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca27-3f49-70c6-93b6-74484fd449bf",
+      "kind": "factor",
+      "state": "W1GateFailed",
+      "reason_code": null,
+      "w1_passed": false,
+      "w2_passed": null,
+      "job": "J-0005",
+      "generation_seq": 3,
+      "generation_id": "01a1ca1e-96e2-7147-a80e-c02dfcf8dc33",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": [
+            "COST_DOMINATED",
+            "WEAK_SIGNAL"
+          ]
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca46-c320-76ab-b8dd-600df9557e3a",
+      "kind": "factor",
+      "state": "Incubating",
+      "reason_code": null,
+      "w1_passed": true,
+      "w2_passed": true,
+      "job": "J-0005",
+      "generation_seq": 4,
+      "generation_id": "01a1ca2e-2ca0-77eb-bfe2-5e6ae036b2a4",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": []
+        },
+        {
+          "type": "w2",
+          "status": "PASS"
+        },
+        {
+          "type": "advancement",
+          "status": "ADVANCED"
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca46-c32d-719c-9336-e398ef53a6d8",
+      "kind": "research_note",
+      "state": "NoteChecked",
+      "reason_code": null,
+      "w1_passed": null,
+      "w2_passed": null,
+      "job": "J-0005",
+      "generation_seq": 4,
+      "generation_id": "01a1ca2e-2ca0-77eb-bfe2-5e6ae036b2a4",
+      "released_outcomes": [
+        {
+          "type": "note",
+          "status": "PASS",
+          "checks": [],
+          "claims": 12,
+          "claims_matched": 12,
+          "citations": 1
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca58-852e-778d-a565-22f28da37f40",
+      "kind": "research_note",
+      "state": "NoteChecked",
+      "reason_code": null,
+      "w1_passed": null,
+      "w2_passed": null,
+      "job": "J-0005",
+      "generation_seq": 5,
+      "generation_id": "01a1ca48-d3c9-7644-b65e-46fe75046de8",
+      "released_outcomes": [
+        {
+          "type": "note",
+          "status": "PASS",
+          "checks": [],
+          "claims": 12,
+          "claims_matched": 12,
+          "citations": 2
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca6a-76a1-75c4-9461-490ca0b9fafa",
+      "kind": "factor",
+      "state": "W1GateFailed",
+      "reason_code": null,
+      "w1_passed": false,
+      "w2_passed": null,
+      "job": "J-0006",
+      "generation_seq": 1,
+      "generation_id": "01a1ca61-1875-7597-b0a9-4c3db8873759",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": [
+            "COST_DOMINATED",
+            "DECAYS_FAST",
+            "WEAK_SIGNAL"
+          ]
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca78-aae7-76dc-8f9c-ff56ba8b2138",
+      "kind": "factor",
+      "state": "W1GateFailed",
+      "reason_code": null,
+      "w1_passed": false,
+      "w2_passed": null,
+      "job": "J-0006",
+      "generation_seq": 2,
+      "generation_id": "01a1ca6c-11c3-728e-bc00-0cd32b813e21",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": [
+            "LOW_MONOTONICITY",
+            "SIGN_MISMATCH",
+            "WEAK_SIGNAL"
+          ]
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca78-aaf2-7609-a372-04fa4656e0fb",
+      "kind": "factor",
+      "state": "W2Failed",
+      "reason_code": null,
+      "w1_passed": true,
+      "w2_passed": false,
+      "job": "J-0006",
+      "generation_seq": 2,
+      "generation_id": "01a1ca6c-11c3-728e-bc00-0cd32b813e21",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": []
+        },
+        {
+          "type": "w2",
+          "status": "FAIL"
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca78-aafa-73e9-b88a-75d21196a447",
+      "kind": "factor",
+      "state": "W1GateFailed",
+      "reason_code": null,
+      "w1_passed": false,
+      "w2_passed": null,
+      "job": "J-0006",
+      "generation_seq": 2,
+      "generation_id": "01a1ca6c-11c3-728e-bc00-0cd32b813e21",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": [
+            "WEAK_SIGNAL"
+          ]
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca78-ab05-7088-85b4-2c8ef91ea960",
+      "kind": "research_note",
+      "state": "NoteChecked",
+      "reason_code": null,
+      "w1_passed": null,
+      "w2_passed": null,
+      "job": "J-0006",
+      "generation_seq": 2,
+      "generation_id": "01a1ca6c-11c3-728e-bc00-0cd32b813e21",
+      "released_outcomes": [
+        {
+          "type": "note",
+          "status": "PASS",
+          "checks": [],
+          "claims": 11,
+          "claims_matched": 11,
+          "citations": 1
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca96-0abb-7677-b31b-4a39258d9350",
+      "kind": "factor",
+      "state": "W2Failed",
+      "reason_code": null,
+      "w1_passed": true,
+      "w2_passed": false,
+      "job": "J-0006",
+      "generation_seq": 3,
+      "generation_id": "01a1ca7b-6be5-706a-904c-1e28489dad7f",
+      "released_outcomes": [
+        {
+          "type": "intake",
+          "status": "PASS"
+        },
+        {
+          "type": "screening",
+          "status": "PASS"
+        },
+        {
+          "type": "w1",
+          "flags": [
+            "COST_DOMINATED",
+            "DECAYS_FAST"
+          ]
+        },
+        {
+          "type": "w2",
+          "status": "FAIL"
+        }
+      ]
+    },
+    {
+      "version_id": "01a1ca96-0ac6-74ee-b509-a3f55a839cec",
+      "kind": "research_note",
+      "state": "NoteChecked",
+      "reason_code": null,
+      "w1_passed": null,
+      "w2_passed": null,
+      "job": "J-0006",
+      "generation_seq": 3,
+      "generation_id": "01a1ca7b-6be5-706a-904c-1e28489dad7f",
+      "released_outcomes": [
+        {
+          "type": "note",
+          "status": "PASS",
+          "checks": [],
+          "claims": 36,
+          "claims_matched": 36,
+          "citations": 4
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Live inference on the synthetic fixture; no claim of market alpha.",
+    "Incubating or ADVANCED is not owner acceptance or pool approval.",
+    "No private holdout measurements are included here.",
+    "Earlier SC1 and SC2 acceptance failures remain unchanged and are documented in the remediation report."
+  ]
+}

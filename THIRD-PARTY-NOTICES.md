@@ -47,3 +47,19 @@ external source material retain their owners' rights. If a specific uncredited
 copy or incompatible obligation is identified, resolve it before distributing
 the affected material; this bounded inventory is not a complete ownership or
 legal-clearance determination.
+
+## Quant Factor Harness prototype
+
+The separate `harness/uv.lock` pins DeepSeek Harness SDK/runtime 0.2.2rc2
+(upstream MIT), BaoStock 0.9.4 (upstream BSD), and RQData 3.8.2, alongside its
+other dependencies. Installed packages retain their upstream notices; DSH is
+used through its SDK and plugin API, without a vendored runtime or agent-loop fork.
+These additions do not change this repository's license. Vendor data permissions
+are separate from SDK licenses, including for a free endpoint.
+
+The iFind adapter was independently implemented after inspecting the HTTP protocol
+in the owner's Opinion-Radar-System revision
+`000254bc8abab2797fc270dbdf65dfe3879b1f07`. It does not vendor ORS source.
+AKShare's pinned source was inspected for a comparison probe; AKShare is not a
+runtime dependency or an automatic fallback. Source links and the tested scope
+are recorded in `docs/harness/DATA_SOURCES.md`.
