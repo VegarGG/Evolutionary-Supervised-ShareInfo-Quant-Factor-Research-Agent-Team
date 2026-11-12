@@ -1,0 +1,32 @@
+[project]
+name = "quant-factor-harness"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+license = "PolyForm-Noncommercial-1.0.0"
+dependencies = [
+  "deepseek-harness-sdk==0.2.2rc2",
+  "rqdatac==3.8.2",
+  "baostock==0.9.4",
+  "httpx==0.28.1",
+  "PyYAML==6.0.3",
+  "psutil==7.2.2",
+  "mcp==1.26.0",
+]
+
+[dependency-groups]
+dev = ["pytest==9.0.2", "ruff==0.15.4"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

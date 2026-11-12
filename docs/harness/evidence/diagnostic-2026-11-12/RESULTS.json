@@ -1,0 +1,2641 @@
+{
+  "status": "bounded_known_answer_pilot_complete",
+  "run_count": 10,
+  "actual_requests": 24,
+  "usage": {
+    "input_uncached": 55121,
+    "input_cached": 16128,
+    "input_cache_write": 0,
+    "output": 85710
+  },
+  "cache_hit_rate": 0.22636107173434014,
+  "new_conservative_cny": 0.828178,
+  "carry_conservative_cny": 56.256735,
+  "cumulative_conservative_cny": 57.084913,
+  "unresolved_reserved_cny": 0.0,
+  "remaining_unreserved_cny": 142.915087,
+  "invoice_verified": false,
+  "peak_trailing_60s_dispatch_rpm": 4,
+  "peak_trailing_60s_dispatch_attributed_tpm": 32711,
+  "peak_trailing_60s_completion_attributed_tpm": 33878,
+  "machine": {
+    "system": "Darwin",
+    "release": "27.2.0",
+    "architecture": "arm64",
+    "logical_cpus": 18,
+    "physical_cpus": 18,
+    "ram_bytes": 38654705664
+  },
+  "runs": [
+    {
+      "run_id": "availability-blackboard-001",
+      "variant": "blackboard",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T04:51:56.159948+00:00",
+      "finished_utc": "2026-11-12T04:52:38.365030+00:00",
+      "provider_span_seconds": 42.205082,
+      "actual_requests": 3,
+      "usage": {
+        "input_uncached": 6755,
+        "input_cached": 1664,
+        "input_cache_write": 0,
+        "output": 7844
+      },
+      "cache_hit_rate": 0.19764817674308113,
+      "conservative_cny": 0.07959,
+      "offpeak_tariff_estimate_cny": 0.03816428,
+      "span_normalized_rpm": 4.264889237746298,
+      "span_normalized_tpm": 23119.96455782268,
+      "peak_trailing_60s_dispatch_rpm": 3,
+      "peak_trailing_60s_dispatch_attributed_tpm": 16263,
+      "peak_trailing_60s_completion_attributed_tpm": 16263,
+      "resource_samples": 22,
+      "sampled_process_tree_peak_rss_bytes": 559775744,
+      "observed_process_tree_cpu_seconds": 3.074131008,
+      "host_cpu_percent_median": 2.1500000000000004,
+      "host_cpu_percent_max": 4.5,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 371480576000,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-blackboard-001",
+        "started_at": "2026-11-12T04:51:55.635940+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently revise the initial factor using all sources."
+          ],
+          [
+            "B",
+            "Contribute to the shared board: inspect A's proposal and all sources. Add supported corrections or missing connections as your own proposal."
+          ],
+          [
+            "A",
+            "Compare the available proposals against the original sources. Return the final factor revision. Identify adopted and rejected changes with reasons. Reference the contribution ids actually used; do not defer to agreement or agent count."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "blackboard"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T04:52:13.338509+00:00",
+          "contribution_id": "availability-blackboard-001:0:A",
+          "latency_seconds": 17.517460834002122,
+          "proposal": {
+            "availability_rule": "Signal at the first trading close where the exact Q1 record is present in the close snapshot. Company A's record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 15:00 close, and first ingested by the vendor on 2024-04-30 at 08:10, before the 15:00 close. Therefore the earliest eligible signal close is 2024-04-30. Under the framework's close-then-next-close execution rule, the first execution date is the next trading close, 2024-05-06.",
+            "changes": [
+              "Replace the Q1 period-end start date, 2024-03-31, with the first eligible close after the exact record is available, 2024-04-30.",
+              "Use the 15:00 Asia/Shanghai close snapshot and respect both public release and vendor ingestion timing.",
+              "Set first execution to the next trading close, 2024-05-06.",
+              "Retain only the raw company-level ratio 0.02; do not claim cross-sectional rank, performance, or profitability from this diagnostic."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 operating cash flow is 6,000 CNY ten-thousand, or 60,000,000 CNY, and Q1 total assets are 3,000,000,000 CNY, giving a raw ratio of 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai; the 2024-03-31 period end cannot replace either timestamp for availability."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "Because the 2024-04-29 release occurred after the 15:00 close, the earliest close snapshot that can include the record is 2024-04-30 at 15:00, after the 08:10 vendor ingestion."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "With signal at the 2024-04-30 close, the next trading close in the frozen calendar is 2024-05-06, so that is the first execution date."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "No cross-sectional performance or profitability claim can be measured from the supplied evidence because prices, returns, and other companies' financials are not provided."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The initial factor's instruction to start from the Q1 period-end date is inconsistent with the publication and ingestion timestamps and must be revised to an availability-based start."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each eligible company, define the factor as Q1 operating cash flow in CNY divided by Q1 total assets in CNY, using the exact Q1 record available in the 15:00 Asia/Shanghai close snapshot on or after public release and vendor ingestion. Rank companies cross-sectionally only at that eligible close. For company A, the raw ratio is 6,000 x 10,000 / 3,000,000,000 = 0.02 (2%). The 2024-03-31 fiscal period end is not an eligible signal date.",
+            "factor_name": "Availability-dated Q1 operating cash flow to total assets",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Use the raw ratio for company A and rank cross-sectionally only among companies with the exact record available by the same close. No winsorization or neutralization is specified. With the supplied evidence, only company A's raw ratio can be computed; no cross-sectional rank or performance statistic is measurable.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "Cross-sectional rank and factor performance cannot be computed: only company A is supplied, with no prices or other companies' financials.",
+              "No later restatement or alternative-version history is supplied; the exact vendor-ingested version in S2 is assumed to remain the relevant record.",
+              "Winsorization and neutralization choices are unspecified and cannot be validated with a single observation."
+            ]
+          },
+          "role": "A"
+        },
+        {
+          "at": "2026-11-12T04:52:27.945087+00:00",
+          "contribution_id": "availability-blackboard-001:1:B",
+          "latency_seconds": 14.605423083063215,
+          "proposal": {
+            "availability_rule": "Company A's Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 2024-04-29 15:00 close, and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai, before the 2024-04-30 15:00 close. Therefore 2024-04-29 is not an eligible signal close and the earliest eligible signal close is 2024-04-30. Under the close-then-next-close execution rule, the first execution date is the next trading close, 2024-05-06.",
+            "changes": [
+              "Confirm A's revision: use 2024-04-30, not 2024-03-31, as the first eligible signal date.",
+              "Make explicit that the 2024-04-29 close is ineligible because the 18:30 release occurred after the 15:00 close.",
+              "Retain 2024-05-06 as the first execution date under the close-then-next-close rule.",
+              "Record the unit conversion and arithmetic for company A's 0.02 raw ratio.",
+              "Avoid any cross-sectional rank, performance, or profitability claim from this single-company diagnostic."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 operating cash flow is 6,000 CNY ten-thousand, equal to 60,000,000 CNY, and Q1 total assets are 3,000,000,000 CNY; the raw ratio is 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai; the 2024-03-31 period end cannot replace either availability timestamp."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The 2024-04-29 18:30 public release occurred after the 15:00 close, so the 2024-04-29 close snapshot is not the earliest eligible signal close for this record."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The vendor first ingested the exact record on 2024-04-30 at 08:10, before the 15:00 close; the earliest eligible signal close is therefore 2024-04-30."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "With a signal at the 2024-04-30 close, the next trading close in the frozen calendar is 2024-05-06, making it the first execution date."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "No cross-sectional performance or profitability claim can be measured because the evidence supplies no prices, returns, or other companies' financials."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "A's proposal correctly replaces the initial Q1 period-end start with an availability-based signal at 2024-04-30 and execution at 2024-05-06."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each eligible company, compute Q1 operating cash flow in CNY divided by Q1 total assets in CNY using the exact Q1 record that has been publicly released and is present in the vendor close snapshot. For company A, the raw ratio is (6,000 x 10,000) / 3,000,000,000 = 60,000,000 / 3,000,000,000 = 0.02. A signal may be formed only at the first 15:00 Asia/Shanghai close on or after both public release and vendor ingestion; the 2024-03-31 fiscal period end is not an eligible signal date. Rank cross-sectionally only among companies whose exact record is available by that same close.",
+            "factor_name": "Availability-dated Q1 operating cash flow to total assets",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Use the raw ratio. No winsorization, neutralization, or other cross-sectional transform is specified. Only company A's raw ratio can be computed from the supplied evidence, so no cross-sectional rank or performance statistic is measurable.",
+            "peer_contribution_ids": [
+              "availability-blackboard-001:0:A"
+            ],
+            "unresolved": [
+              "Cross-sectional rank and factor performance are not computable: only company A is supplied, with no prices, returns, or other companies' financials.",
+              "No restatement or alternative-version history is supplied; the exact version ingested on 2024-04-30 is assumed to be the relevant record.",
+              "Winsorization, neutralization, and other normalization choices cannot be validated with a single observation."
+            ]
+          },
+          "role": "B"
+        },
+        {
+          "at": "2026-11-12T04:52:38.369837+00:00",
+          "contribution_id": "availability-blackboard-001:2:A",
+          "latency_seconds": 10.423326625023037,
+          "proposal": {
+            "availability_rule": "Company A's Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 2024-04-29 15:00 close, and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai, before the 2024-04-30 15:00 close. Therefore 2024-04-29 is not an eligible signal close and the earliest eligible signal close is 2024-04-30. Under the close-then-next-close execution rule, the first execution date is the next trading close, 2024-05-06.",
+            "changes": [
+              "Adopted from availability-blackboard-001:0:A: availability-based signal at 2024-04-30 rather than the Q1 period end, because S2 places public release after the 2024-04-29 close and vendor ingestion before the 2024-04-30 close.",
+              "Adopted from availability-blackboard-001:1:B: explicit exclusion of the 2024-04-29 close as a signal date, because the 18:30 release occurred after that close.",
+              "Adopted from both proposals: first execution on 2024-05-06, the next trading close after the 2024-04-30 signal in the S3 calendar.",
+              "Adopted from both proposals: raw ratio 0.02 and no cross-sectional rank or profitability claim, because S3 supplies only one company and no prices or returns.",
+              "Rejected: the initial factor's Q1 period-end start date 2024-03-31, because S2 states neither availability timestamp may be replaced by the fiscal period end.",
+              "Rejected: using the 2024-04-29 close as the signal date, because the public release at 18:30 occurred after the 15:00 close and vendor ingestion occurred the next morning.",
+              "Rejected: inferring cross-sectional rank, factor performance, or profitability from this single-company diagnostic, because no comparative or return evidence is supplied."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 operating cash flow is 6,000 CNY ten-thousand, equal to 60,000,000 CNY, and Q1 total assets are 3,000,000,000 CNY; the raw ratio is 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai; the 2024-03-31 period end cannot replace either availability timestamp."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The 2024-04-29 18:30 public release occurred after the 15:00 close, so the 2024-04-29 close snapshot is not the earliest eligible signal close for this record."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The vendor first ingested the exact record on 2024-04-30 at 08:10, before the 15:00 close; the earliest eligible signal close is therefore 2024-04-30."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "With a signal at the 2024-04-30 close, the next trading close in the frozen calendar is 2024-05-06, making it the first execution date."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "No cross-sectional performance or profitability claim can be measured because the evidence supplies no prices, returns, or other companies' financials."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each eligible company, compute Q1 operating cash flow in CNY divided by Q1 total assets in CNY using the exact Q1 record that has been publicly released and is present in the vendor close snapshot. Company A's raw ratio is (6,000 x 10,000) / 3,000,000,000 = 0.02. A signal may be formed only at the first 15:00 Asia/Shanghai close on or after both public release and vendor ingestion; the 2024-03-31 fiscal period end is not an eligible signal date. Rank cross-sectionally only among companies whose exact record is available by that same close.",
+            "factor_name": "Availability-dated Q1 operating cash flow to total assets",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Use the raw ratio. No winsorization, neutralization, or other cross-sectional transform is specified. Only company A's raw ratio can be computed from the supplied evidence, so no cross-sectional rank or performance statistic is measurable.",
+            "peer_contribution_ids": [
+              "availability-blackboard-001:0:A",
+              "availability-blackboard-001:1:B"
+            ],
+            "unresolved": [
+              "Cross-sectional rank and factor performance are not computable: only company A is supplied, with no prices, returns, or other companies' financials.",
+              "No restatement or alternative-version history is supplied; the exact version ingested on 2024-04-30 is assumed to be the relevant record.",
+              "Winsorization, neutralization, and other normalization choices cannot be validated with a single observation."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    },
+    {
+      "run_id": "availability-blackboard-002",
+      "variant": "blackboard",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T05:08:04.414319+00:00",
+      "finished_utc": "2026-11-12T05:09:02.929617+00:00",
+      "provider_span_seconds": 58.515298,
+      "actual_requests": 3,
+      "usage": {
+        "input_uncached": 7544,
+        "input_cached": 1664,
+        "input_cache_write": 0,
+        "output": 10801
+      },
+      "cache_hit_rate": 0.18071242397914858,
+      "conservative_cny": 0.104824,
+      "offpeak_tariff_estimate_cny": 0.05078128,
+      "span_normalized_rpm": 3.076118658748008,
+      "span_normalized_tpm": 20516.686080962965,
+      "peak_trailing_60s_dispatch_rpm": 3,
+      "peak_trailing_60s_dispatch_attributed_tpm": 20009,
+      "peak_trailing_60s_completion_attributed_tpm": 20009,
+      "resource_samples": 30,
+      "sampled_process_tree_peak_rss_bytes": 583909376,
+      "observed_process_tree_cpu_seconds": 10.309036512,
+      "host_cpu_percent_median": 4.2,
+      "host_cpu_percent_max": 8.3,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 370348388352,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "implementation_sha256": {
+          "budget.py": "92083f81a3c4652f49d15354eeba32bd503333b3281cdfcb763dade9c13bda36",
+          "evidence.py": "d6729f188add517a94d3f222bf177fdfa31b97778e42bde16cd8008677b1f7c6",
+          "experiment.py": "5ca7b8629911e4b9e377ea92235fd5c2de1d5a37f4255d02a74405b2984ec1c4",
+          "proxy.py": "bafb56e2983776e158449d432a31eac29fac443b1d9911922106708f03d02f1c"
+        },
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-blackboard-002",
+        "runtime_packages": {
+          "deepseek-harness-runtime-bin": "0.2.2rc2",
+          "deepseek-harness-sdk": "0.2.2rc2"
+        },
+        "started_at": "2026-11-12T05:08:03.872242+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently revise the initial factor using all sources."
+          ],
+          [
+            "B",
+            "Contribute to the shared board: inspect A's proposal and all sources. Add supported corrections or missing connections as your own proposal."
+          ],
+          [
+            "A",
+            "Compare the available proposals against the original sources. Return the final factor revision. Identify adopted and rejected changes with reasons. Reference the contribution ids actually used; do not defer to agreement or agent count."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "blackboard"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T05:08:22.833124+00:00",
+          "contribution_id": "availability-blackboard-002:0:A",
+          "latency_seconds": 18.75684554199688,
+          "proposal": {
+            "availability_rule": "For company A, the Q1 2024 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai. Close snapshots are at 15:00 Asia/Shanghai. At the 2024-04-29 15:00 close the record was not yet public, so it is not eligible. At the 2024-04-30 15:00 close both public release and vendor ingestion had occurred, so the first eligible signal close is 2024-04-30. Under the framework rule of computing at close t and executing at the next trading close, with the frozen calendar 2024-04-26, 2024-04-29, 2024-04-30, 2024-05-06, 2024-05-07, the first execution date is 2024-05-06. Do not use 2024-03-31 as the signal date.",
+            "changes": [
+              "Replaced the Q1 period-end start date with availability based on public release and vendor ingestion timestamps.",
+              "Set the first eligible signal close to 2024-04-30, the first close after both 2024-04-29 18:30 public release and 2024-04-30 08:10 vendor ingestion.",
+              "Set first execution to 2024-05-06, the next trading close after the 2024-04-30 signal close under the stated framework.",
+              "Specified unit conversion from CNY ten-thousand to CNY for operating cash flow before computing the ratio.",
+              "Restricted normalization to cross-sectional ranking over eligible companies and explicitly disclaimed performance measurement without price or peer data."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The fiscal period end 2024-03-31 is an observation date only; the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "At the 2024-04-29 15:00 close snapshot, company A's Q1 record was not yet public because release occurred at 18:30, so 2024-04-29 cannot be the first eligible signal date."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "At the 2024-04-30 15:00 close snapshot, both the public release and the vendor ingestion had occurred; therefore the first eligible signal close is 2024-04-30."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The frozen trading calendar has 2024-04-30 followed by 2024-05-06; under the stated next-trading-close execution rule, first execution is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 operating cash flow is 6000 CNY ten-thousand, equal to 60,000,000 CNY; dividing by Q1 total assets of 3,000,000,000 CNY gives 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "Prices, returns, and other companies' financials are not supplied, so no cross-sectional performance, profitability, or return claim can be measured from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each company with a Q1 report, compute Q1 operating cash flow divided by Q1 total assets, using values from the same report and converting cash flow to CNY when reported in CNY ten-thousand. At each eligible close t, rank companies cross-sectionally by this ratio only if the same Q1 record was both publicly released and present in the vendor feed before t's close snapshot. The fiscal period end is not an eligibility date. This is a diagnostic definition only; no profitability or return claim is made.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets, Release-Aware Ranking",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Ratio = Q1 operating cash flow converted to CNY / Q1 total assets in CNY. For company A: 6000 CNY ten-thousand = 60,000,000 CNY; 60,000,000 / 3,000,000,000 = 0.02, or 2%. The raw ratio is dimensionless. Cross-sectional rank or percentile can be computed at each signal date only over eligible companies with same-period publicly available data. No industry or size neutralization is specified by the supplied evidence.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "Whether later restatements or revised vendor versions of the Q1 record exist is not provided; the rule uses the first ingested exact version only.",
+              "The full cross-sectional universe and peer financials are unavailable, so rank coverage and any neutralization choices cannot be validated.",
+              "No price or return data are supplied, so factor efficacy and profitability cannot be measured.",
+              "Trading dates outside the frozen calendar in S3 are not supplied; only the provided calendar is used."
+            ]
+          },
+          "role": "A"
+        },
+        {
+          "at": "2026-11-12T05:08:44.784914+00:00",
+          "contribution_id": "availability-blackboard-002:1:B",
+          "latency_seconds": 21.950330417021178,
+          "proposal": {
+            "availability_rule": "For company A, the Q1 2024 record has a fiscal period end and nominal observation date of 2024-03-31. It was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai. The close snapshot is 15:00 Asia/Shanghai. At the 2024-04-29 15:00 close, the record was not yet public because release was at 18:30, so 2024-04-29 is not eligible. At the 2024-04-30 15:00 close, both the 2024-04-29 18:30 public release and the 2024-04-30 08:10 vendor ingestion had occurred, so the first eligible signal close is 2024-04-30. Under the framework rule of computing at close t and executing at the next trading close, the frozen calendar shows 2024-04-30 followed by 2024-05-06, so the first execution date is 2024-05-06.",
+            "changes": [
+              "Adopted the release-aware eligibility rule and did not use the 2024-03-31 fiscal period end as the signal date.",
+              "Made explicit that the first eligible signal close is 2024-04-30 because the 2024-04-29 18:30 release occurred after that day's 15:00 close and vendor ingestion occurred before the 2024-04-30 close.",
+              "Confirmed first execution as 2024-05-06 using only the frozen calendar sequence 2024-04-30 to 2024-05-06.",
+              "Clarified same-record and same-period matching plus unit conversion from CNY ten-thousand to CNY before ratio computation.",
+              "Restricted normalization to cross-sectional ranking over eligible companies and added an explicit no-performance-measurement limitation."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The fiscal period end 2024-03-31 is an observation date only; company A's Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "At the 2024-04-29 15:00 close snapshot, the Q1 record was not yet public because public release occurred at 18:30, so 2024-04-29 cannot be the first eligible signal close."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "At the 2024-04-30 15:00 close snapshot, both the 2024-04-29 18:30 public release and the 2024-04-30 08:10 vendor ingestion had occurred, making 2024-04-30 the first eligible signal close."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "Eligibility requires both public release and vendor ingestion before the close snapshot; the later vendor ingestion timestamp cannot be replaced by the earlier fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The frozen trading calendar lists 2024-04-30 followed by 2024-05-06; under the next-trading-close execution rule, first execution is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 operating cash flow of 6000 CNY ten-thousand equals 60,000,000 CNY; dividing by Q1 total assets of 3,000,000,000 CNY gives 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "No prices, returns, or peer financials are supplied, so no cross-sectional performance, profitability, or return claim can be measured from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each company with a Q1 report, compute Q1 operating cash flow divided by Q1 total assets, using values from the same exact Q1 record and converting operating cash flow from CNY ten-thousand to CNY when reported in that unit. At each close t, include a company only if its Q1 record was both publicly released and first present in the vendor feed before t's 15:00 Asia/Shanghai close snapshot. Rank included companies cross-sectionally by the ratio at t. The fiscal period end is an observation date only, never an eligibility date. This is a diagnostic definition; no profitability or return claim is made.",
+            "factor_name": "Release-Aware Q1 Operating Cash Flow / Total Assets (Diagnostic)",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Ratio = Q1 operating cash flow in CNY / Q1 total assets in CNY. For company A, 6000 CNY ten-thousand equals 60,000,000 CNY; dividing by 3,000,000,000 CNY gives 0.02, or 2%. The ratio is dimensionless. Cross-sectional rank or percentile can be computed at each signal close only over companies whose same-period Q1 records are both publicly released and vendor-ingested before that close snapshot. No industry or size neutralization is specified by the supplied evidence.",
+            "peer_contribution_ids": [
+              "availability-blackboard-002:0:A"
+            ],
+            "unresolved": [
+              "No evidence is supplied about later restatements or revised vendor versions; the rule uses the first ingested exact Q1 version only.",
+              "The full cross-sectional universe and peer Q1 financials are unavailable, so rank coverage and any neutralization choices cannot be validated.",
+              "No price or return data are supplied, so factor efficacy and profitability cannot be measured.",
+              "Trading dates outside the frozen calendar are not supplied; only the provided calendar sequence is used."
+            ]
+          },
+          "role": "B"
+        },
+        {
+          "at": "2026-11-12T05:09:02.932392+00:00",
+          "contribution_id": "availability-blackboard-002:2:A",
+          "latency_seconds": 18.14604045904707,
+          "proposal": {
+            "availability_rule": "For company A, the Q1 2024 record has a fiscal period end and nominal observation date of 2024-03-31. It was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai. The close snapshot is 15:00 Asia/Shanghai. At the 2024-04-29 15:00 close, the record was not yet public because release was at 18:30, so 2024-04-29 is not eligible. At the 2024-04-30 15:00 close, both the 2024-04-29 18:30 public release and the 2024-04-30 08:10 vendor ingestion had occurred, so the first eligible signal close is 2024-04-30. Under the framework rule of computing at close t and executing at the next trading close, the frozen calendar shows 2024-04-30 followed by 2024-05-06, so the first execution date is 2024-05-06.",
+            "changes": [
+              "ADOPTED from availability-blackboard-002:1:B the explicit dual gate that eligibility requires both public release and vendor ingestion before the 15:00 close; this is consistent with S2 and prevents a release-only or period-end-only signal.",
+              "ADOPTED from availability-blackboard-002:0:A and availability-blackboard-002:1:B first eligible signal close 2024-04-30, because the 2024-04-29 15:00 snapshot predates the 18:30 public release.",
+              "ADOPTED from availability-blackboard-002:0:A and availability-blackboard-002:1:B first execution date 2024-05-06, the next trading close after the 2024-04-30 signal close in the frozen calendar.",
+              "ADOPTED from both proposals the same-record and same-period matching plus conversion of 6000 CNY ten-thousand to 60,000,000 CNY before computing 0.02.",
+              "ADOPTED from both proposals the limitation that cross-sectional ranking is restricted to eligible companies and that no profitability or return claim is supported.",
+              "REJECTED the initial factor's use of 2024-03-31 as the starting signal date; S2 states the fiscal period end may not replace the release or ingestion timestamps.",
+              "REJECTED using 2024-04-29 as the signal date; the 18:30 release is after that day's 15:00 close snapshot.",
+              "REJECTED using 2024-04-30 as the execution date; the framework executes at the next trading close, which the frozen calendar places at 2024-05-06.",
+              "REJECTED release-only eligibility; the factor is computed from the vendor record, and S2 gives vendor ingestion at 2024-04-30 08:10, after public release but before the 2024-04-30 close.",
+              "REJECTED any cross-sectional performance or profitability conclusion; S3 supplies no prices, returns, or other companies' financials. No substantive factual conflict was found between availability-blackboard-002:0:A and availability-blackboard-002:1:B; the revision uses 1:B's explicit dual-gate wording and both proposals' date and ratio conclusions."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The fiscal period end 2024-03-31 is an observation date only; company A's Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "At the 2024-04-29 15:00 close snapshot, the Q1 record was not yet public because public release occurred at 18:30, so 2024-04-29 cannot be the first eligible signal close."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "At the 2024-04-30 15:00 close snapshot, both the 2024-04-29 18:30 public release and the 2024-04-30 08:10 vendor ingestion had occurred, making 2024-04-30 the first eligible signal close."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "Eligibility requires both public release and vendor ingestion before the close snapshot; neither the fiscal period end nor the public release timestamp alone may replace the vendor ingestion timestamp."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The frozen trading calendar lists 2024-04-30 followed by 2024-05-06; under the next-trading-close execution rule, first execution is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 operating cash flow of 6000 CNY ten-thousand equals 60,000,000 CNY; dividing by Q1 total assets of 3,000,000,000 CNY gives 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "No prices, returns, or peer financials are supplied, so no cross-sectional performance, profitability, or return claim can be measured from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each company with a Q1 report, compute Q1 operating cash flow divided by Q1 total assets using values from the same exact Q1 record, converting operating cash flow from CNY ten-thousand to CNY when reported in that unit. At each close t, include a company only if its Q1 record was both publicly released and first present in the vendor feed before t's 15:00 Asia/Shanghai close snapshot. Rank included companies cross-sectionally by the ratio at t. The fiscal period end is an observation date only, never an eligibility date. Economically, a higher ratio indicates more operating cash generated per unit of assets, a cash-based asset-efficiency signal; a lower ratio indicates less. This is a diagnostic definition only; no profitability or return claim is made.",
+            "factor_name": "Release-Aware Q1 Operating Cash Flow / Total Assets (Diagnostic)",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Ratio = Q1 operating cash flow in CNY / Q1 total assets in CNY. For company A, 6000 CNY ten-thousand equals 60,000,000 CNY; dividing by 3,000,000,000 CNY gives 0.02, or 2%. The ratio is dimensionless. Cross-sectional rank or percentile can be computed at each signal close only over companies whose same-period Q1 records are both publicly released and vendor-ingested before that close snapshot. No industry or size neutralization is specified by the supplied evidence.",
+            "peer_contribution_ids": [
+              "availability-blackboard-002:0:A",
+              "availability-blackboard-002:1:B"
+            ],
+            "unresolved": [
+              "No evidence is supplied about later restatements or revised vendor versions; the rule uses the first ingested exact Q1 version only.",
+              "The full cross-sectional universe and peer Q1 financials are unavailable, so rank coverage and any neutralization choices cannot be validated.",
+              "No price or return data are supplied, so factor efficacy and profitability cannot be measured.",
+              "Trading dates outside the frozen calendar are not supplied; only the provided calendar sequence is used.",
+              "Whether a production implementation should require vendor ingestion in addition to public release is a policy choice; this diagnostic requires both because the factor is computed from the vendor record."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    },
+    {
+      "run_id": "availability-blackboard-003",
+      "variant": "blackboard",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T05:09:22.584167+00:00",
+      "finished_utc": "2026-11-12T05:10:25.364150+00:00",
+      "provider_span_seconds": 62.779983,
+      "actual_requests": 3,
+      "usage": {
+        "input_uncached": 7371,
+        "input_cached": 1664,
+        "input_cache_write": 0,
+        "output": 11667
+      },
+      "cache_hit_rate": 0.1841726618705036,
+      "conservative_cny": 0.111406,
+      "offpeak_tariff_estimate_cny": 0.05407228,
+      "span_normalized_rpm": 2.8671559213388127,
+      "span_normalized_tpm": 19785.2872945187,
+      "peak_trailing_60s_dispatch_rpm": 3,
+      "peak_trailing_60s_dispatch_attributed_tpm": 20702,
+      "peak_trailing_60s_completion_attributed_tpm": 20702,
+      "resource_samples": 32,
+      "sampled_process_tree_peak_rss_bytes": 577896448,
+      "observed_process_tree_cpu_seconds": 10.972665056,
+      "host_cpu_percent_median": 9.649999999999999,
+      "host_cpu_percent_max": 17.9,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 370171199488,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "implementation_sha256": {
+          "budget.py": "92083f81a3c4652f49d15354eeba32bd503333b3281cdfcb763dade9c13bda36",
+          "evidence.py": "d6729f188add517a94d3f222bf177fdfa31b97778e42bde16cd8008677b1f7c6",
+          "experiment.py": "5ca7b8629911e4b9e377ea92235fd5c2de1d5a37f4255d02a74405b2984ec1c4",
+          "proxy.py": "bafb56e2983776e158449d432a31eac29fac443b1d9911922106708f03d02f1c"
+        },
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-blackboard-003",
+        "runtime_packages": {
+          "deepseek-harness-runtime-bin": "0.2.2rc2",
+          "deepseek-harness-sdk": "0.2.2rc2"
+        },
+        "started_at": "2026-11-12T05:09:22.019852+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently revise the initial factor using all sources."
+          ],
+          [
+            "B",
+            "Contribute to the shared board: inspect A's proposal and all sources. Add supported corrections or missing connections as your own proposal."
+          ],
+          [
+            "A",
+            "Compare the available proposals against the original sources. Return the final factor revision. Identify adopted and rejected changes with reasons. Reference the contribution ids actually used; do not defer to agreement or agent count."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "blackboard"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T05:09:46.686342+00:00",
+          "contribution_id": "availability-blackboard-003:0:A",
+          "latency_seconds": 24.460060207988136,
+          "proposal": {
+            "availability_rule": "At close t (15:00 Asia/Shanghai), a Q1 record is eligible only if both its public release timestamp and the vendor ingestion timestamp of the exact version are no later than t. Company A: public release 2024-04-29 18:30 is after the 2024-04-29 15:00 close, so 2024-04-29 is ineligible; vendor ingestion 2024-04-30 08:10 is before the 2024-04-30 15:00 close, so the first eligible signal close is 2024-04-30. Execute at the next trading close, 2024-05-06, per the frozen calendar. Never use 2024-03-31 or 2024-04-29 as the signal date.",
+            "changes": [
+              "Replaced the fiscal period-end start with gating on public release and exact-version vendor ingestion at the 15:00 close.",
+              "Moved the first eligible signal date from 2024-03-31 to 2024-04-30.",
+              "Set execution to the next trading close, 2024-05-06, instead of the period end or release date.",
+              "Added unit conversion and recorded the raw ratio as 0.02.",
+              "Deferred cross-sectional ranking until peer data exist and avoided any profitability claim."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 ratio is 0.02: Q1 operating cash flow is 6,000 CNY ten-thousand = 60,000,000 CNY, and total assets are 3,000,000,000 CNY, so 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The fiscal period end 2024-03-31 is not an availability date and must not be used to start the factor; availability depends on public release and vendor ingestion timestamps."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "At the 2024-04-29 15:00 close, the Q1 record was not yet public because public release occurred at 18:30, so 2024-04-29 is not an eligible signal date."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The vendor first ingested the exact Q1 version on 2024-04-30 at 08:10, before the 2024-04-30 15:00 close, so the earliest eligible signal close is 2024-04-30."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The next trading close after 2024-04-30 in the frozen calendar is 2024-05-06, so the first execution date is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "The ratio is an operational-cash-flow-to-assets measure, not a profitability measure; no profitability or return claim can be measured from the supplied evidence."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "Cross-sectional rank cannot yet be computed because only one company's financial record is supplied and no peer financials are provided."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For company A, compute Q1 operating cash flow divided by Q1 total assets: (6,000 CNY ten-thousand × 10,000 CNY per ten-thousand) / 3,000,000,000 CNY = 60,000,000 / 3,000,000,000 = 0.02. The factor is a dimensionless Q1 cash-generation-to-assets ratio; higher values mean more operating cash flow per unit of assets. Compare or rank only among companies whose Q1 records pass the availability rule at the same close. The fiscal period end 2024-03-31 is a report-period label, not a signal date. Because only one company is supplied, the raw ratio is defined but its cross-sectional rank is not.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets, Availability-Gated",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Convert cash flow from CNY ten-thousand to CNY before dividing; the ratio is dimensionless and requires no further scaling for a single observation. In a multi-company cross-section, rank or z-score the ratio at each signal date after any pre-specified winsorization; do not use future dates or time-series normalization that requires later observations. With one record, retain the raw 0.02 and report rank as unavailable.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "Cross-sectional rank thresholds and distribution cannot be set because only company A is supplied.",
+              "Economic significance and profitability cannot be assessed because no prices, returns, or peer financials are supplied.",
+              "Whether later restatements or alternative vendor versions exist is not specified; only the first ingested exact version is covered.",
+              "Treatment of negative or zero total assets for a future universe is not specified; company A has positive assets, so the case is not triggered."
+            ]
+          },
+          "role": "A"
+        },
+        {
+          "at": "2026-11-12T05:10:08.741375+00:00",
+          "contribution_id": "availability-blackboard-003:1:B",
+          "latency_seconds": 22.054362916969694,
+          "proposal": {
+            "availability_rule": "At each close t = 15:00 Asia/Shanghai, the exact Q1 record is eligible only if both its public release timestamp and the vendor ingestion timestamp of that exact version are no later than t. For company A, the 2024-04-29 15:00 close is ineligible because public release occurred at 18:30 after that close. The 2024-04-30 15:00 close is eligible because public release was 2024-04-29 18:30 and vendor ingestion was 2024-04-30 08:10, both before 15:00. The earliest eligible signal close is therefore 2024-04-30. Execution is at the next trading close in the frozen calendar, 2024-05-06. Never use 2024-03-31 or 2024-04-29 as the signal date.",
+            "changes": [
+              "Confirmed that 2024-03-31 is a report-period label, not a signal date.",
+              "Applied a close-time availability gate using both public release and exact-version vendor ingestion.",
+              "Set the earliest eligible signal close to 2024-04-30 and the first execution close to 2024-05-06.",
+              "Confirmed the unit conversion and raw ratio of 0.02.",
+              "Deferred cross-sectional ranking and avoided any profitability claim."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 ratio is 0.02: Q1 operating cash flow of 6,000 CNY ten-thousand equals 60,000,000 CNY, and 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The fiscal period end 2024-03-31 is not an availability date and must not be used to start the factor; availability depends on public release and exact-version vendor ingestion timestamps."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "At the 2024-04-29 15:00 close, the Q1 record was not yet public because public release occurred at 18:30, so 2024-04-29 is not an eligible signal date."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The vendor first ingested the exact Q1 version on 2024-04-30 at 08:10, before the 2024-04-30 15:00 close, so the earliest eligible signal close is 2024-04-30."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The next trading close after 2024-04-30 in the frozen calendar is 2024-05-06, so the first execution date is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "The ratio measures operating cash flow per unit of assets and is not a profitability measure; no profitability or return claim can be measured from the supplied evidence."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "Cross-sectional rank cannot be computed because only one company's financial record is supplied and no peer financials are provided."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The proposed 2024-04-30 signal date and 2024-05-06 execution date are consistent with the close snapshot, public release, vendor ingestion, and frozen trading calendar."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For company A, compute Q1 operating cash flow divided by Q1 total assets using the exact publicly released and vendor-ingested Q1 record: (6,000 CNY ten-thousand × 10,000 CNY per ten-thousand) / 3,000,000,000 CNY = 60,000,000 / 3,000,000,000 = 0.02. The factor is a dimensionless operating-cash-flow-to-assets ratio; higher values mean more operating cash flow per unit of assets. It is not a profitability measure. The fiscal period end 2024-03-31 is only a report-period label, not a signal date. Because only company A is supplied, the raw ratio is defined but no cross-sectional rank can be computed.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets, Point-in-Time Available",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Convert operating cash flow from CNY ten-thousand to CNY before dividing; the resulting ratio is dimensionless. For this single observation, retain the raw ratio 0.02 and report cross-sectional rank as unavailable. In a future multi-company cross-section, rank or z-score the ratio at each signal date using only records eligible at that same close, with any winsorization and peer-set rules pre-specified before evaluation; do not use future records or later restatements.",
+            "peer_contribution_ids": [
+              "availability-blackboard-003:0:A"
+            ],
+            "unresolved": [
+              "Cross-sectional rank thresholds and distribution cannot be set because only company A is supplied.",
+              "Economic significance and profitability cannot be assessed because no prices, returns, or peer financials are supplied.",
+              "Whether later restatements or alternative vendor versions exist is not specified; only the first ingested exact version is covered.",
+              "Treatment of negative or zero total assets for a future universe is not specified; company A has positive assets, so the case is not triggered."
+            ]
+          },
+          "role": "B"
+        },
+        {
+          "at": "2026-11-12T05:10:25.367668+00:00",
+          "contribution_id": "availability-blackboard-003:2:A",
+          "latency_seconds": 16.62560675002169,
+          "proposal": {
+            "availability_rule": "At each close t = 15:00 Asia/Shanghai, the exact Q1 record is eligible only if both its public release timestamp and the vendor ingestion timestamp of that exact version are no later than t. For company A, the 2024-04-29 15:00 close is ineligible because public release occurred at 18:30 after that close. The 2024-04-30 15:00 close is eligible because public release was 2024-04-29 18:30 and vendor ingestion was 2024-04-30 08:10, both before 15:00. The earliest eligible signal close is therefore 2024-04-30. Execution is at the next trading close in the frozen calendar, 2024-05-06. Never use 2024-03-31 or 2024-04-29 as the signal date.",
+            "changes": [
+              "Adopted from availability-blackboard-003:0:A and availability-blackboard-003:1:B: replace the 2024-03-31 period-end start with a 15:00 close availability gate requiring both public release and exact-version vendor ingestion; S2 forbids substituting the fiscal period end.",
+              "Adopted from availability-blackboard-003:0:A and availability-blackboard-003:1:B: set the first eligible signal close to 2024-04-30 because the 2024-04-29 15:00 close precedes the 18:30 public release and the 2024-04-30 08:10 vendor ingestion precedes that close (S2).",
+              "Adopted from availability-blackboard-003:0:A and availability-blackboard-003:1:B: set execution to the next trading close, 2024-05-06, from the frozen calendar (S3).",
+              "Adopted from availability-blackboard-003:0:A and availability-blackboard-003:1:B: convert 6,000 CNY ten-thousand to 60,000,000 CNY before dividing; the ratio is 0.02 (S1).",
+              "Adopted from availability-blackboard-003:1:B: make the point-in-time rule explicit at each close and restrict peer comparisons to records eligible at that same close.",
+              "Rejected the initial factor's implicit ranking from the Q1 period end and any use of 2024-03-31 or 2024-04-29 as signal dates; S2 says neither timestamp may be replaced by the fiscal period end, and the 2024-04-29 close is pre-release.",
+              "Rejected any profitability or cross-sectional performance claim; S3 states prices, returns, and peer financials are absent.",
+              "No substantive conflict found between availability-blackboard-003:0:A and availability-blackboard-003:1:B; the extra consistency claim in 1:B is redundant but supported by S2 and S3."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 ratio is 0.02: Q1 operating cash flow of 6,000 CNY ten-thousand equals 60,000,000 CNY, and 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The fiscal period end 2024-03-31 is not an availability date and must not be used to start the factor; availability depends on public release and exact-version vendor ingestion timestamps."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "At the 2024-04-29 15:00 close, the Q1 record was not yet public because public release occurred at 18:30, so 2024-04-29 is not an eligible signal date."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The vendor first ingested the exact Q1 version on 2024-04-30 at 08:10, before the 2024-04-30 15:00 close, so the earliest eligible signal close is 2024-04-30."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The next trading close after 2024-04-30 in the frozen calendar is 2024-05-06, so the first execution date is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "The ratio measures operating cash flow per unit of assets and is not a profitability measure; no profitability or return claim can be measured from the supplied evidence."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "Cross-sectional rank cannot be computed because only one company's financial record is supplied and no peer financials are provided."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The adopted 2024-04-30 signal date and 2024-05-06 execution date are consistent with the close snapshot, public release, vendor ingestion, and frozen trading calendar."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For company A, compute Q1 operating cash flow divided by Q1 total assets using the exact publicly released and vendor-ingested Q1 record: (6,000 CNY ten-thousand × 10,000 CNY per ten-thousand) / 3,000,000,000 CNY = 60,000,000 / 3,000,000,000 = 0.02. The factor is a dimensionless operating-cash-flow-to-assets ratio; higher values mean more operating cash flow per unit of assets. It is not a profitability measure. The fiscal period end 2024-03-31 is only a report-period label, not a signal date. Because only company A is supplied, the raw ratio is defined but no cross-sectional rank can be computed.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets, Point-in-Time Available",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Convert operating cash flow from CNY ten-thousand to CNY before dividing; the resulting ratio is dimensionless. For this single observation, retain the raw ratio 0.02 and report cross-sectional rank as unavailable. In a future multi-company cross-section, rank or z-score the ratio at each signal date using only records eligible at that same close, with any winsorization and peer-set rules pre-specified before evaluation; do not use future records or later restatements.",
+            "peer_contribution_ids": [
+              "availability-blackboard-003:0:A",
+              "availability-blackboard-003:1:B"
+            ],
+            "unresolved": [
+              "Cross-sectional rank thresholds and distribution cannot be set because only company A is supplied.",
+              "Economic significance and profitability cannot be assessed because no prices, returns, or peer financials are supplied.",
+              "Whether later restatements or alternative vendor versions exist is not specified; only the first ingested exact version is covered.",
+              "Treatment of negative or zero total assets for a future universe is not specified; company A has positive assets, so the case is not triggered."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    },
+    {
+      "run_id": "availability-debate-001",
+      "variant": "debate",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T05:06:06.340821+00:00",
+      "finished_utc": "2026-11-12T05:07:42.435782+00:00",
+      "provider_span_seconds": 96.094961,
+      "actual_requests": 3,
+      "usage": {
+        "input_uncached": 7464,
+        "input_cached": 1664,
+        "input_cache_write": 0,
+        "output": 17639
+      },
+      "cache_hit_rate": 0.18229623137598597,
+      "conservative_cny": 0.159368,
+      "offpeak_tariff_estimate_cny": 0.07805328,
+      "span_normalized_rpm": 1.8731471257894574,
+      "span_normalized_tpm": 16712.8430386688,
+      "peak_trailing_60s_dispatch_rpm": 2,
+      "peak_trailing_60s_dispatch_attributed_tpm": 22238,
+      "peak_trailing_60s_completion_attributed_tpm": 22238,
+      "resource_samples": 48,
+      "sampled_process_tree_peak_rss_bytes": 576405504,
+      "observed_process_tree_cpu_seconds": 9.580936768,
+      "host_cpu_percent_median": 2.8499999999999996,
+      "host_cpu_percent_max": 9.7,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 371166339072,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "implementation_sha256": {
+          "budget.py": "92083f81a3c4652f49d15354eeba32bd503333b3281cdfcb763dade9c13bda36",
+          "evidence.py": "d6729f188add517a94d3f222bf177fdfa31b97778e42bde16cd8008677b1f7c6",
+          "experiment.py": "5ca7b8629911e4b9e377ea92235fd5c2de1d5a37f4255d02a74405b2984ec1c4",
+          "proxy.py": "bafb56e2983776e158449d432a31eac29fac443b1d9911922106708f03d02f1c"
+        },
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-debate-001",
+        "runtime_packages": {
+          "deepseek-harness-runtime-bin": "0.2.2rc2",
+          "deepseek-harness-sdk": "0.2.2rc2"
+        },
+        "started_at": "2026-11-12T05:06:05.790944+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently revise the initial factor using all sources."
+          ],
+          [
+            "B",
+            "Challenge A's proposal with the strongest source-supported opposing interpretation. Return your alternative proposal and explicit objections."
+          ],
+          [
+            "A",
+            "Compare the available proposals against the original sources. Return the final factor revision. Identify adopted and rejected changes with reasons. Reference the contribution ids actually used; do not defer to agreement or agent count."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "debate"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T05:06:25.365452+00:00",
+          "contribution_id": "availability-debate-001:0:A",
+          "latency_seconds": 19.363061707932502,
+          "proposal": {
+            "availability_rule": "Eligible only at a 15:00 Asia/Shanghai close snapshot when both the exact Q1 record's public release timestamp and vendor ingestion timestamp are no later than that snapshot. For this record, public release was 2024-04-29 18:30, after the 2024-04-29 15:00 close, while vendor ingestion was 2024-04-30 08:10, before the 2024-04-30 15:00 close. Therefore the earliest eligible signal is the 2024-04-30 close. Execution is at the next trading close, 2024-05-06. The 2024-03-31 fiscal period end is not an availability date.",
+            "changes": [
+              "Replaced fiscal-period-end anchoring with point-in-time public-release and vendor-ingestion eligibility.",
+              "Moved the first signal from 2024-03-31 to the 2024-04-30 15:00 Asia/Shanghai close.",
+              "Set the first execution to the 2024-05-06 close under the next-trading-close rule.",
+              "Converted operating cash flow from CNY ten-thousand before computing the ratio, yielding 0.02.",
+              "Removed cross-sectional performance and profitability inference because the supplied evidence contains only one company and no prices or returns."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 reports Q1 operating cash flow of 6000 CNY ten-thousand and Q1 total assets of CNY 3,000,000,000 for company A, with a nominal observation date of 2024-03-31."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Converting 6000 CNY ten-thousand to CNY 60,000,000 and dividing by CNY 3,000,000,000 gives a computed ratio of 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai; neither timestamp may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The 2024-04-29 18:30 release occurred after the 2024-04-29 15:00 close snapshot, so the 2024-04-29 close cannot use the record under the stated close-snapshot rule."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "By the 2024-04-30 15:00 close snapshot, both the 2024-04-29 18:30 public release and the 2024-04-30 08:10 vendor ingestion are available, making 2024-04-30 the earliest eligible signal date."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "In the frozen calendar, the next trading close after 2024-04-30 is 2024-05-06, so the first execution date is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "Only company A is supplied and no prices or returns are supplied, so no cross-sectional rank, performance measurement, or profitability claim can be established from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each company and signal date, compute Q1 operating cash flow divided by Q1 total assets using the exact Q1 financial record whose public release and vendor ingestion timestamps are both available by the 15:00 Asia/Shanghai close snapshot. Convert operating cash flow from CNY ten-thousand to CNY before dividing. Rank firms by this dimensionless ratio, with higher values ranking higher. For company A: 6000 CNY ten-thousand = CNY 60,000,000; CNY 60,000,000 / CNY 3,000,000,000 = 0.02.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets (Point-in-Time)",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "The ratio is dimensionless after converting operating cash flow from CNY ten-thousand to CNY. No cross-sectional standardization, percentile rank, or peer comparison is computed here because only company A is supplied. In a full panel, rank the ratio cross-sectionally at each signal date; do not form cohorts from fiscal period-end dates.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "Cross-sectional distribution, rank, and performance cannot be measured with only company A and no prices or returns.",
+              "No evidence is supplied about subsequent revisions to the exact Q1 record after the 2024-04-30 08:10 vendor ingestion.",
+              "The availability timing for other companies or other records is not supplied."
+            ]
+          },
+          "role": "A"
+        },
+        {
+          "at": "2026-11-12T05:07:11.312867+00:00",
+          "contribution_id": "availability-debate-001:1:B",
+          "latency_seconds": 45.946008834056556,
+          "proposal": {
+            "availability_rule": "The earliest eligible close snapshot is 2024-04-30 15:00 Asia/Shanghai. The public release was 2024-04-29 18:30, after the 2024-04-29 15:00 close, so the 2024-04-29 close is ineligible. By 2024-04-30 15:00 the 2024-04-29 18:30 public release is known; the vendor first ingested the exact version at 2024-04-30 08:10, also before that snapshot, so a vendor-only variant yields the same date. The first signal date is 2024-04-30. Under the next-trading-close execution rule and the frozen calendar, the first execution date is 2024-05-06. The fiscal period end 2024-03-31 is not an availability date.",
+            "changes": [
+              "Objection to A: A imposes a joint public-release-and-vendor-ingestion gate. S2 gives both timestamps but does not make vendor ingestion necessary for a public-information factor; the economic availability event is the 2024-04-29 18:30 public release.",
+              "Objection to A: A's reason the 2024-04-29 close is ineligible should be the 18:30 release occurring after the 15:00 snapshot, not the later vendor-ingestion timestamp.",
+              "Objection to A: A's joint gate can unnecessarily delay signals in other records where public release precedes vendor ingestion; it is appropriate for a vendor-data-only pipeline, not necessarily for a public-filing factor.",
+              "Kept A's first signal date 2024-04-30 and first execution date 2024-05-06 because the alternative reading does not move them for this record, where ingestion at 08:10 precedes the 15:00 snapshot.",
+              "Kept the unit conversion and computed ratio of 0.02.",
+              "Reframed the factor as public-release-first point-in-time and treated vendor ingestion as an operational or corroborating timestamp."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 gives company A Q1 operating cash flow of 6000 CNY ten-thousand, Q1 total assets of CNY 3,000,000,000, and a nominal observation date of 2024-03-31."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Converting 6000 CNY ten-thousand to CNY 60,000,000 and dividing by CNY 3,000,000,000 gives a computed ratio of 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai; neither timestamp may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The 2024-04-29 18:30 public release is later than the 2024-04-29 15:00 close snapshot, so the 2024-04-29 close cannot be an eligible signal under the close-snapshot rule."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "By the 2024-04-30 15:00 close snapshot, the 2024-04-29 18:30 public release is known and the 2024-04-30 08:10 vendor ingestion has also occurred; both a public-release-first rule and a vendor-only rule point to 2024-04-30 as the earliest signal date."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "In the frozen calendar, the next trading close after 2024-04-30 is 2024-05-06, so the first execution date is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 supplies both a public-release timestamp and a vendor-ingestion timestamp but does not say vendor ingestion is a necessary condition for using a public filing; treating both as joint gates is a vendor-data-pipeline choice, not the only source-supported reading."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "Only company A is supplied and no prices or returns are supplied, so no cross-sectional rank, performance measurement, or profitability claim can be established from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each company, use the exact Q1 financial record once its public release is knowable at a 15:00 Asia/Shanghai close snapshot. Compute Q1 operating cash flow in CNY divided by Q1 total assets in CNY; higher values rank higher. For company A, 6000 CNY ten-thousand = CNY 60,000,000; the ratio is CNY 60,000,000 / CNY 3,000,000,000 = 0.02. Economically, this measures quarterly operating cash generated per unit of total assets, but it is not by itself a validated return or profitability signal. Treat vendor ingestion as an operational feed-availability check for vendor-only pipelines, not as an additional economic release event when public filing data are used. Do not anchor eligibility to the 2024-03-31 fiscal period end.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets (Public-Release-First Point-in-Time)",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "The ratio is dimensionless after converting operating cash flow from CNY ten-thousand to CNY. No cross-sectional standardization, percentile rank, or peer comparison is computed here because only company A is supplied. In a full panel, rank the ratio cross-sectionally at each signal date; do not form cohorts from fiscal period-end dates.",
+            "peer_contribution_ids": [
+              "availability-debate-001:0:A"
+            ],
+            "unresolved": [
+              "No evidence is supplied about subsequent revisions to the exact Q1 record after the 2024-04-30 08:10 vendor ingestion.",
+              "The availability timing for other companies or other records is not supplied.",
+              "Whether the production pipeline uses public filings or a vendor-only feed is not specified; that choice determines whether vendor ingestion is a gate, although it does not change this record's dates.",
+              "No prices or returns are supplied, so no cross-sectional performance or profitability inference is possible.",
+              "No evidence is supplied on processing latency between the 2024-04-30 08:10 ingestion and usability at the 15:00 close snapshot."
+            ]
+          },
+          "role": "B"
+        },
+        {
+          "at": "2026-11-12T05:07:42.449765+00:00",
+          "contribution_id": "availability-debate-001:2:A",
+          "latency_seconds": 31.13562341593206,
+          "proposal": {
+            "availability_rule": "First eligible close snapshot: 2024-04-30 15:00 Asia/Shanghai. The public release at 2024-04-29 18:30 occurred after the 2024-04-29 15:00 close, so 2024-04-29 is ineligible. By 2024-04-30 15:00 the public release is known, and the vendor ingestion at 2024-04-30 08:10 also precedes that close, so both the public-release-first rule and the vendor-record check support the same earliest signal date. The 2024-03-31 fiscal period end is not an availability date. First signal date: 2024-04-30. Under the next-trading-close execution rule and the frozen calendar, the first execution date is 2024-05-06.",
+            "changes": [
+              "Adopted availability-debate-001:1:B's public-release-first framing: the 2024-04-29 18:30 public release is the primary economic availability event; vendor ingestion is an operational check for vendor-record computations.",
+              "Rejected availability-debate-001:0:A's unconditional joint public-release-and-vendor-ingestion gate as the economic availability criterion because S2 does not state vendor ingestion is necessary for public-filing data. For this record the dates are unchanged because ingestion at 2024-04-30 08:10 still precedes the 2024-04-30 15:00 close.",
+              "Adopted availability-debate-001:0:A's correct first signal 2024-04-30, first execution 2024-05-06, and computed ratio 0.02, and retained its vendor-ingestion check conditionally for vendor-record inputs.",
+              "Rejected the initial factor's start at the 2024-03-31 Q1 period end; S2 says neither timestamp may be replaced by the fiscal period end.",
+              "Rejected any cross-sectional performance or profitability claim; S3 supplies no prices, returns, or other companies' financials.",
+              "Adopted the limitation that only company A is supplied, so no cross-sectional rank can be measured."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 gives company A Q1 operating cash flow of 6000 CNY ten-thousand, Q1 total assets of CNY 3,000,000,000, and a nominal observation date of 2024-03-31."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Converting 6000 CNY ten-thousand to CNY 60,000,000 and dividing by CNY 3,000,000,000 gives a computed ratio of 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai; neither timestamp may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The 2024-04-29 18:30 public release is later than the 2024-04-29 15:00 close snapshot, so the 2024-04-29 close cannot be an eligible signal under the close-snapshot rule."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "By the 2024-04-30 15:00 close snapshot, the 2024-04-29 18:30 public release is known and the 2024-04-30 08:10 vendor ingestion has occurred, so 2024-04-30 is the earliest eligible signal date under both public-release-first and vendor-record use."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "In the frozen calendar, the next trading close after 2024-04-30 is 2024-05-06, so the first execution date is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 supplies both a public-release timestamp and a vendor-ingestion timestamp but does not state that vendor ingestion is necessary when public-filing data are used independently; treating vendor ingestion as an unconditional joint gate is a pipeline choice."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "Only company A is supplied and no prices or returns are supplied, so no cross-sectional rank, performance measurement, or profitability claim can be established from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each company and signal close t, compute Q1 operating cash flow in CNY divided by Q1 total assets in CNY using the exact Q1 record whose 2024-04-29 18:30 Asia/Shanghai public release is knowable by the 15:00 Asia/Shanghai close snapshot. When the numeric inputs are taken from the vendor record, also require that exact version to have been ingested by the same snapshot. Convert operating cash flow from CNY ten-thousand to CNY before dividing. Higher ratios rank higher. For company A, 6000 CNY ten-thousand = CNY 60,000,000; CNY 60,000,000 / CNY 3,000,000,000 = 0.02. Economically, this is quarterly operating cash generated per unit of total assets, a cash-generation-intensity measure; it is not by itself a validated return or profitability signal.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets (Point-in-Time, Public-Release-First with Vendor-Ingestion Check)",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "The ratio is dimensionless after converting operating cash flow from CNY ten-thousand to CNY. Only company A is supplied, so no cross-sectional standardization, percentile rank, or peer comparison is computed here. In a full panel, rank the ratio cross-sectionally at each signal date; do not form cohorts by fiscal period end. No performance normalization or profitability inference is made.",
+            "peer_contribution_ids": [
+              "availability-debate-001:0:A",
+              "availability-debate-001:1:B"
+            ],
+            "unresolved": [
+              "Whether the production pipeline uses public-filing data independently or a vendor-only feed is unspecified; that choice determines whether vendor ingestion is a hard gate, although it does not change this record's dates.",
+              "No evidence is supplied on subsequent revisions to the exact Q1 record after the 2024-04-30 08:10 vendor ingestion.",
+              "No evidence is supplied on processing latency between the 2024-04-30 08:10 ingestion and usability at the 15:00 close snapshot.",
+              "Availability timing for other companies or other records is not supplied.",
+              "No prices, returns, or other companies' financials are supplied, so cross-sectional performance and profitability cannot be measured."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    },
+    {
+      "run_id": "availability-independent-001",
+      "variant": "independent",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T05:03:26.593500+00:00",
+      "finished_utc": "2026-11-12T05:04:10.106055+00:00",
+      "provider_span_seconds": 43.512555,
+      "actual_requests": 3,
+      "usage": {
+        "input_uncached": 5962,
+        "input_cached": 1536,
+        "input_cache_write": 0,
+        "output": 7477
+      },
+      "cache_hit_rate": 0.20485462790077355,
+      "conservative_cny": 0.074812,
+      "offpeak_tariff_estimate_cny": 0.035900720000000004,
+      "span_normalized_rpm": 4.136737086571911,
+      "span_normalized_tpm": 20649.212623804786,
+      "peak_trailing_60s_dispatch_rpm": 3,
+      "peak_trailing_60s_dispatch_attributed_tpm": 14975,
+      "peak_trailing_60s_completion_attributed_tpm": 14975,
+      "resource_samples": 22,
+      "sampled_process_tree_peak_rss_bytes": 550797312,
+      "observed_process_tree_cpu_seconds": 2.976343456,
+      "host_cpu_percent_median": 2.75,
+      "host_cpu_percent_max": 19.1,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 371228155904,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "implementation_sha256": {
+          "budget.py": "92083f81a3c4652f49d15354eeba32bd503333b3281cdfcb763dade9c13bda36",
+          "evidence.py": "d6729f188add517a94d3f222bf177fdfa31b97778e42bde16cd8008677b1f7c6",
+          "experiment.py": "5ca7b8629911e4b9e377ea92235fd5c2de1d5a37f4255d02a74405b2984ec1c4",
+          "proxy.py": "bafb56e2983776e158449d432a31eac29fac443b1d9911922106708f03d02f1c"
+        },
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-independent-001",
+        "runtime_packages": {
+          "deepseek-harness-runtime-bin": "0.2.2rc2",
+          "deepseek-harness-sdk": "0.2.2rc2"
+        },
+        "started_at": "2026-11-12T05:03:26.067710+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently revise the initial factor using all sources."
+          ],
+          [
+            "B",
+            "Independently revise the initial factor using all sources."
+          ],
+          [
+            "A",
+            "Compare the available proposals against the original sources. Return the final factor revision. Identify adopted and rejected changes with reasons. Reference the contribution ids actually used; do not defer to agreement or agent count."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "independent"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T05:03:40.207700+00:00",
+          "contribution_id": "availability-independent-001:0:A",
+          "latency_seconds": 13.95352412504144,
+          "proposal": {
+            "availability_rule": "Earliest eligible close snapshot is 2024-04-30 at 15:00 Asia/Shanghai. The public release was 2024-04-29 at 18:30, after the 2024-04-29 close, and the vendor first ingested the exact version on 2024-04-30 at 08:10, before the 2024-04-30 close. Therefore signal date = 2024-04-30; execution date = next trading close = 2024-05-06. Do not use 2024-03-31 or 2024-04-29 as the signal date.",
+            "changes": [
+              "Replaced the initial factor's period-end start date with point-in-time public-release and vendor-ingestion availability.",
+              "Set the earliest eligible signal date to the 2024-04-30 close, not 2024-03-31 or the 2024-04-29 close.",
+              "Set first execution date to the next trading close, 2024-05-06.",
+              "Made the operating cash flow and total assets units explicit and computed the ratio as 0.02."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "The source record gives Q1 operating cash flow of 6000 CNY ten-thousand and Q1 total assets of 3,000,000,000 CNY, so the unit-consistent ratio is 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 15:00 close, so it was not eligible for a 2024-04-29 close signal."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The vendor first ingested the exact record version on 2024-04-30 at 08:10 Asia/Shanghai, before the 2024-04-30 15:00 close, so the earliest eligible close snapshot is 2024-04-30."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "With signal at the 2024-04-30 close and next-trading-close execution, the first execution date is 2024-05-06 under the frozen calendar."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The fiscal period end 2024-03-31 cannot be used as the signal date because availability is governed by release and ingestion timestamps, not by the period end."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The evidence supplies no prices, returns, or other companies' financials, so cross-sectional performance and profitability cannot be measured or claimed."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For company A, compute Q1 operating cash flow divided by Q1 total assets, with both numerator and denominator converted to the same CNY units: 6000 CNY ten-thousand = 60,000,000 CNY; 60,000,000 / 3,000,000,000 = 0.02. Economically, a higher ratio indicates more operating cash generated per unit of assets, interpreted as cash-generation/asset-efficiency intensity. The initial factor's period-end start date is replaced by point-in-time availability: the observation becomes eligible only when the exact record is publicly available and ingested by the vendor. Cross-sectional ranking, if used, must rank only firms whose records are available by the signal close; this diagnostic supplies only one company, so no cross-sectional rank can be computed.",
+            "factor_name": "Q1 Operating Cash Flow to Total Assets (Point-in-Time, Next-Close Execution)",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Use a dimensionless ratio: operating cash flow in CNY divided by total assets in CNY. For cross-sectional use, convert the ratio to a percentile rank among eligible companies at each signal close, with higher values indicating stronger operating cash flow relative to assets; only data available by the 15:00 Asia/Shanghai snapshot may enter the rank. No cross-sectional normalization or rank is computable from this single-company diagnostic.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "Cross-sectional rank and factor efficacy cannot be assessed because only one company and no returns/prices are supplied.",
+              "No profitability or performance claim can be made from this synthetic diagnostic."
+            ]
+          },
+          "role": "A"
+        },
+        {
+          "at": "2026-11-12T05:03:56.118945+00:00",
+          "contribution_id": "availability-independent-001:1:B",
+          "latency_seconds": 15.909947625012137,
+          "proposal": {
+            "availability_rule": "Eligibility timestamp = max(public release timestamp, vendor first-ingestion timestamp of the exact version). Signal date = first frozen-calendar trading day whose 15:00 Asia/Shanghai close is at or after the eligibility timestamp; if the eligibility timestamp is after 15:00, use the next trading day's close. Execution date = the next frozen-calendar trading day's close after the signal date. Here max(2024-04-29 18:30, 2024-04-30 08:10) = 2024-04-30 08:10, so the first eligible signal close is 2024-04-30 15:00 and the next trading close is 2024-05-06.",
+            "changes": [
+              "Changed availability from the Q1 period-end date to the later of public release and vendor first ingestion of the exact record.",
+              "Converted operating cash flow from CNY ten-thousand to CNY before forming the ratio.",
+              "Set the first signal date to 2024-04-30, the first 15:00 close after both release and ingestion.",
+              "Set the first execution date to 2024-05-06, the next frozen-calendar trading close after the signal date.",
+              "Removed any implied cross-sectional ranking or performance claim when only one company and no prices are supplied."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 provides Q1 operating cash flow of 6000 CNY ten-thousand and Q1 total assets of 3,000,000,000 CNY; the converted ratio is 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 15:00 close, so a close snapshot on 2024-04-29 could not use the public release."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The vendor first ingested the exact Q1 version on 2024-04-30 at 08:10 Asia/Shanghai, before the 15:00 close, so 2024-04-30 is the earliest eligible close signal date when both release and ingestion are required."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "Under the frozen calendar, the next trading close after the 2024-04-30 signal is 2024-05-06, making that the first execution date under compute-at-close/execute-next-close."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The fiscal period end 2024-03-31 is a nominal observation date, not an availability date; replacing release or ingestion timestamps with the period end would make the factor look available too early."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "Prices, returns, and other companies' financials were not supplied, so no cross-sectional rank, predictive performance, or profitability claim can be measured from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each company with a Q1 record, compute Q1 operating cash flow divided by Q1 total assets. Convert operating cash flow from CNY ten-thousand to CNY by multiplying by 10,000; keep total assets in CNY. Use only the exact publicly released and vendor-ingested version of the record. A company becomes eligible at the first 15:00 Asia/Shanghai close that occurs after both the public release timestamp and the vendor first-ingestion timestamp of that exact version; the fiscal period-end date is not an availability date. At that close, compute the ratio and, when a panel of eligible companies exists, rank companies cross-sectionally with higher ratios ranked higher. For this single-company observation, report the raw ratio 0.02; no cross-sectional rank can be formed from the supplied evidence.",
+            "factor_name": "Q1 Operating Cash Flow to Total Assets, Release-and-Ingestion-Gated Rank",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "The ratio is dimensionless after converting operating cash flow to CNY: (6000 x 10,000) / 3,000,000,000 = 0.02. Do not z-score, winsorize, or backfill the single observation. If a cross-sectional panel is later available, rank only companies eligible at the same signal close; unavailable companies remain excluded rather than assigned stale or period-end values.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "No peer-company financials or price/return data were supplied, so cross-sectional ranking and predictive validity cannot be tested.",
+              "The evidence does not establish whether the vendor's first-ingested version was later restated or superseded.",
+              "The supplied evidence does not include an investable universe definition or liquidity/tradability constraints beyond the frozen calendar."
+            ]
+          },
+          "role": "B"
+        },
+        {
+          "at": "2026-11-12T05:04:10.112503+00:00",
+          "contribution_id": "availability-independent-001:2:A",
+          "latency_seconds": 13.992425541975535,
+          "proposal": {
+            "availability_rule": "Eligibility timestamp = max(public release timestamp, vendor first-ingestion timestamp of the exact version). Signal date = first frozen-calendar trading day whose 15:00 Asia/Shanghai close is at or after the eligibility timestamp; if eligibility is after 15:00, use the next trading day's close. Execution date = next frozen-calendar trading day's close after the signal date. Here max(2024-04-29 18:30, 2024-04-30 08:10) = 2024-04-30 08:10 Asia/Shanghai, so the earliest eligible signal close is 2024-04-30 15:00 and the first execution close is 2024-05-06.",
+            "changes": [
+              "ADOPTED from availability-independent-001:1:B: eligibility timestamp = max(public release, vendor first ingestion of the exact version), yielding first signal close 2024-04-30 and first execution close 2024-05-06.",
+              "ADOPTED from availability-independent-001:1:B and availability-independent-001:0:A: convert Q1 operating cash flow from CNY ten-thousand to CNY before dividing by total assets, producing 0.02.",
+              "ADOPTED from availability-independent-001:0:A: explicit limitation that no cross-sectional rank or profitability claim is measurable from one company and no price/return data.",
+              "REJECTED the initial factor's start at the Q1 period-end date 2024-03-31: S2 states the fiscal period end cannot replace the release or ingestion timestamps, so that would make the signal look available too early.",
+              "REJECTED any 2024-04-29 signal close in this observation: S2 places public release at 18:30, after the 15:00 close.",
+              "REJECTED any cross-sectional normalization or rank for this observation: S3 supplies no peer financials or prices."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 provides Q1 operating cash flow of 6000 CNY ten-thousand and Q1 total assets of 3,000,000,000 CNY; after converting cash flow to CNY, the ratio is 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 15:00 close, so a 2024-04-29 close snapshot could not use the public release."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the vendor first ingested the exact Q1 version on 2024-04-30 at 08:10 Asia/Shanghai, before the 15:00 close, so 2024-04-30 is the earliest eligible close signal date when both release and ingestion are required."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "Under the frozen calendar in S3, the next trading close after the 2024-04-30 signal is 2024-05-06, making that the first execution date under compute-at-close/execute-next-close."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The fiscal period end 2024-03-31 is a nominal observation date, not an availability date; S2 says neither release nor ingestion timestamp may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3 supplies no prices, returns, or other companies' financials, so cross-sectional rank, predictive performance, and profitability cannot be measured or claimed from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For company A, compute Q1 operating cash flow divided by Q1 total assets using unit-consistent CNY values. Convert operating cash flow from CNY ten-thousand to CNY: 6000 x 10,000 = 60,000,000 CNY; total assets are 3,000,000,000 CNY; the ratio is 0.02. Economically, a higher ratio indicates more operating cash generated per unit of assets. Availability is point-in-time: a company becomes eligible only after both public release and vendor ingestion of the exact record version; the fiscal period end is not an availability date. For cross-sectional use, rank only companies eligible at the same close; this diagnostic has one company, so no cross-sectional rank is computed.",
+            "factor_name": "Q1 Operating Cash Flow to Total Assets, Point-in-Time Gated by Release and Ingestion",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Use a dimensionless ratio after converting operating cash flow to CNY: (6000 x 10,000) / 3,000,000,000 = 0.02. Do not z-score, winsorize, or backfill this single observation. If a panel is later available, rank only companies eligible at the same signal close; unavailable companies must be excluded rather than assigned stale or period-end values. No cross-sectional normalization or rank is computable from the supplied single-company evidence.",
+            "peer_contribution_ids": [
+              "availability-independent-001:0:A",
+              "availability-independent-001:1:B"
+            ],
+            "unresolved": [
+              "Cross-sectional rank and predictive validity cannot be tested because only one company and no prices/returns are supplied.",
+              "The evidence does not establish whether the vendor's first-ingested version was later restated or superseded.",
+              "The supplied evidence does not define the investable universe or liquidity/tradability constraints beyond the frozen calendar.",
+              "No profitability or performance claim can be made from this synthetic diagnostic."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    },
+    {
+      "run_id": "availability-review-001",
+      "variant": "review",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T05:05:06.452321+00:00",
+      "finished_utc": "2026-11-12T05:06:05.277582+00:00",
+      "provider_span_seconds": 58.825261,
+      "actual_requests": 3,
+      "usage": {
+        "input_uncached": 7676,
+        "input_cached": 1536,
+        "input_cache_write": 0,
+        "output": 10881
+      },
+      "cache_hit_rate": 0.16673903603994789,
+      "conservative_cny": 0.105472,
+      "offpeak_tariff_estimate_cny": 0.05123072,
+      "span_normalized_rpm": 3.0599099254315254,
+      "span_normalized_tpm": 20494.256710565212,
+      "peak_trailing_60s_dispatch_rpm": 3,
+      "peak_trailing_60s_dispatch_attributed_tpm": 20093,
+      "peak_trailing_60s_completion_attributed_tpm": 20093,
+      "resource_samples": 30,
+      "sampled_process_tree_peak_rss_bytes": 570458112,
+      "observed_process_tree_cpu_seconds": 6.310001935999999,
+      "host_cpu_percent_median": 2.8,
+      "host_cpu_percent_max": 16.5,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 371223293952,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "implementation_sha256": {
+          "budget.py": "92083f81a3c4652f49d15354eeba32bd503333b3281cdfcb763dade9c13bda36",
+          "evidence.py": "d6729f188add517a94d3f222bf177fdfa31b97778e42bde16cd8008677b1f7c6",
+          "experiment.py": "5ca7b8629911e4b9e377ea92235fd5c2de1d5a37f4255d02a74405b2984ec1c4",
+          "proxy.py": "bafb56e2983776e158449d432a31eac29fac443b1d9911922106708f03d02f1c"
+        },
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-review-001",
+        "runtime_packages": {
+          "deepseek-harness-runtime-bin": "0.2.2rc2",
+          "deepseek-harness-sdk": "0.2.2rc2"
+        },
+        "started_at": "2026-11-12T05:05:05.903230+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently revise the initial factor using all sources."
+          ],
+          [
+            "B",
+            "Review A's proposal against all sources. Identify unsupported claims and return a corrected proposal, retaining unresolved issues."
+          ],
+          [
+            "A",
+            "Compare the available proposals against the original sources. Return the final factor revision. Identify adopted and rejected changes with reasons. Reference the contribution ids actually used; do not defer to agreement or agent count."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "review"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T05:05:28.700063+00:00",
+          "contribution_id": "availability-review-001:0:A",
+          "latency_seconds": 22.585946041042916,
+          "proposal": {
+            "availability_rule": "Require public release timestamp <= 15:00 close t and vendor ingestion timestamp <= 15:00 close t. Company A's Q1 record was released 2024-04-29 at 18:30 Asia/Shanghai, after the 2024-04-29 close, and ingested 2024-04-30 at 08:10, before the 2024-04-30 close. Therefore the earliest eligible signal close is 2024-04-30; execute at the next trading close, 2024-05-06, per the frozen calendar. Do not use 2024-03-31 or 2024-04-29 as the signal date.",
+            "changes": [
+              "Moved the factor start from the Q1 fiscal period end to the first 15:00 close after both public release and vendor ingestion.",
+              "Set company A's earliest eligible signal date to 2024-04-30 rather than 2024-03-31 or 2024-04-29.",
+              "Set first execution date to 2024-05-06, the next trading close in the frozen calendar.",
+              "Converted operating cash flow from CNY ten-thousand to CNY before division, yielding 0.02.",
+              "Added explicit look-ahead exclusion and limitations on profitability and cross-sectional inference."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 reports company A's Q1 period end as 2024-03-31, Q1 operating cash flow as 6000 CNY ten-thousand, and Q1 total assets as 3,000,000,000 CNY; the record is synthetic and not RiceQuant data."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai; neither timestamp may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The 2024-04-29 15:00 close occurred before the 18:30 public release, so 2024-04-29 cannot be the earliest eligible signal date for this record."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "By the 2024-04-30 15:00 close, both the public release and the vendor ingestion had occurred, making 2024-04-30 the earliest eligible signal date for this observation."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "Under the stated next-trading-close execution rule and the frozen calendar, the next trading close after 2024-04-30 is 2024-05-06, so the first execution date is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "The computed ratio is (6000 * 10,000) / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "A higher OCF/TA ratio indicates more quarterly operating cash generated per unit of assets; it is a cash-generation/quality proxy, not standalone proof of profitability or expected return."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3 supplies no prices, returns, or other companies' financials, so cross-sectional performance, rank dispersion, and profitability cannot be measured from this evidence."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "This is a single-company synthetic diagnostic; results do not establish general factor efficacy or profitability."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For company i, factor value = Q1 operating cash flow (converted from CNY ten-thousand to CNY) divided by Q1 total assets in CNY. Form the cross-sectional rank only at a 15:00 Asia/Shanghai close t when the exact Q1 record is both publicly released and available in the vendor snapshot by t; exclude companies lacking an eligible record rather than assigning the fiscal-period-end date. Economic interpretation: the ratio measures quarterly operating cash generated per unit of assets, a cash-generation/quality proxy; higher values suggest stronger cash conversion but are not by themselves evidence of profitability or future returns. For company A: (6000 * 10,000) / 3,000,000,000 = 0.02.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets, Publication-Availability Lagged",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Convert OCF from CNY ten-thousand to CNY by multiplying by 10,000; divide by total assets reported in CNY. The resulting ratio is dimensionless. Rank only eligible companies at each signal close; no look-ahead filling, no period-end substitution, and no imputation for missing data. No winsorization is specified by the supplied evidence.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "Cross-sectional ranking, dispersion, and any return/profitability claim remain unmeasured because only company A's record and no prices/returns are provided.",
+              "The evidence does not specify a production policy for cases where public release precedes vendor ingestion; this revision conservatively requires both by the signal close."
+            ]
+          },
+          "role": "A"
+        },
+        {
+          "at": "2026-11-12T05:05:52.310512+00:00",
+          "contribution_id": "availability-review-001:1:B",
+          "latency_seconds": 23.609754625009373,
+          "proposal": {
+            "availability_rule": "At a 15:00 Asia/Shanghai close t, use the record only if the exact Q1 version has both a public-release timestamp <= t and a vendor-ingestion timestamp <= t; otherwise exclude it. For company A, public release was 2024-04-29 18:30, after the 2024-04-29 close, while vendor ingestion was 2024-04-30 08:10, before the 2024-04-30 close. Thus the earliest eligible signal close is 2024-04-30. Under the next-trading-close execution rule and the frozen calendar, the first execution close is 2024-05-06. Do not use 2024-03-31 or 2024-04-29 as the signal date.",
+            "changes": [
+              "Retained A's corrected use of 2024-04-30 as the earliest eligible signal date and 2024-05-06 as the first execution date.",
+              "Corrected A's unsupported economic assertion: S1-S3 do not validate OCF/TA as a quality proxy or return predictor; recast that interpretation as a hypothesis and limitation.",
+              "Retained the conservative availability policy requiring both public release and vendor ingestion by the signal close, and flagged it as an unresolved production-policy choice.",
+              "Recorded A as the peer contribution reviewed."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 reports company A's Q1 period end as 2024-03-31, Q1 operating cash flow as 6000 CNY ten-thousand, and Q1 total assets as 3,000,000,000 CNY; the record is synthetic and not RiceQuant data."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states that the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai, and that neither timestamp may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The 2024-04-29 15:00 close occurred before the 18:30 public release, so 2024-04-29 cannot be the earliest eligible signal date for this record under the stated availability rule."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "By the 2024-04-30 15:00 close, both the public release and the vendor ingestion had occurred; with 2024-04-30 on the frozen calendar, it is the earliest eligible signal close for this observation."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "Under the next-trading-close execution rule and the frozen calendar, the next trading close after 2024-04-30 is 2024-05-06, so the first execution date is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "The mechanical ratio is (6000 x 10,000) / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "S1 provides only accounting inputs and S3 provides no prices or returns; the evidence does not establish that high OCF/TA is a quality signal or predicts profitability or returns. Any such economic interpretation is an assumption and limitation, not a source-established fact."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3 supplies no prices, returns, or other companies' financials, so cross-sectional rank dispersion, factor performance, and profitability cannot be measured from this evidence."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "This is a single-company synthetic diagnostic; its arithmetic does not establish general factor efficacy or profitability."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For company i, compute Q1 operating cash flow in CNY divided by Q1 total assets in CNY, using the exact Q1 record only when its availability conditions are met by the signal close. Rank only eligible companies at that close; do not substitute the fiscal period-end date and do not impute missing records. For company A, the mechanical ratio is (6000 x 10,000) / 3,000,000,000 = 0.02. The proposed economic interpretation is quarterly operating cash generated per unit of assets, a descriptive cash-generation proxy; S1-S3 do not establish that this is a quality signal, profitability measure, or return predictor.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets, Publication-Availability Lagged",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Convert operating cash flow from CNY ten-thousand to CNY by multiplying by 10,000, then divide by total assets reported in CNY; the ratio is dimensionless. Rank only eligible companies at each signal close. No period-end filling, look-ahead filling, imputation, or winsorization is specified by the supplied evidence.",
+            "peer_contribution_ids": [
+              "availability-review-001:0:A"
+            ],
+            "unresolved": [
+              "Cross-sectional ranking, dispersion, and any return or profitability claim remain unmeasured because only company A's record and no prices/returns are provided.",
+              "The evidence does not specify a general production policy when public release and vendor ingestion occur at different times; this proposal conservatively requires both by the signal close.",
+              "The economic interpretation of OCF/TA as a cash-generation or quality proxy is not validated by the supplied evidence.",
+              "This single synthetic observation cannot support general factor efficacy or profitability conclusions."
+            ]
+          },
+          "role": "B"
+        },
+        {
+          "at": "2026-11-12T05:06:05.283450+00:00",
+          "contribution_id": "availability-review-001:2:A",
+          "latency_seconds": 12.9723097080132,
+          "proposal": {
+            "availability_rule": "At a 15:00 Asia/Shanghai close t, use the exact Q1 record only if its public-release timestamp <= t and its vendor-ingestion timestamp <= t; otherwise exclude the company. For company A, public release was 2024-04-29 18:30, after the 2024-04-29 15:00 close, and vendor ingestion was 2024-04-30 08:10, before the 2024-04-30 15:00 close. Therefore the earliest eligible signal close is 2024-04-30. Under the next-trading-close execution rule and the frozen calendar, the first execution close is 2024-05-06. Do not use 2024-03-31 or 2024-04-29 as the signal date.",
+            "changes": [
+              "Adopted from availability-review-001:0:A the core revision: replace the Q1 period-end start with the first 15:00 close after both public release and vendor ingestion; S2 and S3 show the 2024-04-29 close precedes the 18:30 release.",
+              "Adopted from availability-review-001:1:B the correction that OCF/TA should be described only as cash generated per unit of assets in the supplied evidence; A's suggestion that higher values indicate stronger cash conversion or quality is not validated by S1-S3 and is rejected as an economic claim.",
+              "Adopted from availability-review-001:1:B the conservative availability rule requiring both public release and vendor ingestion by the signal close, consistent with S2's exact-version language; noted as a production-policy choice.",
+              "Adopted the dates 2024-04-30 and 2024-05-06 common to both proposals after verifying them against S2 and S3.",
+              "Rejected any cross-sectional performance or profitability inference: S3 supplies no prices, returns, or peer financials."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 reports company A's Q1 period end as 2024-03-31, Q1 operating cash flow as 6000 CNY ten-thousand, and Q1 total assets as 3,000,000,000 CNY; the record is synthetic and not RiceQuant data."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai, and that neither timestamp may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The 2024-04-29 15:00 close occurred before the 18:30 public release, so 2024-04-29 cannot be the earliest eligible signal date for this record under the stated availability rule."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "By the 2024-04-30 15:00 close, both the public release and the vendor ingestion had occurred; with 2024-04-30 on the frozen calendar, it is the earliest eligible signal close for this observation."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "Under the next-trading-close execution rule and the frozen calendar, the next trading close after 2024-04-30 is 2024-05-06, so the first execution date is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "The mechanical ratio is (6000 x 10,000) / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "S1 provides only accounting inputs and S3 provides no prices or returns; the evidence does not establish that high OCF/TA is a quality signal or predicts profitability or returns. Any such interpretation is an assumption and limitation, not a source-established fact."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3 supplies no prices, returns, or other companies' financials, so cross-sectional rank dispersion, factor performance, and profitability cannot be measured from this evidence."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "This is a single-company synthetic diagnostic; its arithmetic does not establish general factor efficacy or profitability."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For company i, compute Q1 operating cash flow in CNY divided by Q1 total assets in CNY, using the exact Q1 record only when its public-release and vendor-ingestion timestamps are both available by the 15:00 Asia/Shanghai signal close. Rank only eligible companies at that close; do not substitute the fiscal period-end date, fill forward, or impute missing records. The economic interpretation supported by the evidence is descriptive only: quarterly operating cash generated per unit of assets. S1-S3 do not establish that this ratio is a validated quality signal, profitability measure, or return predictor. For company A, (6000 x 10,000) / 3,000,000,000 = 0.02.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets, Publication-Availability Lagged",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Convert operating cash flow from CNY ten-thousand to CNY by multiplying by 10,000, then divide by total assets reported in CNY; the ratio is dimensionless. Rank only eligible companies at each signal close. No period-end substitution, look-ahead filling, imputation, or winsorization is specified by the supplied evidence.",
+            "peer_contribution_ids": [
+              "availability-review-001:0:A",
+              "availability-review-001:1:B"
+            ],
+            "unresolved": [
+              "Cross-sectional ranking, dispersion, and any return or profitability claim remain unmeasured because only company A's record and no prices or returns are provided.",
+              "The evidence does not specify a general production policy when public release and vendor ingestion occur at different times; this revision conservatively requires both by the signal close.",
+              "The economic interpretation of OCF/TA beyond a descriptive cash-generation ratio is not validated by the supplied evidence.",
+              "This single synthetic observation cannot support general factor efficacy or profitability conclusions."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    },
+    {
+      "run_id": "availability-self-revision-001",
+      "variant": "self_revision",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T05:04:11.154811+00:00",
+      "finished_utc": "2026-11-12T05:05:05.389751+00:00",
+      "provider_span_seconds": 54.23494,
+      "actual_requests": 3,
+      "usage": {
+        "input_uncached": 9381,
+        "input_cached": 5888,
+        "input_cache_write": 0,
+        "output": 9606
+      },
+      "cache_hit_rate": 0.3856179186587203,
+      "conservative_cny": 0.107386,
+      "offpeak_tariff_estimate_cny": 0.04792276,
+      "span_normalized_rpm": 3.318893687353577,
+      "span_normalized_tpm": 27519.160157640075,
+      "peak_trailing_60s_dispatch_rpm": 3,
+      "peak_trailing_60s_dispatch_attributed_tpm": 24875,
+      "peak_trailing_60s_completion_attributed_tpm": 24875,
+      "resource_samples": 28,
+      "sampled_process_tree_peak_rss_bytes": 565395456,
+      "observed_process_tree_cpu_seconds": 4.658157792000001,
+      "host_cpu_percent_median": 2.8,
+      "host_cpu_percent_max": 17.4,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 371225948160,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "implementation_sha256": {
+          "budget.py": "92083f81a3c4652f49d15354eeba32bd503333b3281cdfcb763dade9c13bda36",
+          "evidence.py": "d6729f188add517a94d3f222bf177fdfa31b97778e42bde16cd8008677b1f7c6",
+          "experiment.py": "5ca7b8629911e4b9e377ea92235fd5c2de1d5a37f4255d02a74405b2984ec1c4",
+          "proxy.py": "bafb56e2983776e158449d432a31eac29fac443b1d9911922106708f03d02f1c"
+        },
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-self-revision-001",
+        "runtime_packages": {
+          "deepseek-harness-runtime-bin": "0.2.2rc2",
+          "deepseek-harness-sdk": "0.2.2rc2"
+        },
+        "started_at": "2026-11-12T05:04:10.620656+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently revise the initial factor using all sources."
+          ],
+          [
+            "A",
+            "Critically recheck your own proposal against all sources."
+          ],
+          [
+            "A",
+            "Compare the available proposals against the original sources. Return the final factor revision. Identify adopted and rejected changes with reasons. Reference the contribution ids actually used; do not defer to agreement or agent count."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "self_revision"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T05:04:29.520372+00:00",
+          "contribution_id": "availability-self-revision-001:0:A",
+          "latency_seconds": 18.70664587500505,
+          "proposal": {
+            "availability_rule": "The fiscal period end 2024-03-31 is not an eligible signal date. The Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 2024-04-29 15:00 close, and was first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai, before the 2024-04-30 15:00 close. Therefore the earliest eligible signal close is 2024-04-30 15:00 Asia/Shanghai. Execution occurs at the next trading close, 2024-05-06 15:00 Asia/Shanghai, per the frozen calendar. No signal may use the record at 2024-03-31 or at the 2024-04-29 close.",
+            "changes": [
+              "Replaced the fiscal-period-end start date with availability at the 15:00 Asia/Shanghai close after public release and vendor ingestion.",
+              "Moved the earliest signal date from 2024-03-31 to 2024-04-30.",
+              "Set the first execution date to the next trading close, 2024-05-06.",
+              "Added explicit CNY unit conversion and raw ratio calculation.",
+              "Deferred cross-sectional ranking or standardization until eligible peer data are available.",
+              "Added an explicit limitation that the evidence cannot support a profitability or performance claim."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 reports company A's Q1 report period end as 2024-03-31, Q1 operating cash flow as 6000 CNY ten-thousand, Q1 total assets as 3,000,000,000 CNY, and nominal observation date as 2024-03-31."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai, and that neither timestamp may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "Because the 2024-04-29 public release occurred after the 15:00 close and the vendor ingestion occurred before the 2024-04-30 15:00 close, the earliest eligible signal close is 2024-04-30."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The frozen calendar lists 2024-04-30 and then 2024-05-06 as the next trading day, so execution at the next trading close is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Unit conversion gives Q1 operating cash flow of 60,000,000 CNY, so OCF_Q1 / TotalAssets_Q1 = 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Economically, the ratio measures operating cash flow generated per unit of period-end total assets; a higher ratio indicates more cash generation per unit of assets, subject to accounting timing, seasonality, and industry effects."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3 supplies no prices, returns, other companies' financials, or cross-sectional data, so no performance, rank, or profitability claim can be measured from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "At each eligible signal close, rank companies by Q1 operating cash flow divided by Q1 total assets, using only Q1 records that are both publicly released and available to the vendor by the 15:00 Asia/Shanghai close. Compute the ratio in common CNY units as OCF_Q1 / TotalAssets_Q1, with higher values ranked higher. For company A, OCF_Q1 is 6000 CNY ten-thousand = 60,000,000 CNY and total assets are 3,000,000,000 CNY, giving 0.02. The factor is an accounting cash-generation-per-asset measure, not a return or profitability forecast.",
+            "factor_name": "Q1 Operating Cash Flow to Total Assets, availability-lagged",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "First convert operating cash flow from CNY ten-thousand to CNY and divide by total assets in CNY. For a full cross-section, winsorize the raw ratios and then rank-transform or z-score them within each signal date among companies whose Q1 records satisfy the same availability rule. With only company A supplied, the usable output is the raw ratio 0.02; no cross-sectional rank or z-score is measurable.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "The full cross-sectional distribution and peer company financials are not supplied, so no rank or z-score can be computed.",
+              "No prices or returns are supplied, so factor performance and profitability cannot be measured.",
+              "No information is supplied on later restatements or amendments to the Q1 record after vendor ingestion.",
+              "The frozen calendar ends at 2024-05-07, so later execution dates cannot be validated from the supplied calendar.",
+              "Sector, industry, share count, corporate actions, and accounting-policy comparability data are not supplied.",
+              "The evidence covers only company A, so the economic interpretation cannot be generalized cross-sectionally."
+            ]
+          },
+          "role": "A"
+        },
+        {
+          "at": "2026-11-12T05:04:43.360222+00:00",
+          "contribution_id": "availability-self-revision-001:1:A",
+          "latency_seconds": 13.838655333034694,
+          "proposal": {
+            "availability_rule": "The Q1 fiscal period end 2024-03-31 is not an eligible signal date, and the record may not be used at the 2024-04-29 close: its public release was 2024-04-29 at 18:30 Asia/Shanghai, after that day's 15:00 close. The vendor first ingested this exact version on 2024-04-30 at 08:10 Asia/Shanghai, before the 2024-04-30 15:00 close. Applying either gate alone (public release by close, or vendor ingestion by close) yields the same result: the earliest eligible signal close is 2024-04-30 15:00 Asia/Shanghai. Per the framework, execution is at the next trading close, 2024-05-06 15:00 Asia/Shanghai (the frozen calendar skips from 2024-04-30 to 2024-05-06).",
+            "changes": [
+              "Rechecked unit conversion: 6000 CNY ten-thousand = 60,000,000 CNY, giving 0.02 and not 2e-6.",
+              "Rechecked that public release (2024-04-29 18:30) and vendor ingestion (2024-04-30 08:10) independently both place the first eligible signal at the 2024-04-30 close; the prior proposal's double gate is confirmed, not merely asserted.",
+              "Rechecked execution date against the frozen calendar: next trading day after 2024-04-30 is 2024-05-06.",
+              "Downgraded the 'higher is better' ranking direction from an implicit premise to an explicitly flagged design assumption not measured by the evidence.",
+              "Added that numerator and denominator come from the same record vintage, so no mixed-vintage ratio is constructed.",
+              "Added that winsorization/z-scoring choices are untested design assumptions rather than evidence-backed steps."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 reports company A's Q1 report period end as 2024-03-31, Q1 operating cash flow of 6000 in CNY ten-thousand, Q1 total assets of 3,000,000,000 CNY, and a nominal observation date of 2024-03-31."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released 2024-04-29 18:30 Asia/Shanghai and first ingested by the vendor 2024-04-30 08:10 Asia/Shanghai, and that neither timestamp may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The 2024-04-29 public release at 18:30 falls after the 15:00 Asia/Shanghai close and the vendor ingestion at 2024-04-30 08:10 falls before the 2024-04-30 15:00 close, so the earliest eligible signal close is 2024-04-30 under either gate."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The frozen calendar's next trading day after 2024-04-30 is 2024-05-06, so execution at the next trading close is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "6000 CNY ten-thousand equals 60,000,000 CNY, so OCF_Q1 / TotalAssets_Q1 = 60,000,000 / 3,000,000,000 = 0.02; failing to convert units would wrongly give 2e-6."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The ratio is interpretable as operating cash flow per unit of period-end total assets; both numerator and denominator derive from the same Q1 record and become usable together, so no mixing of vintage vintages is needed."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3 supplies no prices, returns, other companies' financials, or cross-sectional data, so no rank, performance, or profitability claim can be measured from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "At each eligible signal close, rank companies by Q1 operating cash flow divided by Q1 total assets, using only Q1 records that have both been publicly released and been ingested by the vendor before the 15:00 Asia/Shanghai close snapshot. Higher ratio means more operating cash generated per unit of period-end assets; the sign of that ranking rule is a stated design choice, not something the supplied evidence measures. For company A, OCF_Q1 = 6000 CNY ten-thousand = 60,000,000 CNY and TotalAssets_Q1 = 3,000,000,000 CNY, so the ratio is 0.02 (2%). This is an accounting cash-generation intensity measure, not a return or profitability estimate, and it is not validated by any price or cross-sectional data here.",
+            "factor_name": "Q1 Operating Cash Flow to Total Assets, publication-and-ingestion-lagged",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Convert operating cash flow from CNY ten-thousand to CNY (multiply by 10,000), then divide by total assets in CNY; do not divide the un-converted 6000 figure, which would give 2e-6 instead of 0.02. For a full cross-section, winsorize raw ratios and then rank-transform or z-score within each signal date among companies whose Q1 records satisfy the same availability rule. With only company A supplied, only the raw ratio 0.02 is usable; no rank or z-score is measurable, and the winsorization/standardization choices remain untested design assumptions.",
+            "peer_contribution_ids": [
+              "availability-self-revision-001:0:A"
+            ],
+            "unresolved": [
+              "Whether higher OCF/total assets predicts higher future returns is unmeasured; the ranking direction is a design assumption.",
+              "No cross-sectional peer financials are supplied, so ranking, winsorization, and standardization cannot be computed or validated.",
+              "No prices or returns are supplied, so no factor performance or profitability claim is possible.",
+              "Single-quarter Q1 operating cash flow may be seasonally atypical, and no seasonal adjustment or trailing-year alternative is testable with S1 alone.",
+              "Later restatements or amendments of the Q1 record after 2024-04-30 08:10 are not documented.",
+              "The frozen calendar ends 2024-05-07, so execution or holding dates beyond that cannot be validated.",
+              "Sector, industry, share count, corporate-action, and accounting-policy comparability data are absent."
+            ]
+          },
+          "role": "A"
+        },
+        {
+          "at": "2026-11-12T05:05:05.399921+00:00",
+          "contribution_id": "availability-self-revision-001:2:A",
+          "latency_seconds": 22.03810800006613,
+          "proposal": {
+            "availability_rule": "The Q1 period end 2024-03-31 is not an eligible signal date. The 2024-04-29 close is also not eligible: S2 says the record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 15:00 close. By the 2024-04-30 15:00 close both gates are satisfied: public release occurred the prior evening, and vendor ingestion of this exact version occurred on 2024-04-30 at 08:10 Asia/Shanghai. Therefore the earliest eligible signal close is 2024-04-30. Under the frozen calendar, the next trading close is 2024-05-06, so first execution is 2024-05-06.",
+            "changes": [
+              "Adopted from availability-self-revision-001:0:A the core revision moving the signal from the 2024-03-31 fiscal period end to the 2024-04-30 close, because S2 places public release after the 2024-04-29 close and vendor ingestion before the 2024-04-30 close.",
+              "Adopted from availability-self-revision-001:0:A execution on 2024-05-06, because S3's frozen calendar has no trading day between 2024-04-30 and 2024-05-06.",
+              "Adopted from availability-self-revision-001:0:A the CNY ten-thousand conversion and raw ratio of 0.02.",
+              "Adopted from availability-self-revision-001:1:A the explicit warning that dividing unconverted 6000 by 3,000,000,000 would wrongly give 2e-6; unit handling is material to the definition.",
+              "Adopted from availability-self-revision-001:1:A treating higher-first ranking as a stated design assumption rather than an evidence-backed predictive claim.",
+              "Adopted from availability-self-revision-001:1:A the point that numerator and denominator come from the same Q1 record vintage and become usable together.",
+              "Adopted from availability-self-revision-001:1:A flagging winsorization and rank/z-score choices as untested design assumptions because S3 provides no cross-section.",
+              "Rejected 0:A's implicit framing that higher ratio being ranked first is supported by the sources; S1-S3 support the accounting ratio, not its predictive sign, so higher-first remains only a design choice.",
+              "Rejected 0:A's omission of the single-quarter Q1 seasonality limitation; 1:A correctly raises it, and S1 alone cannot test seasonal adjustment.",
+              "Rejected any use of 2024-03-31 or the 2024-04-29 close as signal dates, because S2 forbids replacing timestamps with the fiscal period end and the 2024-04-29 release was after the close.",
+              "Rejected any performance or profitability claim, because S3 supplies no prices, returns, or peer financials."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 reports company A's Q1 period end as 2024-03-31, Q1 operating cash flow of 6000 in CNY ten-thousand, Q1 total assets of 3,000,000,000 CNY, and nominal observation date 2024-03-31."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai and first ingested by the vendor on 2024-04-30 at 08:10 Asia/Shanghai, with a close snapshot at 15:00 Asia/Shanghai and an explicit prohibition on replacing those timestamps with the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The 2024-04-29 public release at 18:30 occurred after that day's 15:00 close, so the record was not available at the 2024-04-29 close and cannot be used as a signal then."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "By the 2024-04-30 15:00 close, both public release and vendor ingestion had occurred, so 2024-04-30 is the earliest eligible signal close under either availability gate."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3's frozen calendar orders 2024-04-26, 2024-04-29, 2024-04-30, 2024-05-06, 2024-05-07, so the next trading close after the 2024-04-30 signal is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Unit conversion gives 6000 CNY ten-thousand = 60,000,000 CNY, so OCF_Q1 / TotalAssets_Q1 = 60,000,000 / 3,000,000,000 = 0.02; using the unconverted 6000 would wrongly give 2e-6."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "The factor is interpretable as operating cash flow per unit of period-end total assets; a higher ratio means more cash generation per unit of assets, but the evidence does not establish that higher values predict higher future returns."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3 supplies no prices, returns, other companies' financials, or cross-sectional data, so no rank, factor performance, or profitability claim can be measured from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "At each eligible 15:00 Asia/Shanghai close, compute for each company OCF_Q1 / TotalAssets_Q1 using a Q1 record that has both been publicly released by that close and been ingested by the vendor by that close. The cross-sectional factor ranks companies on that ratio; higher-first ordering is a stated design choice, not a predictive property established by the evidence. For company A, OCF_Q1 = 6000 CNY ten-thousand = 60,000,000 CNY and TotalAssets_Q1 = 3,000,000,000 CNY, so the raw ratio is 0.02. With only company A supplied, no cross-sectional rank, z-score, or performance measure is computable. The economic reading is operating cash generated per unit of period-end total assets, an accounting intensity measure, not a return or profitability estimate.",
+            "factor_name": "Q1 Operating Cash Flow to Total Assets, public-release-and-vendor-ingestion lagged",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Convert operating cash flow from CNY ten-thousand to CNY by multiplying by 10,000: 6000 becomes 60,000,000 CNY; divide by total assets of 3,000,000,000 CNY to obtain 0.02. Do not divide the unconverted 6000 figure, which would wrongly give 2e-6. For a full cross-section, winsorize raw ratios and then rank-transform or z-score within each signal date among companies satisfying the same availability rule; those winsorization and standardization choices are untested design assumptions because only company A is supplied.",
+            "peer_contribution_ids": [
+              "availability-self-revision-001:0:A",
+              "availability-self-revision-001:1:A"
+            ],
+            "unresolved": [
+              "Whether a higher OCF/total assets ratio predicts higher future returns is unmeasured; the ranking direction is a design assumption.",
+              "No cross-sectional peer financials are supplied, so ranking, winsorization, and standardization cannot be computed or validated.",
+              "No prices or returns are supplied, so no factor performance or profitability claim is possible.",
+              "Single-quarter Q1 operating cash flow may be seasonally atypical, and no seasonal adjustment or trailing-year alternative is testable with S1 alone.",
+              "Later restatements or amendments of the Q1 record after 2024-04-30 08:10 are not documented.",
+              "The frozen calendar ends 2024-05-07, so execution or holding dates beyond that cannot be validated from the supplied calendar.",
+              "Sector, industry, share count, corporate-action, and accounting-policy comparability data are absent."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    },
+    {
+      "run_id": "availability-single-001",
+      "variant": "single",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T04:50:59.139917+00:00",
+      "finished_utc": "2026-11-12T04:51:16.790953+00:00",
+      "provider_span_seconds": 17.651036,
+      "actual_requests": 1,
+      "usage": {
+        "input_uncached": 1160,
+        "input_cached": 0,
+        "input_cache_write": 0,
+        "output": 3118
+      },
+      "cache_hit_rate": 0.0,
+      "conservative_cny": 0.027264,
+      "offpeak_tariff_estimate_cny": 0.013632,
+      "span_normalized_rpm": 3.399233903324428,
+      "span_normalized_tpm": 14541.922638421902,
+      "peak_trailing_60s_dispatch_rpm": 1,
+      "peak_trailing_60s_dispatch_attributed_tpm": 4278,
+      "peak_trailing_60s_completion_attributed_tpm": 4278,
+      "resource_samples": 9,
+      "sampled_process_tree_peak_rss_bytes": 559939584,
+      "observed_process_tree_cpu_seconds": 1.755158176,
+      "host_cpu_percent_median": 2.4,
+      "host_cpu_percent_max": 5.0,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 371482624000,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-single-001",
+        "started_at": "2026-11-12T04:50:58.611240+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently solve the task, check your own answer, and return a final revision."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "single"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T04:51:16.802927+00:00",
+          "contribution_id": "availability-single-001:0:A",
+          "latency_seconds": 18.003134249942377,
+          "proposal": {
+            "availability_rule": "A close snapshot may use the Q1 record only if its public release timestamp and vendor ingestion timestamp are no later than that close. For company A, public release was 2024-04-29 18:30 Asia/Shanghai, after the 2024-04-29 15:00 close, so the earliest usable close is 2024-04-30 15:00; the vendor ingested the exact version at 2024-04-30 08:10. The first signal date is therefore 2024-04-30. Under the rule 'compute at close t and execute at the next trading close,' the first execution date is the next trading close in the frozen calendar, 2024-05-06.",
+            "changes": [
+              "Replace the initial 2024-03-31 period-end start date with point-in-time availability at the 2024-04-30 close.",
+              "Do not use the vendor nominal observation date as the signal date.",
+              "Separate the first signal date (2024-04-30 close) from the first execution date (2024-05-06 close).",
+              "Convert operating cash flow from CNY ten-thousand to CNY before computing the ratio.",
+              "Defer cross-sectional ranking and performance evaluation until a full point-in-time panel and returns are supplied."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Source S1 reports Q1 operating cash flow of 6,000 CNY ten-thousand (60,000,000 CNY) and Q1 total assets of 3,000,000,000 CNY for company A, giving a ratio of 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S2"
+                ],
+                "statement": "The 2024-03-31 nominal observation date is the fiscal period end, not the availability date, and cannot replace the release or ingestion timestamps."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The public release at 2024-04-29 18:30 Asia/Shanghai occurred after the 15:00 close, so the 2024-04-29 close snapshot cannot use this record."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The record is available by the 2024-04-30 15:00 close because the public release preceded that close and the vendor ingested the exact version at 2024-04-30 08:10; the first signal date is 2024-04-30."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "Given close-t computation and execution at the next trading close, the first execution date is 2024-05-06, the next trading date after 2024-04-30 in the frozen calendar."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "Only company A is supplied, with no prices, returns, or other companies' financials, so no cross-sectional performance or profitability claim can be measured from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each company, use the exact Q1 financial record only after it has been publicly released and ingested by the close snapshot. Compute operating_cash_flow_Q1 divided by total_assets_Q1, with both values taken from the same released record. The raw ratio is higher for firms generating more Q1 operating cash flow per unit of Q1 assets. Rank the ratio cross-sectionally only when comparable point-in-time records exist for the full universe. For company A, OCF is 6,000 CNY ten-thousand = 60,000,000 CNY and total assets are 3,000,000,000 CNY, giving 60,000,000 / 3,000,000,000 = 0.02. The initial period-end start date 2024-03-31 is not an eligible signal date.",
+            "factor_name": "Point-in-time Q1 operating cash flow to total assets",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "Raw factor = Q1 operating cash flow / Q1 total assets. Convert operating cash flow from CNY ten-thousand to CNY: 6,000 × 10,000 = 60,000,000. Divide by total assets of 3,000,000,000 to obtain 0.02. For a full panel, normalize by cross-sectional rank or percentile of this ratio at each eligible close; with only one supplied company, no cross-sectional rank is computed.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "Cross-sectional rank and any performance or profitability attribution cannot be computed from one company and no returns.",
+              "The evidence covers only this synthetic company A record; general release and ingestion lags for other observations are not specified.",
+              "No peer contributions were supplied for comparison."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    },
+    {
+      "run_id": "availability-single-002",
+      "variant": "single",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T05:07:43.515393+00:00",
+      "finished_utc": "2026-11-12T05:08:03.352831+00:00",
+      "provider_span_seconds": 19.837438,
+      "actual_requests": 1,
+      "usage": {
+        "input_uncached": 904,
+        "input_cached": 256,
+        "input_cache_write": 0,
+        "output": 3641
+      },
+      "cache_hit_rate": 0.2206896551724138,
+      "conservative_cny": 0.031448,
+      "offpeak_tariff_estimate_cny": 0.015473120000000002,
+      "span_normalized_rpm": 3.024584122203684,
+      "span_normalized_tpm": 14521.028370699887,
+      "peak_trailing_60s_dispatch_rpm": 1,
+      "peak_trailing_60s_dispatch_attributed_tpm": 4801,
+      "peak_trailing_60s_completion_attributed_tpm": 4801,
+      "resource_samples": 11,
+      "sampled_process_tree_peak_rss_bytes": 581795840,
+      "observed_process_tree_cpu_seconds": 8.463137311999999,
+      "host_cpu_percent_median": 5.6,
+      "host_cpu_percent_max": 10.1,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 370511024128,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "implementation_sha256": {
+          "budget.py": "92083f81a3c4652f49d15354eeba32bd503333b3281cdfcb763dade9c13bda36",
+          "evidence.py": "d6729f188add517a94d3f222bf177fdfa31b97778e42bde16cd8008677b1f7c6",
+          "experiment.py": "5ca7b8629911e4b9e377ea92235fd5c2de1d5a37f4255d02a74405b2984ec1c4",
+          "proxy.py": "bafb56e2983776e158449d432a31eac29fac443b1d9911922106708f03d02f1c"
+        },
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-single-002",
+        "runtime_packages": {
+          "deepseek-harness-runtime-bin": "0.2.2rc2",
+          "deepseek-harness-sdk": "0.2.2rc2"
+        },
+        "started_at": "2026-11-12T05:07:42.953512+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently solve the task, check your own answer, and return a final revision."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "single"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T05:08:03.366732+00:00",
+          "contribution_id": "availability-single-002:0:A",
+          "latency_seconds": 20.199273749953136,
+          "proposal": {
+            "availability_rule": "At each close t = 15:00 Asia/Shanghai, a record becomes eligible only after both its public release timestamp and vendor ingestion timestamp are no later than t. For company A, public release was 2024-04-29 18:30, after the 2024-04-29 close, and vendor ingestion was 2024-04-30 08:10, before the 2024-04-30 close. The earliest eligible signal close is therefore 2024-04-30. Under the framework's next-trading-close execution rule and the frozen calendar, the first execution date is 2024-05-06. Do not use 2024-03-31 or the 2024-04-29 close as the signal date.",
+            "changes": [
+              "Replaced the Q1 period-end start date with the first eligible close after both public release and vendor ingestion: 2024-04-30 15:00 Asia/Shanghai.",
+              "Added explicit unit conversion: 6,000 CNY ten-thousand = CNY 60,000,000 before dividing by total assets.",
+              "Set execution to the next trading close under the frozen calendar: 2024-05-06, not 2024-03-31 or 2024-04-30.",
+              "Removed unsupported immediate ranking and performance claims because only one company and no prices are supplied.",
+              "Required all inputs to be point-in-time available by the 15:00 close snapshot rather than using the fiscal period end as a proxy."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "S1 provides Q1 operating cash flow of 6,000 CNY ten-thousand, equal to CNY 60,000,000, and Q1 total assets of CNY 3,000,000,000."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Using the S1 units, the ratio is CNY 60,000,000 / CNY 3,000,000,000 = 0.02; ignoring the ten-thousand unit would produce an incorrect ratio."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 15:00 close, so it was not available for a close snapshot on 2024-04-29."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states the vendor first ingested the exact Q1 record on 2024-04-30 at 08:10 Asia/Shanghai, before the 2024-04-30 15:00 close, so both public and vendor availability conditions are met at that close."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "S2 states that the fiscal period end 2024-03-31 cannot replace the public-release or vendor-ingestion timestamps."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3 lists the frozen sessions as 2024-04-26, 2024-04-29, 2024-04-30, 2024-05-06, and 2024-05-07; the next trading close after the 2024-04-30 signal is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "Because S1 contains only company A and S3 supplies no other companies' financials, no cross-sectional rank can be computed from the supplied evidence."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "S3 supplies no prices or returns, so no profitability or cross-sectional performance claim can be measured from this evidence."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "For each company, compute Q1 operating cash flow divided by Q1 total assets, converting operating cash flow from CNY ten-thousand to CNY. Use only financial records whose public release and vendor ingestion timestamps are no later than the close snapshot at 15:00 Asia/Shanghai on the signal date t. Rank eligible companies cross-sectionally at each close t when a full universe is available. For company A, operating cash flow is 6,000 CNY ten-thousand = CNY 60,000,000 and total assets are CNY 3,000,000,000, giving a ratio of 0.02. Only one company is supplied, so the cross-sectional rank itself is not computable.",
+            "factor_name": "Publication-Timestamped Q1 Operating Cash Flow to Total Assets",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "The ratio is dimensionless CNY/CNY and is reported as a decimal. In a full universe, normalize or rank only firms eligible at the same close t using point-in-time available data; no peer financials are supplied here, so only company A's raw ratio of 0.02 is computed and no cross-sectional normalized score is produced.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "The close price or return on 2024-05-06 is not supplied, so realized execution price and return are unknown.",
+              "Peer financials and returns are absent, so the cross-sectional rank and any long-short spread cannot be evaluated.",
+              "No information beyond the frozen calendar is supplied on trading halts or session completeness for 2024-05-06."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    },
+    {
+      "run_id": "availability-single-003",
+      "variant": "single",
+      "synthetic_evidence": true,
+      "started_utc": "2026-11-12T05:09:03.978807+00:00",
+      "finished_utc": "2026-11-12T05:09:21.512014+00:00",
+      "provider_span_seconds": 17.533207,
+      "actual_requests": 1,
+      "usage": {
+        "input_uncached": 904,
+        "input_cached": 256,
+        "input_cache_write": 0,
+        "output": 3036
+      },
+      "cache_hit_rate": 0.2206896551724138,
+      "conservative_cny": 0.026608,
+      "offpeak_tariff_estimate_cny": 0.013053120000000001,
+      "span_normalized_rpm": 3.4220778891163492,
+      "span_normalized_tpm": 14359.038822732202,
+      "peak_trailing_60s_dispatch_rpm": 1,
+      "peak_trailing_60s_dispatch_attributed_tpm": 4196,
+      "peak_trailing_60s_completion_attributed_tpm": 4196,
+      "resource_samples": 9,
+      "sampled_process_tree_peak_rss_bytes": 576978944,
+      "observed_process_tree_cpu_seconds": 9.493124544,
+      "host_cpu_percent_median": 8.7,
+      "host_cpu_percent_max": 13.7,
+      "host_swap_used_peak_bytes": 0,
+      "disk_free_min_bytes": 370339971072,
+      "known_answer_checks": {
+        "signal_date": true,
+        "execution_date": true,
+        "unit_correct_ratio": true,
+        "source_ids_covered": true
+      },
+      "manifest": {
+        "case_id": "availability-001",
+        "case_sha256": "db31e1364d14c489cc4e627b24b13611b423d5f3a9fa7b20dd6718c0644485fc",
+        "category": "diagnostic",
+        "config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+        "implementation_sha256": {
+          "budget.py": "92083f81a3c4652f49d15354eeba32bd503333b3281cdfcb763dade9c13bda36",
+          "evidence.py": "d6729f188add517a94d3f222bf177fdfa31b97778e42bde16cd8008677b1f7c6",
+          "experiment.py": "5ca7b8629911e4b9e377ea92235fd5c2de1d5a37f4255d02a74405b2984ec1c4",
+          "proxy.py": "bafb56e2983776e158449d432a31eac29fac443b1d9911922106708f03d02f1c"
+        },
+        "max_total_output_tokens": 24576,
+        "patch_sha256": "1bf1b4a24e2ed64f2d2b901cca10bedcea8ef96cd9feb78530d6cc793273ce45",
+        "run_id": "availability-single-003",
+        "runtime_packages": {
+          "deepseek-harness-runtime-bin": "0.2.2rc2",
+          "deepseek-harness-sdk": "0.2.2rc2"
+        },
+        "started_at": "2026-11-12T05:09:03.435687+00:00",
+        "steps": [
+          [
+            "A",
+            "Independently solve the task, check your own answer, and return a final revision."
+          ]
+        ],
+        "synthetic": true,
+        "variant": "single"
+      },
+      "steps": [
+        {
+          "at": "2026-11-12T05:09:21.515572+00:00",
+          "contribution_id": "availability-single-003:0:A",
+          "latency_seconds": 17.887845665914938,
+          "proposal": {
+            "availability_rule": "The earliest eligible close snapshot must be at or after both the public release timestamp 2024-04-29 18:30 Asia/Shanghai and the vendor ingestion timestamp 2024-04-30 08:10 Asia/Shanghai. Because close snapshots occur at 15:00 Asia/Shanghai, 2024-04-29 15:00 is too early; the first eligible close snapshot is 2024-04-30 15:00. Therefore first_signal_date = 2024-04-30. The framework computes at close t and executes at the next trading close; from the frozen calendar, the next trading date after 2024-04-30 is 2024-05-06, so first_execution_date = 2024-05-06. Neither 2024-03-31 nor 2024-04-29 is an eligible signal date for this record.",
+            "changes": [
+              "Replaced the Q1 period-end start date with point-in-time availability based on public release and vendor ingestion timestamps.",
+              "Set the first signal date to 2024-04-30, the first 15:00 close after both publication and vendor ingestion.",
+              "Set the first execution date to 2024-05-06, the next trading close after the signal date in the frozen calendar.",
+              "Specified conversion of operating cash flow from CNY ten-thousand to CNY before dividing by total assets.",
+              "Removed any implication that ranking or profitability can be evaluated from the single-company diagnostic evidence."
+            ],
+            "claims": [
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 operating cash flow is 6000 CNY ten-thousand, equal to 60,000,000 CNY, and Q1 total assets are 3,000,000,000 CNY."
+              },
+              {
+                "evidence_ids": [
+                  "S1"
+                ],
+                "statement": "Company A's Q1 operating cash flow / Q1 total assets ratio is 60,000,000 / 3,000,000,000 = 0.02."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The Q1 record was publicly released on 2024-04-29 at 18:30 Asia/Shanghai, after the 2024-04-29 15:00 close snapshot, so it was not eligible at that close."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The vendor first ingested this exact Q1 version on 2024-04-30 at 08:10 Asia/Shanghai, before the 2024-04-30 15:00 close snapshot."
+              },
+              {
+                "evidence_ids": [
+                  "S2",
+                  "S3"
+                ],
+                "statement": "The earliest eligible close snapshot for this observation is 2024-04-30 15:00, making 2024-04-30 the first signal date."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The frozen trading calendar lists 2024-04-30 followed by 2024-05-06, so the next trading close after the 2024-04-30 signal is 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "The first execution date under the compute-at-close, execute-next-close framework is therefore 2024-05-06."
+              },
+              {
+                "evidence_ids": [
+                  "S2"
+                ],
+                "statement": "The fiscal period-end date 2024-03-31 must not be used as the signal or execution date because neither timestamp in the disclosure record may be replaced by the fiscal period end."
+              },
+              {
+                "evidence_ids": [
+                  "S1",
+                  "S3"
+                ],
+                "statement": "Cross-sectional ranking cannot be measured from the supplied evidence because peer financials are not provided; only company A's single ratio is computable."
+              },
+              {
+                "evidence_ids": [
+                  "S3"
+                ],
+                "statement": "No profitability or cross-sectional performance claim can be measured because prices, returns, and other companies' financials are absent."
+              }
+            ],
+            "computed_ratio": 0.02,
+            "definition": "At each 15:00 Asia/Shanghai close snapshot t, compute OCF_TA = Q1 operating cash flow divided by Q1 total assets for each company, using only the exact Q1 record that has been publicly released and first ingested by the vendor no later than t. Convert operating cash flow from CNY ten-thousand to CNY by multiplying by 10,000 before division. Do not use the fiscal period-end date as the availability date. Rank eligible companies cross-sectionally by higher OCF_TA (larger ratio = better), assigning no signal to companies lacking an eligible point-in-time Q1 record. For company A, OCF_TA = (6000 * 10000) / 3000000000 = 0.02.",
+            "factor_name": "Q1 Operating Cash Flow / Total Assets (Point-in-Time)",
+            "first_execution_date": "2024-05-06",
+            "first_signal_date": "2024-04-30",
+            "normalization": "OCF_TA is dimensionless after converting operating cash flow from CNY ten-thousand to CNY. For a multi-company universe, rank eligible companies each signal date by OCF_TA, with larger positive values ranked higher; optional robust cross-sectional normalization such as winsorized z-scores or percentile ranks may be applied only within the eligible universe. No cross-sectional rank is computable from the supplied evidence because peer financials are absent. For the single supplied observation, report the raw ratio 0.02; total assets are already in CNY, while operating cash flow must be multiplied by 10,000.",
+            "peer_contribution_ids": [],
+            "unresolved": [
+              "Cross-sectional ranks and factor efficacy cannot be computed without peer financials and returns.",
+              "The vendor record's later restatement history is unspecified; this revision uses only the exact first-ingested version.",
+              "Universe membership, outlier handling, and treatment of missing or non-positive total assets are unspecified."
+            ]
+          },
+          "role": "A"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "One easy synthetic case; no collaboration advantage, market alpha or production acceptance established.",
+    "All treatments share evidence and requested aggregate output cap; single has one call, others three. Actual compute differs.",
+    "Sequential treatments are not randomized; later requests may benefit from warm shared provider cache.",
+    "Two-second process-tree RSS is summed RSS, not unique physical memory; short peaks may be missed.",
+    "Host CPU/swap include unrelated activity; process CPU is surviving-process cumulative CPU, not a cgroup total.",
+    "Dispatch/completion TPM attributes each request's entire token count to one timestamp; it is not token emission timing.",
+    "Initial pair implementation hashes were recorded in INITIAL_SOURCE_RECORD.json after the single run, not in original manifests.",
+    "DSH runtime-context messages can include the worker working-directory path even with persona runtime context disabled; no secret values were sent.",
+    "Estimated offpeak cost is not a provider invoice. The cumulative ledger conservatively uses peak miss prices."
+  ]
+}

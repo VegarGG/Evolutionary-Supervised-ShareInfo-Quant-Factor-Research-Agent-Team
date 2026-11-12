@@ -1,0 +1,119 @@
+{
+  "at": "2026-11-11T12:43:23.290902+00:00",
+  "status": "BOUNDED_LIVE_PILOT_COMPLETE",
+  "source_commit": "6de2fad3570b25d80d3fbceda64e16b02635e34b",
+  "completed_generations": 16,
+  "execution_classifications": {
+    "FAIL": 1,
+    "PASS": 8,
+    "PARTIAL": 6,
+    "RECOVERED": 1
+  },
+  "consecutive_clean_final_generations": 3,
+  "target_clean_generations": 3,
+  "configured_concurrency_ladder": [
+    1,
+    2,
+    4
+  ],
+  "observed_peak_concurrency": 3,
+  "authorized_concurrency_ceiling": 500,
+  "cumulative_budget": {
+    "requests": 884,
+    "settled_micro_cny": 56256735,
+    "pending_requests": 0,
+    "pending_reserved_micro_cny": 0,
+    "remaining_micro_cny": 143743265,
+    "cap_micro_cny": 200000000,
+    "invoice_verified": false,
+    "observed_at": "2026-11-11T12:29:53.169726+00:00"
+  },
+  "new_api_calls": 878,
+  "new_total_tokens": 8143542,
+  "all_six_roles_successfully_exercised": true,
+  "scientific_outcomes": {
+    "generated_at": "2026-11-11T12:36:15.526637+00:00",
+    "counts_by_kind": {
+      "factor": 10,
+      "research_note": 5
+    },
+    "counts_by_state": {
+      "W2Failed": 5,
+      "NoteFailed": 1,
+      "W1GateFailed": 4,
+      "NoteChecked": 4,
+      "Incubating": 1
+    },
+    "factor_w1_passes": 6,
+    "factor_w2_passes": 1,
+    "limits": [
+      "Live inference on the synthetic fixture; no claim of market alpha.",
+      "Incubating or ADVANCED is not owner acceptance or pool approval.",
+      "No private holdout measurements are included here.",
+      "Earlier SC1 and SC2 acceptance failures remain unchanged and are documented in the remediation report."
+    ]
+  },
+  "checks": [
+    {
+      "objective": "Real inference across all six roles",
+      "status": "PASS",
+      "evidence": "METRICS.json; GENERATIONS.json"
+    },
+    {
+      "objective": "Small-to-larger sequential live ladder",
+      "status": "PASS",
+      "evidence": "private/rung4/REVIEW_CRITERIA.json; RESULT_TABLES.md"
+    },
+    {
+      "objective": "Original cumulative budget, schedule and DeepSeek-only routing",
+      "status": "PASS",
+      "evidence": "private/exports/20261111T123213Z-pilot-final/reconciliation.json"
+    },
+    {
+      "objective": "Final three clean executions",
+      "status": "PASS",
+      "evidence": "private/rung4/generation1-reviewed/ through generation3-reviewed/"
+    },
+    {
+      "objective": "Final tested source",
+      "status": "PASS",
+      "evidence": "SOURCE_PROVENANCE.json"
+    },
+    {
+      "objective": "Resource and provider telemetry",
+      "status": "PASS_WITH_LIMITATIONS",
+      "evidence": "METRICS.json; GENERATIONS.json",
+      "limitation": "Five-second local samples; one recovered response lacks original HTTP status and latency"
+    },
+    {
+      "objective": "No pending paid work and owned-service cleanup",
+      "status": "PASS",
+      "evidence": "private/finalization/CLEANUP.json"
+    },
+    {
+      "objective": "J6 requested five W1-qualified factors",
+      "status": "NOT_MET",
+      "evidence": "private/rung4/PILOT_PAUSE.json; SCIENTIFIC_RESULTS.json"
+    },
+    {
+      "objective": "Full scientific release acceptance",
+      "status": "FAIL",
+      "evidence": "../qrs-remediation-2026-11-10/REMEDIATION_REPORT.md",
+      "limitation": "Earlier SC1 and SC2 remain failed"
+    },
+    {
+      "objective": "Production load, 500 overlap, live strategies, long incubation",
+      "status": "NOT_TESTED_BY_THIS_PILOT",
+      "evidence": "REPORT.md"
+    }
+  ],
+  "integrity_artifacts": [
+    "SECRET_SCAN.json",
+    "MANIFEST.sha256"
+  ],
+  "limitations": [
+    "Incubating is not owner acceptance.",
+    "Tariff estimates and conservative charges are not invoices.",
+    "Small synthetic fixture does not establish market alpha or whole-VM sizing."
+  ]
+}

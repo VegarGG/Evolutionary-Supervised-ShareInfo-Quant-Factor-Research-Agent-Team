@@ -1,7 +1,31 @@
 # AGENTS.md: rules for every coding session
 
 Project: QFR, the owner-driven Multi-Agent Quantitative Factor Research and Evolution System.
-Source of truth: docs/PLAN.md. Decision log: docs/decisions.md. Build only what PLAN.md says.
+Current development authority: `docs/harness/PLAN.md`, approved by the owner on
+12 November 2026 Beijing. `docs/PLAN.md` and the old phase records are historical
+QFR specifications. Preserve them and their evidence. Decision log: docs/decisions.md.
+
+## Approved harness work
+- Develop in `harness/` in this same repository. DSH owns research sessions and
+  model/tool loops; do not wrap the entire old orchestration engine or fork DSH's loop.
+- First establish collaboration capabilities against equal-evidence controls.
+  Diagnostic cases and withheld keys belong to tests, never a production factor pool.
+- Daily China A-share adapters are iFind, RiceQuant RQData and anonymous BaoStock
+  (the free testing default). A research session pins exactly one source; never
+  fall back or mix sources automatically. Credentials are entered in DSH Settings.
+  Reports/news are read-only cited evidence with publication, ingestion and
+  retrieval timestamps kept distinct. Keep paid data pilots narrowly bounded.
+- DSH's native DeepSeek Messages transport is authorized for these experiments.
+  It still calls DeepSeek only; no other paid provider or local model is authorized.
+- Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
+  every paid wire request atomically; retain reservations for unknown charges.
+- Run offline checks with `just harness-check` and `just harness-test`. Live
+  experiments are separate commands with explicit campaign state and audit records.
+  No ordinary test target may call a real model or data provider.
+- Current experiments do not publish official results, operate pools, or control
+  evaluation. The invariants below continue to govern any reused QFR services.
+- End each work package with updated README, decision/experiment records and a
+  commit. Do not merge a new PR without authorization.
 
 ## Non-negotiable invariants (each one has tests; never weaken them)
 1. Research code never invokes, configures, prioritizes or cancels evaluation, and never touches simulated accounts or pools. No such tool, endpoint or credential may exist on the research side.

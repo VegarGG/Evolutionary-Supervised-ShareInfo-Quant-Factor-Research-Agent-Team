@@ -1,0 +1,64 @@
+{
+  "at_utc": "2026-11-12T05:57:50.192138+00:00",
+  "python": "3.12.13",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "dependencies": {
+    "deepseek-harness-sdk": "0.2.2rc2",
+    "rqdatac": "3.8.2",
+    "baostock": "0.9.4",
+    "httpx": "0.28.1",
+    "pytest": "9.0.2",
+    "ruff": "0.15.4"
+  },
+  "checks": {
+    "harness_check": "pass",
+    "harness_test": {
+      "passed": 62,
+      "skipped": 0
+    },
+    "legacy_check": "pass",
+    "legacy_test": {
+      "passed": 862,
+      "skipped": 54,
+      "warnings": 1
+    },
+    "actual_model_calls": 24,
+    "new_conservative_micro_cny": 828178,
+    "carry_micro_cny": 56256735,
+    "unresolved_micro_cny": 0
+  },
+  "source_sha256": {
+    "harness/dsh-plugin/client.js": "3bccdcefb43b1d28bf5481eb9211b45b00b1035b85197f7894a0cd8085ddae5d",
+    "harness/dsh-plugin/cordis.patch.yml": "411d645266c9cd260ef3439da5a23e13807e28a1774e00e5afe1e971b441c80f",
+    "harness/dsh-plugin/index.js": "8a5e25c06ea6136ef340629f9633b6998e361c755f6bcd3dcb9a2d0e674e8b3d",
+    "harness/dsh-plugin/package.json": "a4d26a0746f794a97fa2d9544ec7d94cbd00bc29edb3620233aa5c7f1184e4a9",
+    "harness/scripts/data_pilot.py": "a1618486c4c0fb7a225a6515f0ff18cd9b01191a552db237ba39e74b4015474d",
+    "harness/scripts/diagnostic_pilot.py": "496ba9da7978a3283e4e11aaf49499119253d337f10e6b61c49afb6c53acaf06",
+    "harness/scripts/runtime_smoke.py": "a95db966b5a8d070323123c9067fdf10db35287c17b35ea741d5157abd3dae19",
+    "harness/scripts/start_ui.py": "c482976c7aa195e372bfa336aae8e1bd63dd1b0ab4c8692ee0babb167bef5d1a",
+    "harness/scripts/summarize_data_pilot.py": "3ed9283573f006a7e08a52c87e4f33ddfdf20c7a0e8b8e237eded9e8cc6f2b36",
+    "harness/scripts/summarize_pilot.py": "906f30aaddc04a52521c54c797406edf41fe624b787f01d5efb866275cecbb2a",
+    "harness/scripts/tool_smoke.py": "297cc4c78b0e34916219a0479da46e59bb4cc0bcb3bb39e187f41d4736137130",
+    "harness/src/qfh/__init__.py": "8c23c43cb0c23580222bc58fad376e0454bfcce71d48e20ca7b8019bea774dd4",
+    "harness/src/qfh/baostock_source.py": "bf4cb4f1d70ef4a55df14d34dbf4192ac274aa20995f620f73c797a620a8b6cf",
+    "harness/src/qfh/budget.py": "92083f81a3c4652f49d15354eeba32bd503333b3281cdfcb763dade9c13bda36",
+    "harness/src/qfh/data_gateway.py": "f4549f98d78af2fc81e8665583a51fb3dbf0ba1d12fff8f0edf8f20fcad9d018",
+    "harness/src/qfh/evidence.py": "d6729f188add517a94d3f222bf177fdfa31b97778e42bde16cd8008677b1f7c6",
+    "harness/src/qfh/experiment.py": "dfb131fc68bdeb75717ed33c4f26c91b8801e5cc6b571faf36345f9699154e51",
+    "harness/src/qfh/mcp_server.py": "5e8db3671bf31a2145cbf102a145ddaee7713f8cd193ce6e1dfcc7d30e41b069",
+    "harness/src/qfh/proxy.py": "bafb56e2983776e158449d432a31eac29fac443b1d9911922106708f03d02f1c",
+    "harness/src/qfh/ricequant.py": "ec6b031253c54a528e5ad918335b9b7f3c72becc45d7a3224120376dd0a2457f",
+    "harness/tests/test_baostock_source.py": "f2ace6ace13c50ed7bd13248d927726926aef8ae22fd1eb669d81483fe2c736c",
+    "harness/tests/test_budget.py": "93812ff71062db19d646e3ac11f132e797a03b42f5854bf99e9136001797de47",
+    "harness/tests/test_data_gateway.py": "db1002a17d68ab1d6a0a83e8bb84ef503f66b4fb3bdb7168803469c555537daf",
+    "harness/tests/test_evidence.py": "f8075ddea0f4cf23f6976f487319ac750f12f726cf15ffe0cec05825e0d17308",
+    "harness/tests/test_proxy.py": "3a85380bbf8d77c3da7ca791a0356a825814ce2827bab11a80ce80a9a8df18d9"
+  },
+  "logs": {
+    ".qfh-private/harness-check.log": "c4721e1c2e2775458f2eca964f3554e7d147f66bcca9420d22bc539c11c50e20",
+    ".qfh-private/harness-test.log": "d1443d219cefac651646dad22006c220d6425e772604fee61af847bea264a23c",
+    ".qfh-private/legacy-check.log": "79db0f298746be7a50369218733211af661915b9082d8cef5c676fbb241ad942",
+    ".qfh-private/legacy-check-retest.log": "9a0897a9e70f88f72f0e9625f744b481c0986ecf0bc473efee2424aa335ccd5a",
+    ".qfh-private/legacy-test.log": "40f0e7fe1c692ff92aa71b2c7884606f9137ba9c269566bc07da92fae48c0d28"
+  }
+}

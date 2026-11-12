@@ -1,0 +1,172 @@
+[
+  {
+    "path": "free-source-comparison/akshare-eastmoney/resources.jsonl",
+    "sha256": "7dc4ac549f0dcf318c189c56c3ce1cd2ac526c645fd8a89bc4c2e088ae7e8f58",
+    "bytes": 2964
+  },
+  {
+    "path": "free-source-comparison/akshare-eastmoney/response.json",
+    "sha256": "ed6c7342f14b1461126a3456ae0e63aadb74b304bbc319e1231733f496239186",
+    "bytes": 423
+  },
+  {
+    "path": "free-source-comparison/akshare-eastmoney/result.json",
+    "sha256": "22e5893a23e40af7e7e631ffcaab4806c823ce45a3346ce41a3b955cfe8155e7",
+    "bytes": 863
+  },
+  {
+    "path": "free-source-comparison/akshare-eastmoney/started.json",
+    "sha256": "744a759478882b43b9ea654b0d14cc43016ed8074b54ef565b4b33858ec77633",
+    "bytes": 397
+  },
+  {
+    "path": "free-source-comparison/baostock/resources.jsonl",
+    "sha256": "010643edde8acbb7320d676b6fa2ba25e64811819cc5782ec39ba95985de350b",
+    "bytes": 3445
+  },
+  {
+    "path": "free-source-comparison/baostock/result.json",
+    "sha256": "2ebe15e6a618acad01e86990137f66ccefbc322a43bf2776386c45ca52fb65b4",
+    "bytes": 814
+  },
+  {
+    "path": "free-source-comparison/baostock/sdk.log",
+    "sha256": "e3c72804373b577baa911b1ffe143a8b7d2bd92261b24346a55ddfae1110d3d8",
+    "bytes": 31
+  },
+  {
+    "path": "free-source-comparison/baostock/started.json",
+    "sha256": "1a2736654b2286a8b92ad7ce19454ee5a1cccf40e83e4d42daeafbcd882cdfc2",
+    "bytes": 388
+  },
+  {
+    "path": "data/pilots/baostock-cache-check-001/resources.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "data/pilots/baostock-cache-check-001/result.json",
+    "sha256": "bf3924f9720094c936efc20d116eb05ff8f87456455e969cd49ca35be2f16ec3",
+    "bytes": 772
+  },
+  {
+    "path": "data/pilots/baostock-cache-check-001/started.json",
+    "sha256": "1246dbbe1dcb4aaa24cc8b636bfcfc9e2aa2b6571898e428ce4250c27aeac431",
+    "bytes": 671
+  },
+  {
+    "path": "data/pilots/baostock-cache-check-002/resources.jsonl",
+    "sha256": "9df80ed404faa7de67660d7edf2e46c04694e495818a8aa24ede9eed5a6f8566",
+    "bytes": 524
+  },
+  {
+    "path": "data/pilots/baostock-cache-check-002/result.json",
+    "sha256": "45eb506ec049ba4e0f3bcfa9ea7fcfdd5991ded38ef22f1dda3fc0435f7284e0",
+    "bytes": 2043
+  },
+  {
+    "path": "data/pilots/baostock-cache-check-002/started.json",
+    "sha256": "b5b6e436b3fca7c27091cdc038c1c9f9362deb102576a58c88fbf8a9d3bb0213",
+    "bytes": 671
+  },
+  {
+    "path": "data/pilots/baostock-data-pilot-001/resources.jsonl",
+    "sha256": "45fc4f61f6890923c5ad4068e328cd2d7c47120c086a685a8586582d1849eb74",
+    "bytes": 1968
+  },
+  {
+    "path": "data/pilots/baostock-data-pilot-001/result.json",
+    "sha256": "9ac9d2f8a51d12b485ad1cf9af9658f29a4746fa7afa360b59849248b88020a7",
+    "bytes": 768
+  },
+  {
+    "path": "data/pilots/baostock-data-pilot-001/started.json",
+    "sha256": "77cac93b8180fb890d22fb0b4b2a7e1f2b98ec32c4a8ac5fecdc3dbc8e3928ec",
+    "bytes": 670
+  },
+  {
+    "path": "data/pilots/baostock-data-pilot-002/resources.jsonl",
+    "sha256": "3d65883adcea320777f7316d56edbfc3e71d427a9c63bea6c689ebb119ef1204",
+    "bytes": 4160
+  },
+  {
+    "path": "data/pilots/baostock-data-pilot-002/result.json",
+    "sha256": "376e285c3ca7876a7a86b34e93c462c4b5df7786ab85df9559726d1765c37053",
+    "bytes": 819
+  },
+  {
+    "path": "data/pilots/baostock-data-pilot-002/started.json",
+    "sha256": "b9f88c80f7cb778da9825831f521f76162332c59e445417ec4bf6d3551b07c60",
+    "bytes": 670
+  },
+  {
+    "path": "data/pilots/baostock-data-pilot-003/resources.jsonl",
+    "sha256": "80839dcbd10f28bc0143fbfa40fe056625b8f80c8b303ea62796bf15135fb281",
+    "bytes": 6212
+  },
+  {
+    "path": "data/pilots/baostock-data-pilot-003/result.json",
+    "sha256": "fabdf4a837d5c1adcfc8c94c58bc1779ed232cb77401d6a0e18214272e80e5c3",
+    "bytes": 2040
+  },
+  {
+    "path": "data/pilots/baostock-data-pilot-003/started.json",
+    "sha256": "98095d4751a1bf2fc5d5d6a8fa38eff7e7b0fff452a1cff5b4cd63c5bae5b966",
+    "bytes": 670
+  },
+  {
+    "path": "data/baostock-wire/7ecf7c055ce3128511c755a0b24d6d9a944647268a4dd0dbdbd54b1ec9cc474e.bin",
+    "sha256": "841fbc2937e639c6add53895d5a9ee3dbf783b0cd579de964b42835de246e004",
+    "bytes": 365
+  },
+  {
+    "path": "data/baostock-wire/7ecf7c055ce3128511c755a0b24d6d9a944647268a4dd0dbdbd54b1ec9cc474e.json",
+    "sha256": "1ca65d44b6415775153c8807cb79bb6563f3909221631df4696f9d73f70e9cdc",
+    "bytes": 519
+  },
+  {
+    "path": "data/baostock-wire/db7b414aa0c3cc4a98f47d418443c49133f5a24c7f5aefb4c6b3c1c7abbcdc3f.bin",
+    "sha256": "135b50320a29322feb7dca160b1e7ec1ad10070e6b56838b819177976dc339d1",
+    "bytes": 276
+  },
+  {
+    "path": "data/baostock-wire/db7b414aa0c3cc4a98f47d418443c49133f5a24c7f5aefb4c6b3c1c7abbcdc3f.json",
+    "sha256": "f9f2767ea78efff784a140857b8d3bb90fd5b41713cf2a823fbff58ea94d04a9",
+    "bytes": 392
+  },
+  {
+    "path": "data/evidence/f8c52794cc38517c5e258e67795acc7467b40b0c02576b6e65f43f5b2fb44366.json",
+    "sha256": "f8c52794cc38517c5e258e67795acc7467b40b0c02576b6e65f43f5b2fb44366",
+    "bytes": 1092
+  },
+  {
+    "path": "ui-qa-baostock/RESULT.json",
+    "sha256": "89de06c55f16033e65fabb07455f4f031a9a2ff59af0c3305b2e5d797af072ce",
+    "bytes": 812
+  },
+  {
+    "path": "ui-qa-baostock/attempt1.json",
+    "sha256": "3622ae60b6cf0dad6c1712bd61a2f71f4565ef1c0aee46c1d64b64d77d9584cc",
+    "bytes": 197
+  },
+  {
+    "path": "ui-qa-baostock/mobile-before.png",
+    "sha256": "78af85e70c174d6a74ecc12019e3b59053025e9e772df0bf502da10784e1863e",
+    "bytes": 21912
+  },
+  {
+    "path": "ui-qa-baostock/mobile.png",
+    "sha256": "bbf9cbce2932a1c1fa1b283969508bd4d6d7f5324a27c91fae963adc07cca941",
+    "bytes": 61777
+  },
+  {
+    "path": "ui-qa-baostock/ready-for-owner.png",
+    "sha256": "6b1d138cbfbf6d9ac018daca8dad74937b64b928f661fdecfcb4ca3ebf908f79",
+    "bytes": 104720
+  },
+  {
+    "path": "ui-qa-baostock/saved-credentials.png",
+    "sha256": "3eca9f14158cf66cc5b64ff1b83ed3b3c432f30c9e3540ff26dbdf4b0993ae02",
+    "bytes": 107775
+  }
+]

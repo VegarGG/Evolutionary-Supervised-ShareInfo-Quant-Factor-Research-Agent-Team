@@ -344,3 +344,31 @@ which was not yet merged, as the owner asked.
     of SET-01 (a job submitted through MCP completes a generation from exploration
     alone, with the library-correlation gate recorded as vacuous, and zero programs)
     needs research jobs (Phase 4) and the evaluator (Phase 3).
+
+
+## Quant Factor Harness decisions — 12 November 2026
+
+1. The owner-approved harness plan in `docs/harness/PLAN.md` supersedes pending
+   feature development. Retain the repository, license, original plans, branches
+   and deployment evidence. Close previous PRs 14–19 without merging them.
+2. Use DSH SDK/plugin extension points for sessions, actual inference and the
+   frontend. Do not fork its agent loop or wrap the entire QFR orchestration stack.
+   Keep official evaluation independent and preserve the existing research boundary.
+3. Keep the cumulative 200 CNY DeepSeek-only budget and 56.256735 CNY carry-forward.
+   Admit each provider request atomically at the wire, including retries; retain
+   unknown reservations. Use the owner's Beijing windows and start sequentially.
+4. Compare mechanisms on equal combined evidence and requested aggregate output
+   allowance; disclose unequal call counts and actual compute. The first one-case
+   pilot does not demonstrate collaboration benefit or satisfy the core gate.
+5. Build iFind and RQData together, with credentials entered through DSH. After the
+   owner's free-source request, select anonymous BaoStock for daily testing. Pin a
+   single source per session, keep per-provider quotas and never fallback silently.
+6. Preserve both failed guarded BaoStock attempts. Fix the observed SDK newline
+   parsing edge in a scoped bounded transport; prove it offline and then retest
+   once. Each manual free-source allowance revision leaves the paid caps unchanged.
+7. Setup UI and research chat are distinct delivery states: the former is tested;
+   live interactive chat through the shared budget guard is not delivered yet.
+   RQData report/news seams are implemented but entitlement/live checks and full
+   PDF extraction remain pending. Do not label tool schemas as completed research.
+8. Archive actual old deployment measurements and scientific failures separately
+   from new prototype results. Process RSS on this Mac is not production VM sizing.

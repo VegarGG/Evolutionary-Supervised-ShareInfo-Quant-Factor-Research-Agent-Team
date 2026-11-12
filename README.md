@@ -1,55 +1,72 @@
-# QFR v2
+# Quant Factor Harness
 
-New, independent implementation of the owner's
-[authoritative plan](docs/QFR-Implementation-Plan-v2.1-EN.html).
-The canonical project is
-[Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team).
-Previous QFR code and PRs are outdated and are not dependencies of this repository.
-This Phase 0 proposal replaces the stale implementation and README while preserving
-their Git history for reference.
+Current development is a small research harness built on **DeepSeek Harness (DSH)**
+in the existing [QFR repository](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team).
+DSH owns sessions and model/tool loops; QFH adds bounded data access, evidence,
+budget enforcement and controlled workflow experiments. The independent evaluator
+and its research/holdout boundaries remain separate.
 
-Phase 0 delivered the foundation, contracts, logging, database boundaries and five
-MCP read tools. Phase 1 adds the data layer, the factor DSL and the measurement core:
-dense panels and content-addressed snapshots in a full and a date-truncated research
-zone, synthetic planted, null and decay worlds, CN ingest from investment_data, the
-operator library, metrics, PSR, DSR and PBO, the reference backtester, the strategy
-composite and the W0 research workbench. No factors, strategies, research jobs,
-evaluation runs, provider calls or promotion workflows are implemented or preloaded.
+Start with the [approved plan](docs/harness/PLAN.md),
+[first live pilot report](docs/harness/FIRST_PILOT.md), and
+[data-source selection](docs/harness/DATA_SOURCES.md).
+The [validation record](docs/harness/VALIDATION.md) includes test scope and UI checks.
+This is a prototype, not a completed Hybrid v1 system or an accepted alpha engine.
 
-Use Python 3.12, uv, just and Docker Compose v2. Start with `uv sync --locked`,
-`just check`, and `just test`. Run `just init-secrets` once, `just build`, then
-`just up`. Use `just test-db` for the full suite against the isolated PostgreSQL
-instance, `just doctor` for deployed checks and `just logs tail` for container logs.
-The local `.tools` directory can be added to PATH on this Mac; it contains verified
-uv and just binaries and is intentionally ignored by Git.
+## Current deliverable
 
-Read [the acceptance report](docs/phase0-acceptance.md) before use. Phase 0 is
-implemented and ready for owner audit: local checks and canonical-repository CI
-pass, including all eight ARM64/AMD64 image builds. Owner acceptance and merge
-remain pending; [PR #10](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team/pull/10)
-contains the replacement.
-The owner's network and memory decisions are applied. `just doctor` checks current
-OOM flags; 24 GiB is a planning expectation, not a required allocation. Test the
-host endpoint with `python scripts/smoke_mcp.py --host`. Domain placeholders still
-exit cleanly; live downstream tracing is deferred by the owner.
-`just backup` and `just bench` explicitly report their later phases.
-`just mcp-config` prints bearer-bearing client snippets; keep its output private.
+- Pinned DSH SDK/runtime 0.2.2rc2 and a native Research data settings/tool plugin.
+- **BaoStock** as the anonymous free testing default; iFind and RiceQuant RQData
+  adapters remain selectable. One data source per session, no automatic fallback.
+  Paid-source credentials are entered in DSH, never in model prompts.
+- Persistent data quotas, immutable evidence, exact-query reuse and worker tools
+  for daily bars plus entitlement-gated RQData report/disclosure/news metadata.
+- An atomic DeepSeek wire guard carrying the original 200 CNY budget forward,
+  preserving unknown charges and enforcing Beijing admission windows.
+- Ten real-model diagnostic runs across six workflow variants, 24 new API calls.
+  All passed the one known-answer case; collaboration showed no accuracy advantage
+  and cost more. More diagnostic/open-ended work is required before the core gate.
 
-Phase 1: build snapshots with `uv run --locked qfr data build --source synthetic`
-(written under `data/snapshots/`) or, in Compose, `just data-build --source synthetic`
-or `--source cn --release-tag <tag>`. Check one with `qfr data verify <path> --zone
-research`. Read [the Phase 1 record](docs/phase1-acceptance.md) and the
-[Phase 1 decisions](docs/decisions.md#phase-1-decisions).
+Conservative cumulative model spending is **57.084913 CNY**, including the earlier
+56.256735 CNY. The new pilot used 0.828178 CNY, with 22.64% input cache hits. These
+figures are not invoice verified. Free-data and browser checks added no paid calls.
 
-Phase 2 adds the artifact registry and the pools. registry-api stores immutable factor
-and strategy versions with lineage, and append-only pool entries and events; the
-database refuses updates and deletes. The MCP front door gains `qfr.setup.status`,
-`qfr.pool.import`, `qfr.pool.list`, `qfr.pool.get`, `qfr.dsl.validate` and
-`qfr.artifact.get`. Run `just setup` to import a raw factor pool (pool_import/1 as
-JSON, YAML or CSV, placed under `imports/`) or to start empty, which records the
-no-defaults notice. Read [the Phase 2 record](docs/phase2-acceptance.md) and the
-[Phase 2 decisions](docs/decisions.md#phase-2-decisions). Phase 2 was built on the
-unmerged Phase 1 branch at the owner's request.
+## Local setup and checks
+
+Use Python 3.12, uv, Node and pnpm. From the repository root:
+
+```sh
+uv sync --project harness --locked
+just harness-check
+just harness-test
+just harness-ui
+```
+
+`harness-ui` installs the local plugin and opens a loopback DSH web service on
+port 3080. Use its authenticated bootstrap link printed locally. In Settings →
+Research data, select BaoStock, iFind or RQData. Saving a credential sends no
+provider request. This setup profile has model providers disabled; guarded live
+experiments use the separate SDK runner, as described in [harness/README.md](harness/README.md).
+It is not yet the complete interactive research-chat frontend.
+
+`just harness-data-plan` prints the tiny initial data test without contacting a
+provider. Execution requires the explicit `--execute` argument. The current pilot
+is one stock, three dates and unadjusted close only. Paid-source allowances remain
+one query each; BaoStock's recorded failed attempts and successful retry are counted
+in its separate allowance. Exact completed queries reuse local evidence.
+
+All harness runtime homes, keys, raw responses and data stay in ignored
+`.qfh-private/`. Use external-volume cache/runtime paths on storage-constrained
+machines. No normal check/test target contacts a model or market-data provider.
+
+## Previous implementation and deployment
+
+The existing `packages/`, original [v2.1 plan](docs/QFR-Implementation-Plan-v2.1-EN.html)
+and phase documents are retained as historical QFR work. The harness does not wrap
+that entire orchestration stack. Read the [preserved deployment evidence](docs/harness/LEGACY_EXPERIMENTS.md)
+for real generations, failures, resource measurements and scientific acceptance
+limits. Old PRs 14–19 were closed without merging; their branches are preserved.
+Legacy commands (`just check`, `just test`, Compose operations) still apply to that
+code; the harness has separate dependency and test targets.
 
 ## License and use
 

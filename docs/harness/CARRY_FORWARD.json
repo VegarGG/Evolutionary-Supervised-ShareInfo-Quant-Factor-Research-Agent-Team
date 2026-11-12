@@ -1,0 +1,14 @@
+{
+  "source": "qrs-live-deepseek-2026-11-11/private/worker-evidence/budget-current.json",
+  "sha256": "5d2f7ef3972ad17f4d88461944848ae9b204ad45d3c95e4159e708745e644e10",
+  "observation": {
+    "requests": 884,
+    "settled_micro_cny": 56256735,
+    "pending_requests": 0,
+    "pending_reserved_micro_cny": 0,
+    "remaining_micro_cny": 143743265,
+    "cap_micro_cny": 200000000,
+    "invoice_verified": false,
+    "observed_at": "2026-11-11T12:29:53.169726+00:00"
+  }
+}

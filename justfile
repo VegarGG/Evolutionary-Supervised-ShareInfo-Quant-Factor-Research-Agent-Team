@@ -1,5 +1,21 @@
 set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 
+# Harness checks are offline; provider experiments have separate explicit commands.
+harness-check:
+    uv run --project harness --locked ruff check harness
+    uv run --project harness --locked ruff format --check harness
+    node --check harness/dsh-plugin/index.js
+    node --check harness/dsh-plugin/client.js
+
+harness-test:
+    uv run --project harness --locked pytest -c harness/pyproject.toml harness/tests -q
+
+harness-ui:
+    PYTHONPATH=harness/src uv run --project harness --locked python harness/scripts/start_ui.py --install-plugin
+
+harness-data-plan *args:
+    PYTHONPATH=harness/src uv run --project harness --locked python harness/scripts/data_pilot.py {{args}}
+
 check:
     uv run --locked ruff check .
     uv run --locked ruff format --check .

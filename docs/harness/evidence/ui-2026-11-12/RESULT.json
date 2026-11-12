@@ -1,0 +1,38 @@
+{
+  "status": "pass",
+  "at": "2026-11-12T05:46:51.112Z",
+  "url": "http://127.0.0.1:3080/",
+  "browser": "installed Chrome through bundled Playwright",
+  "browser_plugin": "unavailable",
+  "checks": [
+    "page identity",
+    "nonblank",
+    "no error overlay",
+    "console clean",
+    "masked inputs",
+    "save and reload persistence",
+    "all three sources selectable",
+    "BaoStock selection persistence",
+    "BaoStock requires no personal credential",
+    "remove dummy credentials"
+  ],
+  "default_provider": "baostock",
+  "dummy_credentials_removed": true,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "mobile_section_bounds": {
+    "x": 16,
+    "y": 114,
+    "width": 358,
+    "height": 1068
+  },
+  "errors": []
+}

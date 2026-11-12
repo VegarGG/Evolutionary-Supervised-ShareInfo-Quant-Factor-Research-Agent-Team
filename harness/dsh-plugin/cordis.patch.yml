@@ -1,0 +1,9 @@
+- insert:
+    - id: qfh-data
+      name: '@qfh/dsh-data'
+      config:
+        activeProvider: baostock
+        python: !!js process.env.QFH_PYTHON
+        sourceRoot: !!js process.env.QFH_SOURCE_ROOT
+        policyPath: !!js process.env.QFH_DATA_POLICY
+        privateRoot: !!js process.env.QFH_DATA_PRIVATE
