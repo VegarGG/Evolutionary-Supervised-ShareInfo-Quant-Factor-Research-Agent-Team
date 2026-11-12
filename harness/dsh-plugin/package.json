@@ -13,9 +13,12 @@
   "files": [
     "index.js",
     "cordis.patch.yml",
-    "client.js"
+    "client.js",
+    "LICENSE",
+    "NOTICE",
+    "THIRD-PARTY-NOTICES.md"
   ],
-  "license": "PolyForm-Noncommercial-1.0.0",
+  "license": "MIT",
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

@@ -6,6 +6,7 @@ harness-check:
     uv run --project harness --locked ruff format --check harness
     node --check harness/dsh-plugin/index.js
     node --check harness/dsh-plugin/client.js
+    uv run --project harness --locked python scripts/check_licenses.py
 
 harness-test:
     uv run --project harness --locked pytest -c harness/pyproject.toml harness/tests -q

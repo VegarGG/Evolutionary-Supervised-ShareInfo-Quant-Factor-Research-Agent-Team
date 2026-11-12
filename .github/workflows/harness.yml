@@ -19,3 +19,9 @@ jobs:
       - run: uv sync --project harness --locked
       - run: just harness-check
       - run: just harness-test
+      - name: Pack and verify plugin license payload
+        run: |
+          mkdir -p .qfh-private/license-dist
+          npm pack ./harness/dsh-plugin --ignore-scripts --pack-destination .qfh-private/license-dist
+          uv run --project harness --locked python scripts/check_licenses.py \
+            --plugin-archive .qfh-private/license-dist/qfh-dsh-data-0.1.0.tgz

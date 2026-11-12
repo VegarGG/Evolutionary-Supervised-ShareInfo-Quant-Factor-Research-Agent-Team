@@ -20,7 +20,9 @@ in `.qfh-private/`; public result indexes retain measurements and evidence hashe
 
 The first root static check caught that an updated third-party notice needed to be
 mirrored into all five packages. The retest passed after those copies were
-synchronized. No project license grant changed.
+synchronized. That initial work package did not change the project license.
+The later owner-directed MIT transition has a separate
+[licensing record](../LICENSING_REVIEW.md).
 
 Native DSH smoke failures were retained before their fixes: missing credentials
 service in sdk-minimal; package resolution when loading an absolute plugin entry;
