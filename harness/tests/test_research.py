@@ -50,6 +50,7 @@ def report(evidence_id):
         "recommended_changes": [],
         "limitations": ["Synthetic data only."],
         "measurement_refs": [],
+        "specification_id": None,
     }
 
 

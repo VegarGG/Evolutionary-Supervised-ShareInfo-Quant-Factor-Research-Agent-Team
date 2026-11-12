@@ -86,6 +86,20 @@ class ScriptedClient:
         self.counts = {}
         self.lock = threading.Lock()
 
+    @staticmethod
+    def specification_body():
+        # Test-only fixture, never a production/default factor.
+        return {
+            "family": "close_return_contrast",
+            "lookback": 1,
+            "comparison": "lt",
+            "threshold": "0",
+            "tie_policy": "control",
+            "label_horizon": 1,
+            "expected_direction": "higher",
+            "effect_margin": "0.001",
+        }
+
     def __enter__(self):
         return self
 
@@ -136,6 +150,12 @@ class ScriptedClient:
                     "limitations": ["Synthetic fixture, not a real finding."],
                     "next_steps": ["No evaluation or publication."],
                 }
+                if self.worker_format in ("specification", "spec-repair"):
+                    for key in ("formula", "signal_time", "execution_time"):
+                        del draft[key]
+                    draft["selected_specification_id"] = self.research.specification(
+                        sid, self.evidence_id, json.dumps(self.specification_body())
+                    )["specification_id"]
                 return Response(
                     tool="submit_research_draft",
                     arguments={"draft_json": json.dumps(draft)},
@@ -156,6 +176,15 @@ class ScriptedClient:
             return Response(
                 tool="research_metrics", arguments={"evidence_id": self.evidence_id}, ident=ident
             )
+        if index == 2 and self.worker_format in ("specification", "spec-repair"):
+            return Response(
+                tool="research_specification",
+                arguments={
+                    "evidence_id": self.evidence_id,
+                    "specification_json": json.dumps(self.specification_body()),
+                },
+                ident=ident,
+            )
         report = {
             "summary": "Synthetic test report for the actual native DSH child session.",
             "evidence_ids": [self.evidence_id],
@@ -172,6 +201,20 @@ class ScriptedClient:
                 }
             ],
         }
+        if self.worker_format in ("specification", "spec-repair"):
+            report["specification_id"] = self.research.specification(
+                sid, self.evidence_id, json.dumps(self.specification_body())
+            )["specification_id"]
+            last_submission = 4 if self.worker_format == "spec-repair" else 3
+            if index <= last_submission:
+                if self.worker_format == "spec-repair" and index == 3:
+                    report["findings"] = ["Deliberately oversized synthetic list."] * 9
+                return Response(
+                    tool="submit_worker_report",
+                    arguments={"report_json": json.dumps(report)},
+                    ident=ident,
+                )
+            return Response(text="Validated specification report submitted.", ident=ident)
         if self.worker_format in ("submitted", "repair"):
             submit_index = 3 if self.worker_format == "repair" else 2
             if index <= submit_index:
@@ -197,8 +240,16 @@ def main():
     parser.add_argument("--port", type=int, default=3081)
     parser.add_argument(
         "--worker-format",
-        choices=("submitted", "repair", "bare", "json-fence", "invalid"),
-        default="submitted",
+        choices=(
+            "specification",
+            "spec-repair",
+            "submitted",
+            "repair",
+            "bare",
+            "json-fence",
+            "invalid",
+        ),
+        default="specification",
     )
     args = parser.parse_args()
     private = args.directory.resolve()
@@ -236,6 +287,8 @@ def main():
             "qfh.research.REPORT_CONTRACT",
             "measured-observations-v2"
             if args.worker_format in ("bare", "json-fence")
+            else "executable-contrast-v4"
+            if args.worker_format in ("specification", "spec-repair")
             else "submitted-reports-v3",
         ),
     ):

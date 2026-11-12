@@ -1,0 +1,8 @@
+amendment_id: specification-repair-2026-11-12
+expected_limit: 3
+new_limit: 6
+authority: >-
+  Owner: Please fix the remaining statistical and specification issues, extend the
+  pilot allowance, and rerun the full trial using DeepSeek-flash only and BaoStock.
+  Keep the original 200 CNY budget and time windows, and record everything.
+reason: One repair-verification trial and two small owner trials; no budget, data or per-trial request increase.

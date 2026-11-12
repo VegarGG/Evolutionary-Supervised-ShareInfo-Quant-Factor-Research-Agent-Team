@@ -61,6 +61,12 @@ export function apply(ctx, config) {
       description: 'JSON object matching worker_output_schema; respect all array limits and measurement references.' } },
     isConcurrencySafe: () => false,
     execute: (args, exec) => operation('submit_report', args, exec) })
+  register({ name: 'research_specification',
+    description: 'Execute one fully resolved close-return contrast specification on your own evidence. Returns canonical formula, tie/support counts, exact label overlap geometry and a host-derived inference outcome. Tiny samples return insufficient_data, never confirmation or disproof. This is development analysis, not a strategy backtest or official evaluation.',
+    parameters: { evidence_id: { type: 'string', required: true },
+      specification_json: { type: 'string', required: true,
+        description: 'One concrete JSON object matching specification_schema; every parameter required, no alternative methods or unresolved symbols.' } },
+    execute: (args, exec) => operation('specification', args, exec) })
   register({ name: 'research_worker',
     description: 'Supervisor only: run one named worker once and receive its cited report. First use researcher to propose; then reviewer to independently check the proposal. Each uses native DSH sessions and the Agent Teams task board. Workers cannot delegate.',
     parameters: {

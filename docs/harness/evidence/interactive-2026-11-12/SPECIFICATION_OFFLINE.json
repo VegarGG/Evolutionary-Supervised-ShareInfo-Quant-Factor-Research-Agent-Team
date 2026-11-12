@@ -1,0 +1,116 @@
+{
+  "mode": "synthetic_model_and_data",
+  "trial_id": "session-4a4f7331-8382-4dab-9f92-2095871e8da1",
+  "status": "pass",
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": true,
+    "both_workers_valid": true,
+    "draft_recorded": true,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": true,
+    "no_tool_failures": true,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "resource_samples_required_for_live": true,
+    "raw_data_transport_required_for_live": true
+  },
+  "offline_tests_passed": 135,
+  "check_log_sha256": "6528a8c6b054d4445f376dd3f21ab215442e256ba8417fc8e1aa414a2b6f2623",
+  "scripted_model_requests": 17,
+  "actual_model_requests": 0,
+  "actual_vendor_queries": 0,
+  "roles": {
+    "researcher": {
+      "scripted_requests": 6,
+      "report_state": "completed"
+    },
+    "reviewer": {
+      "scripted_requests": 6,
+      "report_state": "completed"
+    },
+    "supervisor": {
+      "scripted_requests": 5,
+      "report_state": "draft_recorded"
+    }
+  },
+  "report_correction": {
+    "researcher": "oversized findings rejected then corrected within same active native worker",
+    "reviewer": "oversized findings rejected then corrected within same active native worker",
+    "worker_restarts": 0
+  },
+  "statistical_outcome": "insufficient_data",
+  "label_geometry": {
+    "adjacent_pairs": 6,
+    "positive_overlap_pairs": 0,
+    "serial_independence": "not_established",
+    "touching_endpoint_pairs": 6
+  },
+  "support": {
+    "aligned_cases": 7,
+    "control_bucket": 7,
+    "dropped_tail_cases": 2,
+    "signal_bucket": 0,
+    "signal_candidates": 9,
+    "ties_assigned_to_control": 0
+  },
+  "inference": {
+    "bootstrap_replicates_run": 0,
+    "effect": null,
+    "interval": null,
+    "outcome": "insufficient_data",
+    "reason_codes": [
+      "signal_bucket_below_minimum",
+      "control_bucket_below_minimum",
+      "too_few_blocks"
+    ]
+  },
+  "definition": {
+    "comparison": "lt",
+    "effect_margin": "0.001",
+    "expected_direction": "higher",
+    "family": "close_return_contrast",
+    "label_horizon": 1,
+    "lookback": 1,
+    "threshold": "0",
+    "tie_policy": "control"
+  },
+  "native_fixture_calculator_sha256": "2c45f4e2ba8a394e58d913cc476a534cc3ea1521f1b3ad985a9887f85850bf29",
+  "final_calculator_sha256": "59c04ba742b8332adf1ad777bb1fa4fa4999d3e69de6e2809878c847b7591551",
+  "source_note": "Native fixture preceded final Decimal-context-independent parameter normalization fix. Final 135-test run includes the regression for that fix. Live verification will freeze the final clean commit.",
+  "browser": {
+    "status": "pass",
+    "at": "2026-11-12T14:37:57.037Z",
+    "title": "Run the bounded offline integration: \u2014 DeepSeek Harness",
+    "origin": "http://127.0.0.1:3081",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "native_team": "two completed workers and two completed shared tasks, inspected in desktop screenshot",
+  "preliminary_failures": "Initial lint checks found formatting, strict zip and imported-fixture shadowing; repaired before final verification. Logs retained privately.",
+  "raw_summary_sha256": "6438b1196529efed4b2d1b261f49ca535a7c82bab68920bee50f72c831c2c884"
+}

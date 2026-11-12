@@ -180,6 +180,7 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
             else "Historical conservative carry plus subsequent conservative charges."
             + (" Synthetic accounting only; no actual spend." if synthetic else ""),
         },
+        "pilot_allowance_at_export": research.allowance(),
         "data": {
             "query": research.policy.query.model_dump(mode="json"),
             "requests_during_trial": data_calls,
@@ -203,6 +204,10 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
                 "next_steps",
                 "measured_facts",
                 "proposal_phase",
+                "specification",
+                "statistical_outcome",
+                "scientific_acceptance",
+                "selected_specification_id",
             )
             if k in draft
         },

@@ -24,6 +24,7 @@ TOOLS = {
     "read_research_evidence",
     "research_scope",
     "research_metrics",
+    "research_specification",
     "research_worker",
     "submit_worker_report",
     "submit_research_draft",
@@ -99,6 +100,7 @@ def serve(
                 "logical_cpus": os.cpu_count(),
             },
             "policy": policy.model_dump(mode="json"),
+            "pilot_allowance": research.allowance(),
             "budget_before": research.ledger.snapshot(),
         },
     )

@@ -195,6 +195,7 @@ def work_metrics(member, events, draft):
                 "recommended_changes",
                 "limitations",
                 "measurement_refs",
+                "specification_id",
             )
         },
         "verified_measurements": [
@@ -204,6 +205,9 @@ def work_metrics(member, events, draft):
             and e["body"]["op"] == "finish_worker"
             and e["body"]["result"].get("contribution_id") == member["session_id"]
             for fact in e["body"]["result"].get("measured_facts", [])
+        ],
+        "executed_specifications": [
+            e["body"]["result"] for e in tools if e["body"]["op"] == "specification"
         ],
         "successful_tool_operations": dict(
             Counter(

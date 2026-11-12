@@ -4,9 +4,10 @@ Status: the [full real Flash/BaoStock rerun](LIVE_RERUN_2026-11-12.md) passed at
 21:29–21:31 Beijing on 12 November. Both workers, both native Team tasks and a
 cited draft completed; sixteen requests settled. The first two failed attempts
 remain preserved. The desktop workflow passes bounded integration, while the draft
-still needs scientific/specification revision. All three configured pilot sessions
-are used; history is available, and new trials need an explicit allowance amendment
-without resetting the budget ledger.
+exposed scientific/specification issues. The [new executable contrast contract](STATISTICAL_SPECIFICATION.md)
+repairs those boundaries and passes 135 offline tests and a native synthetic team
+run. Fresh live verification is pending. The owner-authorized append-only allowance
+is now six cumulative sessions, three used, with the original budget ledger intact.
 
 The owner authorized that rerun after arithmetic/reporting repairs. New
 reports use the [measurement contract](MEASUREMENT_CONTRACT.md): deterministic
@@ -24,10 +25,11 @@ The supervisor records adoption/rejection decisions and one immutable draft.
 The **2 subagents** panel exposes child sessions and completed Agent Teams tasks;
 the normal trajectory view shows tool calls and intermediate work.
 
-This is one research round with read-only evidence. Draft checks establish schema,
-source provenance, role completion and explicit decisions. They do not prove the
-formula is economically useful, executable, free of every semantic timing error,
-or accepted by an evaluator. No official backtest, publication, factor pool or
+This is one research round with read-only evidence. New drafts select an executable
+close-return contrast independently run by the reviewer; the host supplies formula,
+timing and statistical state. Checks establish schema, source provenance, role
+completion and explicit decisions. They do not prove economic usefulness,
+confirmatory validity or acceptance by an evaluator. No official backtest, publication, factor pool or
 simulated account is controlled by this profile.
 
 ## Start and use
@@ -64,7 +66,7 @@ remain available for preparation, while this trial's active source is BaoStock.
 | Model routes | `deepseek-flash` only for supervisor, researcher and reviewer; other model IDs are rejected |
 | Team | Supervisor + researcher + reviewer, one activation each; sequential workers |
 | Requests | At most 8 supervisor, 6 researcher and 6 reviewer; 20 per trial including retries |
-| Trials | Three cumulative pilot sessions; all consumed by the retained attempts; no automatic increase |
+| Trials | Six cumulative sessions under the explicit owner amendment; three used before repair verification; no automatic increase |
 | Data | `000001.XSHE`, 2026-10-19..30, unadjusted daily closes |
 | New BaoStock access | The one additional business query/login was used by the first trial; reruns reused its exact cache |
 | Data history | Prior 3 business attempts/3 logins/9 estimated cells retained; new cumulative caps 4/4/21 |
@@ -100,7 +102,8 @@ The three recorded interactive rounds add 0.903244 CNY conservatively, yielding
 21.253244 CNY accounted and 178.746756 CNY remaining. The final round's tariff
 estimate is 0.11078532 CNY; its conservative debit is 0.427794 CNY. Account balance
 observations did not reconcile per-trial invoices and do not replace the ledger.
-All three slots are now used. The [rerun report](LIVE_RERUN_2026-11-12.md) separates
+Those three sessions remain counted under the new six-session allowance.
+The [rerun report](LIVE_RERUN_2026-11-12.md) separates
 each attempt, each agent, actual work, resource observations and cost estimates.
 
 Private evidence includes raw request/SSE records, event timings, native DSH

@@ -525,3 +525,28 @@ Account observations are not reconciled invoices. All three pilot sessions are
 now used; no fourth run or automatic allowance increase was made. The tested
 desktop remains available for history inspection. Further paid trials require a
 deliberate allowance amendment preserving the existing ledger and original bounds.
+
+## 2026-11-12: owner-authorized statistical repairs and pilot extension
+
+Owner: "Please fix the remaining statistical and specification issues, extend the
+pilot allowance, and rerun the full trial using DeepSeek-flash only and BaoStock.
+Keep the original 200 CNY budget and time windows, and record everything."
+
+Implement `executable-contrast-v4`: each worker executes one fully specified
+development contrast against its own permitted evidence. The reviewer must
+independently execute the selected definition; the host renders draft parameters,
+timings and inference. Calculate positive label overlap separately from touching
+endpoints. Report insufficient/inconclusive states without claiming independence,
+confirmation or absence of effect. Fixed inference protocol, sample floors and
+bootstrap semantics remain operator configuration. Ten live rows cannot satisfy
+the floors. This is a bounded contrast, not a strategy or official evaluator.
+
+135 offline tests and native synthetic DSH workflow checks pass. Record one
+operator-only immutable amendment from three to six cumulative pilot sessions:
+one repair verification and two small owner trials. Before/after logical hashes
+prove unchanged budget/data tables and preserved original research policy/history;
+exactly one event was appended. No model call or data quota is enlarged. Accounted
+spending before the fresh trial remains 21.253244 CNY, leaving 178.746756 CNY.
+Use Flash only and the existing real BaoStock cache in the current permitted
+window. The new live result must be recorded separately; earlier drafts, failures
+and charges remain unchanged. See `STATISTICAL_SPECIFICATION.md`.

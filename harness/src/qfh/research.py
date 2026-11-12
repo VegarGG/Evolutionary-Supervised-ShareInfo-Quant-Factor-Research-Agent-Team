@@ -27,10 +27,11 @@ from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, admission_open
 from qfh.data_gateway import DataGuard, DataPolicy, dispatch
 from qfh.evidence import EvidenceStore, Query, canonical
 from qfh.research_metrics import ArithmeticProtocol, MeasurementRef, calculate_observations
+from qfh.research_specification import ContrastSpec, StatisticalProtocol, assess_specification
 
 Role = Literal["supervisor", "researcher", "reviewer"]
 WorkerRole = Literal["researcher", "reviewer"]
-REPORT_CONTRACT = "submitted-reports-v3"
+REPORT_CONTRACT = "executable-contrast-v4"
 
 
 class Route(BaseModel):
@@ -78,8 +79,10 @@ class ResearchPolicy(BaseModel):
 class WorkerReport(BaseModel):
     """Keep observations qualitative; select numerical facts via measurement_refs.
 
-    Do not put numeric literals in prose. Formula parameters belong only in
-    proposed_formula. The host attaches referenced numerical values and units.
+    Do not put numeric literals in prose. Current workers cite specification_id
+    from research_specification and set proposed_formula null. The host renders
+    the formula and attaches numerical values. The old formula field is retained
+    solely for historical report compatibility.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -90,6 +93,7 @@ class WorkerReport(BaseModel):
     recommended_changes: list[str] = Field(max_length=8)
     limitations: list[str] = Field(min_length=1, max_length=8)
     measurement_refs: list[MeasurementRef] = Field(default_factory=list, max_length=8)
+    specification_id: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 def check_qualitative_prose(value, fields):
@@ -127,7 +131,7 @@ class Decision(BaseModel):
     reason: str = Field(min_length=10, max_length=4000)
 
 
-class Draft(BaseModel):
+class DraftNarrative(BaseModel):
     """Qualitative proposal; numerical formula parameters belong only in formula.
 
     Verified numerical facts from both worker reports are attached by the host.
@@ -137,19 +141,42 @@ class Draft(BaseModel):
     model_config = ConfigDict(extra="forbid")
     title: str = Field(min_length=3, max_length=200)
     hypothesis: str = Field(min_length=10, max_length=8000)
-    formula: str = Field(min_length=3, max_length=4000)
-    signal_time: Literal["close_t"]
-    execution_time: Literal["next_trading_day_close"]
     evidence_ids: list[str] = Field(min_length=1, max_length=8)
     decisions: list[Decision] = Field(min_length=2, max_length=2)
     limitations: list[str] = Field(min_length=1, max_length=12)
     next_steps: list[str] = Field(min_length=1, max_length=8)
 
 
+class Draft(DraftNarrative):
+    formula: str = Field(min_length=3, max_length=4000)
+    signal_time: Literal["close_t"]
+    execution_time: Literal["next_trading_day_close"]
+
+
+class SpecificationDraft(DraftNarrative):
+    selected_specification_id: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class PilotExtension(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    amendment_id: str = Field(pattern=r"^[a-z0-9-]{5,100}$")
+    expected_limit: int = Field(strict=True, ge=1, le=10)
+    new_limit: int = Field(strict=True, ge=1, le=10)
+    authority: str = Field(min_length=40)
+    reason: str = Field(min_length=20)
+
+
 class Operation(BaseModel):
     model_config = ConfigDict(extra="forbid")
     op: Literal[
-        "scope", "data", "metrics", "submit_report", "begin_worker", "finish_worker", "draft"
+        "scope",
+        "data",
+        "metrics",
+        "specification",
+        "submit_report",
+        "begin_worker",
+        "finish_worker",
+        "draft",
     ]
     session_id: str = Field(pattern=r"^[A-Za-z0-9_.:-]{1,200}$")
     selected_provider: Literal["baostock", "ifind", "rqdata"] = "baostock"
@@ -180,6 +207,9 @@ class Research:
         self.store = EvidenceStore(self.data_root / "evidence")
         self.arithmetic = ArithmeticProtocol.model_validate(
             yaml.safe_load((config.parent / "research-metrics.yaml").read_text())
+        )
+        self.statistics = StatisticalProtocol.model_validate(
+            yaml.safe_load((config.parent / "research-statistics.yaml").read_text())
         )
         with self.db() as db:
             db.execute("CREATE TABLE IF NOT EXISTS policy (id INTEGER PRIMARY KEY, body TEXT)")
@@ -247,10 +277,7 @@ class Research:
                 "SELECT * FROM members WHERE session_id=?", (session_id,)
             ).fetchone()
             if member is None:
-                if (
-                    db.execute("SELECT COUNT(*) FROM trials").fetchone()[0]
-                    >= self.policy.max_trials
-                ):
+                if db.execute("SELECT COUNT(*) FROM trials").fetchone()[0] >= self.trial_limit(db):
                     raise BudgetRefused(
                         "small trial allowance exhausted; do not reset campaign state"
                     )
@@ -273,6 +300,8 @@ class Research:
                         "roles": self.policy.model_dump()["roles"],
                         "report_contract": REPORT_CONTRACT,
                         "arithmetic_protocol": self.arithmetic.model_dump(),
+                        "statistical_protocol": self.statistics.model_dump(mode="json"),
+                        "pilot_limit_at_admission": self.trial_limit(db),
                     },
                 )
                 member = db.execute(
@@ -289,6 +318,63 @@ class Research:
                 self.policy.authority,
             )
         return step
+
+    def trial_limit(self, db):
+        row = db.execute(
+            "SELECT body FROM events WHERE kind='trial_allowance_extended' "
+            "ORDER BY seq DESC LIMIT 1"
+        ).fetchone()
+        return json.loads(row[0])["new_limit"] if row else self.policy.max_trials
+
+    def allowance(self):
+        with self.db() as db:
+            limit = self.trial_limit(db)
+            used = db.execute("SELECT COUNT(*) FROM trials").fetchone()[0]
+        return {
+            "original_limit": self.policy.max_trials,
+            "effective_limit": limit,
+            "used": used,
+            "remaining": max(0, limit - used),
+        }
+
+    def extend_allowance(self, extension):
+        """Operator-only append-only amendment; never exposed as a research tool."""
+        budget = self.ledger.snapshot()
+        if any(c["state"] != "settled" for c in budget["calls"]):
+            raise ValueError("settle all pending or unknown charges before extending allowance")
+        body = extension.model_dump()
+        with self.db() as db:
+            for row in db.execute("SELECT body FROM events WHERE kind='trial_allowance_extended'"):
+                prior = json.loads(row[0])
+                if prior["amendment_id"] == extension.amendment_id:
+                    if any(prior[k] != v for k, v in body.items()):
+                        raise ValueError("pilot amendment is immutable")
+                    return prior
+            current = self.trial_limit(db)
+            if current != extension.expected_limit or extension.new_limit <= current:
+                raise ValueError("pilot extension must match and increase the current limit")
+            body.update(
+                budget_cumulative_micro_cny=budget["cumulative_micro_cny"],
+                remaining_micro_cny=budget["remaining_unreserved_micro_cny"],
+                policy_sha256=hashlib.sha256(self.policy.model_dump_json().encode()).hexdigest(),
+                budget_config_sha256=hashlib.sha256(
+                    (self.config_path.parent / self.policy.budget_config).read_bytes()
+                ).hexdigest(),
+                data_config_sha256=hashlib.sha256(
+                    (self.config_path.parent / self.policy.data_config).read_bytes()
+                ).hexdigest(),
+            )
+            self.event(db, "operator", "trial_allowance_extended", body)
+        return body
+
+    def contract(self, session_id):
+        member = self.member(session_id)
+        with self.db() as db:
+            body = db.execute(
+                "SELECT body FROM events WHERE principal=? AND kind='trial_started'",
+                (member["trial_id"],),
+            ).fetchone()[0]
+        return json.loads(body).get("report_contract")
 
     def member(self, session_id):
         with self.db() as db:
@@ -319,6 +405,7 @@ class Research:
             ]
         self.data.pin(session_id, provider)
         snapshot = self.ledger.snapshot()
+        contract = self.contract(session_id)
         return {
             "trial_id": trial["id"],
             "role": member["role"],
@@ -333,18 +420,33 @@ class Research:
             "max_requests_per_trial": self.policy.max_requests_per_trial,
             "request_limit_kind": "model wire requests, not market-data queries",
             "activity": self.activity(session_id),
+            "pilot_allowance": self.allowance(),
+            "contract_version": contract,
             "report_contract": "Workers must call submit_worker_report before ending their turn. "
             "A rejected submission returns precise issues for correction within the SAME active "
             "worker and its unchanged request allowance; it is not a completed-worker replay. "
             "Once accepted, end with a short acknowledgment; do not rewrite the report. "
-            "Return qualitative prose, with no numeric literals outside "
-            "the formula field. Call research_metrics; select its measurement_id and fact keys "
+            "Return qualitative report prose with no numeric literals. Candidate parameters "
+            "belong in research_specification input; the host renders the formula. "
+            "Call research_metrics; select its measurement_id and fact keys "
             "in measurement_refs. The host supplies values and units; do not recalculate them. "
             "All proposals are post-observation exploration, not preregistered.",
             "scope_limit": "Historical unadjusted closes; not a vintage archive. "
             "No current context, backtest, evaluation, publication, reports or news in this trial.",
             "worker_output_schema": WorkerReport.model_json_schema(),
-            "draft_schema": Draft.model_json_schema(),
+            "specification_schema": ContrastSpec.model_json_schema(),
+            "statistical_protocol": self.statistics.model_dump(mode="json"),
+            "specification_instruction": "Call research_specification on your own evidence "
+            "with one fully resolved specification. It executes alignment, tie and support checks. "
+            "Cite its specification_id in your report and set proposed_formula null. "
+            "The host supplies the canonical formula and inference state. "
+            "Do not call endpoint-touching labels overlapping, infer independence from nonoverlap, "
+            "treat a zero threshold as intrinsically invalid, or interpret "
+            "inconclusive/insufficient_data as disproof. No symbolic alternatives, unresolved "
+            "parameters or unmeasured transaction-cost assertions. All results remain exploratory.",
+            "draft_schema": (
+                SpecificationDraft if contract == "executable-contrast-v4" else Draft
+            ).model_json_schema(),
         }
 
     def check_citations(self, session_id, ids):
@@ -392,9 +494,10 @@ class Research:
             "when those rows are already complete. Preserve calls for validation feedback. "
             "Call research_metrics for all arithmetic. Copy its measurement_id and select fact "
             "keys in measurement_refs (do not include values). Keep ALL prose qualitative, "
-            "without numeric literals, dates, stock codes or percentages; numeric parameters "
-            "are allowed only in proposed_formula, which must contain a symbolic definition, "
-            "not observed results. The host attaches measured values, counts, dates and units. "
+            "without numeric literals, dates, stock codes or percentages. Candidate parameters "
+            "belong in research_specification input; cite its specification_id and set "
+            "proposed_formula null. The host attaches the formula, measured values, "
+            "counts, dates and units. "
             "No claimed preregistration: this proposal follows evidence access. "
             "Call submit_worker_report with a JSON object matching the schema BEFORE ending. "
             "Respect every maxItems limit; keep the report concise. If rejected, correct the "
@@ -403,6 +506,9 @@ class Research:
             "Separate observations from hypotheses; disclose sample limits; cite evidence ids. "
             "Do not delegate or submit a draft. No claims of alpha or gate passage.",
             "required_output_schema": WorkerReport.model_json_schema(),
+            "specification_schema": scope["specification_schema"],
+            "statistical_protocol": scope["statistical_protocol"],
+            "specification_instruction": scope["specification_instruction"],
         }
         return {
             "child_id": child_id,
@@ -433,7 +539,7 @@ class Research:
                     (member["trial_id"],),
                 ).fetchone()[0]
             )
-        if started.get("report_contract") == "submitted-reports-v3":
+        if started.get("report_contract") in ("submitted-reports-v3", "executable-contrast-v4"):
             raise ValueError("worker ended without an accepted submit_worker_report")
         # Historical trials retain their original completion contract and raw text.
         return parse_worker_report(result, self.policy.max_tool_result_chars)
@@ -456,6 +562,8 @@ class Research:
                 report, ("summary", "findings", "recommended_changes", "limitations")
             )
             self.resolve_measurements(session_id, report)
+            if self.contract(session_id) == "executable-contrast-v4":
+                self.report_specification(session_id, report)
         except (ValueError, TypeError) as exc:
             issues = (
                 [
@@ -515,6 +623,11 @@ class Research:
                 report, ("summary", "findings", "recommended_changes", "limitations")
             )
             facts = self.resolve_measurements(child_id, report)
+            specification = (
+                self.report_specification(child_id, report)
+                if self.contract(child_id) == "executable-contrast-v4"
+                else None
+            )
         except (ValueError, TypeError) as exc:
             error = type(exc).__name__
         with self.db() as db:
@@ -566,13 +679,15 @@ class Research:
             "measured_facts": facts,
             "proposal_phase": "post_observation_exploration",
             "activity": self.activity(session_id),
+            **({"specification": specification} if specification else {}),
         }
 
     def record_draft(self, session_id, body):
         member = self.member(session_id)
         if member["role"] != "supervisor":
             raise ValueError("only the supervisor records a research draft")
-        draft = Draft.model_validate(body)
+        needs_specification = self.contract(session_id) == "executable-contrast-v4"
+        draft = (SpecificationDraft if needs_specification else Draft).model_validate(body)
         if {d.worker for d in draft.decisions} != {"researcher", "reviewer"}:
             raise ValueError("record an adoption/rejection decision for each worker")
         self.check_citations(session_id, draft.evidence_ids)
@@ -588,13 +703,29 @@ class Research:
                     (member["trial_id"],),
                 )
             ]
-        measured = []
+        measured, candidates, reviewer_id = [], {}, None
         for worker in complete:
             report, _ = self.validated_report(worker["session_id"], json.loads(worker["result"]))
+            if needs_specification:
+                assessment = self.report_specification(worker["session_id"], report)
+                candidates[assessment["specification_id"]] = assessment
+                if worker["role"] == "reviewer":
+                    reviewer_id = worker["session_id"]
             measured.extend(
                 {**f, "worker": worker["role"]}
                 for f in self.resolve_measurements(worker["session_id"], report)
             )
+        selected = None
+        if needs_specification:
+            if draft.selected_specification_id not in candidates or reviewer_id is None:
+                raise ValueError(
+                    "select a completed worker's fully resolved specification "
+                    "after both workers finish"
+                )
+            selected = candidates[draft.selected_specification_id]
+            self.observed_specification(reviewer_id, draft.selected_specification_id)
+            if selected["evidence_id"] not in draft.evidence_ids:
+                raise ValueError("selected specification evidence must be cited by the draft")
         with self.db() as db:
             workers = list(
                 db.execute(
@@ -609,6 +740,15 @@ class Research:
             ]:
                 raise ValueError("draft is immutable; start a new trial to revise")
             canonical_draft = draft.model_dump(mode="json")
+            if selected:
+                canonical_draft.update(
+                    formula=selected["canonical_formula"],
+                    signal_time="close_t",
+                    execution_time="next_trading_day_close",
+                    specification=selected,
+                    statistical_outcome=selected["inference"]["outcome"],
+                    scientific_acceptance="not_assessed_by_this_development_tool",
+                )
             canonical_draft["measured_facts"] = measured
             canonical_draft["proposal_phase"] = "post_observation_exploration"
             digest = hashlib.sha256(canonical(canonical_draft)).hexdigest()
@@ -643,6 +783,43 @@ class Research:
         return calculate_observations(
             evidence_id, record["content"], self.policy.descriptive_lookbacks, self.arithmetic
         )
+
+    def specification(self, session_id, evidence_id, specification_json):
+        self.check_citations(session_id, [evidence_id])
+        record = self.store.get(evidence_id)
+        if record.get("query") != self.policy.query.model_dump(mode="json"):
+            raise ValueError("specification evidence lies outside the permitted sample")
+        if (
+            not isinstance(specification_json, str)
+            or len(specification_json) > self.policy.max_tool_result_chars
+        ):
+            raise ValueError("specification must be a bounded JSON string")
+        spec = ContrastSpec.model_validate_json(specification_json)
+        return assess_specification(evidence_id, record["content"], spec, self.statistics)
+
+    def observed_specification(self, session_id, specification_id):
+        with self.db() as db:
+            for row in db.execute(
+                "SELECT body FROM events WHERE principal=? AND kind='tool_result'", (session_id,)
+            ):
+                body = json.loads(row[0])
+                if (
+                    body["op"] == "specification"
+                    and body["result"]["specification_id"] == specification_id
+                ):
+                    return body["result"]
+        raise ValueError("specification was not executed by this agent")
+
+    def report_specification(self, session_id, report):
+        if report.proposed_formula is not None or not report.specification_id:
+            raise ValueError(
+                "cite an executed specification_id and set proposed_formula null; "
+                "the host renders the complete formula"
+            )
+        result = self.observed_specification(session_id, report.specification_id)
+        if result["evidence_id"] not in report.evidence_ids:
+            raise ValueError("specification evidence must be cited")
+        return result
 
     def resolve_measurements(self, session_id, report):
         if not report.measurement_refs:
@@ -744,6 +921,10 @@ class Research:
                 result = self.record_draft(request.session_id, args)
             elif request.op == "metrics":
                 result = self.metrics(request.session_id, args["evidence_id"])
+            elif request.op == "specification":
+                result = self.specification(
+                    request.session_id, args["evidence_id"], args["specification_json"]
+                )
             elif request.op == "submit_report":
                 result = self.submit_report(request.session_id, args["report_json"])
             else:

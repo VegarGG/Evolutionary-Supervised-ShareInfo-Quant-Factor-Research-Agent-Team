@@ -22,10 +22,12 @@ Beijing on 12 November: one Flash supervisor, two Flash workers, 16 actual reque
 fixed the arithmetic/report boundaries; the reviewer corrected an oversized report
 inside its active turn. The earlier two failures remain recorded, including the
 [first live attempt](docs/harness/LIVE_TRIAL_2026-11-12.md).
-This is a bounded workflow pass; the audit flags unresolved statistical claims and
-an incomplete formula specification. All three configured pilot sessions are now
-used. History is available; further trials require a deliberate allowance amendment
-preserving the same budget ledger.
+That bounded workflow pass exposed statistical claims and an incomplete formula
+specification. The new [executable contrast contract](docs/harness/STATISTICAL_SPECIFICATION.md)
+addresses those findings and passes 135 offline tests plus a native DSH synthetic
+team run. A fresh real verification is pending. The owner-authorized append-only
+pilot extension raises cumulative sessions from three to six without changing the
+budget/data ledgers, per-trial limits or time windows.
 
 ## Current deliverable
 

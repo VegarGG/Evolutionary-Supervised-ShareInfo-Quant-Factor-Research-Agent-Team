@@ -106,10 +106,12 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
 - [x] Fenced-report boundary and duplicate-settlement fixes pass offline/native fixtures.
 - [x] Complete real three-role workflow after arithmetic/submission fixes:
   [sixteen Flash calls, two workers and one draft](LIVE_RERUN_2026-11-12.md).
-- [ ] Extend the exhausted pilot allowance explicitly before further owner trials;
+- [x] Extend the exhausted pilot allowance explicitly from three to six sessions;
   retain the existing ledger and original spending/data bounds.
-- [ ] Resolve the draft's statistical claims and executable-specification gaps;
-  workflow integration does not establish research-quality acceptance.
+- [x] Implement the [statistical/specification repairs](STATISTICAL_SPECIFICATION.md):
+  geometry, explicit uncertainty states and one host-executed concrete definition.
+- [ ] Fresh real three-role verification of those repairs; workflow integration
+  does not establish research-quality acceptance.
 - [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
 - [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 

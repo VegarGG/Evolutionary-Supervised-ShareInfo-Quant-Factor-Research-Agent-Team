@@ -78,5 +78,11 @@ native synthetic correction test rejected then accepted each worker's report wit
 restarting either worker. The [real rerun](LIVE_RERUN_2026-11-12.md) then completed
 both workers and a draft; the reviewer corrected the same array-limit error within
 its existing call cap. All 44 measured facts and 28 draft references passed the
-independent post-run audit. Qualitative statistical claims still require revision;
-validated numbers alone do not establish research validity.
+independent post-run audit. That draft's statistical/specification findings motivated
+the [executable contrast contract](STATISTICAL_SPECIFICATION.md). New v4 reports
+reference a worker-executed specification ID and require `proposed_formula: null`;
+the supervisor selects a reviewer-executed definition and the host renders the
+formula/timings/statistical state. The earlier free-form fields remain historical.
+All 135 offline tests and native synthetic correction checks pass before the new
+live verification. Validated numbers and executable definitions alone do not
+establish research validity.

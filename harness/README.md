@@ -9,10 +9,12 @@ The new [interactive trial profile](../docs/harness/INTERACTIVE_TRIAL.md) uses t
 native DSH chat, Agent Teams board and two child sessions through the same guard.
 The [real rerun](../docs/harness/LIVE_RERUN_2026-11-12.md) completed both workers and
 a cited draft with Flash-only inference and real cached BaoStock evidence. The
-measurement/submission fixes pass 108 offline tests and the live workflow. Earlier
-failures remain recorded; scientific/specification problems remain in the draft.
-The three-session pilot cap is exhausted, so further trials need an explicit
-allowance amendment preserving the original ledger and spending limits.
+measurement/submission fixes passed 108 offline tests and the live workflow.
+The new [executable contrast contract](../docs/harness/STATISTICAL_SPECIFICATION.md)
+addresses its remaining statistical/specification findings, with 135 tests and a
+native synthetic team run passing; fresh live verification is pending. Earlier
+records remain unchanged. An owner-authorized append-only amendment extends the
+pilot from three to six sessions, preserving all spending/data bounds and history.
 
 ## Install and verify
 

@@ -37,13 +37,21 @@
             with researcher first; then use reviewer with the proposed idea and ask
             for an independent evidence and timing critique. Both workers must read
             the permitted BaoStock evidence themselves. Each worker runs once.
-            Include the researcher's evidence hash and proposed formula in the review
-            assignment. Workers validate their reports with submit_worker_report before
+            Include the researcher's evidence hash and full concrete specification.definition
+            in the review assignment. Both workers must independently call research_specification
+            on that definition. The returned specification has a canonical formula, explicit
+            tie handling, positive-overlap counts, support counts and a host inference outcome.
+            Workers validate their reports with submit_worker_report before
             ending; a rejected submission may be corrected inside the same active turn.
             Numerical observations must come from research_metrics and worker
             measurement_refs. Keep ALL draft prose qualitative, without numeric
-            literals, dates, stock codes or percentages; numeric formula parameters
-            belong only in formula. The host attaches verified numerical facts.
+            literals, dates, stock codes or percentages. Select a worker's executed
+            selected_specification_id in the draft; do not supply formula or timing fields.
+            The host attaches the complete executable definition, formula and measured facts.
+            No unresolved alternative methods, thresholds, horizons or test parameters.
+            Endpoint-touching labels are not positively overlapping; nonoverlap does not
+            establish independence. A zero threshold with explicit ties is a valid choice.
+            Insufficient data and inconclusive results never confirm or disprove a hypothesis.
             All ideas are post-observation exploration, never preregistered.
             Read cited evidence yourself if needed. Resolve disagreements explicitly.
             Once both reports are valid, call submit_research_draft with a JSON string
@@ -96,7 +104,12 @@
                 You are a bounded QFH worker. Your task specifies researcher or reviewer.
                 Fetch the exact permitted daily data with market_daily_bars and use
                 research_metrics for arithmetic. Call submit_worker_report with JSON matching
-                the supplied WorkerReport schema before ending. Keep lists within their schema
+                the supplied schema after calling research_specification with one concrete
+                definition. Cite specification_id, set proposed_formula null, and rely on the
+                host's label geometry, support and inference outcome. Do not infer statistical
+                independence from nonoverlap or proof of absence from an inconclusive result.
+                No alternative tests or unresolved parameters may enter the specification.
+                Submit before ending. Keep lists within their schema
                 limits. Correct rejected submissions in the same active turn; on acceptance,
                 end with a short acknowledgment and do not rewrite the report.
                 Cite exact evidence ids. Disclose sample and data
