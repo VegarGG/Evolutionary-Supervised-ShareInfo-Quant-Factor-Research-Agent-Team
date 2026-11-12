@@ -434,3 +434,13 @@ compare the account-level change before/after the trial; keep absolute balances
 private, count those requests separately, and never use them as an automatic
 billing reconciliation. Readiness remains pending the actual three-role desktop
 trial, settled accounting and retained evidence. Synthetic tests do not establish it.
+
+## 2026-11-12: Flash-only trial clarification
+
+Owner: "One thing I forget to emphasize: we use deepseek-flash only."
+
+The supervisor, researcher and reviewer must all use the exact `deepseek-flash`
+model ID. The current role policy and running guard already enforce this; preserve
+their existing ledger and reject any other model ID before provider dispatch.
+Make this restriction explicit in the scheduled continuation and trial docs.
+The 18:00 Beijing start, BaoStock scope and original 200 CNY total cap are unchanged.

@@ -56,6 +56,7 @@ port 3080. Use its authenticated bootstrap link printed locally. In Settings →
 Research data, select BaoStock, iFind or RQData. Saving a credential sends no
 provider request. This setup profile has model providers disabled; guarded live
 experiments use the separate SDK runner, as described in [harness/README.md](harness/README.md).
+The current trial uses **`deepseek-flash` only for all three roles**.
 For the guarded chat/Agent Teams profile, use `just harness-research-ui --private
 .qfh-private --key-file /operator/deepseek-key-file --install-plugin`. The real key
 stays in the parent relay. Follow the [trial guide](docs/harness/INTERACTIVE_TRIAL.md);

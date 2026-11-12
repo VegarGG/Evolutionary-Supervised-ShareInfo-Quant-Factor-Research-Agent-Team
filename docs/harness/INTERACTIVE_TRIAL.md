@@ -51,7 +51,7 @@ remain available for preparation, while this trial's active source is BaoStock.
 
 | Boundary | Limit |
 |---|---|
-| Model routes | DeepSeek only, all three roles; configured alias `deepseek-flash` |
+| Model routes | `deepseek-flash` only for supervisor, researcher and reviewer; other model IDs are rejected |
 | Team | Supervisor + researcher + reviewer, one activation each; sequential workers |
 | Requests | At most 8 supervisor, 6 researcher and 6 reviewer; 20 per trial including retries |
 | Trials | Three small sessions: this integration trial and two owner trials |
