@@ -185,8 +185,22 @@ def work_metrics(member, events, draft):
         if report is None
         else {
             k: report.get(k)
-            for k in ("summary", "proposed_formula", "recommended_changes", "limitations")
+            for k in (
+                "summary",
+                "proposed_formula",
+                "recommended_changes",
+                "limitations",
+                "measurement_refs",
+            )
         },
+        "verified_measurements": [
+            fact
+            for e in events
+            if e["kind"] == "tool_result"
+            and e["body"]["op"] == "finish_worker"
+            and e["body"]["result"].get("contribution_id") == member["session_id"]
+            for fact in e["body"]["result"].get("measured_facts", [])
+        ],
         "successful_tool_operations": dict(
             Counter(
                 e["body"]["op"]

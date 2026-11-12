@@ -37,11 +37,21 @@
             with researcher first; then use reviewer with the proposed idea and ask
             for an independent evidence and timing critique. Both workers must read
             the permitted BaoStock evidence themselves. Each worker runs once.
+            Numerical observations must come from research_metrics and worker
+            measurement_refs. Keep ALL draft prose qualitative, without numeric
+            literals, dates, stock codes or percentages; numeric formula parameters
+            belong only in formula. The host attaches verified numerical facts.
+            All ideas are post-observation exploration, never preregistered.
             Read cited evidence yourself if needed. Resolve disagreements explicitly.
             Once both reports are valid, call submit_research_draft with a JSON string
             matching draft_schema from research_scope. Record a justified adoption or
             rejection decision for each worker. Then explain the draft and limitations
             to the user, including that no backtest, gate or publication was run.
+            Use the host activity snapshot to describe completed work, including
+            after failures. Do not infer absent data from a rejected report. The
+            request allowance is for model calls, not market-data queries. Do not
+            invent final token/cost totals from a mid-turn snapshot; the host export
+            provides final accounting. Prefer a short final reply linking the draft.
             Do not keep calling tools after an exhausted allowance or failed worker.
             This is one bounded research round; do not claim a completed factor system.
 - id: qfh-data

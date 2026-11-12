@@ -196,7 +196,10 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
                 "decisions",
                 "limitations",
                 "next_steps",
+                "measured_facts",
+                "proposal_phase",
             )
+            if k in draft
         },
         "tool_failures": [
             {

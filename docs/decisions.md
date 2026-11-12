@@ -466,3 +466,22 @@ remaining original budget 179.534428 CNY. Both account observations showed zero
 displayed delta, which does not prove free usage or verify actual invoiced cost.
 Keep the ledger unchanged by those observations. Readiness remains unaccepted
 pending a real complete three-role run; the UI is available to inspect the trace.
+
+## 2026-11-12: owner-authorized arithmetic repair and real rerun
+
+Owner: "Please fix the remaining arithmetic and reporting issues, then rerun the
+full supervisor plus two-worker trial using deepseek-flash only and BaoStock.
+Keep the original 200 CNY budget and time windows, and record everything."
+
+Implement deterministic development-sample return statistics and explicit
+lookback/execution/label alignment. New workers cite measurement IDs and fact
+keys observed through their own tool calls; the host supplies numerical values
+and attaches both workers' facts to the draft. Keep prose qualitative and formula
+parameters separate. Add host audit summaries and label all proposals as
+post-observation exploration. Preserve the previous failed trial and all charges.
+
+The rerun uses the same bounded real BaoStock evidence through exact-cache reuse,
+the existing three-session allowance and 179.534428 CNY remaining before new calls.
+No data quota, model route, time window or total spending cap is enlarged. The
+current 18:00–24:00 Beijing window permits execution after offline verification.
+See `MEASUREMENT_CONTRACT.md` for the contract and its scientific limits.

@@ -20,6 +20,8 @@ The [first real native-team trial](docs/harness/LIVE_TRIAL_2026-11-12.md) ran at
 tokens. It stopped at a fenced-JSON report mismatch before the reviewer or draft.
 The boundary repair passes offline; a complete real three-role pass is still
 required before owner-trial readiness is accepted.
+The authorized rerun adds [deterministic measurements and audited reporting](docs/harness/MEASUREMENT_CONTRACT.md)
+to replace hand-calculated observations; its real result will be recorded separately.
 
 ## Current deliverable
 

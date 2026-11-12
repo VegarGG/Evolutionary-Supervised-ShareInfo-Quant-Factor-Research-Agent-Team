@@ -46,6 +46,22 @@ def report(evidence_id):
         "proposed_formula": None,
         "recommended_changes": [],
         "limitations": ["Synthetic data only."],
+        "measurement_refs": [],
+    }
+
+
+def measured_report(research, session_id, evidence_id):
+    metrics = research.operate(
+        Operation(op="metrics", session_id=session_id, args={"evidence_id": evidence_id})
+    )
+    return {
+        **report(evidence_id),
+        "measurement_refs": [
+            {
+                "measurement_id": metrics["measurement_id"],
+                "keys": ["sample.observations", "returns.mean"],
+            }
+        ],
     }
 
 
@@ -54,12 +70,13 @@ def completed(research, role, evidence_id):
 
     worker = research.begin_worker("root", role, "Inspect the bounded test evidence.")
     research.data.grant(worker["child_id"], evidence_id)
+    body = measured_report(research, worker["child_id"], evidence_id)
     research.finish_worker(
         "root",
         worker["child_id"],
         {
             "stopReason": "completed",
-            "output": [{"type": "text", "text": json.dumps(report(evidence_id))}],
+            "output": [{"type": "text", "text": json.dumps(body)}],
         },
     )
     return worker
@@ -161,10 +178,12 @@ def test_failed_worker_retains_raw_output_and_stops_draft(research):
 def test_single_fenced_report_keeps_raw_text_and_validates_citations(research, label):
     worker = research.begin_worker("root", "researcher", "Inspect the bounded test evidence.")
     ident = fixture_data(research, worker["child_id"])
-    text = "```" + label + "\n" + json.dumps(report(ident)) + "\n```"
+    body = measured_report(research, worker["child_id"], ident)
+    text = "```" + label + "\n" + json.dumps(body) + "\n```"
     raw = {"stopReason": "completed", "output": [{"type": "text", "text": text}]}
     result = research.finish_worker("root", worker["child_id"], raw)
-    assert result["report"] == report(ident)
+    assert result["report"] == body
+    assert result["measured_facts"][0]["value"] == "2"
     member = research.member(worker["child_id"])
     assert json.loads(member["result"]) == raw
     assert (
@@ -239,7 +258,65 @@ def test_arithmetic_and_append_only_events(research):
     import sqlite3
 
     ident = fixture_data(research)
-    assert research.metrics("root", ident)["unadjusted_sample_return"] == "0.1"
+    assert research.metrics("root", ident)["facts"]["sample.net_return"]["value"] == "0.1"
     with research.db() as db:
         with pytest.raises(sqlite3.IntegrityError, match="append only"):
             db.execute("DELETE FROM events")
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "unknown_measurement",
+        "unobserved",
+        "unknown_key",
+        "duplicate_key",
+        "invented_value",
+        "numeric_prose",
+    ],
+)
+def test_report_measurements_cannot_be_fabricated_or_copied_from_another_worker(research, fault):
+    child = research.begin_worker("root", "researcher", "Inspect bounded evidence independently.")[
+        "child_id"
+    ]
+    ident = fixture_data(research, child)
+    source = "root" if fault == "unobserved" else child
+    research.data.grant(source, ident)
+    body = measured_report(research, source, ident)
+    ref = body["measurement_refs"][0]
+    if fault == "unknown_measurement":
+        ref["measurement_id"] = "0" * 64
+    if fault == "unknown_key":
+        ref["keys"] = ["invented.alpha"]
+    if fault == "duplicate_key":
+        ref["keys"] = ["returns.mean", "returns.mean"]
+    if fault == "invented_value":
+        ref["value"] = "999"
+    if fault == "numeric_prose":
+        body["summary"] = "The measured return is 999 percent."
+    with pytest.raises(ValueError, match="raw result retained"):
+        research.finish_worker(
+            "root",
+            child,
+            {"stopReason": "completed", "output": [{"type": "text", "text": json.dumps(body)}]},
+        )
+    assert research.member(child)["state"] == "failed"
+
+
+def test_host_activity_and_draft_show_measured_facts_without_trusting_agent_counts(research):
+    ident = fixture_data(research)
+    first = completed(research, "researcher", ident)
+    completed(research, "reviewer", ident)
+    result = research.record_draft("root", draft(ident))
+    assert result["draft"]["proposal_phase"] == "post_observation_exploration"
+    assert {f["worker"] for f in result["draft"]["measured_facts"]} == {"researcher", "reviewer"}
+    assert all(
+        f["value"] == "2"
+        for f in result["draft"]["measured_facts"]
+        if f["key"] == "sample.observations"
+    )
+    activity = research.activity("root")
+    assert activity["draft_recorded"] is True
+    assert activity["roles"]["supervisor"]["report_state"] == "draft_recorded"
+    assert activity["roles"]["researcher"]["completed_operations"]["metrics"] == 1
+    assert research.member(first["child_id"])["state"] == "completed"

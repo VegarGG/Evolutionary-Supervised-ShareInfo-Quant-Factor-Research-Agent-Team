@@ -6,6 +6,11 @@ rejected. Seven requests settled; the reviewer never ran and no draft exists.
 The presentation boundary is repaired and passes native offline tests, but a full
 real three-role pass is still required before owner-trial readiness is accepted.
 
+The owner has authorized that rerun after arithmetic/reporting repairs. New
+reports use the [measurement contract](MEASUREMENT_CONTRACT.md): deterministic
+statistics and alignment, worker-observed fact references, host-derived numerical
+draft facts and activity summaries. The original failed record remains unchanged.
+
 ## What you can test
 
 Enter a research brief in DSH. The supervisor assigns one researcher and one

@@ -163,6 +163,14 @@ class ScriptedClient:
             "proposed_formula": None,
             "recommended_changes": [],
             "limitations": ["Not real market evidence."],
+            "measurement_refs": [
+                {
+                    "measurement_id": self.research.metrics(sid, self.evidence_id)[
+                        "measurement_id"
+                    ],
+                    "keys": ["sample.observations", "returns.mean", "lag.5.aligned_case_count"],
+                }
+            ],
         }
         text = json.dumps(report)
         if self.worker_format == "json-fence":

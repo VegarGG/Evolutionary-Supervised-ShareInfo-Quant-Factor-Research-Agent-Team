@@ -52,7 +52,7 @@ export function apply(ctx, config) {
     description: 'Read the fixed research sample, budget, worker status and required draft/report schemas. Call first.',
     parameters: {}, execute: (_args, exec) => operation('scope', {}, exec) })
   register({ name: 'research_metrics',
-    description: 'Compute deterministic descriptive returns on granted daily closes. This is not a backtest or evaluation.',
+    description: 'Compute deterministic daily returns, moments and lookback/next-close alignment on granted closes. Copy measurement_id and fact keys into worker measurement_refs; never recalculate observations in prose. This is not a strategy backtest or evaluation.',
     parameters: { evidence_id: { type: 'string', required: true } },
     execute: (args, exec) => operation('metrics', args, exec) })
   register({ name: 'research_worker',

@@ -16,7 +16,6 @@ import sys
 import uuid
 from collections import Counter
 from datetime import UTC, datetime
-from decimal import Decimal
 from pathlib import Path
 from typing import Literal
 from zoneinfo import ZoneInfo
@@ -27,6 +26,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, admission_open
 from qfh.data_gateway import DataGuard, DataPolicy, dispatch
 from qfh.evidence import EvidenceStore, Query, canonical
+from qfh.research_metrics import ArithmeticProtocol, MeasurementRef, calculate_observations
 
 Role = Literal["supervisor", "researcher", "reviewer"]
 WorkerRole = Literal["researcher", "reviewer"]
@@ -75,6 +75,12 @@ class ResearchPolicy(BaseModel):
 
 
 class WorkerReport(BaseModel):
+    """Keep observations qualitative; select numerical facts via measurement_refs.
+
+    Do not put numeric literals in prose. Formula parameters belong only in
+    proposed_formula. The host attaches referenced numerical values and units.
+    """
+
     model_config = ConfigDict(extra="forbid")
     summary: str = Field(min_length=10, max_length=8000)
     evidence_ids: list[str] = Field(min_length=1, max_length=8)
@@ -82,6 +88,18 @@ class WorkerReport(BaseModel):
     proposed_formula: str | None = None
     recommended_changes: list[str] = Field(max_length=8)
     limitations: list[str] = Field(min_length=1, max_length=8)
+    measurement_refs: list[MeasurementRef] = Field(default_factory=list, max_length=8)
+
+
+def check_qualitative_prose(value, fields):
+    for name in fields:
+        content = getattr(value, name)
+        texts = content if isinstance(content, list) else [content]
+        if any(re.search(r"\d|[%％]", text) for text in texts):
+            raise ValueError(
+                f"{name}: numerical observations must use measurement_refs; "
+                "keep prose qualitative and numeric formula parameters in the formula field"
+            )
 
 
 def parse_worker_report(result, max_chars):
@@ -109,6 +127,12 @@ class Decision(BaseModel):
 
 
 class Draft(BaseModel):
+    """Qualitative proposal; numerical formula parameters belong only in formula.
+
+    Verified numerical facts from both worker reports are attached by the host.
+    This is post-observation exploration, never preregistered research.
+    """
+
     model_config = ConfigDict(extra="forbid")
     title: str = Field(min_length=3, max_length=200)
     hypothesis: str = Field(min_length=10, max_length=8000)
@@ -151,6 +175,9 @@ class Research:
         self.data_root = private / "data"
         self.data = DataGuard(self.data_root / "data-usage.sqlite3", self.data_policy)
         self.store = EvidenceStore(self.data_root / "evidence")
+        self.arithmetic = ArithmeticProtocol.model_validate(
+            yaml.safe_load((config.parent / "research-metrics.yaml").read_text())
+        )
         with self.db() as db:
             db.execute("CREATE TABLE IF NOT EXISTS policy (id INTEGER PRIMARY KEY, body TEXT)")
             body = self.policy.model_dump_json()
@@ -241,6 +268,8 @@ class Research:
                             self.policy.model_dump_json().encode()
                         ).hexdigest(),
                         "roles": self.policy.model_dump()["roles"],
+                        "report_contract": "measured-observations-v2",
+                        "arithmetic_protocol": self.arithmetic.model_dump(),
                     },
                 )
                 member = db.execute(
@@ -299,6 +328,12 @@ class Research:
             "remaining_cny": snapshot["remaining_unreserved_micro_cny"] / 1_000_000,
             "usage_basis": "owner-reported official baseline + conservative subsequent estimates",
             "max_requests_per_trial": self.policy.max_requests_per_trial,
+            "request_limit_kind": "model wire requests, not market-data queries",
+            "activity": self.activity(session_id),
+            "report_contract": "Return qualitative prose, with no numeric literals outside "
+            "the formula field. Call research_metrics; select its measurement_id and fact keys "
+            "in measurement_refs. The host supplies values and units; do not recalculate them. "
+            "All proposals are post-observation exploration, not preregistered.",
             "scope_limit": "Historical unadjusted closes; not a vintage archive. "
             "No current context, backtest, evaluation, publication, reports or news in this trial.",
             "worker_output_schema": WorkerReport.model_json_schema(),
@@ -345,7 +380,13 @@ class Research:
             "task": task,
             "scope": {k: scope[k] for k in ("provider", "query", "scope_limit")},
             "instruction": "Use market_daily_bars to inspect the allowed real evidence yourself. "
-            "Use research_metrics for arithmetic. Return ONLY one JSON object matching the schema. "
+            "Call research_metrics for all arithmetic. Copy its measurement_id and select fact "
+            "keys in measurement_refs (do not include values). Keep ALL prose qualitative, "
+            "without numeric literals, dates, stock codes or percentages; numeric parameters "
+            "are allowed only in proposed_formula, which must contain a symbolic definition, "
+            "not observed results. The host attaches measured values, counts, dates and units. "
+            "No claimed preregistration: this proposal follows evidence access. "
+            "Return ONLY one JSON object matching the schema. "
             "Separate observations from hypotheses; disclose sample limits; cite evidence ids. "
             "Do not delegate or submit a draft. No claims of alpha or gate passage.",
             "required_output_schema": WorkerReport.model_json_schema(),
@@ -371,6 +412,10 @@ class Research:
         try:
             report, encoding = parse_worker_report(result, self.policy.max_tool_result_chars)
             self.check_citations(child_id, report.evidence_ids)
+            check_qualitative_prose(
+                report, ("summary", "findings", "recommended_changes", "limitations")
+            )
+            facts = self.resolve_measurements(child_id, report)
         except (ValueError, TypeError) as exc:
             error = type(exc).__name__
         with self.db() as db:
@@ -415,7 +460,14 @@ class Research:
             )
         for ident in report.evidence_ids:
             self.data.grant(session_id, ident)
-        return {"contribution_id": child_id, "role": child["role"], "report": report.model_dump()}
+        return {
+            "contribution_id": child_id,
+            "role": child["role"],
+            "report": report.model_dump(),
+            "measured_facts": facts,
+            "proposal_phase": "post_observation_exploration",
+            "activity": self.activity(session_id),
+        }
 
     def record_draft(self, session_id, body):
         member = self.member(session_id)
@@ -425,6 +477,27 @@ class Research:
         if {d.worker for d in draft.decisions} != {"researcher", "reviewer"}:
             raise ValueError("record an adoption/rejection decision for each worker")
         self.check_citations(session_id, draft.evidence_ids)
+        check_qualitative_prose(draft, ("title", "hypothesis", "limitations", "next_steps"))
+        for decision in draft.decisions:
+            check_qualitative_prose(decision, ("reason",))
+        with self.db() as db:
+            complete = [
+                dict(w)
+                for w in db.execute(
+                    "SELECT * FROM members WHERE trial_id=? "
+                    "AND role!='supervisor' AND state='completed'",
+                    (member["trial_id"],),
+                )
+            ]
+        measured = []
+        for worker in complete:
+            report, _ = parse_worker_report(
+                json.loads(worker["result"]), self.policy.max_tool_result_chars
+            )
+            measured.extend(
+                {**f, "worker": worker["role"]}
+                for f in self.resolve_measurements(worker["session_id"], report)
+            )
         with self.db() as db:
             workers = list(
                 db.execute(
@@ -439,6 +512,8 @@ class Research:
             ]:
                 raise ValueError("draft is immutable; start a new trial to revise")
             canonical_draft = draft.model_dump(mode="json")
+            canonical_draft["measured_facts"] = measured
+            canonical_draft["proposal_phase"] = "post_observation_exploration"
             digest = hashlib.sha256(canonical(canonical_draft)).hexdigest()
             db.execute(
                 "UPDATE trials SET draft=? WHERE id=?",
@@ -460,6 +535,7 @@ class Research:
             "draft": canonical_draft,
             "evaluation": "not run",
             "publication": "not published",
+            "activity": self.activity(session_id),
         }
 
     def metrics(self, session_id, evidence_id):
@@ -467,24 +543,90 @@ class Research:
         record = self.store.get(evidence_id)
         if record.get("query") != self.policy.query.model_dump(mode="json"):
             raise ValueError("evidence lies outside this trial's permitted sample")
-        rows = sorted(record["content"], key=lambda r: r["date"])
-        prices = [Decimal(str(r["close"])) for r in rows]
-        if len(prices) < 2:
-            raise ValueError("at least two observations required")
+        return calculate_observations(
+            evidence_id, record["content"], self.policy.descriptive_lookbacks, self.arithmetic
+        )
+
+    def resolve_measurements(self, session_id, report):
+        if not report.measurement_refs:
+            raise ValueError("worker must cite research_metrics using measurement_refs")
+        with self.db() as db:
+            observed = {
+                body["result"]["measurement_id"]: body["result"]
+                for row in db.execute(
+                    "SELECT body FROM events WHERE principal=? AND kind='tool_result'",
+                    (session_id,),
+                )
+                for body in [json.loads(row["body"])]
+                if body["op"] == "metrics" and "measurement_id" in body["result"]
+            }
+        resolved = []
+        seen = set()
+        for ref in report.measurement_refs:
+            result = observed.get(ref.measurement_id)
+            if result is None or result["evidence_id"] not in report.evidence_ids:
+                raise ValueError("measurement was not observed by this worker or not cited")
+            for key in ref.keys:
+                if key not in result["facts"] or (ref.measurement_id, key) in seen:
+                    raise ValueError("unknown or duplicate measurement fact")
+                seen.add((ref.measurement_id, key))
+                resolved.append(
+                    {
+                        "measurement_id": ref.measurement_id,
+                        "evidence_id": result["evidence_id"],
+                        "key": key,
+                        **result["facts"][key],
+                    }
+                )
+        return resolved
+
+    def activity(self, session_id):
+        member = self.member(session_id)
+        with self.db() as db:
+            members = [
+                dict(r)
+                for r in db.execute(
+                    "SELECT session_id,role,state FROM members WHERE trial_id=?",
+                    (member["trial_id"],),
+                )
+            ]
+            trial = db.execute(
+                "SELECT draft FROM trials WHERE id=?", (member["trial_id"],)
+            ).fetchone()
+            operations = {m["session_id"]: Counter() for m in members}
+            for row in db.execute("SELECT principal,body FROM events WHERE kind='tool_result'"):
+                if row["principal"] in operations:
+                    body = json.loads(row["body"])
+                    name = body["op"] + (
+                        ":" + body["args"].get("kind", "") if body["op"] == "data" else ""
+                    )
+                    operations[row["principal"]][name] += 1
+        calls = [
+            c
+            for c in self.ledger.snapshot()["calls"]
+            if c["step"].startswith(f"research:{member['trial_id']}:")
+        ]
         return {
-            "evidence_id": evidence_id,
-            "observations": len(rows),
-            "first_date": rows[0]["date"],
-            "last_date": rows[-1]["date"],
-            "unadjusted_sample_return": str(prices[-1] / prices[0] - 1),
-            "last_n_observation_returns": {
-                str(n): str(prices[-1] / prices[-n - 1] - 1)
-                for n in self.policy.descriptive_lookbacks
-                if n < len(prices)
+            "roles": {
+                m["role"]: {
+                    "report_state": m["state"]
+                    if m["role"] != "supervisor"
+                    else "draft_recorded"
+                    if trial["draft"] is not None
+                    else "no_draft",
+                    "admission_state": m["state"],
+                    "completed_operations": dict(operations[m["session_id"]]),
+                    "model_requests_so_far": sum(
+                        c["step"].endswith(":" + m["role"]) for c in calls
+                    ),
+                }
+                for m in members
             },
-            "minimum_close": str(min(prices)),
-            "maximum_close": str(max(prices)),
-            "interpretation": "Descriptive arithmetic only, no strategy backtest or gate metric.",
+            "draft_recorded": trial["draft"] is not None,
+            "measurement_scope": "Host audit snapshot so far. "
+            "A native completed turn is not a validated report. "
+            "No data access may be inferred from a report rejection; consult completed_operations. "
+            "Final cost/token totals come from the post-turn export, not this mid-turn snapshot.",
         }
 
     def operate(self, request: Operation):
