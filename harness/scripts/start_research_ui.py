@@ -58,7 +58,9 @@ def serve(
             raise ValueError("expected one operator-held DeepSeek credential")
         credential = matches.pop()
     model = coding.model if coding else policy.roles["supervisor"].model
-    provider_id = "qfh-glm-coding" if coding else "qfh-deepseek"
+    provider_id = "zai-coding-cn" if coding else "qfh-deepseek"
+    if coding and coding.transport != "openai-completions":
+        raise ValueError("activate the native Coding Plan transport before starting the UI")
     route_label = "GLM 5.3 Flash · Coding Plan Pro" if coding else "DeepSeek · guarded research"
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     evidence = private / "research/servers" / stamp
@@ -140,6 +142,17 @@ def serve(
         coding_policy=coding,
     ) as guard:
         guard.allowed_tools = TOOLS
+        native_patch = evidence / "native-provider.patch.yml"
+        if coding:
+            # Native Models validates settings against the composition layer.
+            # Nested !!js expressions survive that validation as objects; emit
+            # concrete non-secret route facts so ordinary key edits remain valid.
+            template = (root / "configs/web-glm-native.patch.yml").read_text()
+            native_patch.write_text(
+                template.replace(
+                    "!!js process.env.QFH_RELAY_URL", json.dumps(guard.base_url)
+                ).replace("!!js Number(process.env.QFH_MAX_TOKENS)", str(policy.max_output_tokens))
+            )
         # The real API key stays only in this parent relay. Neither DSH nor tools
         # receive it, even if the launching shell happens to export another key.
         env = {
@@ -189,6 +202,7 @@ def serve(
                     str(root / "configs/web-credentials.patch.yml"),
                     "--patch",
                     str(root / "configs/web-research.patch.yml"),
+                    *(["--patch", str(native_patch)] if coding else []),
                     "--host",
                     "127.0.0.1",
                     "--port",

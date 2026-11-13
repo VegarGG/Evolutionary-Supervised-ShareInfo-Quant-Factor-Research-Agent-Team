@@ -634,3 +634,19 @@ was no effect-based enlargement or candidate tuning.
 dummy-key save/reload/remove checks pass; known native mobile clipping remains.
 Real GLM access is pending owner credential entry. See
 `docs/harness/GLM_CODING_PLAN_2026-11-13.md` for authority, controls and the rubric.
+
+
+## 2026-11-13 — Use native Models and zai-coding-cn with guard extensions
+
+The owner identified the working native Coding Plan provider and requested guard
+extensions in DSH's Models page. Replace the temporary custom model form and
+Messages route with native pi-ai `zai-coding-cn`; retain native Agent Teams and
+subagents. Use the documented Models footer and host configuration/request-header
+extension points, with the existing relay as the atomic budget boundary.
+
+The first HTTP 401 remains a reviewed authentication rejection with its full cash
+and credit reservations. A separately bounded repair attempt is allowed only after
+operator review; it does not zero charges, reset request counts or increase the
+200 CNY cap. Subscription limits aggregate both protocol routes. New calls reserve
+the full input capacity and their output bound at the final wire boundary. All
+uncertain streams still block continuation. See NATIVE_MODELS_2026-11-13.md.

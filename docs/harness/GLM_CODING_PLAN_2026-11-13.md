@@ -1,10 +1,11 @@
 # GLM Coding Plan Pro integration — 13 November 2026
 
-Status: implementation, 155 offline tests, credential browser checks and the full
-native synthetic supervisor/two-worker workflow pass. Real credential entry and
-live transport/team verification remain pending. No real GLM request has run at
-this checkpoint. The previous DeepSeek experiment is historical, not evidence of
-GLM performance.
+Status update: the first real Anthropic-route probe returned HTTP 401, with no
+model response and both reservations retained. The owner verified the same key
+in another DSH using `zai-coding-cn`. The native provider, built-in Models editor
+and guard extensions now pass 166 offline tests and a full 15-response synthetic
+team workflow. Native-route live verification follows. Details and retained
+failed checks: [native Models integration](NATIVE_MODELS_2026-11-13.md).
 
 ## Owner authority and model choice
 
@@ -36,9 +37,10 @@ request is refused. No DeepSeek request is scheduled for noon. Later DeepSeek
 admission retains the existing 12:00–14:00 and 18:00–24:00 windows; this GLM route
 does not widen them or silently switch providers at expiry.
 
-The fixed Zhipu Coding Plan endpoint uses Anthropic Messages compatibility.
-DSH still owns the model and subagent loops; its Messages adapter points to the
-loopback guard. The guard forwards only the configured Flash model and permitted
+The replacement `glm-coding-native-2026-11-13.yaml` route uses DSH's native
+`zai-coding-cn` Chat Completions adapter and the fixed Coding Plan endpoint.
+The original Anthropic route is retained as failed history. DSH owns all model
+and subagent loops; native transport points to the loopback guard. The guard forwards only the configured Flash model and permitted
 tools. It does not retry, redirect, select another model or fall back to a metered
 endpoint. Workers cannot activate routes. An append-only route activation is
 frozen into each new trial; earlier DeepSeek trials retain their original routes.
@@ -54,7 +56,7 @@ does not claim to measure available account quota.
 
 The **same 200 CNY ledger** retains the official 20.35 CNY baseline, previous call
 records and package limits. Every GLM request also reserves the existing
-conservative cash maximum and debits its conservative token allowance after usage
+full input capacity plus its enforced output cap and debits its conservative token allowance after usage
 is known. This is an exposure allowance, **not an assertion that the subscription
 incurred incremental cash billing**. Subscription purchase cost is not allocated
 to individual calls. At the pre-live checkpoint, cash accounting is still
@@ -78,23 +80,20 @@ subscription invoice.
 
 ## Credential entry
 
-In DSH, open **More → Settings → Research models**, choose **BigModel / 智谱 —
-China**, paste the Coding Plan key into the password field and save. Saving,
-describing or removing the credential makes no provider request. The key is kept
-in DSH's owner-only local credential service. The interface shows configured
-status rather than reading the key back. Keys are never placed in model messages,
-committed files, command-line arguments or exported trial artifacts.
+In DSH, open **More → Settings → Models → Z.ai Coding (China) · guarded
+research → Edit**. The native API-key field saves to `ZAI_CODING_CN_API_KEY`.
+Saving makes no provider request. The legacy custom form and Research models
+tab are removed. The host migrates the old local credential once, through DSH's
+credential service, then removes the legacy reference so deleting the native key
+cannot revive it. No secret is read back into the browser or committed.
 
-The trusted DSH transport resolves the exact credential reference and sends it
-only to the local relay, which forwards it to the fixed upstream endpoint. Tiny
-operator probes read the same native reference with owner-only mode checks and
-generic, value-free errors. No environment-variable fallback can accidentally
-select another provider key. The Pro tier and Flash preference accompany the
-local credential configuration.
+Guard information is a documented `settings.models.footer` extension. Provider
+edits are checked at the host; resolved model/endpoint/session metadata is checked
+again before dispatch. Both roles use DSH's existing Agent Teams and subagents.
 
 ## Verification and acceptance rubric
 
-155 offline tests pass, including concurrent quota reservation, retained unknown
+The earlier 155-test checkpoint passed, including concurrent quota reservation, retained unknown
 usage across restarts, route expiry, prevention of model/endpoint substitution,
 shared cash-ceiling enforcement, preservation of old trial scopes, immutable
 activation, missing-cache reporting and credential error redaction. No SQLite

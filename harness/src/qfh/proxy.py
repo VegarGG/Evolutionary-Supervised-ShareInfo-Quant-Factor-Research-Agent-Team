@@ -94,6 +94,7 @@ class GuardProxy:
         self.session_admitter = session_admitter
         self.coding_policy = coding_policy
         self.upstream = coding_policy.endpoint if coding_policy else UPSTREAM
+        self.chat = bool(coding_policy and coding_policy.transport == "openai-completions")
         directory.mkdir(parents=True, exist_ok=True)
         proxy = self
 
@@ -105,12 +106,20 @@ class GuardProxy:
                 self.close_connection = True
                 request_id = None
                 response_started = False
-                session_id = self.headers.get("x-deepseek-harness-session-id", "")
+                session_id = self.headers.get(
+                    "x-qfh-session-id" if proxy.chat else "x-deepseek-harness-session-id", ""
+                )
                 try:
-                    if self.path not in ("/anthropic/v1/messages", "/anthropic/messages"):
+                    paths = (
+                        ("/v1/chat/completions",)
+                        if proxy.chat
+                        else ("/anthropic/v1/messages", "/anthropic/messages")
+                    )
+                    if self.path not in paths:
                         raise BudgetRefused("endpoint not allowed")
                     if not secrets.compare_digest(
-                        self.headers.get("x-api-key", ""), proxy.local_key
+                        self.headers.get("x-qfh-relay-key" if proxy.chat else "x-api-key", ""),
+                        proxy.local_key,
                     ):
                         raise BudgetRefused("invalid local credential")
                     size = int(self.headers.get("Content-Length", "0"))
@@ -118,10 +127,23 @@ class GuardProxy:
                         raise BudgetRefused("request body size limit")
                     raw = self.rfile.read(size)
                     body = json.loads(raw)
-                    validate_request(body, proxy.model, proxy.max_tokens, proxy.allowed_tools)
+                    if proxy.chat:
+                        from qfh.chat_transport import validate_chat_request
+
+                        output_bound = validate_chat_request(
+                            body, proxy.model, proxy.max_tokens, proxy.allowed_tools
+                        )
+                    else:
+                        validate_request(body, proxy.model, proxy.max_tokens, proxy.allowed_tools)
+                        output_bound = body["max_tokens"]
                     upstream_key = (
                         self.headers.get("x-qfh-glm-key", "") if proxy.coding_policy else proxy.key
                     )
+                    if proxy.chat:
+                        authorization = self.headers.get("Authorization", "")
+                        upstream_key = (
+                            authorization[7:] if authorization.startswith("Bearer ") else ""
+                        )
                     if not upstream_key:
                         raise BudgetRefused("Configure the GLM Coding Plan key in Research models")
                     step = (
@@ -130,7 +152,8 @@ class GuardProxy:
                     if not step:
                         raise BudgetRefused("no admitted experiment step")
                     candidate_id = uuid.uuid4().hex
-                    proxy.ledger.reserve(candidate_id, step, datetime.now(UTC))
+                    reserve_options = {"output_tokens": output_bound} if proxy.coding_policy else {}
+                    proxy.ledger.reserve(candidate_id, step, datetime.now(UTC), **reserve_options)
                     request_id = candidate_id
                     target = proxy.directory / request_id
                     target.mkdir()
@@ -148,7 +171,11 @@ class GuardProxy:
                             proxy.upstream,
                             content=raw,
                             headers={
-                                "x-api-key": upstream_key,
+                                **(
+                                    {"Authorization": "Bearer " + upstream_key}
+                                    if proxy.coding_policy
+                                    else {"x-api-key": upstream_key}
+                                ),
                                 "content-type": "application/json",
                                 "anthropic-version": "2023-06-01",
                                 "user-agent": "qfh-experiment/0.1",
@@ -183,6 +210,9 @@ class GuardProxy:
                                     output.write(line + "\n")
                                     output.flush()
                                     if line.startswith("data: "):
+                                        if proxy.chat and line[6:].strip() == "[DONE]":
+                                            terminal = line
+                                            continue
                                         event = json.loads(line[6:])
                                         events.append(event)
                                         timings.append(
@@ -210,9 +240,16 @@ class GuardProxy:
                                 raise ValueError("provider rejected request; charge unverified")
                     usage_metadata = {}
                     if proxy.coding_policy:
-                        from qfh.coding_plan import parse_coding_usage
+                        if proxy.chat:
+                            from qfh.chat_transport import parse_chat_usage
 
-                        usage, usage_metadata = parse_coding_usage(events)
+                            usage, usage_metadata = parse_chat_usage(
+                                events, complete=terminal is not None, model=proxy.model
+                            )
+                        else:
+                            from qfh.coding_plan import parse_coding_usage
+
+                            usage, usage_metadata = parse_coding_usage(events)
                         proxy.ledger.settle(request_id, usage, metadata=usage_metadata)
                     else:
                         usage = parse_usage(events)
@@ -284,7 +321,8 @@ class GuardProxy:
 
     @property
     def base_url(self) -> str:
-        return f"http://127.0.0.1:{self.server.server_port}/anthropic"
+        suffix = "/v1" if self.chat else "/anthropic"
+        return f"http://127.0.0.1:{self.server.server_port}{suffix}"
 
     def __enter__(self):
         self.thread.start()

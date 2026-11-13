@@ -24,6 +24,10 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   trial with GLM 5.3 Flash on Coding Plan Pro until 18:00 Beijing on 13 November.
   Preserve DeepSeek's original admission windows for any later DeepSeek calls.
   Other providers and local models remain unauthorized.
+  The owner subsequently identified DSH's working `zai-coding-cn` route and
+  requested guard extensions in the native Models page. Use its native pi-ai
+  Coding Plan transport, editor and credential reference; preserve the failed
+  Anthropic probe and both reservations. Details: `NATIVE_MODELS_2026-11-13.md`.
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
 - Run offline checks with `just harness-check` and `just harness-test`. Live

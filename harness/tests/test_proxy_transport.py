@@ -10,6 +10,7 @@ import pytest
 import yaml
 
 from qfh.budget import BudgetPolicy, Ledger
+from qfh.coding_plan import CodingLedger, CodingPolicy
 from qfh.proxy import GuardProxy
 
 
@@ -111,6 +112,108 @@ def test_invalid_local_credential_never_dispatches(tmp_path):
                 urllib.request.urlopen(request(proxy, "wrong-key"), timeout=10)
             assert err.value.code == 401
     assert not book.snapshot()["calls"]
+
+
+def test_coding_plan_uses_bearer_auth_without_persisting_or_forwarding_local_secrets(tmp_path):
+    config = Path(__file__).resolve().parents[1] / "configs/glm-coding-2026-11-13.yaml"
+    route = CodingPolicy.model_validate(yaml.safe_load(config.read_text()))
+    book = CodingLedger(ledger(tmp_path), route)
+
+    class CodingResponse(SyntheticResponse):
+        def stream(self, method, url, **kwargs):
+            assert method == "POST" and url == route.endpoint
+            assert kwargs["headers"]["Authorization"] == "Bearer synthetic-provider-key"
+            assert "x-api-key" not in kwargs["headers"]
+            assert "x-qfh-glm-key" not in kwargs["headers"]
+            return self
+
+    with (
+        patch("qfh.proxy.httpx.Client", return_value=CodingResponse()),
+        patch.object(CodingPolicy, "admission_open", return_value=True),
+    ):
+        with GuardProxy(
+            book, tmp_path / "wire", None, route.model, 8192, 524288, 10, coding_policy=route
+        ) as proxy:
+            proxy.step = "coding-auth"
+            req = request(proxy)
+            req.data = json.dumps(
+                {"model": route.model, "stream": True, "max_tokens": 128, "messages": []}
+            ).encode()
+            req.add_header("x-qfh-glm-key", "synthetic-provider-key")
+            with urllib.request.urlopen(req, timeout=10) as response:
+                response.read()
+    assert book.snapshot()["calls"][0]["state"] == "settled"
+    for path in (tmp_path / "wire").rglob("*"):
+        if path.is_file():
+            assert "synthetic-provider-key" not in path.read_text()
+
+
+def test_native_chat_guard_settles_before_done_and_rejects_wrong_models(tmp_path):
+    config = Path(__file__).resolve().parents[1] / "configs/glm-coding-native-2026-11-13.yaml"
+    route = CodingPolicy.model_validate(yaml.safe_load(config.read_text()))
+    book = CodingLedger(ledger(tmp_path), route)
+
+    class ChatResponse(SyntheticResponse):
+        def stream(self, method, url, **kwargs):
+            assert url == route.endpoint and method == "POST"
+            assert kwargs["headers"]["Authorization"] == "Bearer dummy-native-key"
+            assert "x-qfh-relay-key" not in kwargs["headers"]
+            return self
+
+        def iter_lines(self):
+            yield "data: " + json.dumps(
+                {
+                    "model": route.model,
+                    "choices": [{"finish_reason": "stop"}],
+                    "usage": {
+                        "prompt_tokens": 20,
+                        "completion_tokens": 4,
+                        "prompt_tokens_details": {"cached_tokens": 10},
+                    },
+                }
+            )
+            yield ""
+            yield "data: [DONE]"
+            yield ""
+
+    with (
+        patch("qfh.proxy.httpx.Client", return_value=ChatResponse()),
+        patch.object(CodingPolicy, "admission_open", return_value=True),
+    ):
+        with GuardProxy(
+            book, tmp_path / "wire", None, route.model, 8192, 524288, 10, coding_policy=route
+        ) as proxy:
+            proxy.step = "native"
+
+            def call(model):
+                return urllib.request.Request(
+                    proxy.base_url + "/chat/completions",
+                    data=json.dumps(
+                        {
+                            "model": model,
+                            "stream": True,
+                            "max_tokens": 128,
+                            "stream_options": {"include_usage": True},
+                            "messages": [],
+                        }
+                    ).encode(),
+                    headers={
+                        "x-qfh-relay-key": proxy.local_key,
+                        "Authorization": "Bearer dummy-native-key",
+                    },
+                )
+
+            with pytest.raises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(call("glm-5.3"), timeout=10)
+            assert error.value.code == 409 and not book.snapshot()["calls"]
+            with urllib.request.urlopen(call(route.model), timeout=10) as response:
+                for line in response:
+                    if line.startswith(b"data: [DONE]"):
+                        assert book.snapshot()["calls"][0]["state"] == "settled"
+                        assert book.snapshot()["unresolved_micro_cny"] == 0
+    call = book.snapshot()["calls"][0]
+    assert call["reserved"] == route.maximum_input_tokens * 2 + 128 * 8
+    assert call["usage"]["input_cached"] == 10
 
 
 def test_disconnected_browser_before_headers_still_drains_and_settles(tmp_path):

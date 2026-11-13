@@ -14,6 +14,7 @@
   "files": [
     "index.js",
     "research.js",
+    "native-models.js",
     "cordis.patch.yml",
     "client.js",
     "LICENSE",
@@ -29,6 +30,7 @@
       "platform": "web",
       "inject": [
         "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-settings-models",
         "@deepseek-ai/dsh-api-remotes",
         "@deepseek-ai/dsh-client-ui-renderer"
       ]

@@ -1,0 +1,17 @@
+# Native provider/editor; all inference still enters the same local cash/quota guard.
+- id: llm-pi-ai
+  disabled: false
+  config:
+    providers:
+      zai-coding-cn:
+        displayName: Z.ai Coding (China) · guarded research
+        apiKeyEnv: ZAI_CODING_CN_API_KEY
+        api: openai-completions
+        baseURL: !!js process.env.QFH_RELAY_URL
+        retryPolicy: {mode: normal, maxRetries: 0}
+        models:
+          - id: glm-5.3-flash
+            name: GLM 5.3 Flash · Coding Plan Pro
+            contextWindow: 1048576
+            maxTokens: !!js Number(process.env.QFH_MAX_TOKENS)
+            input: [text]

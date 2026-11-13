@@ -20,6 +20,7 @@ def main():
     parser.add_argument("--private", type=Path, required=True)
     parser.add_argument("--stage", type=int, choices=(1, 2), required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--repair-of", help="One reviewed authentication rejection to repair")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     private = args.private.resolve()
@@ -31,7 +32,12 @@ def main():
     if not route.admission_open(datetime.now(UTC)):
         raise ValueError("outside GLM authorization window")
     key = read_coding_credential(private)
-    config = yaml.safe_load((root / "configs/glm-probes-2026-11-13.yaml").read_text())
+    probe_config = (
+        "glm-probes-native-2026-11-13.yaml"
+        if route.transport == "openai-completions"
+        else "glm-probes-2026-11-13.yaml"
+    )
+    config = yaml.safe_load((root / "configs" / probe_config).read_text())
     probe = config["probes"][args.stage - 1]
     args.output.mkdir(parents=True, exist_ok=False)
     write_new(
@@ -39,6 +45,7 @@ def main():
         {
             "at": datetime.now(UTC).isoformat(),
             "stage": args.stage,
+            "repair_of": args.repair_of,
             "route": route.model_dump(mode="json"),
             "probe": probe,
             "budget_before": {k: v for k, v in research.ledger.snapshot().items() if k != "calls"},
@@ -46,7 +53,21 @@ def main():
     )
     step = f"glm-probe:{route.id}:{args.stage}"
     ledger = CodingLedger(research.ledger, route)
-    ledger.grant_step(step, f"glm-probes:{route.id}", 1, len(config["probes"]), route.authority)
+    if args.repair_of:
+        previous = next((c for c in ledger.snapshot()["calls"] if c["id"] == args.repair_of), None)
+        if (
+            not previous
+            or previous["state"] != "rejected_reserved"
+            or not previous["step"].startswith("glm-probe:")
+            or not previous["step"].endswith(f":{args.stage}")
+        ):
+            raise ValueError("repair must reference this stage's reviewed authentication rejection")
+        step += f":repair:{args.repair_of}"
+        group = f"glm-probe-repair:{args.repair_of}"
+        limit = 1
+    else:
+        group, limit = f"glm-probes:{route.id}", len(config["probes"])
+    ledger.grant_step(step, group, 1, limit, route.authority)
     body = {
         "model": route.model,
         "stream": True,
@@ -56,6 +77,22 @@ def main():
     }
     if "tool" in probe:
         body["tools"] = [probe["tool"]]
+    chat = route.transport == "openai-completions"
+    if chat:
+        body["stream_options"] = {"include_usage": True}
+        body["tool_stream"] = True
+        body["reasoning_effort"] = route.reasoning_effort
+        if "tool" in probe:
+            body["tools"] = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": probe["tool"]["name"],
+                        "description": probe["tool"]["description"],
+                        "parameters": probe["tool"]["input_schema"],
+                    },
+                }
+            ]
     started = time.monotonic()
     try:
         with (
@@ -75,23 +112,29 @@ def main():
             guard.allowed_tools = {probe["tool"]["name"]} if "tool" in probe else set()
             with httpx.Client(timeout=config["request_timeout_seconds"], trust_env=False) as client:
                 response = client.post(
-                    guard.base_url + "/v1/messages",
+                    guard.base_url + ("/chat/completions" if chat else "/v1/messages"),
                     json=body,
                     headers={
-                        "x-api-key": guard.local_key,
-                        "x-qfh-glm-key": key,
+                        **(
+                            {"x-qfh-relay-key": guard.local_key, "Authorization": "Bearer " + key}
+                            if chat
+                            else {"x-api-key": guard.local_key, "x-qfh-glm-key": key}
+                        ),
                         "x-deepseek-harness-session-id": step,
+                        "x-qfh-session-id": step,
                     },
                 )
             events = [
                 json.loads(line[6:])
                 for line in response.text.splitlines()
-                if line.startswith("data: ")
+                if line.startswith("data: ") and line[6:].strip() != "[DONE]"
             ]
         calls = [c for c in ledger.snapshot()["calls"] if c["step"] == step]
         if response.status_code != 200 or len(calls) != 1 or calls[0]["state"] != "settled":
             raise ValueError("probe did not settle successfully; inspect retained wire and quota")
         models = [e["message"]["model"] for e in events if e.get("type") == "message_start"]
+        if chat:
+            models = sorted({e["model"] for e in events if e.get("model")})
         if any(model.lower() != route.model for model in models):
             raise ValueError("returned model identity differs from the authorized Flash model")
         text = "".join(e.get("delta", {}).get("text", "") for e in events)
@@ -102,6 +145,16 @@ def main():
             and e["content_block"].get("type") == "tool_use"
         ]
         fragments = "".join(e.get("delta", {}).get("partial_json", "") for e in events)
+        if chat:
+            deltas = [c.get("delta", {}) for e in events for c in e.get("choices", [])]
+            text = "".join(d.get("content") or "" for d in deltas)
+            chunks = [t for d in deltas for t in d.get("tool_calls", [])]
+            tools = [
+                {"name": t["function"]["name"], "input": {}}
+                for t in chunks
+                if t.get("function", {}).get("name")
+            ]
+            fragments = "".join(t.get("function", {}).get("arguments", "") for t in chunks)
         if "expected_text" in probe:
             assert text.strip() == probe["expected_text"], "probe text did not match"
         else:

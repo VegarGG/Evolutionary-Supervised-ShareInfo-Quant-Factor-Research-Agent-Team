@@ -5,27 +5,27 @@ globalThis.__ModuleLoader__.load({
     const React = require('react')
     const { createElement: h, useEffect, useState, useCallback } = React
     const refs = ['QFH_IFIND_CREDENTIAL', 'QFH_RQDATA_LICENSE']
-    const glmRef = 'QFH_GLM_CODING_CREDENTIAL'
     const fieldStyle = { width: '100%', border: '1px solid #aaa', borderRadius: 6,
       padding: '9px 12px', background: 'transparent', color: 'inherit', boxSizing: 'border-box' }
+    // Native option popups do not consistently inherit the page's dark background.
+    // Pair system foreground/background colors on both the control and its options.
+    const selectStyle = { ...fieldStyle, colorScheme: 'light dark', background: 'Canvas', color: 'CanvasText' }
+    const optionStyle = { background: 'Canvas', color: 'CanvasText', colorScheme: 'light dark' }
     const buttonStyle = { ...fieldStyle, width: 'auto', cursor: 'pointer' }
 
     function CredentialForm({ provider, configured, operations, refresh }) {
       const [value, setValue] = useState('')
       const [method, setMethod] = useState('refresh_token')
-      const [platform, setPlatform] = useState('')
       const [busy, setBusy] = useState(false)
       const [message, setMessage] = useState('')
-      const ref = provider === 'glm' ? glmRef : provider === 'ifind' ? refs[0] : refs[1]
-      const label = provider === 'glm' ? 'GLM Coding Plan' : provider === 'ifind' ? 'iFind' : 'RQData'
+      const ref = provider === 'ifind' ? refs[0] : refs[1]
+      const label = provider === 'ifind' ? 'iFind' : 'RQData'
       async function save(event) {
         event.preventDefault()
-        if (!value.trim() || busy || (provider === 'glm' && !platform)) return
+        if (!value.trim() || busy) return
         setBusy(true); setMessage('')
         try {
-          await operations.save(ref, provider === 'glm'
-            ? JSON.stringify({ api_key: value.trim(), platform, plan: 'coding', tier: 'Pro', model: 'glm-5.3-flash' })
-            : provider === 'ifind' ? JSON.stringify({ [method]: value.trim() }) : value.trim())
+          await operations.save(ref, provider === 'ifind' ? JSON.stringify({ [method]: value.trim() }) : value.trim())
           setValue('')
           await refresh()
           setMessage('Saved locally. No provider request was sent.')
@@ -42,23 +42,17 @@ globalThis.__ModuleLoader__.load({
         style: { display: 'grid', gap: 12, border: '1px solid #bbb', borderRadius: 10, padding: 20 } },
         h('h3', { style: { margin: 0 } }, label + ' credentials'),
         h('p', { role: 'status', style: { margin: 0 } }, configured ? 'Configured' : 'Not configured'),
-        provider === 'glm' ? h('label', null, 'Coding Plan platform',
-          h('select', { 'aria-label': 'GLM Coding Plan platform', value: platform, disabled: busy,
-            onChange: event => setPlatform(event.target.value), style: fieldStyle, required: true },
-            h('option', { value: '' }, 'Choose the platform that issued your plan'),
-            h('option', { value: 'bigmodel-cn' }, 'BigModel / 智谱 — China'),
-            h('option', { value: 'zai-international' }, 'Z.ai — international'))) : null,
         provider === 'ifind' ? h('label', null, 'Token type',
           h('select', { 'aria-label': 'iFind token type', value: method, disabled: busy,
-            onChange: event => setMethod(event.target.value), style: fieldStyle },
-            h('option', { value: 'refresh_token' }, 'Refresh token'),
-            h('option', { value: 'access_token' }, 'Access token'))) : null,
-        h('label', null, label + (provider === 'glm' ? ' API key' : provider === 'ifind' ? ' token' : ' license'),
+            onChange: event => setMethod(event.target.value), style: selectStyle },
+            h('option', { value: 'refresh_token', style: optionStyle }, 'Refresh token'),
+            h('option', { value: 'access_token', style: optionStyle }, 'Access token'))) : null,
+        h('label', null, label + (provider === 'ifind' ? ' token' : ' license'),
           h('input', { type: 'password', 'aria-label': label + ' credential', value,
             autoComplete: 'off', spellCheck: false, disabled: busy, style: fieldStyle,
             onChange: event => setValue(event.target.value) })),
         h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-          h('button', { type: 'submit', disabled: busy || !value.trim() || (provider === 'glm' && !platform),
+          h('button', { type: 'submit', disabled: busy || !value.trim(),
             style: buttonStyle }, 'Save ' + label),
           h('button', { type: 'button', onClick: remove, disabled: busy || !configured,
             style: buttonStyle }, 'Remove ' + label)),
@@ -96,10 +90,10 @@ globalThis.__ModuleLoader__.load({
         !state ? h('p', null, 'Loading settings…') : h(React.Fragment, null,
           h('label', null, 'Active data source',
             h('select', { 'aria-label': 'Active data source', value: state.provider, disabled: busy || state.researchMode,
-              onChange: event => { void select(event.target.value) }, style: fieldStyle },
-              h('option', { value: 'baostock' }, 'BaoStock — free testing'),
-              h('option', { value: 'ifind' }, 'iFind'),
-              h('option', { value: 'rqdata' }, 'RiceQuant RQData'))),
+              onChange: event => { void select(event.target.value) }, style: selectStyle },
+              h('option', { value: 'baostock', style: optionStyle }, 'BaoStock — free testing'),
+              h('option', { value: 'ifind', style: optionStyle }, 'iFind'),
+              h('option', { value: 'rqdata', style: optionStyle }, 'RiceQuant RQData'))),
           h('p', { style: { margin: 0, fontSize: 13 } },
             state.researchMode
               ? 'Interactive trial: BaoStock is pinned. Start a new chat, describe a research idea, and keep Use Agent Teams enabled. One supervisor and two workers will produce a cited draft.'
@@ -122,34 +116,18 @@ globalThis.__ModuleLoader__.load({
             'Credentials stay in the local DSH credential store. iFind uses the current access token and never rotates it automatically.')))
     }
 
-    function ModelSettings({ operations }) {
-      const [state, setState] = useState(null)
-      const [error, setError] = useState('')
-      const refresh = useCallback(async () => {
-        setState(await operations.readModels()); setError('')
-      }, [operations])
-      useEffect(() => {
-        let active = true
-        operations.readModels().then(next => { if (active) setState(next) })
-          .catch(() => { if (active) setError('Could not load model credential status.') })
-        return () => { active = false }
-      }, [operations])
-      return h('section', { 'aria-label': 'Research model settings',
-        style: { display: 'grid', gap: 20, maxWidth: 640, minWidth: 0, padding: '0 4px' } },
-        h('h2', { style: { margin: 0 } }, 'Research models'),
+    function ModelSettings() {
+      return h('section', { 'aria-label': 'Research guard',
+        style: { display: 'grid', gap: 12, maxWidth: 640, minWidth: 0, padding: '12px 4px' } },
+        h('h3', { style: { margin: 0 } }, 'Research guard'),
         h('p', { style: { margin: 0 } },
-          'GLM Coding Plan Pro: GLM 5.3 Flash first. GLM 5.3 requires documented evidence that Flash cannot complete the task.'),
-        h('p', { role: 'status', style: { margin: 0 } },
-          globalThis.__QFH_RESEARCH_PROFILE__?.modelProvider === 'glm_coding'
-            ? 'GLM is the active guarded route. Save your Coding Plan key below. Saving makes no provider request. Live validation is recorded separately.'
-            : 'Credential storage is ready. Saving makes no provider request. The current research route is shown in the chat model selector.'),
+          'Use the zai-coding-cn provider above to save your Coding Plan Pro API key. Saving makes no provider request.'),
         h('p', { style: { margin: 0 } },
-          'The owner has confirmed DSH support with Zhipu. Select BigModel / 智谱 for this Pro plan. There is no automatic switch to a metered API.'),
-        error ? h('p', { role: 'alert' }, error) : null,
-        !state ? h('p', null, 'Loading credential status…') : h(CredentialForm, {
-          provider: 'glm', configured: state[glmRef]?.configured, operations, refresh }),
+          'GLM 5.3 Flash is pinned for the supervisor and both native Agent Teams workers. Model and endpoint changes are checked by the host.'),
+        h('p', { style: { margin: 0 } },
+          'GLM admission ends at 18:00 Beijing on 13 November. The original 200 CNY total cap and a separate subscription quota limit apply to every request. Failed requests stay in the ledger.'),
         h('p', { style: { margin: 0, fontSize: 13 } },
-          'The key stays in the local DSH credential store. The original 200 CNY total paid-testing cap is retained; subscription quota will be reported separately.'))
+          'Different models per role remain planned. GLM 5.3 requires recorded evidence that Flash is insufficient.'))
     }
 
     return {
@@ -171,7 +149,6 @@ globalThis.__ModuleLoader__.load({
               credentials: checked(credentials) }
           },
           async save(ref, value) { checked(await ctx.remote.credentials.set(ref, value)) },
-          async readModels() { return checked(await ctx.remote.credentials.describe([glmRef])) },
           async remove(ref) { checked(await ctx.remote.credentials.unset(ref)) },
           async select(provider, revision) {
             checked(await ctx.remote.settings.update('qfh-data', { activeProvider: provider }, revision))
@@ -181,8 +158,8 @@ globalThis.__ModuleLoader__.load({
           name: 'settings.section', id: 'qfh-data', label: () => 'Research data', order: 15,
           inject: () => ({ operations }),
         }, DataSettings))
-        ctx.slots.inject('settings.section', () => ctx.slots.register({
-          name: 'settings.section', id: 'qfh-models', label: () => 'Research models', order: 16,
+        ctx.slots.inject('settings.models.footer', () => ctx.slots.register({
+          name: 'settings.models.footer', id: 'qfh-models', order: 10,
           inject: () => ({ operations }),
         }, ModelSettings))
       },

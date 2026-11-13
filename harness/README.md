@@ -25,9 +25,11 @@ Real preparation now contains 121 BaoStock observations and 118 aligned cases.
 The owner replaced the noon DeepSeek run with
 [GLM 5.3 Flash on Coding Plan Pro](../docs/harness/GLM_CODING_PLAN_2026-11-13.md)
 until 18:00 Beijing on 13 November. The guarded route, credential entry and native
-synthetic team test pass, with 155 offline tests; real GLM validation awaits the
-owner's key. In Settings → Research models, select BigModel / 智谱 and save the
-Coding Plan credential. Saving makes no provider request. All history and the
+synthetic team test pass, with 166 offline tests; the first Anthropic-route probe
+returned 401. The native
+`zai-coding-cn` provider is now integrated in Settings → Models with guard extensions.
+Native-route live validation follows; the existing credential is migrated locally.
+Saving makes no provider request. All history and the
 original cash budget remain shared; prepaid credits are recorded separately.
 
 ## Install and verify

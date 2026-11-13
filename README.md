@@ -34,9 +34,10 @@ observations and 118 aligned cases, meeting the predeclared primary pilot target
 The independent bootstrap audit reports an inconclusive interval.
 The owner replaced the scheduled run with
 [GLM 5.3 Flash on Coding Plan Pro](docs/harness/GLM_CODING_PLAN_2026-11-13.md)
-until 18:00 Beijing on 13 November. The guarded GLM route passes 155 offline tests
+until 18:00 Beijing on 13 November. The guarded GLM route passes 166 offline tests
 and a full native synthetic team test. Credential entry is available in Settings
-→ Research models; real GLM verification is pending. The previous live result
+→ Models. The first Anthropic-route probe returned 401; native Coding Plan
+validation follows. The previous live result
 above is not presented as a GLM result.
 
 ## Current deliverable

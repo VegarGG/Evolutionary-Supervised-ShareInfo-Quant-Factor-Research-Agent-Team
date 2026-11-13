@@ -346,7 +346,7 @@ class Research:
     def activate_model_route(self, route: CodingPolicy, *, expected_previous_id=None):
         """Trusted operator only; no research tool can select or enable a provider."""
         budget = self.ledger.snapshot()
-        if any(c["state"] != "settled" for c in budget["calls"]):
+        if any(c["state"] not in ("settled", "rejected_reserved") for c in budget["calls"]):
             raise ValueError("resolve pending/unknown model usage before changing route")
         value = route.model_dump(mode="json")
         with self.db() as db:

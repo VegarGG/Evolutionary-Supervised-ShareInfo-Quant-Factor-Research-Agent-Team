@@ -37,6 +37,56 @@ class Response:
         pass
 
     def iter_lines(self):
+        if self.model == "glm-5.3-flash":
+            delta = (
+                {
+                    "role": "assistant",
+                    "tool_calls": [
+                        {
+                            "index": 0,
+                            "id": self.ident,
+                            "type": "function",
+                            "function": {
+                                "name": self.tool,
+                                "arguments": json.dumps(self.arguments),
+                            },
+                        }
+                    ],
+                }
+                if self.tool
+                else {"role": "assistant", "content": self.text}
+            )
+            for choice in (
+                {"index": 0, "delta": delta, "finish_reason": None},
+                {"index": 0, "delta": {}, "finish_reason": "tool_calls" if self.tool else "stop"},
+            ):
+                yield "data: " + json.dumps(
+                    {
+                        "id": self.ident,
+                        "object": "chat.completion.chunk",
+                        "created": 1,
+                        "model": self.model,
+                        "choices": [choice],
+                    }
+                )
+                yield ""
+            yield "data: " + json.dumps(
+                {
+                    "id": self.ident,
+                    "model": self.model,
+                    "choices": [],
+                    "usage": {
+                        "prompt_tokens": 96,
+                        "completion_tokens": 16,
+                        "total_tokens": 112,
+                        "prompt_tokens_details": {"cached_tokens": 32},
+                    },
+                }
+            )
+            yield ""
+            yield "data: [DONE]"
+            yield ""
+            return
         usage = {
             "input_tokens": 64,
             "cache_read_input_tokens": 32,
@@ -358,9 +408,31 @@ def main():
     key_file.chmod(0o600)
     if args.glm_coding:
         coding = CodingPolicy.model_validate(
-            yaml.safe_load((config.parent / "glm-coding-2026-11-13.yaml").read_text())
+            yaml.safe_load((config.parent / "glm-coding-native-2026-11-13.yaml").read_text())
         )
         research.activate_model_route(coding)
+        home = private / "research-ui-home"
+        home.mkdir()
+        credential = home / ".credentials.yaml"
+        credential.write_text(
+            yaml.safe_dump(
+                {
+                    "version": 1,
+                    "refs": {
+                        "QFH_GLM_CODING_CREDENTIAL": json.dumps(
+                            {
+                                "api_key": "offline-only-legacy-glm-key",
+                                "platform": "bigmodel-cn",
+                                "plan": "coding",
+                                "model": coding.model,
+                                "tier": "Pro",
+                            }
+                        )
+                    },
+                }
+            )
+        )
+        credential.chmod(0o600)
         Response.model = coding.model
     client = ScriptedClient(research, data["evidence_id"], args.worker_format)
     with (

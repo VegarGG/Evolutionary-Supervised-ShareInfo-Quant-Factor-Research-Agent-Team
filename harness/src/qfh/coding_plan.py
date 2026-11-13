@@ -1,5 +1,6 @@
 """Bounded prepaid GLM usage in the existing campaign ledger; no metered fallback."""
 
+import hashlib
 import json
 from datetime import UTC, datetime
 from typing import Literal
@@ -19,6 +20,15 @@ def read_coding_credential(private):
         store = yaml.safe_load(path.read_text())
         if store["version"] != 1:
             raise ValueError()
+        native = store["refs"].get("ZAI_CODING_CN_API_KEY")
+        if native is not None:
+            if (
+                not isinstance(native, str)
+                or not native.strip()
+                or any(c in native for c in "\r\n")
+            ):
+                raise ValueError()
+            return native.strip()
         raw = store["refs"]["QFH_GLM_CODING_CREDENTIAL"]
         credential = json.loads(raw)
         if (
@@ -33,7 +43,7 @@ def read_coding_credential(private):
         return credential["api_key"].strip()
     except Exception:
         raise ValueError(
-            "Save a valid Zhipu Coding Plan key in DSH Research models; "
+            "Save a valid Zhipu Coding Plan key in DSH Models; "
             "the credential file must be owner-only"
         ) from None
 
@@ -46,7 +56,11 @@ class CodingPolicy(BaseModel):
     platform: Literal["bigmodel-cn"]
     subscription_tier: Literal["Pro"]
     model: Literal["glm-5.3-flash"]
-    endpoint: Literal["https://open.bigmodel.cn/api/anthropic/v1/messages"]
+    endpoint: Literal[
+        "https://open.bigmodel.cn/api/anthropic/v1/messages",
+        "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions",
+    ]
+    transport: Literal["anthropic", "openai-completions"] = "anthropic"
     authority: str = Field(min_length=20)
     eligibility_authority: str = Field(min_length=20)
     starts_at: datetime
@@ -64,6 +78,8 @@ class CodingPolicy(BaseModel):
 
     @model_validator(mode="after")
     def bounded_window(self):
+        if (self.transport == "openai-completions") != self.endpoint.endswith("chat/completions"):
+            raise ValueError("transport must match the approved Coding Plan endpoint")
         if not self.starts_at.tzinfo or not self.ends_at.tzinfo or self.ends_at <= self.starts_at:
             raise ValueError("a finite timezone-aware subscription admission window is required")
         if self.reservation > self.max_microcredits:
@@ -127,8 +143,19 @@ class CodingLedger(Ledger):
         ):
             raise ValueError("GLM token maxima exceed the shared cash reservation bounds")
 
-    def reserve(self, request_id, step, now):
+    def reserve(self, request_id, step, now, *, output_tokens=None):
         policy = self.coding
+        output = policy.maximum_output_tokens if output_tokens is None else output_tokens
+        if type(output) is not int or not 0 < output <= policy.maximum_output_tokens:
+            raise BudgetRefused("invalid requested output bound")
+        cash_reservation = (
+            policy.maximum_input_tokens * self.policy.input_micro_cny_per_token
+            + output * self.policy.output_micro_cny_per_token
+        )
+        quota_reservation = (
+            policy.maximum_input_tokens * policy.input_microcredits_per_token
+            + output * policy.output_microcredits_per_token
+        )
         if not policy.admission_open(now):
             raise BudgetRefused("outside the authorized GLM Coding Plan window")
         detail = {
@@ -136,7 +163,8 @@ class CodingLedger(Ledger):
             "route_id": policy.id,
             "model": policy.model,
             "endpoint": policy.endpoint,
-            "quota_reserved_microcredits": policy.reservation,
+            "quota_reserved_microcredits": quota_reservation,
+            "maximum_output_tokens": output,
             "quota_settled_upper_microcredits": None,
             "cache_tokens_reported": None,
             "cash_basis": "Existing Coding Plan subscription; no metered fallback. "
@@ -147,7 +175,8 @@ class CodingLedger(Ledger):
         def check(db):
             rows = db.execute("SELECT detail,state FROM calls").fetchall()
             own = [(coding_detail({"detail": d}), state) for d, state in rows]
-            own = [(d, s) for d, s in own if d.get("route_id") == policy.id]
+            # Protocol repairs must not reset the original subscription allowance.
+            own = [(d, s) for d, s in own if d.get("funding") == "coding_plan"]
             if len(own) >= policy.max_requests:
                 raise BudgetRefused("GLM route request allowance exhausted")
             if any(s == "unknown" for _, s in own):
@@ -160,11 +189,11 @@ class CodingLedger(Ledger):
                 else d["quota_reserved_microcredits"]
                 for d, _ in own
             )
-            if used + policy.reservation > policy.max_microcredits:
+            if used + quota_reservation > policy.max_microcredits:
                 raise BudgetRefused("GLM subscription quota allowance exhausted or reserved")
 
         self._reserve(
-            request_id, step, now, self.policy.reservation, detail=json.dumps(detail), check=check
+            request_id, step, now, cash_reservation, detail=json.dumps(detail), check=check
         )
 
     def settle(self, request_id, usage, *, metadata=None):
@@ -182,10 +211,18 @@ class CodingLedger(Ledger):
             + usage.output * self.policy.output_micro_cny_per_token
         )
         with self.transaction() as db:
-            row = db.execute("SELECT usage,detail FROM calls WHERE id=?", (request_id,)).fetchone()
+            row = db.execute(
+                "SELECT usage,detail,reserved FROM calls WHERE id=?", (request_id,)
+            ).fetchone()
             if row is None:
                 raise ValueError("subscription settlement without reservation")
             detail = coding_detail({"detail": row[1]})
+            if (
+                usage.output
+                > detail.get("maximum_output_tokens", self.coding.maximum_output_tokens)
+                or cash_upper > row[2]
+            ):
+                raise ValueError("usage exceeds the request reservation")
             if detail.get("route_id") != self.coding.id:
                 raise ValueError("subscription route differs from reservation")
             body = usage.model_dump_json()
@@ -213,4 +250,51 @@ class CodingLedger(Ledger):
                 "UPDATE calls SET state='unknown',detail=?,finished=? "
                 "WHERE id=? AND state='pending'",
                 (json.dumps(detail), datetime.now(UTC).isoformat(), request_id),
+            )
+
+    def review_auth_rejection(self, wire, *, authority):
+        """Operator-only review of a complete 401; retain BOTH full reservations.
+
+        A reviewed authentication rejection permits a separately granted repair
+        attempt, but is never represented as settled usage or zero cost. Timeouts,
+        partial streams and other failures remain blocking unknowns.
+        """
+        if len(authority.strip()) < 20:
+            raise ValueError("explicit repair authority is required")
+        raw = {
+            name: (wire / name).read_bytes()
+            for name in ("http.json", "request.json", "response.sse")
+        }
+        http = json.loads(raw["http.json"])
+        response = json.loads(raw["response.sse"])
+        if (
+            http.get("status") != 401
+            or http.get("endpoint") != self.coding.endpoint
+            or http.get("request_sha256") != hashlib.sha256(raw["request.json"]).hexdigest()
+            or set(response) != {"error"}
+            or response["error"].get("type") != "401"
+        ):
+            raise ValueError("not a complete recorded authentication rejection")
+        with self.transaction() as db:
+            row = db.execute(
+                "SELECT state,step,usage,charged,detail FROM calls WHERE id=?", (wire.name,)
+            ).fetchone()
+            if row is None or row[0] != "unknown" or row[1] != http.get("step"):
+                raise ValueError("review requires the matching unknown request")
+            detail = coding_detail({"detail": row[4]})
+            if row[2] is not None or row[3] is not None or detail.get("route_id") != self.coding.id:
+                raise ValueError("review cannot change settled usage or another route")
+            detail["authentication_review"] = {
+                "at": datetime.now(UTC).isoformat(),
+                "authority": authority,
+                "evidence_sha256": {
+                    name: hashlib.sha256(value).hexdigest() for name, value in raw.items()
+                },
+                "previous_state": "unknown",
+                "billing_status": "unverified; full cash and subscription reservations retained",
+            }
+            db.execute(
+                "UPDATE calls SET state='rejected_reserved',detail=? "
+                "WHERE id=? AND state='unknown'",
+                (json.dumps(detail), wire.name),
             )

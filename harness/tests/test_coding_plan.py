@@ -1,3 +1,4 @@
+import hashlib
 import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -78,6 +79,50 @@ def test_unknown_usage_retains_subscription_reservation_across_restart(tmp_path)
     assert detail["route_id"] == obj.coding.id
     with pytest.raises(BudgetRefused, match="unknown"):
         restarted.reserve("next", "next", NOW)
+
+
+def test_reviewed_auth_rejection_keeps_both_reservations_and_request_count(tmp_path):
+    obj = ledger(tmp_path, max_requests=2)
+    obj.reserve("first", "probe:1", NOW)
+    obj.unknown("first", "ValueError")
+    wire = tmp_path / "wire/first"
+    wire.mkdir(parents=True)
+    request = b'{"model":"glm-5.3-flash"}'
+    (wire / "request.json").write_bytes(request)
+    (wire / "response.sse").write_text('{"error":{"type":"401","message":"Rejected"}}')
+    http = {
+        "status": 500,
+        "endpoint": obj.coding.endpoint,
+        "step": "probe:1",
+        "request_sha256": hashlib.sha256(request).hexdigest(),
+    }
+    (wire / "http.json").write_text(json.dumps(http))
+    authority = "Owner replaced the key; operator reviewed a complete authentication rejection."
+    with pytest.raises(ValueError, match="complete recorded"):
+        obj.review_auth_rejection(wire, authority=authority)
+    before = obj.snapshot()
+    http["status"] = 401
+    (wire / "http.json").write_text(json.dumps(http))
+    obj.review_auth_rejection(wire, authority=authority)
+    after = obj.snapshot()
+    assert after["unresolved_micro_cny"] == before["unresolved_micro_cny"]
+    assert after["remaining_unreserved_micro_cny"] == before["remaining_unreserved_micro_cny"]
+    call = after["calls"][0]
+    assert call["state"] == "rejected_reserved" and call["charged"] is None
+    assert coding_detail(call)["quota_settled_upper_microcredits"] is None
+    assert coding_detail(call)["quota_reserved_microcredits"] == obj.coding.reservation
+    with pytest.raises(ValueError, match="matching unknown"):
+        obj.review_auth_rejection(wire, authority=authority)
+    restarted = ledger(tmp_path, max_requests=2)
+    restarted.reserve("repair", "repair:1", NOW, output_tokens=128)
+    assert restarted.snapshot()["unresolved_micro_cny"] == (
+        obj.policy.reservation + obj.coding.maximum_input_tokens * 2 + 128 * 8
+    )
+    restarted.settle(
+        "repair", Usage(input_uncached=1, input_cached=0, input_cache_write=0, output=1)
+    )
+    with pytest.raises(BudgetRefused, match="request allowance"):
+        restarted.reserve("extra", "extra", NOW)
 
 
 def test_coding_caps_expiry_and_no_fallback(tmp_path):
