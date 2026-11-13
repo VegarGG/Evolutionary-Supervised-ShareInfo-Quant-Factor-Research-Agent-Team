@@ -5,15 +5,20 @@ private directory and has no API-key argument. Ordinary pytest never launches it
 """
 
 import argparse
+import hashlib
 import json
 import threading
+from datetime import timedelta
 from pathlib import Path
 from unittest.mock import patch
 
+import yaml
 from start_research_ui import serve
 
-from qfh.data_gateway import dispatch
+from qfh.data_gateway import DataPolicy, dispatch
+from qfh.evidence import canonical
 from qfh.research import Research
+from qfh.research_samples import SampleActivation, compose_sample
 
 
 class Response:
@@ -169,7 +174,7 @@ class ScriptedClient:
         if index == 0:
             return Response(
                 tool="market_daily_bars",
-                arguments=self.research.policy.query.model_dump(mode="json"),
+                arguments=self.research.scope(sid)["query"],
                 ident=ident,
             )
         if index == 1:
@@ -188,7 +193,7 @@ class ScriptedClient:
         report = {
             "summary": "Synthetic test report for the actual native DSH child session.",
             "evidence_ids": [self.evidence_id],
-            "findings": ["The fixture contains ten synthetic observations."],
+            "findings": ["The fixture contains synthetic observations."],
             "proposed_formula": None,
             "recommended_changes": [],
             "limitations": ["Not real market evidence."],
@@ -234,10 +239,76 @@ class ScriptedClient:
         return Response(text=text, ident=ident)
 
 
+def expanded_fixture(research, config):
+    """Explicitly synthetic larger fixture; no provider call or production candidate."""
+    from qfh.evidence import Query
+
+    policy = DataPolicy.model_validate(
+        yaml.safe_load((config.parent / "data-expansion-2026-11-13.yaml").read_text())
+    )
+    plan = yaml.safe_load((config.parent / "sample-expansion-2026-11-13.yaml").read_text())
+
+    def synthetic_fetch(query, *_):
+        day, rows = query.start, []
+        while day <= query.end:
+            if day.weekday() < 5:
+                rows.append(
+                    {
+                        "symbol": query.symbols[0],
+                        "date": day.isoformat(),
+                        "close": 100 + day.toordinal() % 2,
+                    }
+                )
+            day += timedelta(days=1)
+        return rows, {"synthetic": True, "external_requests": 0}
+
+    parents = []
+    for query in [research.policy.query, *[Query.model_validate(q) for q in plan["steps"][:4]]]:
+        result = dispatch(
+            {
+                "provider": "baostock",
+                "kind": "bars",
+                "run_id": "offline-expanded",
+                "query": query.model_dump(mode="json"),
+                "credentials": {},
+            },
+            policy,
+            research.data_root,
+            baostock_fetch=synthetic_fetch,
+        )
+        parents.append(result["evidence_id"])
+    plan_id = "offline-expanded-fixture"
+    plan_hash = hashlib.sha256(
+        canonical({"synthetic": True, "source_evidence_ids": parents})
+    ).hexdigest()
+    ident, record = compose_sample(
+        research.store, parents, policy.research_cutoff, plan_id, plan_hash, 4, synthetic=True
+    )
+    research.activate_sample(
+        SampleActivation(
+            id=plan_id,
+            authority="Explicit offline fixture; no actual model or market data access.",
+            expected_previous_id=None,
+            evidence_id=ident,
+            query=record["query"],
+            plan_id=plan_id,
+            plan_sha256=plan_hash,
+            fixed_definition=ScriptedClient.specification_body(),
+            statistical_protocol_sha256=hashlib.sha256(
+                canonical(research.statistics.model_dump(mode="json"))
+            ).hexdigest(),
+            preview_rows=20,
+            alignment_preview_rows=2,
+        )
+    )
+    return ident
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--port", type=int, default=3081)
+    parser.add_argument("--expanded-fixture", action="store_true")
     parser.add_argument(
         "--worker-format",
         choices=(
@@ -263,17 +334,21 @@ def main():
         {"symbol": "000001.XSHE", "date": f"2026-10-{day}", "close": 10 + i / 10}
         for i, day in enumerate([19, 20, 21, 22, 23, 26, 27, 28, 29, 30])
     ]
-    data = dispatch(
-        {
-            "provider": "baostock",
-            "kind": "bars",
-            "run_id": "offline-fixture",
-            "query": research.policy.query.model_dump(mode="json"),
-            "credentials": {},
-        },
-        research.data_policy,
-        research.data_root,
-        baostock_fetch=lambda *_: (rows, {"synthetic": True, "external_requests": 0}),
+    data = (
+        dispatch(
+            {
+                "provider": "baostock",
+                "kind": "bars",
+                "run_id": "offline-fixture",
+                "query": research.policy.query.model_dump(mode="json"),
+                "credentials": {},
+            },
+            research.data_policy,
+            research.data_root,
+            baostock_fetch=lambda *_: (rows, {"synthetic": True, "external_requests": 0}),
+        )
+        if not args.expanded_fixture
+        else {"evidence_id": expanded_fixture(research, config)}
     )
     key_file = private / "dummy-key.txt"
     key_file.write_text("sk-offline-placeholder-never-sent-to-any-provider")

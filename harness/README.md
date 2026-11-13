@@ -15,6 +15,12 @@ and real team checks pass. The host correctly reports insufficient data; a model
 prose caveat remains audited. Two further bounded owner trials are available under
 the authorized six-session allowance, preserving all spending/data bounds/history.
 
+The next [sample-expansion package](../docs/harness/SAMPLE_EXPANSION_2026-11-13.md)
+adds operator-prepared adjacent BaoStock chunks, immutable per-trial sample scopes
+and bounded model views backed by complete calculation artifacts. Its 146 tests
+and larger native synthetic workflow pass; real preparation/live verification
+are recorded separately as they complete.
+
 ## Install and verify
 
 From the repository root, with Python 3.12, uv, Node and pnpm available:

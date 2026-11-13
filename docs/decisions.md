@@ -576,3 +576,26 @@ are now used, leaving two bounded owner trials. Desktop completion/reload/Team
 checks pass; mobile clipping remains. See `LIVE_SPECIFICATION_TRIAL_2026-11-12.md`
 for per-agent work, costs, rates, cache and shared-machine observations. Keep the
 server available for owner trials under the existing time/model/data guards.
+
+## 2026-11-13: owner-authorized gradual sample expansion
+
+Owner: "Please gradually expand the BaoStock sample and rerun the supervisor plus
+two-worker trial with enough data for statistical inference. Keep DeepSeek-flash
+only, the original 200 CNY budget and time windows, and record everything."
+
+Keep the same stock/cutoff and freeze the previous concrete candidate before new
+downloads. Add adjacent older chunks one at a time, each at most sixty-one calendar
+days. Stop solely at the predeclared quality/support target: at least one hundred
+aligned cases, forty per group and twenty complete blocks. Do not inspect effects
+or intervals to decide whether to enlarge the sample. The maximum prepared scope
+is March through October; smaller planned stages precede it. Only BaoStock quotas
+increase for those explicit queries; paid sources and all model/budget/time limits
+remain unchanged. Reuse the original ledger and remaining two pilot slots.
+
+Compose immutable evidence with source lineage, preserve full calculations behind
+bounded model views, and activate the new scope through an operator-only append-only
+event. Old trials keep their original scopes. Expanded drafts say next observation
+close rather than assuming verified trading-calendar completeness. The first
+146 tests and a larger native synthetic team trial pass; no new paid inference has
+run. The noon Beijing window is the next admission opportunity. See
+`SAMPLE_EXPANSION_2026-11-13.md` for the fixed design and recording rubric.

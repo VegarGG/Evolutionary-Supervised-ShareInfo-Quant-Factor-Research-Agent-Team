@@ -28,6 +28,11 @@ The desktop is ready for **two further bounded owner trials**. An authorized
 append-only extension raises cumulative sessions from three to six, with four now
 used; spending, data, per-trial limits and Beijing windows remain unchanged.
 
+The owner has now authorized a [gradual BaoStock history expansion](docs/harness/SAMPLE_EXPANSION_2026-11-13.md)
+to reach the inference support target. Its implementation passes 146 tests and a
+larger native synthetic team run. Real preparation and a new Flash-only trial are
+in progress; the previous live result above is not presented as their outcome.
+
 ## Current deliverable
 
 - Pinned DSH SDK/runtime 0.2.2rc2 and a native Research data settings/tool plugin.

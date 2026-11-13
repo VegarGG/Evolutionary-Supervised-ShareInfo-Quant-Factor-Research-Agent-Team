@@ -70,6 +70,8 @@ def serve(
         and p.suffix in (".py", ".js", ".json", ".yaml", ".yml", ".toml", ".lock")
         and not any(x in p.parts for x in ("__pycache__", "node_modules", ".venv"))
     )
+    with research.db() as db:
+        active_sample = research.active_sample(db)
     write_new(
         evidence / "manifest.json",
         {
@@ -101,6 +103,7 @@ def serve(
             },
             "policy": policy.model_dump(mode="json"),
             "pilot_allowance": research.allowance(),
+            "active_sample": active_sample,
             "budget_before": research.ledger.snapshot(),
         },
     )

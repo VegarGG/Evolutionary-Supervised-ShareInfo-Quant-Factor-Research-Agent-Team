@@ -24,9 +24,10 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, admission_open
-from qfh.data_gateway import DataGuard, DataPolicy, dispatch
+from qfh.data_gateway import DataGuard, DataPolicy, dispatch, evidence_page
 from qfh.evidence import EvidenceStore, Query, canonical
 from qfh.research_metrics import ArithmeticProtocol, MeasurementRef, calculate_observations
+from qfh.research_samples import SampleActivation, SampleRange, compact_calculation, compose_sample
 from qfh.research_specification import ContrastSpec, StatisticalProtocol, assess_specification
 
 Role = Literal["supervisor", "researcher", "reviewer"]
@@ -205,6 +206,7 @@ class Research:
         self.data_root = private / "data"
         self.data = DataGuard(self.data_root / "data-usage.sqlite3", self.data_policy)
         self.store = EvidenceStore(self.data_root / "evidence")
+        self.calculations = EvidenceStore(self.root / "calculations")
         self.arithmetic = ArithmeticProtocol.model_validate(
             yaml.safe_load((config.parent / "research-metrics.yaml").read_text())
         )
@@ -302,6 +304,7 @@ class Research:
                         "arithmetic_protocol": self.arithmetic.model_dump(),
                         "statistical_protocol": self.statistics.model_dump(mode="json"),
                         "pilot_limit_at_admission": self.trial_limit(db),
+                        "sample": self.active_sample(db),
                     },
                 )
                 member = db.execute(
@@ -318,6 +321,91 @@ class Research:
                 self.policy.authority,
             )
         return step
+
+    def active_sample(self, db):
+        row = db.execute(
+            "SELECT body FROM events WHERE kind='sample_activated' ORDER BY seq DESC LIMIT 1"
+        ).fetchone()
+        return json.loads(row[0])["sample"] if row else None
+
+    def trial_sample(self, session_id):
+        member = self.member(session_id)
+        with self.db() as db:
+            row = db.execute(
+                "SELECT body FROM events WHERE principal=? AND kind='trial_started'",
+                (member["trial_id"],),
+            ).fetchone()
+        return json.loads(row[0]).get("sample")
+
+    def activate_sample(self, activation: SampleActivation):
+        """Operator-only immutable sample amendment; prior trials keep their scopes."""
+        budget = self.ledger.snapshot()
+        if any(c["state"] != "settled" for c in budget["calls"]):
+            raise ValueError("settle pending or unknown usage before changing the active sample")
+        record = self.store.get(activation.evidence_id)
+        if (
+            record.get("query") != activation.query.model_dump(mode="json")
+            or record.get("provider") != "baostock"
+            or record.get("research_cutoff") != self.data_policy.research_cutoff.isoformat()
+            or activation.query.symbols != self.policy.query.symbols
+            or activation.query.end != self.policy.query.end
+            or record.get("composition", {}).get("plan_sha256") != activation.plan_sha256
+            or record.get("composition", {}).get("plan_id") != activation.plan_id
+            or record.get("composition", {}).get("synthetic")
+            != (self.private / "OFFLINE_ONLY").exists()
+        ):
+            raise ValueError("sample identity, scope, authority or execution mode differs")
+        if (
+            activation.statistical_protocol_sha256
+            != hashlib.sha256(canonical(self.statistics.model_dump(mode="json"))).hexdigest()
+        ):
+            raise ValueError("statistical protocol changed since sample preparation")
+        parents = record.get("source_evidence_ids", [])
+        if not parents:
+            raise ValueError("sample must retain original source lineage")
+        with self.data.db() as db:
+            for ident in parents:
+                self.store.get(ident)
+                if not db.execute(
+                    "SELECT 1 FROM requests WHERE result_id=? AND provider='baostock' "
+                    "AND kind='bars' AND outcome='success'",
+                    (ident,),
+                ).fetchone():
+                    raise ValueError("sample parent lacks a verified BaoStock source request")
+        composed_id, _ = compose_sample(
+            self.store,
+            parents,
+            self.data_policy.research_cutoff,
+            activation.plan_id,
+            activation.plan_sha256,
+            record["composition"]["stage"],
+            synthetic=(self.private / "OFFLINE_ONLY").exists(),
+        )
+        if composed_id != activation.evidence_id:
+            raise ValueError("composed content does not reproduce the verified source chunks")
+        sample = activation.model_dump(mode="json")
+        with self.db() as db:
+            for row in db.execute("SELECT body FROM events WHERE kind='sample_activated'"):
+                prior = json.loads(row[0])["sample"]
+                if prior["id"] == activation.id:
+                    if prior != sample:
+                        raise ValueError("sample amendment is immutable")
+                    return prior
+            current = self.active_sample(db)
+            if (current["id"] if current else None) != activation.expected_previous_id:
+                raise ValueError("active sample changed before amendment")
+            self.event(
+                db,
+                "operator",
+                "sample_activated",
+                {
+                    "sample": sample,
+                    "budget_cumulative_micro_cny": budget["cumulative_micro_cny"],
+                    "remaining_micro_cny": budget["remaining_unreserved_micro_cny"],
+                    "original_policy_unchanged": True,
+                },
+            )
+        return sample
 
     def trial_limit(self, db):
         row = db.execute(
@@ -406,11 +494,13 @@ class Research:
         self.data.pin(session_id, provider)
         snapshot = self.ledger.snapshot()
         contract = self.contract(session_id)
+        sample = self.trial_sample(session_id)
         return {
             "trial_id": trial["id"],
             "role": member["role"],
             "provider": provider,
-            "query": self.policy.query.model_dump(mode="json"),
+            "query": sample["query"] if sample else self.policy.query.model_dump(mode="json"),
+            "sample": sample,
             "workers": workers,
             "draft_recorded": trial["draft"] is not None,
             "window_open": admission_open(datetime.now(UTC)),
@@ -432,7 +522,11 @@ class Research:
             "in measurement_refs. The host supplies values and units; do not recalculate them. "
             "All proposals are post-observation exploration, not preregistered.",
             "scope_limit": "Historical unadjusted closes; not a vintage archive. "
-            "No current context, backtest, evaluation, publication, reports or news in this trial.",
+            "No current context, backtest, evaluation, publication, reports or news in this trial. "
+            "A composed sample is preloaded from recorded BaoStock queries; worker reads are "
+            "cache-only. Bars may be a preview; metrics/specification compute the full sample. "
+            "When sample.fixed_definition is present, execute it unchanged; do not tune it "
+            "or choose another hypothesis after seeing the expanded evidence.",
             "worker_output_schema": WorkerReport.model_json_schema(),
             "specification_schema": ContrastSpec.model_json_schema(),
             "statistical_protocol": self.statistics.model_dump(mode="json"),
@@ -487,11 +581,14 @@ class Research:
         prompt = {
             "role": role,
             "task": task,
-            "scope": {k: scope[k] for k in ("provider", "query", "scope_limit")},
+            "scope": {k: scope[k] for k in ("provider", "query", "scope_limit", "sample")},
             "instruction": "Use market_daily_bars to inspect the allowed real evidence yourself. "
             "The assignment already supplies your scope and schema; no initial scope call is "
             "needed. Bars includes the returned rows, so read_research_evidence is optional "
             "when those rows are already complete. Preserve calls for validation feedback. "
+            "For composed samples, bars explicitly marks a row preview; do not claim to have "
+            "read every raw row. The metrics/specification tools compute all rows and preserve "
+            "full artifacts. Use their summary facts and the fixed_definition in scope. "
             "Call research_metrics for all arithmetic. Copy its measurement_id and select fact "
             "keys in measurement_refs (do not include values). Keep ALL prose qualitative, "
             "without numeric literals, dates, stock codes or percentages. Candidate parameters "
@@ -684,6 +781,7 @@ class Research:
 
     def record_draft(self, session_id, body):
         member = self.member(session_id)
+        expanded_sample = self.trial_sample(session_id) is not None
         if member["role"] != "supervisor":
             raise ValueError("only the supervisor records a research draft")
         needs_specification = self.contract(session_id) == "executable-contrast-v4"
@@ -744,7 +842,9 @@ class Research:
                 canonical_draft.update(
                     formula=selected["canonical_formula"],
                     signal_time="close_t",
-                    execution_time="next_trading_day_close",
+                    execution_time="next_observation_close"
+                    if expanded_sample
+                    else "next_trading_day_close",
                     specification=selected,
                     statistical_outcome=selected["inference"]["outcome"],
                     scientific_acceptance="not_assessed_by_this_development_tool",
@@ -778,16 +878,27 @@ class Research:
     def metrics(self, session_id, evidence_id):
         self.check_citations(session_id, [evidence_id])
         record = self.store.get(evidence_id)
-        if record.get("query") != self.policy.query.model_dump(mode="json"):
+        sample = self.trial_sample(session_id)
+        query = sample["query"] if sample else self.policy.query.model_dump(mode="json")
+        if record.get("query") != query or (sample and sample["evidence_id"] != evidence_id):
             raise ValueError("evidence lies outside this trial's permitted sample")
-        return calculate_observations(
+        result = calculate_observations(
             evidence_id, record["content"], self.policy.descriptive_lookbacks, self.arithmetic
+        )
+        return (
+            compact_calculation(
+                result, "metrics", self.calculations, sample["alignment_preview_rows"]
+            )
+            if sample
+            else result
         )
 
     def specification(self, session_id, evidence_id, specification_json):
         self.check_citations(session_id, [evidence_id])
         record = self.store.get(evidence_id)
-        if record.get("query") != self.policy.query.model_dump(mode="json"):
+        sample = self.trial_sample(session_id)
+        query = sample["query"] if sample else self.policy.query.model_dump(mode="json")
+        if record.get("query") != query or (sample and sample["evidence_id"] != evidence_id):
             raise ValueError("specification evidence lies outside the permitted sample")
         if (
             not isinstance(specification_json, str)
@@ -795,7 +906,16 @@ class Research:
         ):
             raise ValueError("specification must be a bounded JSON string")
         spec = ContrastSpec.model_validate_json(specification_json)
-        return assess_specification(evidence_id, record["content"], spec, self.statistics)
+        if sample and spec != ContrastSpec.model_validate(sample["fixed_definition"]):
+            raise ValueError("execute the frozen definition unchanged; no outcome-based tuning")
+        result = assess_specification(evidence_id, record["content"], spec, self.statistics)
+        return (
+            compact_calculation(
+                result, "specification", self.calculations, sample["alignment_preview_rows"]
+            )
+            if sample
+            else result
+        )
 
     def observed_specification(self, session_id, specification_id):
         with self.db() as db:
@@ -931,7 +1051,11 @@ class Research:
                 kind = args.get("kind")
                 if kind not in ("bars", "read"):
                     raise ValueError("only daily closes and granted evidence reads are enabled")
-                if kind == "bars" and Query.model_validate(args["query"]) != self.policy.query:
+                sample = scope["sample"]
+                if kind == "bars" and (
+                    SampleRange.model_validate(args["query"]).model_dump(mode="json")
+                    != scope["query"]
+                ):
                     raise ValueError(
                         "query must match the single permitted stock/date sample in research_scope"
                     )
@@ -941,12 +1065,28 @@ class Research:
                     "run_id": request.session_id,
                     "credentials": {},
                 }
-                result = dispatch(
-                    data_request,
-                    self.data_policy,
-                    self.data_root,
-                    cache_only=(self.private / "OFFLINE_ONLY").exists(),
-                )
+                if sample and kind == "bars":
+                    result = evidence_page(
+                        self.store,
+                        sample["evidence_id"],
+                        self.data_policy.research_cutoff,
+                        limit=sample["preview_rows"],
+                    )
+                    self.data.grant(request.session_id, sample["evidence_id"])
+                    result.update(
+                        cache_reused=True,
+                        content_is_preview=len(result["content"]) < result["row_count"],
+                        data_access="Frozen composed BaoStock sample; zero vendor requests. "
+                        "The displayed rows are a preview; research_metrics and "
+                        "research_specification compute the complete permitted sample.",
+                    )
+                else:
+                    result = dispatch(
+                        data_request,
+                        self.data_policy,
+                        self.data_root,
+                        cache_only=(self.private / "OFFLINE_ONLY").exists(),
+                    )
             if len(json.dumps(result, ensure_ascii=False)) > self.policy.max_tool_result_chars:
                 raise ValueError("tool result exceeds the configured result limit")
             with self.db() as db:

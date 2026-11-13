@@ -104,12 +104,21 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
     ]
     failures = [e for e in events if e["kind"] == "tool_failure"]
     evidence_ids = sorted({r["evidence_id"] for r in data_results})
+    sample = research.trial_sample(trial_id)
+    source_evidence_ids = sorted(
+        set(evidence_ids)
+        | {
+            source
+            for ident in evidence_ids
+            for source in research.store.get(ident).get("source_evidence_ids", [])
+        }
+    )
     data_wire_keys = {
         c["cache_key"]
         for c in data_history
         if c["provider"] == "baostock"
         and c["kind"] == "bars"
-        and (c in data_calls or c["result_id"] in evidence_ids)
+        and (c in data_calls or c["result_id"] in source_evidence_ids)
     }
     mode_verified = bool(manifests) and all(
         m["manifest"]["mode"] == ("synthetic_model_and_data" if synthetic else "live")
@@ -182,11 +191,13 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
         },
         "pilot_allowance_at_export": research.allowance(),
         "data": {
-            "query": research.policy.query.model_dump(mode="json"),
+            "query": sample["query"] if sample else research.policy.query.model_dump(mode="json"),
+            "sample": sample,
             "requests_during_trial": data_calls,
             "tool_fetches": len(data_results),
             "exact_cache_hits": sum(r.get("cache_reused") is True for r in data_results),
             "evidence_ids": evidence_ids,
+            "source_evidence_ids": source_evidence_ids,
         },
         "resources": resource_metrics(samples, [(started, finished)]),
         "draft": None
@@ -258,9 +269,20 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
     paths += [
         p for c in calls for p in (private / "campaign/wire" / c["id"]).glob("*") if p.is_file()
     ]
-    paths += [
-        private / "data/evidence" / f"{ident}.json" for ident in summary["data"]["evidence_ids"]
-    ]
+    paths += [private / "data/evidence" / f"{ident}.json" for ident in source_evidence_ids]
+    calculation_ids = {
+        e["body"]["result"]["calculation_artifact_id"]
+        for e in events
+        if e["kind"] == "tool_result" and e["body"]["result"].get("calculation_artifact_id")
+    }
+    paths += [private / "research/calculations" / f"{ident}.json" for ident in calculation_ids]
+    if sample:
+        preparation = private / "research/sample-expansions" / sample["plan_id"]
+        paths += list(preparation.glob("*.json"))
+        summary["data"]["preparation"] = [
+            json.loads(p.read_text()) for p in sorted(preparation.glob("stage-*.json"))
+        ]
+        summary["calculation_artifact_ids"] = sorted(calculation_ids)
     paths += [
         path
         for key in data_wire_keys
