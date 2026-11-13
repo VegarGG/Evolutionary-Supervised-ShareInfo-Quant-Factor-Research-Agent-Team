@@ -687,3 +687,31 @@ The original policy row is untouched. Tests prove both historical accounting and
 the original cumulative bound survive the amendment. Extend cumulative sessions
 to eight to retain one owner slot after the actual repair run. 169 offline tests
 pass; use a read-only capacity preflight before the next submission.
+
+
+## 2026-11-13 — Final native GLM trial passes with qualitative caveats
+
+At 12:12–12:20 Beijing, clean source 8150415 ran fifteen real GLM 5.3 Flash
+Coding Plan requests through native zai-coding-cn and native Agent Teams. All
+three roles made five requests, both workers completed, both tasks completed,
+and the immutable draft was recorded with zero tool/report failures. Both full
+specifications match the frozen independent bootstrap reference: inconclusive.
+The independent raw-wire/data/accounting audit verified ninety-six frozen files
+and all 377 descriptive facts per calculation. Retain a qualitative finding:
+reviewer and supervisor overstate what an interval containing zero says about
+the information in a point estimate. Record the correction without rewriting the
+draft. Multi-symbol recommendations remain suggestions, not scope authority.
+
+Usage: 180,678 tokens, 57.47% cache hit ratio, 54.60039-credit upper estimate and
+0.498666 CNY conservative exposure debit, not an incremental subscription bill.
+The original official baseline remains 20.35 CNY; current accounting 22.664994,
+reservation 5.242880 and unreserved 172.092126 CNY. There are 110 harness requests,
+109 settled and one reviewed auth rejection retaining its reservations. Seven
+of eight sessions are used; one bounded owner trial remains before route expiry.
+
+Native Models key editing, dark/light readability, desktop completion/reload and
+Team board checks pass. 169 offline tests and both CI suites pass on the live
+source. Keep the idle guarded server available; no further provider request is
+scheduled. Mobile clipping, broader scientific validation, mixed role providers
+and current-market context remain staged. See LIVE_GLM_NATIVE_2026-11-13.md for
+complete per-agent work, token/rate/cost/cache/resource measurements and evidence.

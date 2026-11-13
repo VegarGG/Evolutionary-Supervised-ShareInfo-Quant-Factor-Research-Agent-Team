@@ -30,6 +30,11 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   Anthropic probe and both reservations. Details: `NATIVE_MODELS_2026-11-13.md`.
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
+- Latest verified native GLM trial: `docs/harness/LIVE_GLM_NATIVE_2026-11-13.md`.
+  Active route `glm-coding-native-package-2026-11-13` has a recorded 20 CNY
+  package sublimit inside the original 200 CNY ceiling; 60 aggregate requests,
+  1,500 credits and the same 18:00 Beijing expiry. Seven of eight pilot sessions
+  are used. One bounded owner trial remains; never reset history to create slots.
 - Run offline checks with `just harness-check` and `just harness-test`. Live
   experiments are separate commands with explicit campaign state and audit records.
   No ordinary test target may call a real model or data provider.

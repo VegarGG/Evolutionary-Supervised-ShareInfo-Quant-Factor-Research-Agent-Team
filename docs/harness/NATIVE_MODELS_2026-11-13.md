@@ -1,5 +1,9 @@
 # Native DSH Models integration — 13 November 2026
 
+Current result: both native probes and the final real supervisor/two-worker trial
+pass. [Full results and remaining limits](LIVE_GLM_NATIVE_2026-11-13.md). The
+sections below retain each intermediate failure and amendment in order.
+
 The owner reported that the same key works in another DSH under the China Coding
 Plan provider and requested guard extensions in the native Models page. The
 upstream provider ID is `zai-coding-cn`. The temporary Research models tab is
@@ -94,7 +98,7 @@ After the two probes and first full trial, settled cash allowance accounting is
 22.166328 CNY; 5.242880 CNY remains reserved, leaving 172.590792 CNY unreserved.
 The new GLM allowance debits are conservative exposure, not incremental cash
 invoices. Detailed failed-run metrics: [retained first native trial](evidence/expansion-2026-11-13/NATIVE_GLM_FIRST_LIVE.json).
-The separate repair trial remains pending.
+The separate repair trial now passes; see [full results](LIVE_GLM_NATIVE_2026-11-13.md).
 
 Required checks pass: 167 tests. An initial sandbox run denied six loopback socket
 tests; rerunning with local sockets permitted passed all tests. Both logs remain.

@@ -1,11 +1,11 @@
 # Staged BaoStock sample expansion — 13 November 2026
 
-Status: real BaoStock preparation completed and stopped at the fourth stage.
-The owner replaced the planned noon DeepSeek trial with GLM Coding Plan Pro,
-using GLM 5.3 Flash until 18:00 Beijing today; see the
-[GLM integration record](GLM_CODING_PLAN_2026-11-13.md). No new paid inference has
-yet run. The previous live result remains in
-[the specification trial report](LIVE_SPECIFICATION_TRIAL_2026-11-12.md).
+Status: preparation stopped at the fourth stage with 121 real observations and
+118 aligned cases. The [real native GLM Flash team trial](LIVE_GLM_NATIVE_2026-11-13.md)
+now passes: both workers independently executed the frozen definition, matching
+the independent bootstrap audit. The outcome is inconclusive. Earlier plans and
+preparation checkpoints below remain historical; the owner-authorized GLM route
+replaced the planned DeepSeek run until 18:00 Beijing on 13 November.
 
 Authority: "Please gradually expand the BaoStock sample and rerun the supervisor
 plus two-worker trial with enough data for statistical inference. Keep
@@ -172,4 +172,4 @@ The independent audit also verified all 120 alignment rows, 118 usable labels,
 two dropped tail cases, four ties assigned to control, and 117 touching endpoints
 with zero positive overlap. Serial independence remains unestablished. Full
 audit and reference calculation are retained under `expansion-005`, separately
-from the forthcoming LLM trial.
+from the completed native GLM trial linked above.

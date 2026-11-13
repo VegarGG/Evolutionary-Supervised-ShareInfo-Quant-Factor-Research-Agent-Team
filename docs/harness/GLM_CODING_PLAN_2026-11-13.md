@@ -1,13 +1,13 @@
 # GLM Coding Plan Pro integration — 13 November 2026
 
-Status update: the first real Anthropic-route probe returned HTTP 401, with no
-model response and both reservations retained. The owner verified the same key
-in another DSH using `zai-coding-cn`. The native provider, built-in Models editor
-and guard extensions now pass 167 offline tests and a full 15-response synthetic
-team workflow. Both real native probes passed. The first real team trial failed
-after a reviewer evidence-grant recovery exhausted its call cap; a bounded repair
-is recorded separately. Details and retained
-failed checks: [native Models integration](NATIVE_MODELS_2026-11-13.md).
+Current status: the [real native GLM Flash/BaoStock trial](LIVE_GLM_NATIVE_2026-11-13.md)
+passed with fifteen calls, both workers/tasks and a draft. Native Models and
+`zai-coding-cn` work with the saved key; 169 offline tests pass. The original
+Anthropic 401, first failed team and zero-dispatch package refusal remain retained.
+Active bounds: 60 aggregate GLM requests, 1,500 local credits, a 20 CNY GLM package
+sublimit within the original 200 CNY ceiling, and eight cumulative pilot sessions.
+32 requests and seven sessions are used. One bounded owner trial remains until
+18:00 Beijing. Details: [native integration](NATIVE_MODELS_2026-11-13.md).
 
 ## Owner authority and model choice
 
@@ -49,10 +49,12 @@ frozen into each new trial; earlier DeepSeek trials retain their original routes
 
 Start with a short text probe and one tool-call probe, inspecting each before the
 next. Then run one full native team trial on the already frozen BaoStock sample.
-The route permits at most 24 actual requests, one concurrent request and a local
-1,500-credit allowance, including uncertain attempts. The team retains its
-twenty-request cap and eight/six/six role caps. The original six-session pilot
-allowance remains; four sessions were used before this package. Pro's account
+The initial route allowed 24 requests. Recorded native repair amendments now
+allow 60 aggregate requests and eight cumulative pilot sessions, including all
+failed attempts. One concurrent request and the 1,500-credit allowance remain
+unchanged. The team retains twenty calls split eight/six/six. A separate frozen
+route raises only the GLM package sublimit from 10 to 20 CNY; the original
+200 CNY cumulative check and saved budget policy remain unchanged. Pro's account
 quota may also include activity outside this experiment, so the local allowance
 does not claim to measure available account quota.
 
@@ -61,7 +63,7 @@ records and package limits. Every GLM request also reserves the existing
 full input capacity plus its enforced output cap and debits its conservative token allowance after usage
 is known. This is an exposure allowance, **not an assertion that the subscription
 incurred incremental cash billing**. Subscription purchase cost is not allocated
-to individual calls. At the pre-live checkpoint, cash accounting is still
+to individual calls. At the pre-live checkpoint, cash accounting was
 21.608190 CNY with 178.391810 CNY remaining and 78 settled harness requests.
 
 Separately retain prepaid quota reservations and a conservative credit estimate.
@@ -131,5 +133,5 @@ result is not evidence that Flash lacks intelligence. No upgrade is enabled by
 the present model whitelist.
 
 Private integration records: `.qfh-private/integration/expansion-005/`; immutable
-campaign wire and usage remain in their original locations. Real results will be
-appended after the owner saves the key and execution finishes.
+campaign wire and usage remain in their original locations. The completed real results, retained failures and current readiness are in
+[LIVE_GLM_NATIVE_2026-11-13.md](LIVE_GLM_NATIVE_2026-11-13.md).

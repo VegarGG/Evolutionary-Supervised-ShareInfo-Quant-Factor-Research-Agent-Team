@@ -58,7 +58,7 @@ The answer key never enters the runtime workspace, prompts, MCP tools or provide
 wire. Diagnostic and open-ended results are separate. Diagnostic fixtures are not
 production factors and are never imported into a pool.
 
-Live admission remains DeepSeek-only, sequential initially, within the original
+The original DeepSeek diagnostic admission is sequential within the original
 schedule: 12:00–14:00 and 18:00–24:00 Beijing. At a closed window, stop admitting
 new work and let an already dispatched request finish; checkpoint unfinished work.
 500 is the authorized concurrency ceiling, not an experimental target. A smaller
@@ -83,6 +83,13 @@ Reports/news are untrusted evidence, not operational instructions. Retrieved tex
 cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
+
+13 November update: the owner-authorized native GLM Coding Plan Pro integration
+and final supervisor/two-worker BaoStock trial pass; 169 offline tests pass. Use
+native Models (`zai-coding-cn`) and native Agent Teams with guard extensions.
+All failures and cash/credit reservations remain counted. One bounded owner trial
+remains before 18:00 Beijing. [Measured results and limits](LIVE_GLM_NATIVE_2026-11-13.md).
+Mixed role models and bounded market/news context remain staged in the design below.
 
 Owner update, 12 November: proceed with guarded chat and one real supervisor/two-
 worker BaoStock trial. This authorizes the bounded prototype now; a universal

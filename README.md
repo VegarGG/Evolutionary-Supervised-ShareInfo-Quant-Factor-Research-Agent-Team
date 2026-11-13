@@ -1,51 +1,41 @@
 # Quant Factor Harness
 
-Current native GLM status: both real `zai-coding-cn` probes passed; the first team
-trial exposed an evidence-access workflow failure. Its repair passes 169 offline
-tests. A zero-call package-limit refusal is retained; the bounded rerun is next. The built-in Models editor now owns keys.
-See the [native integration record](docs/harness/NATIVE_MODELS_2026-11-13.md). Earlier
-readiness counts below are historical; the amended pilot has one repair slot and
-one bounded owner slot remaining, under the original cash and time limits.
+Current development is a bounded quant research harness built on **DeepSeek
+Harness (DSH)** in the existing [QFR repository](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team).
+DSH owns sessions, model/tool loops, the Models editor and native Agent Teams.
+QRH adds bounded data access, evidence, accounting and deterministic research
+calculations. The independent evaluator remains separate.
 
-Current development is a small research harness built on **DeepSeek Harness (DSH)**
-in the existing [QFR repository](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team).
-DSH owns sessions and model/tool loops; QFH adds bounded data access, evidence,
-budget enforcement and controlled workflow experiments. The independent evaluator
-and its research/holdout boundaries remain separate.
+The [latest real GLM Flash/BaoStock trial](docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
+passed at **12:12–12:20 Beijing on 13 November**: one supervisor, two workers,
+15 actual settled calls, 180,678 tokens and an immutable draft. Both workers
+independently executed the frozen specification on all 121 real observations.
+The result is **inconclusive**, with model-prose caveats recorded separately.
+Input cache hit rate was 57.47%; 169 offline tests and both GitHub check suites pass.
 
-Start with the [approved plan](docs/harness/PLAN.md),
-[first live pilot report](docs/harness/FIRST_PILOT.md), and
-[data-source selection](docs/harness/DATA_SOURCES.md).
-The [interactive trial guide](docs/harness/INTERACTIVE_TRIAL.md) covers the new
-supervisor/two-worker workflow and its small limits.
-The [initial validation record](docs/harness/VALIDATION.md) and
-[native-team validation](docs/harness/INTERACTIVE_VALIDATION.md) distinguish each test scope.
-This is a prototype, not a completed Hybrid v1 system or an accepted alpha engine.
+Use **Settings → Models → Z.ai Coding (China) · guarded research** for the
+Coding Plan Pro key. The native `zai-coding-cn` route works with the saved key;
+the duplicate Research models panel is removed and light/dark select readability
+is repaired. See the [native integration record](docs/harness/NATIVE_MODELS_2026-11-13.md).
+The original 401, first team failure and a zero-call package refusal remain recorded.
 
-The [latest real trial](docs/harness/LIVE_SPECIFICATION_TRIAL_2026-11-12.md) passed at
-22:49–22:51 Beijing on 12 November: one Flash supervisor, two Flash workers,
-15 actual requests, 140,807 tokens and a cited immutable executable contrast.
-Input cache hit rate was 74.06%. Both workers independently executed the same
-definition and correctly reported insufficient data, zero positive label overlap
-and untested independence. The known arithmetic/statistical/specification blockers
-are repaired; one qualitative speculation remains flagged in the audit.
-All 135 offline tests and native synthetic checks pass. Earlier attempts, including
-the [previous full rerun](docs/harness/LIVE_RERUN_2026-11-12.md), remain unchanged.
-The desktop is ready for **two further bounded owner trials**. An authorized
-append-only extension raises cumulative sessions from three to six, with four now
-used; spending, data, per-trial limits and Beijing windows remain unchanged.
+The desktop is ready for **one further bounded owner trial before 18:00 Beijing
+on 13 November**. Start a new session on the frozen single-stock definition and
+sample, with GLM 5.3 Flash and Agent Teams enabled. Seven of eight pilot sessions
+are used; the shared ledger has 172.092126 CNY unreserved under the original
+200 CNY cap. GLM uses separate prepaid-credit accounting and conservative cash
+exposure debits, not claimed incremental cash invoices. No automatic provider
+switch occurs at expiry. Mobile clipping and qualitative interpretation limits
+remain; this is a prototype, not a completed Hybrid v1 or accepted alpha engine.
 
-The owner has now authorized a [gradual BaoStock history expansion](docs/harness/SAMPLE_EXPANSION_2026-11-13.md)
-to reach the inference support target. Four bounded queries produced 121 real
-observations and 118 aligned cases, meeting the predeclared primary pilot target.
-The independent bootstrap audit reports an inconclusive interval.
-The owner replaced the scheduled run with
-[GLM 5.3 Flash on Coding Plan Pro](docs/harness/GLM_CODING_PLAN_2026-11-13.md)
-until 18:00 Beijing on 13 November. The guarded GLM route passes 166 offline tests
-and a full native synthetic team test. Credential entry is available in Settings
-→ Models. The first Anthropic-route probe returned 401; native Coding Plan
-validation follows. The previous live result
-above is not presented as a GLM result.
+Read the [approved plan](docs/harness/PLAN.md),
+[trial guide](docs/harness/INTERACTIVE_TRIAL.md),
+[staged data expansion](docs/harness/SAMPLE_EXPANSION_2026-11-13.md), and
+[role models / market context design](docs/harness/ROLE_MODELS_AND_CONTEXT.md).
+Earlier [DeepSeek trial results](docs/harness/LIVE_SPECIFICATION_TRIAL_2026-11-12.md),
+[diagnostic pilot](docs/harness/FIRST_PILOT.md),
+[data-source comparison](docs/harness/DATA_SOURCES.md) and deployment evidence
+remain unchanged and are not presented as GLM results.
 
 ## Current deliverable
 
@@ -72,10 +62,11 @@ estimates under the unchanged **200 CNY** ceiling. The raw call history and old
 estimates are preserved. The first diagnostic pilot's input cache hit rate was 22.64%.
 The interactive-trial export reports each role's token usage, cache hits, TPM/RPM,
 tariff-estimated cost and shared-process resource observations separately.
-The four interactive rounds add 1.258190 CNY in conservative debits: **21.608190
-CNY accounted**, leaving **178.391810 CNY** under the original cap. The latest
-round's tariff estimate is 0.08414564 CNY, while its conservative debit is
-0.354946 CNY. Account snapshots do not verify per-trial invoices.
+Current accounted baseline plus conservative debits is **22.664994 CNY**,
+with **5.242880 CNY reserved** and **172.092126 CNY unreserved**. The GLM trial's
+0.498666 CNY is a conservative exposure debit; 54.60039 prepaid credits is an
+upper estimate. Neither is an incremental cash invoice. Full per-role accounting
+and every retained failure are in the latest report.
 
 ## Local setup and checks
 

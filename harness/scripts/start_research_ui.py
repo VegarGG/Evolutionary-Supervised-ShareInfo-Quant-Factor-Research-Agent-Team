@@ -1,4 +1,4 @@
-"""Serve the DSH research UI with one shared, durable DeepSeek budget boundary."""
+"""Serve DSH research through the original shared cash ledger and route guards."""
 
 from __future__ import annotations
 
@@ -153,8 +153,9 @@ def serve(
                     "!!js process.env.QFH_RELAY_URL", json.dumps(guard.base_url)
                 ).replace("!!js Number(process.env.QFH_MAX_TOKENS)", str(policy.max_output_tokens))
             )
-        # The real API key stays only in this parent relay. Neither DSH nor tools
-        # receive it, even if the launching shell happens to export another key.
+        # DeepSeek's key stays in the parent relay. Native GLM resolves its key
+        # from DSH's credential store and sends it only to the trusted relay.
+        # Neither route accepts ambient credential overrides from this shell.
         env = {
             k: v
             for k, v in os.environ.items()

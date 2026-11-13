@@ -1,43 +1,29 @@
 # Quant Factor Harness prototype
 
-Current native GLM status: both real `zai-coding-cn` probes passed; the first team
-trial exposed an evidence-access workflow failure. Its repair passes 169 offline
-tests. A zero-call package-limit refusal is retained; the bounded rerun is next. The built-in Models editor now owns keys.
-See the [native integration record](../docs/harness/NATIVE_MODELS_2026-11-13.md). Earlier
-readiness counts below are historical; the amended pilot has one repair slot and
-one bounded owner slot remaining, under the original cash and time limits.
+DSH owns the native chat, Models editor, Agent Teams and child sessions. QRH adds
+bounded evidence, shared accounting and deterministic calculations without forking
+the model loop. Start with the [approved plan](../docs/harness/PLAN.md) and
+[interactive guide](../docs/harness/INTERACTIVE_TRIAL.md).
 
-Read the [current plan](../docs/harness/PLAN.md),
-[measured first pilot](../docs/harness/FIRST_PILOT.md), and
-[data-source protocol and limits](../docs/harness/DATA_SOURCES.md).
-This module uses DSH through its SDK and native plugin APIs. It does not fork the
-agent loop or claim that the original multi-agent framework is complete.
-The new [interactive trial profile](../docs/harness/INTERACTIVE_TRIAL.md) uses the
-native DSH chat, Agent Teams board and two child sessions through the same guard.
-The [latest real trial](../docs/harness/LIVE_SPECIFICATION_TRIAL_2026-11-12.md) completed
-both workers and a cited executable contrast using fifteen Flash calls and cached
-real BaoStock evidence. The [specification contract](../docs/harness/STATISTICAL_SPECIFICATION.md)
-corrects the earlier statistical findings; 135 offline tests and native synthetic
-and real team checks pass. The host correctly reports insufficient data; a model
-prose caveat remains audited. Two further bounded owner trials are available under
-the authorized six-session allowance, preserving all spending/data bounds/history.
+The [latest real native GLM trial](../docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
+completed both workers, both Team tasks and an immutable draft: 15 actual Flash
+requests, 180,678 tokens, 57.47% input cache hits and zero tool failures. Both workers
+executed the full 121-row BaoStock sample; the host result is inconclusive.
+169 offline tests and both GitHub checks pass. Quantitative audit passed; the
+separate qualitative audit flags overly categorical interpretation of the estimate.
 
-The next [sample-expansion package](../docs/harness/SAMPLE_EXPANSION_2026-11-13.md)
-adds operator-prepared adjacent BaoStock chunks, immutable per-trial sample scopes
-and bounded model views backed by complete calculation artifacts. Its 146 tests
-and larger native synthetic workflow pass; real preparation/live verification
-are recorded separately as they complete.
+Credentials now use **Settings → Models → Z.ai Coding (China) · guarded research**.
+The native `zai-coding-cn` route works; the duplicate model settings panel is removed.
+See [native Models integration](../docs/harness/NATIVE_MODELS_2026-11-13.md).
+The original 401 keeps its full reservation, and both the failed first team and
+zero-dispatch package refusal remain in history.
 
-Real preparation now contains 121 BaoStock observations and 118 aligned cases.
-The owner replaced the noon DeepSeek run with
-[GLM 5.3 Flash on Coding Plan Pro](../docs/harness/GLM_CODING_PLAN_2026-11-13.md)
-until 18:00 Beijing on 13 November. The guarded route, credential entry and native
-synthetic team test pass, with 166 offline tests; the first Anthropic-route probe
-returned 401. The native
-`zai-coding-cn` provider is now integrated in Settings → Models with guard extensions.
-Native-route live validation follows; the existing credential is migrated locally.
-Saving makes no provider request. All history and the
-original cash budget remain shared; prepaid credits are recorded separately.
+One further bounded desktop owner trial remains before **18:00 Beijing on
+13 November**, with GLM 5.3 Flash, the fixed definition/sample and native Agent Teams.
+The same original 200 CNY ledger has 172.092126 CNY unreserved; Coding Plan credits
+are recorded separately. Seven of eight sessions and 32 of 60 GLM requests are
+used. Each trial retains twenty calls split eight/six/six. Broader models/data,
+market context and evaluator integration remain staged; mobile is not accepted.
 
 ## Install and verify
 
