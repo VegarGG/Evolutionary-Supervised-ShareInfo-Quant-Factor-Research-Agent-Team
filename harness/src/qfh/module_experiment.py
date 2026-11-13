@@ -76,6 +76,17 @@ def parse_output(schema, text):
     return schema.model_validate_json(text)
 
 
+def output_schema(schema, sources):
+    value = schema.model_json_schema()
+    citation_id = value["$defs"]["Citation"]["properties"]["evidence_id"]
+    citation_id["enum"] = sorted(sources)
+    citation_id["description"] = (
+        "Use a key from sources. The initial candidate is the review target, "
+        "identified by candidate_id/parent_id, not a source evidence_id."
+    )
+    return value
+
+
 def run(private: Path, case_path: Path, run_id: str, variant: str):
     root = Path(__file__).resolve().parents[2]
     if variant not in ("peer_review", "feedback_disabled"):
@@ -194,7 +205,7 @@ def run(private: Path, case_path: Path, run_id: str, variant: str):
                         {"finding_id": e["id"], "principal": e["actor"], **e["body"]}
                         for e in snapshot["findings"]
                     ],
-                    "required_output_schema": schema.model_json_schema(),
+                    "required_output_schema": output_schema(schema, case["sources"]),
                 }
                 attempt = directory / actor
                 attempt.mkdir()

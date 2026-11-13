@@ -739,3 +739,21 @@ exporter attribution error: a killed server without stopped.json was incorrectly
 associated with a later trial despite contributing no resource samples. The
 original export and failed audit are retained. See MODULAR_DEVELOPMENT_2026-11-13.md
 for subsequent live module attempts and their capability limits.
+
+The first module package made eleven real GLM Flash calls across two paired
+diagnostic cases and retained two failed attempts. The output-token limit and
+case-insensitive export-name collision were repaired; source ids are now enumerated
+in schemas after a correct units finding cited an invented source. All wire
+accounting audits and 180 offline tests pass. Both timing arms correct the known
+defect; no collaboration accuracy benefit is demonstrated. Both units formulas
+are correct but their explanatory scale relationships are wrong, so semantic
+acceptance is explicitly withheld. Review of final synthesis is a gate before
+native adaptive coordination and broader research, not an excuse to label schema
+success as scientific correctness. No GLM 5.3 upgrade is justified by this package.
+
+Budget after the module package: 23.566904 CNY accounted, 5.242880 reserved and
+171.190216 unreserved under the original 200 CNY ceiling. GLM has 58 aggregate
+requests, 209.79563 upper-estimated settled credits and 555.74528 reserved credits.
+These are local accounting quantities, not subscription cash invoices or an account
+quota reading. Detailed source snapshots, runtime/wire records, comparisons and
+per-agent resources are indexed in MODULAR_DEVELOPMENT_2026-11-13.md.

@@ -124,6 +124,13 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
 - [x] Fresh real three-role verification of those repairs: [fifteen Flash calls,
   two workers and a host-executed contrast](LIVE_SPECIFICATION_TRIAL_2026-11-12.md).
   Insufficient data is correctly recorded; no research-quality acceptance claimed.
+- [x] Standalone versioned shared-state/review module with exact citations, parentage,
+  explicit decisions, conflict preservation and concurrency/replay checks.
+- [x] Two paired real GLM diagnostic cases with feedback-disabled controls, including
+  every failed attempt: eleven calls, 69,923 tokens, 0.463528 CNY exposure.
+- [ ] Final-synthesis semantic review gate: units formulas were correct but both
+  explanations reversed the scale relationship; preserve these counterexamples.
+- [ ] Native board tools and an adaptive supervisor follow-up that changes the candidate.
 - [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
 - [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 

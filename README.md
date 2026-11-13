@@ -6,12 +6,13 @@ DSH owns sessions, model/tool loops, the Models editor and native Agent Teams.
 QRH adds bounded data access, evidence, accounting and deterministic research
 calculations. The independent evaluator remains separate.
 
-The [latest real GLM Flash/BaoStock trial](docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
+The [earlier verified GLM Flash/BaoStock trial](docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
 passed at **12:12–12:20 Beijing on 13 November**: one supervisor, two workers,
 15 actual settled calls, 180,678 tokens and an immutable draft. Both workers
 independently executed the frozen specification on all 121 real observations.
 The result is **inconclusive**, with model-prose caveats recorded separately.
-Input cache hit rate was 57.47%; 169 offline tests and both GitHub check suites pass.
+Input cache hit rate was 57.47%; its independent arithmetic audit passed.
+The current modular work package passes 180 offline tests.
 
 Use **Settings → Models → Z.ai Coding (China) · guarded research** for the
 Coding Plan Pro key. The native `zai-coding-cn` route works with the saved key;
@@ -65,9 +66,12 @@ estimates under the unchanged **200 CNY** ceiling. The raw call history and old
 estimates are preserved. The first diagnostic pilot's input cache hit rate was 22.64%.
 The interactive-trial export reports each role's token usage, cache hits, TPM/RPM,
 tariff-estimated cost and shared-process resource observations separately.
-After the owner trial, the accounted baseline plus conservative debits was
-**23.103376 CNY**, with **5.242880 CNY reserved** and **171.653744 CNY unreserved**.
-Subsequent module-test usage is recorded in the development record. The GLM trial's
+After the owner trial and eleven new GLM module calls, the accounted baseline plus
+conservative debits is **23.566904 CNY**, with **5.242880 CNY reserved** and
+**171.190216 CNY unreserved**. The module tests consumed 69,923 tokens and a
+0.463528 CNY exposure debit. Timing corrections passed in both comparison arms;
+units formulas were correct but both final explanations failed semantic review.
+Full results and counterexamples are in the development record. The GLM trial's
 0.498666 CNY is a conservative exposure debit; 54.60039 prepaid credits is an
 upper estimate. Neither is an incremental cash invoice. Full per-role accounting
 and every retained failure are in the latest report.

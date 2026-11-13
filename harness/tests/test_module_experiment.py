@@ -43,6 +43,11 @@ def test_module_ablation_preserves_evidence_and_never_replays_completed_attempt(
 
     def fake_call(root, directory, guard, route, key, step, prompt, config):
         observed.append(prompt)
+        assert set(
+            prompt["required_output_schema"]["$defs"]["Citation"]["properties"]["evidence_id"][
+                "enum"
+            ]
+        ) == set(prompt["sources"])
         guard.ledger.reserve(step, step, datetime.now(UTC), output_tokens=128)
         guard.ledger.settle(
             step,

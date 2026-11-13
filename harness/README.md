@@ -5,11 +5,12 @@ bounded evidence, shared accounting and deterministic calculations without forki
 the model loop. Start with the [approved plan](../docs/harness/PLAN.md) and
 [interactive guide](../docs/harness/INTERACTIVE_TRIAL.md).
 
-The [latest real native GLM trial](../docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
+The [earlier verified native GLM trial](../docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
 completed both workers, both Team tasks and an immutable draft: 15 actual Flash
 requests, 180,678 tokens, 57.47% input cache hits and zero tool failures. Both workers
 executed the full 121-row BaoStock sample; the host result is inconclusive.
-169 offline tests and both GitHub checks pass. Quantitative audit passed; the
+That source passed 169 offline tests and GitHub checks; the current module package
+passes 180 offline tests. Quantitative audit passed; the
 separate qualitative audit flags overly categorical interpretation of the estimate.
 
 Credentials now use **Settings → Models → Z.ai Coding (China) · guarded research**.
@@ -143,3 +144,36 @@ Upstream: [DSH source pin](https://github.com/deepseek-ai/deepseek-harness/tree/
 [Messages usage](https://api-docs.deepseek.com/api/create-message/).
 Project-owned code uses the standard [MIT License](LICENSE). Dependencies and
 vendor data retain their own terms; see [third-party notices](THIRD-PARTY-NOTICES.md).
+
+
+## Standalone shared-state / review module
+
+`qfh.shared_state.Board` owns a local, append-only research episode. The operator
+provides an explicit initial candidate, frozen source bundle, actor roles and
+bounds. `publish` pins a finding to a candidate and checks exact source excerpts;
+`revise` atomically checks the current parent and records a disposition for every
+finding before committing a child version. `snapshot` returns the current head
+with complete versions and unresolved conflicts. Principals come from the host.
+Nothing is executed, published to a pool or sent to an evaluator. Structural
+acceptance does not certify the scientific truth of model prose.
+
+The native DSH experiment driver uses two SDK sessions per arm and the same
+campaign ledger. `peer_review` exposes the review to the author;
+`feedback_disabled` computes but withholds it. Both have the same source bundle
+and request/output ceilings; actual tokens can differ. Fixtures are explicitly
+synthetic diagnostics and answer keys are outside the model workspace.
+
+Explicit operator command (live subscription usage; not part of ordinary tests):
+
+```sh
+PYTHONPATH=harness/src python harness/scripts/module_pilot.py \
+  --private .qfh-private --case harness/cases/module-timing.json \
+  --run-id your-unused-lowercase-id --variant peer_review
+```
+
+Use a unique lowercase run id. Existing attempts refuse paid replay, including
+failed attempts. Inspect `RESULT.json`, `AUDIT.json`, source snapshots, raw wire
+usage and semantic review separately. An interrupted or quota-rejected request
+retains its reservation and stops further dispatch. Do not replace live model
+failures with synthetic results. The current CLI module is not yet exposed as
+an open-ended DSH chat workflow; adaptive supervision is the next integration gate.
