@@ -1,0 +1,275 @@
+{
+  "status": "pass",
+  "scope": "free data preparation and activation; no inference",
+  "source_commit": "8d6d3f25e0d1c044762534f5618f5af18b68980e",
+  "plan_sha256": "54daf2b5826dbcb5036a662df710f4541356707a5e50be23644c71a47b2d3974",
+  "stages": [
+    {
+      "status": "success",
+      "stage": 1,
+      "query": {
+        "symbols": [
+          "000001.XSHE"
+        ],
+        "start": "2026-09-30",
+        "end": "2026-10-18"
+      },
+      "new_source_evidence_id": "ebda180ef7429e3bddad1cc9e4103cbf95984cfe9698dce3db52e640b5eeb9f7",
+      "cache_reused": false,
+      "new_source_rows": 8,
+      "composed_evidence_id": "2e042bef2e0fc0fdc12d5641b62cf1cb231a9cc2fc6d3f0a3038bc763a6fb906",
+      "source_evidence_ids": [
+        "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "ebda180ef7429e3bddad1cc9e4103cbf95984cfe9698dce3db52e640b5eeb9f7"
+      ],
+      "quality": {
+        "row_count": 18,
+        "first_observation": "2026-09-30",
+        "last_observation": "2026-10-30",
+        "unique_dates": 18,
+        "weekend_observations": 0,
+        "maximum_calendar_gap_days": 8,
+        "large_unadjusted_return_warnings": [],
+        "aligned_cases": 15,
+        "signal_bucket": 9,
+        "control_bucket": 6,
+        "ties_to_control": 0,
+        "block_length": 5,
+        "complete_blocks": 3,
+        "support_ready": false,
+        "reason_codes": [
+          "below_planned_case_or_block_target",
+          "below_planned_bucket_target"
+        ],
+        "inference_computed": false,
+        "quality_limits": [
+          "Calendar completeness, corporate actions and vintage availability are unverified.",
+          "Count floors permit a pilot calculation; they do not certify coverage or power."
+        ]
+      },
+      "finished_at": "2026-11-13T02:21:38.233695+00:00",
+      "elapsed_seconds": 8.282541207969189,
+      "process_cpu_seconds": 0.11410212400000001,
+      "process_rss_before_bytes": 45678592,
+      "process_rss_after_bytes": 92307456,
+      "resource_scope": "This preparation process only; before/after RSS is not a sampled peak.",
+      "model_requests": 0,
+      "plan_sha256": "54daf2b5826dbcb5036a662df710f4541356707a5e50be23644c71a47b2d3974"
+    },
+    {
+      "status": "success",
+      "stage": 2,
+      "query": {
+        "symbols": [
+          "000001.XSHE"
+        ],
+        "start": "2026-08-31",
+        "end": "2026-09-29"
+      },
+      "new_source_evidence_id": "49652fabe43ba654f11d63f3524dabe6dc0eddec0ef4e000439eb64fc9ee1884",
+      "cache_reused": false,
+      "new_source_rows": 21,
+      "composed_evidence_id": "13ccea0ed19e17d0bf18ec6e6890205acf91251996375be93eaf5a666eeb76ea",
+      "source_evidence_ids": [
+        "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "ebda180ef7429e3bddad1cc9e4103cbf95984cfe9698dce3db52e640b5eeb9f7",
+        "49652fabe43ba654f11d63f3524dabe6dc0eddec0ef4e000439eb64fc9ee1884"
+      ],
+      "quality": {
+        "row_count": 39,
+        "first_observation": "2026-08-31",
+        "last_observation": "2026-10-30",
+        "unique_dates": 39,
+        "weekend_observations": 0,
+        "maximum_calendar_gap_days": 8,
+        "large_unadjusted_return_warnings": [],
+        "aligned_cases": 36,
+        "signal_bucket": 20,
+        "control_bucket": 16,
+        "ties_to_control": 1,
+        "block_length": 5,
+        "complete_blocks": 7,
+        "support_ready": false,
+        "reason_codes": [
+          "below_planned_case_or_block_target",
+          "below_planned_bucket_target"
+        ],
+        "inference_computed": false,
+        "quality_limits": [
+          "Calendar completeness, corporate actions and vintage availability are unverified.",
+          "Count floors permit a pilot calculation; they do not certify coverage or power."
+        ]
+      },
+      "finished_at": "2026-11-13T02:26:18.001630+00:00",
+      "elapsed_seconds": 3.8122642919188365,
+      "process_cpu_seconds": 0.11404383600000001,
+      "process_rss_before_bytes": 45563904,
+      "process_rss_after_bytes": 92258304,
+      "resource_scope": "This preparation process only; before/after RSS is not a sampled peak.",
+      "model_requests": 0,
+      "plan_sha256": "54daf2b5826dbcb5036a662df710f4541356707a5e50be23644c71a47b2d3974"
+    },
+    {
+      "status": "success",
+      "stage": 3,
+      "query": {
+        "symbols": [
+          "000001.XSHE"
+        ],
+        "start": "2026-07-01",
+        "end": "2026-08-30"
+      },
+      "new_source_evidence_id": "f45c74329284c13988dd1be528a0773fe88d7e2b9a70a744e75e9724309e71ba",
+      "cache_reused": false,
+      "new_source_rows": 43,
+      "composed_evidence_id": "cebfc3c2500d50c89e1dd09b55170cd3029f3d6138487a72936e264835af2643",
+      "source_evidence_ids": [
+        "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "ebda180ef7429e3bddad1cc9e4103cbf95984cfe9698dce3db52e640b5eeb9f7",
+        "49652fabe43ba654f11d63f3524dabe6dc0eddec0ef4e000439eb64fc9ee1884",
+        "f45c74329284c13988dd1be528a0773fe88d7e2b9a70a744e75e9724309e71ba"
+      ],
+      "quality": {
+        "row_count": 82,
+        "first_observation": "2026-07-01",
+        "last_observation": "2026-10-30",
+        "unique_dates": 82,
+        "weekend_observations": 0,
+        "maximum_calendar_gap_days": 8,
+        "large_unadjusted_return_warnings": [],
+        "aligned_cases": 79,
+        "signal_bucket": 35,
+        "control_bucket": 44,
+        "ties_to_control": 2,
+        "block_length": 5,
+        "complete_blocks": 15,
+        "support_ready": false,
+        "reason_codes": [
+          "below_planned_case_or_block_target",
+          "below_planned_bucket_target"
+        ],
+        "inference_computed": false,
+        "quality_limits": [
+          "Calendar completeness, corporate actions and vintage availability are unverified.",
+          "Count floors permit a pilot calculation; they do not certify coverage or power."
+        ]
+      },
+      "finished_at": "2026-11-13T02:27:26.636661+00:00",
+      "elapsed_seconds": 2.6910252089146525,
+      "process_cpu_seconds": 0.11356787800000001,
+      "process_rss_before_bytes": 45498368,
+      "process_rss_after_bytes": 92209152,
+      "resource_scope": "This preparation process only; before/after RSS is not a sampled peak.",
+      "model_requests": 0,
+      "plan_sha256": "54daf2b5826dbcb5036a662df710f4541356707a5e50be23644c71a47b2d3974"
+    },
+    {
+      "status": "success",
+      "stage": 4,
+      "query": {
+        "symbols": [
+          "000001.XSHE"
+        ],
+        "start": "2026-05-01",
+        "end": "2026-06-30"
+      },
+      "new_source_evidence_id": "763961449651374befc2f23b0c71dcdb2460686a7f0da542f9989ef9f7ad9f06",
+      "cache_reused": false,
+      "new_source_rows": 39,
+      "composed_evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+      "source_evidence_ids": [
+        "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "ebda180ef7429e3bddad1cc9e4103cbf95984cfe9698dce3db52e640b5eeb9f7",
+        "49652fabe43ba654f11d63f3524dabe6dc0eddec0ef4e000439eb64fc9ee1884",
+        "f45c74329284c13988dd1be528a0773fe88d7e2b9a70a744e75e9724309e71ba",
+        "763961449651374befc2f23b0c71dcdb2460686a7f0da542f9989ef9f7ad9f06"
+      ],
+      "quality": {
+        "row_count": 121,
+        "first_observation": "2026-05-06",
+        "last_observation": "2026-10-30",
+        "unique_dates": 121,
+        "weekend_observations": 0,
+        "maximum_calendar_gap_days": 8,
+        "large_unadjusted_return_warnings": [],
+        "aligned_cases": 118,
+        "signal_bucket": 59,
+        "control_bucket": 59,
+        "ties_to_control": 4,
+        "block_length": 5,
+        "complete_blocks": 23,
+        "support_ready": true,
+        "reason_codes": [],
+        "inference_computed": false,
+        "quality_limits": [
+          "Calendar completeness, corporate actions and vintage availability are unverified.",
+          "Count floors permit a pilot calculation; they do not certify coverage or power."
+        ]
+      },
+      "finished_at": "2026-11-13T02:27:45.200290+00:00",
+      "elapsed_seconds": 2.7415203750133514,
+      "process_cpu_seconds": 0.11499720399999999,
+      "process_rss_before_bytes": 46022656,
+      "process_rss_after_bytes": 93405184,
+      "resource_scope": "This preparation process only; before/after RSS is not a sampled peak.",
+      "model_requests": 0,
+      "plan_sha256": "54daf2b5826dbcb5036a662df710f4541356707a5e50be23644c71a47b2d3974"
+    }
+  ],
+  "active_sample": {
+    "alignment_preview_rows": 2,
+    "authority": "Owner: Please gradually expand the BaoStock sample and rerun the supervisor plus two-worker trial with enough data for statistical inference. Keep DeepSeek-flash only, the original 200 CNY budget and time windows, and record everything.",
+    "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+    "expected_previous_id": null,
+    "fixed_definition": {
+      "comparison": "lt",
+      "effect_margin": "0.001",
+      "expected_direction": "lower",
+      "family": "close_return_contrast",
+      "label_horizon": 1,
+      "lookback": 1,
+      "threshold": "0",
+      "tie_policy": "control"
+    },
+    "id": "baostock-support-2026-11-13",
+    "plan_id": "baostock-support-2026-11-13",
+    "plan_sha256": "54daf2b5826dbcb5036a662df710f4541356707a5e50be23644c71a47b2d3974",
+    "preview_rows": 20,
+    "query": {
+      "end": "2026-10-30",
+      "start": "2026-05-01",
+      "symbols": [
+        "000001.XSHE"
+      ]
+    },
+    "statistical_protocol_sha256": "d521212a7ea167cffa797b47cc15df9cc58ef3ddf563c74f5c3ff180b7e596c4"
+  },
+  "budget": {
+    "carry_micro_cny": 56256735,
+    "new_settled_micro_cny": 2086368,
+    "unresolved_micro_cny": 0,
+    "cumulative_micro_cny": 21608190,
+    "conservative_unreconciled_cumulative_micro_cny": 58343103,
+    "remaining_unreserved_micro_cny": 178391810,
+    "invoice_verified": false,
+    "billing_baseline": {
+      "id": 1,
+      "at": "2026-11-12T07:05:53.036243+00:00",
+      "actual": 20350000,
+      "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+      "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+    }
+  },
+  "paid_call_count": 78,
+  "pilot_allowance": {
+    "original_limit": 3,
+    "effective_limit": 6,
+    "used": 4,
+    "remaining": 2
+  },
+  "historical_trials_sha256": "02ad96c232ce1402a196c4aa5cc996711700c1dd094e8b4e58ef8919ed03d03e",
+  "preparation_model_calls": 0,
+  "preparation_data_requests": 4,
+  "unrun_optional_stage": 5,
+  "support_ready": true
+}

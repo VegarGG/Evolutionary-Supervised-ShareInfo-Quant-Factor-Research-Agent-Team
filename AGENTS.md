@@ -16,7 +16,14 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   Reports/news are read-only cited evidence with publication, ingestion and
   retrieval timestamps kept distinct. Keep paid data pilots narrowly bounded.
 - DSH's native DeepSeek Messages transport is authorized for these experiments.
-  It still calls DeepSeek only; no other paid provider or local model is authorized.
+  On 13 November the owner additionally authorized GLM Coding Plan during
+  DeepSeek peak hours, using GLM 5.3 Flash first. GLM 5.3 requires clear recorded
+  evidence that Flash is insufficient. The owner confirmed DSH eligibility with
+  Zhipu. Credentials are entered in DSH Settings; no metered-API fallback is
+  authorized. The owner subsequently replaced the scheduled expanded-BaoStock
+  trial with GLM 5.3 Flash on Coding Plan Pro until 18:00 Beijing on 13 November.
+  Preserve DeepSeek's original admission windows for any later DeepSeek calls.
+  Other providers and local models remain unauthorized.
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
 - Run offline checks with `just harness-check` and `just harness-test`. Live
@@ -29,7 +36,8 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
 - The owner now authorizes the bounded interactive supervisor/two-worker prototype
   in `docs/harness/INTERACTIVE_TRIAL.md`. Use native DSH Agent Teams/subagents;
   preserve every earlier trace. Additional role/provider designs are staged in
-  `ROLE_MODELS_AND_CONTEXT.md`; live calls remain DeepSeek-only for this package.
+  `ROLE_MODELS_AND_CONTEXT.md`; the GLM replacement and its bounds are recorded in
+  `GLM_CODING_PLAN_2026-11-13.md` without changing prior trial histories.
 - The owner-reported official cumulative 20.35 CNY observation supersedes the old
   conservative spending estimate as the budget baseline. Keep the immutable
   reconciliation, covered-call digest and raw usage; charge new calls afterward.

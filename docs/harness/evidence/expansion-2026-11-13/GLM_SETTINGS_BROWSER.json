@@ -1,0 +1,40 @@
+{
+  "status": "pass",
+  "at": "2026-11-13T02:54:56.442Z",
+  "mode": "offline-glm",
+  "browser": "Installed Chrome via Playwright",
+  "browser_plugin": "not available",
+  "viewports": [
+    [
+      1440,
+      1000
+    ],
+    [
+      390,
+      844
+    ]
+  ],
+  "errors": [],
+  "external": [],
+  "checks": [
+    "page identity and nonblank",
+    "no framework overlay",
+    "no console errors",
+    "masked credential input",
+    "explicit platform required",
+    "GLM 5.3 Flash preference visible",
+    "active guarded GLM route visible",
+    "BaoStock locked",
+    "active expanded scope rendered"
+  ],
+  "mutation_checks": [
+    "dummy save",
+    "value cleared",
+    "configured status survives reload",
+    "dummy remove"
+  ],
+  "limitations": [
+    "GLM provider access untested; credential setup only",
+    "Known native DSH mobile clipping remains"
+  ]
+}

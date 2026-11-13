@@ -15,6 +15,7 @@ from unittest.mock import patch
 import yaml
 from start_research_ui import serve
 
+from qfh.coding_plan import CodingPolicy
 from qfh.data_gateway import DataPolicy, dispatch
 from qfh.evidence import canonical
 from qfh.research import Research
@@ -23,6 +24,7 @@ from qfh.research_samples import SampleActivation, compose_sample
 
 class Response:
     status_code = 200
+    model = "deepseek-flash"
     headers = {"content-type": "text/event-stream"}
 
     def __init__(self, text=None, tool=None, arguments=None, ident="synthetic"):
@@ -58,7 +60,7 @@ class Response:
                     "id": self.ident,
                     "type": "message",
                     "role": "assistant",
-                    "model": "deepseek-flash",
+                    "model": self.model,
                     "content": [],
                     "stop_reason": None,
                     "stop_sequence": None,
@@ -309,6 +311,7 @@ def main():
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--port", type=int, default=3081)
     parser.add_argument("--expanded-fixture", action="store_true")
+    parser.add_argument("--glm-coding", action="store_true")
     parser.add_argument(
         "--worker-format",
         choices=(
@@ -353,11 +356,18 @@ def main():
     key_file = private / "dummy-key.txt"
     key_file.write_text("sk-offline-placeholder-never-sent-to-any-provider")
     key_file.chmod(0o600)
+    if args.glm_coding:
+        coding = CodingPolicy.model_validate(
+            yaml.safe_load((config.parent / "glm-coding-2026-11-13.yaml").read_text())
+        )
+        research.activate_model_route(coding)
+        Response.model = coding.model
     client = ScriptedClient(research, data["evidence_id"], args.worker_format)
     with (
         patch("qfh.proxy.httpx.Client", return_value=client),
         patch("qfh.budget.admission_open", return_value=True),
         patch("qfh.research.admission_open", return_value=True),
+        patch.object(CodingPolicy, "admission_open", return_value=True),
         patch(
             "qfh.research.REPORT_CONTRACT",
             "measured-observations-v2"

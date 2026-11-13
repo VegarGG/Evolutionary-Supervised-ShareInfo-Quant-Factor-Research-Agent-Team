@@ -6,6 +6,7 @@ from datetime import datetime, time, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
+from qfh.coding_plan import coding_detail
 from qfh.research import parse_worker_report
 
 TOKEN_FIELDS = ("input_uncached", "input_cached", "input_cache_write", "output")
@@ -54,17 +55,38 @@ def offpeak_cost(call, pricing):
 
 
 def model_metrics(calls, pricing, *, synthetic=False):
+    subscription = pricing.get("funding") == "coding_plan"
     totals = {k: sum(c["usage"][k] for c in calls if c["usage"]) for k in TOKEN_FIELDS}
     inputs = sum(totals[k] for k in TOKEN_FIELDS if k != "output")
-    costs = [offpeak_cost(c, pricing) for c in calls]
+    costs = [None if subscription else offpeak_cost(c, pricing) for c in calls]
     complete = bool(calls) and all(c["state"] == "settled" and c["usage"] for c in calls)
+    details = [coding_detail(c) for c in calls] if subscription else []
+    cache_known = (
+        not subscription
+        or bool(details)
+        and all(d.get("cache_tokens_reported") is True for d in details)
+    )
     return {
         "requests": len(calls),
         "requests_with_known_usage": sum(c["usage"] is not None for c in calls),
         "all_usage_settled": complete,
-        "tokens": totals,
+        "tokens": totals
+        if cache_known
+        else {
+            "input_total": inputs,
+            "input_uncached": None,
+            "input_cached": None,
+            "input_cache_write": None,
+            "output": totals["output"],
+        },
         "total_tokens": sum(totals.values()),
-        "input_cache_hit_ratio": totals["input_cached"] / inputs if inputs else None,
+        "input_cache_hit_ratio": totals["input_cached"] / inputs
+        if inputs and cache_known
+        else None,
+        "cache_tokens_reported_for_all_calls": cache_known,
+        "cache_reporting_note": "Absent cache counters do not establish a zero hit rate."
+        if not cache_known
+        else "Explicit provider cache counters.",
         "peak_rolling_60s_dispatch_rpm": peak_rate(calls, "started"),
         "peak_rolling_60s_completion_rpm": peak_rate(calls, "finished"),
         "peak_rolling_60s_dispatch_tpm": peak_rate(calls, "started", True),
@@ -77,10 +99,30 @@ def model_metrics(calls, pricing, *, synthetic=False):
         else None,
         "unpriced_requests": sum(v is None for v in costs),
         "cost_invoice_verified": False,
+        "funding": pricing.get("funding", "metered_api"),
+        "subscription_credits_settled_upper_bound": sum(
+            d.get("quota_settled_upper_microcredits") or 0 for d in details
+        )
+        / 1_000_000
+        if subscription
+        else None,
+        "subscription_credits_unresolved_reserved": sum(
+            d.get("quota_reserved_microcredits", 0)
+            for d in details
+            if d.get("quota_settled_upper_microcredits") is None
+        )
+        / 1_000_000
+        if subscription
+        else None,
         "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. "
         "Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
         "cost_basis": "Synthetic fixture; no actual spend."
         if synthetic
+        else "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative "
+        "exposure debit, not an incremental cash invoice; subscription purchase cost is not "
+        "allocated. Credits are a conservative upper estimate ignoring "
+        "cache and off-peak discounts, not an account invoice."
+        if subscription
         else "Actual provider token counts at published off-peak rates; estimate, not invoice. "
         "The separate conservative amount remains the budget debit.",
     }

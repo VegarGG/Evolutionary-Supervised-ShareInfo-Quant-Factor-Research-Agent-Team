@@ -2,11 +2,12 @@
 import { isAbsolute } from 'node:path'
 import Schema from '@deepseek-ai/schemastery'
 import { defineTool } from '@deepseek-ai/dsh-tools'
+import { credentialRef } from '@deepseek-ai/dsh-credentials'
 import { catalogModelInfo, registerDeepSeekProvider, resolveAdapterOptions } from '@deepseek-ai/dsh-llm-deepseek'
 import { runResearch } from './index.js'
 
 export const name = 'qfh-research'
-export const inject = ['llm', 'tools', 'subagents', 'agentTeams']
+export const inject = ['llm', 'tools', 'subagents', 'agentTeams', 'credentials']
 export const Config = Schema.object({
   python: Schema.string().required(),
   sourceRoot: Schema.string().required(),
@@ -15,6 +16,9 @@ export const Config = Schema.object({
   relayURL: Schema.string().required(),
   relayCredential: Schema.string().required(),
   model: Schema.string().required(),
+  providerId: Schema.union(['qfh-deepseek', 'qfh-glm-coding']).default('qfh-deepseek'),
+  modelProvider: Schema.union(['deepseek', 'glm_coding']).default('deepseek'),
+  routeLabel: Schema.string().default('DeepSeek · guarded research'),
   maxTokens: Schema.number().required(),
   reasoningEffort: Schema.union(['low', 'high', 'max']).required(),
   requestTimeoutMs: Schema.number().default(90000),
@@ -28,14 +32,27 @@ export function apply(ctx, config) {
   if (endpoint.hostname !== '127.0.0.1' || endpoint.protocol !== 'http:') {
     throw new Error('QFH model transport must use the local budget guard')
   }
-  const model = { id: config.model, name: 'DeepSeek · guarded research', maxTokens: config.maxTokens,
+  const model = { id: config.model, name: config.routeLabel, maxTokens: config.maxTokens,
     inputModalities: ['text'] }
   const connection = resolveAdapterOptions({ baseURL: config.relayURL,
     models: [model], maxTokens: config.maxTokens, reasoningEffort: config.reasoningEffort,
     retryPolicy: { mode: 'normal', maxRetries: 0 } })
-  registerDeepSeekProvider(ctx, 'qfh-deepseek', {
-    providerName: 'QFH DeepSeek', options: () => connection,
-    resolveAuth: async () => ({ headers: { 'x-api-key': config.relayCredential } }),
+  registerDeepSeekProvider(ctx, config.providerId, {
+    providerName: config.routeLabel, options: () => connection,
+    resolveAuth: async () => {
+      const headers = { 'x-api-key': config.relayCredential }
+      if (config.modelProvider === 'glm_coding') {
+        const stored = await ctx.credentials.resolve(credentialRef('QFH_GLM_CODING_CREDENTIAL'))
+        let credential
+        try { credential = JSON.parse(stored?.value ?? '') } catch {}
+        if (!credential || credential.platform !== 'bigmodel-cn' || credential.plan !== 'coding' ||
+          credential.model !== config.model || typeof credential.api_key !== 'string' || !credential.api_key.trim()) {
+          throw new Error('Save the Zhipu GLM Coding Plan key in Settings → Research models')
+        }
+        headers['x-qfh-glm-key'] = credential.api_key
+      }
+      return { headers }
+    },
     discoverModels: async provider => [catalogModelInfo(provider, model)],
     admit: (_connection, requested) => {
       if (requested !== config.model) throw new Error('Only the authorized trial model is enabled')
@@ -94,7 +111,7 @@ export function apply(ctx, config) {
           name: args.role, label: `${args.role} · BaoStock evidence`,
           agentPreset: 'qfh-worker', maxDepth: 1, delivery: 'caller', signal: exec.signal,
           prompt: [{ type: 'text', text: admitted.prompt }],
-          agentOptions: { provider: 'qfh-deepseek', model: admitted.route.model,
+          agentOptions: { provider: config.providerId, model: admitted.route.model,
             reasoningEffort: admitted.route.reasoning_effort, maxTokens: config.maxTokens },
         })
         task = await ctx.agentTeams.updateTask(exec.agent, { taskId: task.id,

@@ -63,7 +63,7 @@ def validate_request(body: dict, model: str, max_tokens: int, allowed_tools: set
     if set(body) - allowed:
         raise BudgetRefused("unapproved request extension")
     if body.get("model") != model or body.get("stream") is not True:
-        raise BudgetRefused("only the configured streaming DeepSeek model is allowed")
+        raise BudgetRefused("only the configured streaming model is allowed")
     if type(body.get("max_tokens")) is not int or not 0 < body["max_tokens"] <= max_tokens:
         raise BudgetRefused("missing or excessive requested output cap")
     for tool in body.get("tools", []):
@@ -82,6 +82,8 @@ class GuardProxy:
         max_body_bytes: int,
         timeout_seconds: int,
         session_admitter: Callable[[str], str] | None = None,
+        *,
+        coding_policy=None,
     ):
         self.ledger, self.directory, self.key = ledger, directory, key
         self.model, self.max_tokens = model, max_tokens
@@ -90,6 +92,8 @@ class GuardProxy:
         self.local_key = "sk-" + secrets.token_hex(16)
         self.step: str | None = None
         self.session_admitter = session_admitter
+        self.coding_policy = coding_policy
+        self.upstream = coding_policy.endpoint if coding_policy else UPSTREAM
         directory.mkdir(parents=True, exist_ok=True)
         proxy = self
 
@@ -115,6 +119,11 @@ class GuardProxy:
                     raw = self.rfile.read(size)
                     body = json.loads(raw)
                     validate_request(body, proxy.model, proxy.max_tokens, proxy.allowed_tools)
+                    upstream_key = (
+                        self.headers.get("x-qfh-glm-key", "") if proxy.coding_policy else proxy.key
+                    )
+                    if not upstream_key:
+                        raise BudgetRefused("Configure the GLM Coding Plan key in Research models")
                     step = (
                         proxy.session_admitter(session_id) if proxy.session_admitter else proxy.step
                     )
@@ -136,10 +145,10 @@ class GuardProxy:
                     ) as client:
                         with client.stream(
                             "POST",
-                            UPSTREAM,
+                            proxy.upstream,
                             content=raw,
                             headers={
-                                "x-api-key": proxy.key,
+                                "x-api-key": upstream_key,
                                 "content-type": "application/json",
                                 "anthropic-version": "2023-06-01",
                                 "user-agent": "qfh-experiment/0.1",
@@ -150,7 +159,7 @@ class GuardProxy:
                                 json.dumps(
                                     {
                                         "status": response.status_code,
-                                        "endpoint": UPSTREAM,
+                                        "endpoint": proxy.upstream,
                                         "request_sha256": hashlib.sha256(raw).hexdigest(),
                                         "step": step,
                                         "session_id": session_id,
@@ -199,8 +208,15 @@ class GuardProxy:
                                             peer_connected = False  # Drain and account upstream.
                             if response.status_code != 200:
                                 raise ValueError("provider rejected request; charge unverified")
-                    usage = parse_usage(events)
-                    proxy.ledger.settle(request_id, usage)
+                    usage_metadata = {}
+                    if proxy.coding_policy:
+                        from qfh.coding_plan import parse_coding_usage
+
+                        usage, usage_metadata = parse_coding_usage(events)
+                        proxy.ledger.settle(request_id, usage, metadata=usage_metadata)
+                    else:
+                        usage = parse_usage(events)
+                        proxy.ledger.settle(request_id, usage)
                     if peer_connected and terminal:
                         try:
                             self.wfile.write((terminal + "\n\n").encode())
@@ -211,6 +227,7 @@ class GuardProxy:
                         json.dumps(
                             {
                                 "usage": usage.model_dump(),
+                                "usage_metadata": usage_metadata,
                                 "latency_seconds": time.monotonic() - started,
                                 "peer_connected": peer_connected,
                                 "event_timings": timings,

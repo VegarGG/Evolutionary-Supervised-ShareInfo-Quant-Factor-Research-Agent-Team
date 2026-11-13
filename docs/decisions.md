@@ -599,3 +599,38 @@ close rather than assuming verified trading-calendar completeness. The first
 146 tests and a larger native synthetic team trial pass; no new paid inference has
 run. The noon Beijing window is the next admission opportunity. See
 `SAMPLE_EXPANSION_2026-11-13.md` for the fixed design and recording rubric.
+
+## 2026-11-13 — GLM Coding Plan Pro replaces the noon trial
+
+The owner authorized GLM, specified GLM 5.3 Flash before any evidence-backed
+upgrade to GLM 5.3, confirmed DSH eligibility with Zhipu, and then directed:
+"I propose to use GLM replace the scheduled work. Before Beijing Time today 18:00,
+we use GLM to test and polish the QRH first." The owner identified the plan as Pro.
+The noon DeepSeek run is therefore superseded. No new automation or model request
+had been dispatched for that run. DeepSeek retains its prior time windows later.
+
+Add an owner-only local DSH credential form and an operator-only append-only GLM
+route activation. Freeze the selected route in each new trial; never rewrite old
+DeepSeek trials or the original research policy. Use the existing DSH Messages
+transport and native Team lifecycle through the local guard. No new model loop,
+automatic provider fallback, credential environment fallback or live evaluator
+access is introduced. The exact allowed model is `glm-5.3-flash`; expiry is
+18:00 Beijing on 13 November. Preserve the original session allowance.
+
+Retain the shared original cash reservations even for subscription calls; these
+are conservative exposure debits, not claimed incremental subscription bills.
+Separately cap this initial GLM package at 24 requests and 1,500 prepaid credits,
+with one request at a time and retained reservations for unknown usage. Start
+with two small transport probes, then one native team trial. Report missing cache
+counters as unreported, not zero. The owner enters the key only in DSH.
+
+The real BaoStock expansion stopped at its first qualifying stage: 121 rows,
+118 aligned cases, 59 per bucket and 23 complete five-case blocks. Only afterward
+did the independent bootstrap audit reproduce the primary result: inconclusive.
+Longer-block sensitivities and all source/query limitations are retained; there
+was no effect-based enlargement or candidate tuning.
+
+155 offline tests and the final native synthetic GLM team run pass. Browser
+dummy-key save/reload/remove checks pass; known native mobile clipping remains.
+Real GLM access is pending owner credential entry. See
+`docs/harness/GLM_CODING_PLAN_2026-11-13.md` for authority, controls and the rubric.

@@ -29,9 +29,15 @@ append-only extension raises cumulative sessions from three to six, with four no
 used; spending, data, per-trial limits and Beijing windows remain unchanged.
 
 The owner has now authorized a [gradual BaoStock history expansion](docs/harness/SAMPLE_EXPANSION_2026-11-13.md)
-to reach the inference support target. Its implementation passes 146 tests and a
-larger native synthetic team run. Real preparation and a new Flash-only trial are
-in progress; the previous live result above is not presented as their outcome.
+to reach the inference support target. Four bounded queries produced 121 real
+observations and 118 aligned cases, meeting the predeclared primary pilot target.
+The independent bootstrap audit reports an inconclusive interval.
+The owner replaced the scheduled run with
+[GLM 5.3 Flash on Coding Plan Pro](docs/harness/GLM_CODING_PLAN_2026-11-13.md)
+until 18:00 Beijing on 13 November. The guarded GLM route passes 155 offline tests
+and a full native synthetic team test. Credential entry is available in Settings
+→ Research models; real GLM verification is pending. The previous live result
+above is not presented as a GLM result.
 
 ## Current deliverable
 
@@ -41,8 +47,9 @@ in progress; the previous live result above is not presented as their outcome.
   Paid-source credentials are entered in DSH, never in model prompts.
 - Persistent data quotas, immutable evidence, exact-query reuse and worker tools
   for daily bars plus entitlement-gated RQData report/disclosure/news metadata.
-- An atomic DeepSeek wire guard carrying the original 200 CNY budget forward,
-  preserving unknown charges and enforcing Beijing admission windows.
+- An atomic wire guard carrying the original 200 CNY budget forward, preserving
+  unknown charges and enforcing each authorized route's admission window. GLM
+  Coding Plan also retains a separate bounded subscription-credit reservation.
 - Ten real-model diagnostic runs across six workflow variants, 24 new API calls.
   All passed the one known-answer case; collaboration showed no accuracy advantage
   and cost more. Those diagnostics are separate from the interactive trial.

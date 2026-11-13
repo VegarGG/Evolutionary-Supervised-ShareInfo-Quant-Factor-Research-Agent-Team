@@ -1,9 +1,10 @@
 # Staged BaoStock sample expansion — 13 November 2026
 
-Status: implementation and the larger native synthetic workflow pass. Real data
-preparation and the next Flash team trial are recorded below as they occur; no
-new paid inference has yet run. The next permitted model window starts at 12:00
-Beijing on 13 November (04:00 UTC). The previous live result remains in
+Status: real BaoStock preparation completed and stopped at the fourth stage.
+The owner replaced the planned noon DeepSeek trial with GLM Coding Plan Pro,
+using GLM 5.3 Flash until 18:00 Beijing today; see the
+[GLM integration record](GLM_CODING_PLAN_2026-11-13.md). No new paid inference has
+yet run. The previous live result remains in
 [the specification trial report](LIVE_SPECIFICATION_TRIAL_2026-11-12.md).
 
 Authority: "Please gradually expand the BaoStock sample and rerun the supervisor
@@ -132,3 +133,43 @@ Private preparation records are under
 integration checks and the forthcoming trial records use
 `.qfh-private/integration/expansion-005/`. No automatic repeat of a paid trial is
 authorized by this preparation script.
+
+## Actual preparation and independent calculation
+
+Frozen source commit: `8d6d3f25e0d1c044762534f5618f5af18b68980e`.
+Plan hash: `54daf2b5826dbcb5036a662df710f4541356707a5e50be23644c71a47b2d3974`.
+
+| Stage | New rows | Composed rows | Aligned cases | Signal / control | Complete five-case blocks |
+|---|---:|---:|---:|---:|---:|
+| 1 | 8 | 18 | 15 | 9 / 6 | 3 |
+| 2 | 21 | 39 | 36 | 20 / 16 | 7 |
+| 3 | 43 | 82 | 79 | 35 / 44 | 15 |
+| 4, selected | 39 | 121 | 118 | 59 / 59 | 23 |
+
+Four real bounded queries succeeded. Stage five was not called. Selection used
+quality/support counts only; all stage records state `inference_computed=false`.
+No weekend observations or predeclared large-return warnings occurred. The
+maximum observed date gap was eight calendar days; this is recorded, not claimed
+to prove calendar completeness. Actual observations run from 6 May through
+30 October; the requested range starts 1 May. Activation preserved four existing
+trials, all 78 settled model calls and the unchanged cash accounting above.
+
+Selected composite:
+`e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671`.
+Its five parent records include the ten observations retained from the previous
+trial. No synthetic observations were introduced.
+
+Only after selection, an independent Decimal/index bootstrap reproduced the
+production calculation exactly: oriented mean-return contrast 0.002730989,
+nominal 95% interval [-0.001476713, 0.007025561], with 2,000 replicates.
+The outcome is **inconclusive** relative to the fixed 0.001 margin. Block length
+ten also returns inconclusive, interval [-0.001858362, 0.006813156]. Block length
+twenty reports insufficient data under the unchanged eight-block minimum; no
+floor was relaxed or preferred interval selected. This is enough for the stated
+primary pilot calculation, not evidence of certified coverage or power.
+
+The independent audit also verified all 120 alignment rows, 118 usable labels,
+two dropped tail cases, four ties assigned to control, and 117 touching endpoints
+with zero positive overlap. Serial independence remains unestablished. Full
+audit and reference calculation are retained under `expansion-005`, separately
+from the forthcoming LLM trial.

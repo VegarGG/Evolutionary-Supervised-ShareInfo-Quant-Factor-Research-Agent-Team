@@ -21,6 +21,15 @@ and bounded model views backed by complete calculation artifacts. Its 146 tests
 and larger native synthetic workflow pass; real preparation/live verification
 are recorded separately as they complete.
 
+Real preparation now contains 121 BaoStock observations and 118 aligned cases.
+The owner replaced the noon DeepSeek run with
+[GLM 5.3 Flash on Coding Plan Pro](../docs/harness/GLM_CODING_PLAN_2026-11-13.md)
+until 18:00 Beijing on 13 November. The guarded route, credential entry and native
+synthetic team test pass, with 155 offline tests; real GLM validation awaits the
+owner's key. In Settings → Research models, select BigModel / 智谱 and save the
+Coding Plan credential. Saving makes no provider request. All history and the
+original cash budget remain shared; prepaid credits are recorded separately.
+
 ## Install and verify
 
 From the repository root, with Python 3.12, uv, Node and pnpm available:

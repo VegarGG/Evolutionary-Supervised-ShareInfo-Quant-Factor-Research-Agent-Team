@@ -12,15 +12,19 @@ from pathlib import Path
 import yaml
 
 from qfh.budget import admission_open
+from qfh.coding_plan import CodingPolicy, coding_detail
+from qfh.evidence import canonical
 from qfh.research import Research
 from qfh.trial_metrics import model_metrics, resource_metrics, role_windows, work_metrics
 
 
 def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
     research = Research(config, private)
+    route = research.trial_model_route(trial_id)
+    coding = CodingPolicy.model_validate(route) if route else None
     pricing_path = pricing_path or config.parent / "deepseek-flash-pricing-2026-11-12.yaml"
-    pricing = yaml.safe_load(pricing_path.read_text())
-    if any(r.model != pricing["model"] for r in research.policy.roles.values()):
+    pricing = route if coding else yaml.safe_load(pricing_path.read_text())
+    if any(r["model"] != pricing["model"] for r in research.resolved_roles(route).values()):
         raise ValueError("reporting tariff does not match the configured model")
     budget = research.ledger.snapshot()
     synthetic = (private / "OFFLINE_ONLY").exists()
@@ -149,7 +153,16 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
         and all(c["provider"] == "baostock" for c in data_calls),
         "within_original_budget": budget["remaining_unreserved_micro_cny"] >= 0,
         "authorized_dispatch_windows": synthetic
-        or all(admission_open(datetime.fromisoformat(c["started"])) for c in calls),
+        or all(
+            (coding.admission_open if coding else admission_open)(
+                datetime.fromisoformat(c["started"])
+            )
+            for c in calls
+        ),
+        "configured_route_matches_ledger": all(
+            coding_detail(c).get("route_id") == coding.id if coding else not coding_detail(c)
+            for c in calls
+        ),
         "resource_samples_required_for_live": synthetic or bool(samples),
         "raw_data_transport_required_for_live": synthetic
         or (
@@ -164,7 +177,13 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
     }
     summary = {
         "trial_id": trial_id,
-        "mode": ("synthetic_model_and_data" if synthetic else "live_DeepSeek_with_BaoStock")
+        "mode": (
+            "synthetic_model_and_data"
+            if synthetic
+            else "live_GLM_Coding_Plan_with_BaoStock"
+            if coding
+            else "live_DeepSeek_with_BaoStock"
+        )
         if mode_verified
         else "unverified_execution_mode",
         "status": "pass" if all(checks.values()) else "partial_or_failed",
@@ -174,11 +193,15 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
         "wall_seconds": (finished - started).total_seconds(),
         "roles": by_role,
         "model_usage": {
-            "provider": "deepseek",
-            "configured_model": research.policy.roles["supervisor"].model,
+            "provider": coding.provider if coding else "deepseek",
+            "configured_model": coding.model
+            if coding
+            else research.policy.roles["supervisor"].model,
             **usage,
             "pricing": pricing,
-            "pricing_sha256": hashlib.sha256(pricing_path.read_bytes()).hexdigest(),
+            "pricing_sha256": hashlib.sha256(
+                canonical(pricing) if coding else pricing_path.read_bytes()
+            ).hexdigest(),
         },
         "accounting": {
             "trial_conservative_cny": sum(c["charged"] or 0 for c in calls) / 1_000_000,

@@ -3,7 +3,7 @@
   disabled: true
 - id: agent-default-model
   config:
-    provider: qfh-deepseek
+    provider: !!js process.env.QFH_PROVIDER_ID
     model: !!js process.env.QFH_MODEL
     reasoningEffort: !!js process.env.QFH_REASONING_EFFORT
 - id: agent-team
@@ -83,6 +83,8 @@
     privateRoot: !!js process.env.QFH_DATA_PRIVATE
     researchConfig: !!js process.env.QFH_RESEARCH_CONFIG
     researchPrivateRoot: !!js process.env.QFH_PRIVATE
+    researchSampleDescription: !!js process.env.QFH_SAMPLE_DESCRIPTION
+    researchModelProvider: !!js process.env.QFH_MODEL_PROVIDER
     enabledKinds: [bars]
 - insert:
     - id: qfh-research-service
@@ -95,6 +97,9 @@
         relayURL: !!js process.env.QFH_RELAY_URL
         relayCredential: !!js process.env.QFH_RELAY_CREDENTIAL
         model: !!js process.env.QFH_MODEL
+        providerId: !!js process.env.QFH_PROVIDER_ID
+        modelProvider: !!js process.env.QFH_MODEL_PROVIDER
+        routeLabel: !!js process.env.QFH_ROUTE_LABEL
         maxTokens: !!js Number(process.env.QFH_MAX_TOKENS)
         reasoningEffort: !!js process.env.QFH_REASONING_EFFORT
     - id: preset-qfh-worker

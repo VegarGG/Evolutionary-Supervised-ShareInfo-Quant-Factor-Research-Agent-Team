@@ -6,6 +6,12 @@ under script control. The owner identified DSH's experimental **Agent teams**
 feature as the relevant upstream interface. This design is accepted for staged
 development. It does not authorize live calls to any new provider.
 
+Update, 13 November: the owner separately authorized
+[GLM Coding Plan Pro](GLM_CODING_PLAN_2026-11-13.md), Flash first, replacing the
+scheduled trial until 18:00 Beijing. New trials freeze a uniform provider route
+for all three roles. Simultaneous mixed-provider roles remain future work; this
+amendment does not rewrite the earlier authorization or experiment evidence.
+
 ## What the pinned DSH implementation actually provides
 
 Reviewed source: DSH `e8f7b93a344964de3dca1ace9e72b6e4d6de87cb`, runtime 0.2.2rc2.

@@ -15,6 +15,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+from qfh.coding_plan import CodingLedger, CodingPolicy
 from qfh.experiment import Resources, write_new
 from qfh.proxy import GuardProxy
 from qfh.research import Research
@@ -34,7 +35,7 @@ TOOLS = {
 def serve(
     config: Path,
     private: Path,
-    key_file: Path,
+    key_file: Path | None,
     port: int,
     install_plugin: bool,
     *,
@@ -45,9 +46,20 @@ def serve(
     private.chmod(0o700)
     research = Research(config, private)
     policy = research.policy
-    credential = set(re.findall(r"sk-[A-Za-z0-9_-]{20,}", key_file.read_text()))
-    if len(credential) != 1:
-        raise ValueError("expected one operator-held DeepSeek credential")
+    with research.db() as db:
+        active_route = research.active_model_route(db)
+    coding = CodingPolicy.model_validate(active_route) if active_route else None
+    credential = None
+    if not coding:
+        if key_file is None:
+            raise ValueError("DeepSeek requires an operator-held key file")
+        matches = set(re.findall(r"sk-[A-Za-z0-9_-]{20,}", key_file.read_text()))
+        if len(matches) != 1:
+            raise ValueError("expected one operator-held DeepSeek credential")
+        credential = matches.pop()
+    model = coding.model if coding else policy.roles["supervisor"].model
+    provider_id = "qfh-glm-coding" if coding else "qfh-deepseek"
+    route_label = "GLM 5.3 Flash · Coding Plan Pro" if coding else "DeepSeek · guarded research"
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     evidence = private / "research/servers" / stamp
     evidence.mkdir(parents=True)
@@ -72,6 +84,12 @@ def serve(
     )
     with research.db() as db:
         active_sample = research.active_sample(db)
+    query = active_sample["query"] if active_sample else policy.query.model_dump(mode="json")
+    sample_description = (
+        f"Sample for new trials: {', '.join(query['symbols'])}, {query['start']} to "
+        f"{query['end']}, daily unadjusted close. Existing trials retain their frozen scope. "
+        "Exact source data are cached; model views may be previews of full calculations."
+    )
     write_new(
         evidence / "manifest.json",
         {
@@ -104,18 +122,22 @@ def serve(
             "policy": policy.model_dump(mode="json"),
             "pilot_allowance": research.allowance(),
             "active_sample": active_sample,
+            "active_model_route": active_route,
             "budget_before": research.ledger.snapshot(),
         },
     )
     with GuardProxy(
-        research.ledger,
+        CodingLedger(research.ledger, coding) if coding else research.ledger,
         private / "campaign/wire",
-        credential.pop(),
-        policy.roles["supervisor"].model,
+        credential,
+        model,
         policy.max_output_tokens,
         policy.max_body_bytes,
         policy.request_timeout_seconds,
-        session_admitter=research.admit,
+        session_admitter=lambda session: research.admit(
+            session, expected_route_id=coding.id if coding else "deepseek"
+        ),
+        coding_policy=coding,
     ) as guard:
         guard.allowed_tools = TOOLS
         # The real API key stays only in this parent relay. Neither DSH nor tools
@@ -138,9 +160,15 @@ def serve(
                 "QFH_RESEARCH_CONFIG": str(config),
                 "QFH_RELAY_URL": guard.base_url,
                 "QFH_RELAY_CREDENTIAL": guard.local_key,
-                "QFH_MODEL": policy.roles["supervisor"].model,
+                "QFH_MODEL": model,
+                "QFH_PROVIDER_ID": provider_id,
+                "QFH_MODEL_PROVIDER": "glm_coding" if coding else "deepseek",
+                "QFH_ROUTE_LABEL": route_label,
+                "QFH_SAMPLE_DESCRIPTION": sample_description,
                 "QFH_MAX_TOKENS": str(policy.max_output_tokens),
-                "QFH_REASONING_EFFORT": policy.roles["supervisor"].reasoning_effort,
+                "QFH_REASONING_EFFORT": coding.reasoning_effort
+                if coding
+                else policy.roles["supervisor"].reasoning_effort,
                 "DSH_TELEMETRY_MODE": "DISABLED",
                 "OTEL_SDK_DISABLED": "true",
                 "DSH_PRIMARY_RUNTIME": "",
@@ -200,7 +228,7 @@ def serve(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--private", type=Path, required=True)
-    parser.add_argument("--key-file", type=Path, required=True)
+    parser.add_argument("--key-file", type=Path)
     parser.add_argument(
         "--config",
         type=Path,
@@ -212,7 +240,7 @@ def main():
     serve(
         args.config.resolve(),
         args.private.resolve(),
-        args.key_file.resolve(),
+        args.key_file.resolve() if args.key_file else None,
         args.port,
         args.install_plugin,
     )

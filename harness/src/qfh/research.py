@@ -24,6 +24,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, admission_open
+from qfh.coding_plan import CodingPolicy
 from qfh.data_gateway import DataGuard, DataPolicy, dispatch, evidence_page
 from qfh.evidence import EvidenceStore, Query, canonical
 from qfh.research_metrics import ArithmeticProtocol, MeasurementRef, calculate_observations
@@ -267,17 +268,30 @@ class Research:
             ),
         )
 
-    def admit(self, session_id: str) -> str:
-        if not admission_open(datetime.now(UTC)):
-            raise BudgetRefused(
-                "outside authorized Beijing admission window; resume in a permitted window"
-            )
+    def admit(self, session_id: str, *, expected_route_id=None) -> str:
         if not re.fullmatch(r"[A-Za-z0-9_.:-]{1,200}", session_id):
             raise BudgetRefused("DSH request must identify its owning session")
         with self.db() as db:
             member = db.execute(
                 "SELECT * FROM members WHERE session_id=?", (session_id,)
             ).fetchone()
+            if member:
+                started = json.loads(
+                    db.execute(
+                        "SELECT body FROM events WHERE principal=? AND kind='trial_started'",
+                        (member["trial_id"],),
+                    ).fetchone()[0]
+                )
+                model_route = started.get("model_route")
+            else:
+                model_route = self.active_model_route(db)
+            route = CodingPolicy.model_validate(model_route) if model_route else None
+            route_id = route.id if route else "deepseek"
+            if expected_route_id is not None and expected_route_id != route_id:
+                raise BudgetRefused("session model route differs from the running transport")
+            now = datetime.now(UTC)
+            if not (route.admission_open(now) if route else admission_open(now)):
+                raise BudgetRefused("outside authorized Beijing admission window for this route")
             if member is None:
                 if db.execute("SELECT COUNT(*) FROM trials").fetchone()[0] >= self.trial_limit(db):
                     raise BudgetRefused(
@@ -299,7 +313,8 @@ class Research:
                         "policy_sha256": hashlib.sha256(
                             self.policy.model_dump_json().encode()
                         ).hexdigest(),
-                        "roles": self.policy.model_dump()["roles"],
+                        "roles": self.resolved_roles(model_route),
+                        "model_route": model_route,
                         "report_contract": REPORT_CONTRACT,
                         "arithmetic_protocol": self.arithmetic.model_dump(),
                         "statistical_protocol": self.statistics.model_dump(mode="json"),
@@ -321,6 +336,61 @@ class Research:
                 self.policy.authority,
             )
         return step
+
+    def active_model_route(self, db):
+        row = db.execute(
+            "SELECT body FROM events WHERE kind='model_route_activated' ORDER BY seq DESC LIMIT 1"
+        ).fetchone()
+        return json.loads(row[0])["route"] if row else None
+
+    def activate_model_route(self, route: CodingPolicy, *, expected_previous_id=None):
+        """Trusted operator only; no research tool can select or enable a provider."""
+        budget = self.ledger.snapshot()
+        if any(c["state"] != "settled" for c in budget["calls"]):
+            raise ValueError("resolve pending/unknown model usage before changing route")
+        value = route.model_dump(mode="json")
+        with self.db() as db:
+            active = self.active_model_route(db)
+            if active and active["id"] == route.id:
+                if active != value:
+                    raise ValueError("model-route activation is immutable")
+                return value
+            if (active["id"] if active else None) != expected_previous_id:
+                raise ValueError("active model route changed")
+            self.event(
+                db,
+                "operator",
+                "model_route_activated",
+                {
+                    "route": value,
+                    "expected_previous_id": expected_previous_id,
+                    "budget_cumulative_micro_cny": budget["cumulative_micro_cny"],
+                    "remaining_micro_cny": budget["remaining_unreserved_micro_cny"],
+                },
+            )
+        return value
+
+    def trial_model_route(self, session_id):
+        member = self.member(session_id)
+        with self.db() as db:
+            body = db.execute(
+                "SELECT body FROM events WHERE principal=? AND kind='trial_started'",
+                (member["trial_id"],),
+            ).fetchone()[0]
+        return json.loads(body).get("model_route")
+
+    def resolved_roles(self, model_route):
+        if not model_route:
+            return self.policy.model_dump()["roles"]
+        route = CodingPolicy.model_validate(model_route)
+        return {
+            role: {
+                "provider": route.provider,
+                "model": route.model,
+                "reasoning_effort": route.reasoning_effort,
+            }
+            for role in self.policy.roles
+        }
 
     def active_sample(self, db):
         row = db.execute(
@@ -495,6 +565,8 @@ class Research:
         snapshot = self.ledger.snapshot()
         contract = self.contract(session_id)
         sample = self.trial_sample(session_id)
+        model_route = self.trial_model_route(session_id)
+        coding = CodingPolicy.model_validate(model_route) if model_route else None
         return {
             "trial_id": trial["id"],
             "role": member["role"],
@@ -503,8 +575,13 @@ class Research:
             "sample": sample,
             "workers": workers,
             "draft_recorded": trial["draft"] is not None,
-            "window_open": admission_open(datetime.now(UTC)),
-            "admission_windows_beijing": ["12:00-14:00", "18:00-24:00"],
+            "model_route": model_route,
+            "window_open": coding.admission_open(datetime.now(UTC))
+            if coding
+            else admission_open(datetime.now(UTC)),
+            "admission_windows_beijing": [coding.starts_at.isoformat(), coding.ends_at.isoformat()]
+            if coding
+            else ["12:00-14:00", "18:00-24:00"],
             "remaining_cny": snapshot["remaining_unreserved_micro_cny"] / 1_000_000,
             "usage_basis": "owner-reported official baseline + conservative subsequent estimates",
             "max_requests_per_trial": self.policy.max_requests_per_trial,
@@ -611,7 +688,7 @@ class Research:
             "child_id": child_id,
             "role": role,
             "prompt": json.dumps(prompt, ensure_ascii=False),
-            "route": self.policy.roles[role].model_dump(),
+            "route": self.resolved_roles(self.trial_model_route(session_id))[role],
         }
 
     def submitted_report(self, child_id):

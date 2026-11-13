@@ -16,6 +16,8 @@ export const Config = Schema.object({
   privateRoot: Schema.string().required(),
   researchConfig: Schema.string().default(''),
   researchPrivateRoot: Schema.string().default(''),
+  researchSampleDescription: Schema.string().default(''),
+  researchModelProvider: Schema.union(['deepseek', 'glm_coding']).default('deepseek'),
   enabledKinds: Schema.array(Schema.string()).default(['bars', 'report_summaries', 'announcements', 'news']),
   requestTimeoutMs: Schema.number().min(1000).max(180000).default(90000),
 })
@@ -65,7 +67,8 @@ export function apply(ctx, config) {
   // Publish only this non-secret UI fact through DSH's native page bootstrap.
   ctx.on('webserver/index-inject', table => {
     table.push({ kind: 'global', name: '__QFH_RESEARCH_PROFILE__',
-      value: { enabled: !!config.researchConfig } })
+      value: { enabled: !!config.researchConfig, sampleDescription: config.researchSampleDescription,
+        modelProvider: config.researchModelProvider } })
   })
   for (const [toolName, kind, description] of [
     ['market_daily_bars', 'bars', 'Fetch daily stock data from the selected data source within the operator quota.'],

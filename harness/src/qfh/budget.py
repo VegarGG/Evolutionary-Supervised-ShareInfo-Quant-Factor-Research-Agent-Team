@@ -190,6 +190,10 @@ class Ledger:
     def reserve(self, request_id: str, step: str, now: datetime) -> None:
         if not admission_open(now):
             raise BudgetRefused("outside authorized Beijing admission window")
+        self._reserve(request_id, step, now, self.policy.reservation)
+
+    def _reserve(self, request_id, step, now, reservation, *, detail=None, check=None):
+        """Shared atomic cash/concurrency/request checks for trusted funding adapters."""
         with self.transaction() as db:
             if db.execute("SELECT 1 FROM calls WHERE id=?", (request_id,)).fetchone():
                 raise BudgetRefused("request id already used; never redispatch")
@@ -223,14 +227,16 @@ class Ledger:
                     raise BudgetRefused(
                         "research trial has an unknown charge; reconcile before continuing"
                     )
-            new = spent + self.policy.reservation
+            if check:
+                check(db)
+            new = spent + reservation
             if new > self.policy.package_micro_cny:
                 raise BudgetRefused("work-package budget exhausted or reserved")
-            if self._effective_total(db) + self.policy.reservation > self.policy.total_micro_cny:
+            if self._effective_total(db) + reservation > self.policy.total_micro_cny:
                 raise BudgetRefused("original cumulative budget exhausted or reserved")
             db.execute(
-                "INSERT INTO calls (id,step,started,state,reserved) VALUES (?,?,?,?,?)",
-                (request_id, step, now.isoformat(), "pending", self.policy.reservation),
+                "INSERT INTO calls (id,step,started,state,reserved,detail) VALUES (?,?,?,?,?,?)",
+                (request_id, step, now.isoformat(), "pending", reservation, detail),
             )
 
     def unknown(self, request_id: str, reason: str) -> None:
