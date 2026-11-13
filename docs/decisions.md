@@ -757,3 +757,42 @@ requests, 209.79563 upper-estimated settled credits and 555.74528 reserved credi
 These are local accounting quantities, not subscription cash invoices or an account
 quota reading. Detailed source snapshots, runtime/wire records, comparisons and
 per-agent resources are indexed in MODULAR_DEVELOPMENT_2026-11-13.md.
+
+## 2026-11-13: completed-output review and adaptive native follow-ups
+
+The owner authorized final-output review, adaptive supervisor follow-ups and repair
+of the unit explanations using GLM 5.3 Flash only. Keep native DSH Models, subagents
+and Agent Teams; the host adds versioned output/review records and bounded grants,
+not another model loop. Explanation-only amendments must not force a computational
+definition change. Finalization pins a clean review of the current exact version,
+after the native tasks complete. A clean review may finish without an author task.
+
+Live testing found three output-cap failures and a false semantic pass. At low
+reasoning effort, both model reviewers missed an incorrect raw/target equality; an
+author appended the right relationship without removing the old contradiction.
+The artifact and native finalization are retained, while the separate audit rejects
+semantic acceptance. Add a restricted source-derived unit-expression checker and
+explicit English unit-relationship checks throughout the current output. Recognized
+contradictions block review, amendment and finalization; obsolete equations remain
+in historical versions. This grammar does not prove arbitrary natural language.
+
+After the cap failures, the output ceiling increased from 8192 to 16384. The native
+route `glm-coding-review-low-2026-11-13` requests low effort, retains thinking and Flash,
+and extends the operator request cap from 100 to 120 without resetting prior usage.
+The original 200 CNY ceiling, 20 CNY package sublimit, 1500-credit cap and old 401
+reservations remain unchanged. No automatic provider or model fallback is added.
+
+The final two unit repairs and clean-output control pass, with 212 offline tests
+and native runtime/UI verification. Across all attempts: 53 actual API calls,
+565131 tokens, 45.97% input cache hits and 1.590600 CNY conservative exposure.
+Current accounting: 25.157504 CNY accounted, 5.242880 reserved, 169.599616 unreserved.
+These amounts are not incremental subscription invoices. See
+FINAL_OUTPUT_REVIEW_2026-11-13.md for every attempt, actor, resource sample summary,
+source freeze, false pass and remaining capability gate. No official evaluation,
+publication, pool operation or production-readiness claim follows from this diagnostic.
+
+Final offline hardening preserves the written decimal rather than a rounded float
+and rejects extreme prose/formula exponents before allocating large fractions.
+All saved accepted outputs still pass. Separate reviewer tasks can see prior issues;
+they are not blinded replications. Model chat acknowledgments are not themselves
+the exact reviewed artifact. These limitations remain explicit in the report.

@@ -216,3 +216,15 @@ BaoStock research case. Broader market context, heterogeneous role models,
 evolution/composition, official evaluation and production operation remain staged.
 The fixed eight-session UI pilot remains exhausted; existing results and settings
 remain readable. This standalone CLI module is not yet an open-ended chat workflow.
+
+## Subsequent completed-output review package
+
+The next gate was implemented in native DSH and tested in
+[FINAL_OUTPUT_REVIEW_2026-11-13.md](FINAL_OUTPUT_REVIEW_2026-11-13.md). Both unit
+counterexamples now have corrected, attributed outputs; the original failed outputs
+above remain unchanged. The work also retained three response-cap failures and a
+false model pass. That false pass required a deterministic check of recognized prose
+equalities, because correct typed claims alone did not prevent contradictory wording.
+The native supervisor now requests a targeted author repair and fresh review only
+when needed; a clean control completed with one reviewer and no rewrite. Broader
+semantic reliability and open-ended research remain unaccepted.

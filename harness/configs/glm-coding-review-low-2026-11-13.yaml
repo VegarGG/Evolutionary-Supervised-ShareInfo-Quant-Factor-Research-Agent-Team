@@ -1,0 +1,31 @@
+id: glm-coding-review-low-2026-11-13
+provider: glm_coding
+funding: coding_plan
+platform: bigmodel-cn
+subscription_tier: Pro
+model: glm-5.3-flash
+endpoint: https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+authority: 'Owner: Please continue with final-output review and adaptive supervisor
+  follow-ups in DSH. Fix the incorrect unit explanations and rerun the tests using
+  GLM 5.3 Flash only. Keep the original 200 CNY budget and record everything. Operator
+  work-package amendment: low native reasoning effort after recorded 8192/16384 output-cap
+  failures; 120 aggregate requests, unchanged 1500 conservative credits and 20 CNY
+  package sublimit. Preserve every previous request, reservation and the original
+  cumulative 200 CNY ceiling. No provider or model fallback.'
+eligibility_authority: Don't worry. I've confirmed with Zhipu official that DSH is
+  allowed.
+starts_at: '2026-11-13T13:35:00+08:00'
+ends_at: null
+max_requests: 120
+max_microcredits: 1500000000
+input_microcredits_per_token: 230
+output_microcredits_per_token: 800
+maximum_input_tokens: 1048576
+maximum_output_tokens: 393216
+concurrency: 1
+pricing_source: https://docs.bigmodel.cn/cn/coding-plan/overview
+pricing_verified_on: '2026-11-13'
+reasoning_effort: low
+transport: openai-completions
+cash_package_micro_cny: 20000000
+admission_mode: until_stopped

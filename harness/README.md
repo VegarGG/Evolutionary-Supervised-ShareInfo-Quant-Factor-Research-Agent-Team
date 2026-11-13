@@ -10,7 +10,7 @@ completed both workers, both Team tasks and an immutable draft: 15 actual Flash
 requests, 180,678 tokens, 57.47% input cache hits and zero tool failures. Both workers
 executed the full 121-row BaoStock sample; the host result is inconclusive.
 That source passed 169 offline tests and GitHub checks; the current module package
-passes 180 offline tests. Quantitative audit passed; the
+passes 212 offline tests. Quantitative audit passed; the
 separate qualitative audit flags overly categorical interpretation of the estimate.
 
 Credentials now use **Settings → Models → Z.ai Coding (China) · guarded research**.
@@ -26,6 +26,31 @@ continues without the previous 18:00 cutoff, subject to bounded work packages,
 subscription exhaustion and the original 200 CNY total ceiling. The unchanged
 interactive eight-session pilot is exhausted; module tests use separate explicit
 step grants in the same ledger. This is not yet a production-ready research UI.
+
+The [completed-output review module](../docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md)
+adds a native adaptive profile: `research_board`, initial `research_delegate`,
+review-dependent `research_followup`, `submit_final_review`, `amend_final_output`
+and `finalize_research_output`. Finalization pins the exact reviewed output.
+Explanation amendments preserve the computational definition and contribution
+identities. Explicit raw/target equalities and magnitude-direction statements in
+current prose are checked against source-derived scales, even when a model review
+misses a contradiction. Other phrasing remains outside this limited grammar and
+needs semantic review. This diagnostic profile has no market-data, evaluation or publishing
+tools. It uses the existing Models editor and native Agent Teams, with fresh bounded
+worker activations for follow-ups; it does not introduce a separate model loop.
+
+Prepare an explicitly selected prior output with
+`harness/scripts/prepare_adaptive_review.py --private .qfh-private --package-id ID
+--origin /operator/RESULT.json`, then supply its printed package path to
+`harness/scripts/start_research_ui.py --private .qfh-private --adaptive-package PATH
+--install-plugin`. Preparation sends no inference request; sending a DSH chat does.
+`adaptive_runtime_smoke.py` is explicitly offline and scripted; real sessions never
+substitute its responses. `export_adaptive_run.py` audits the completed live run
+against raw provider responses, native task results and frozen source files.
+The active diagnostic route requests low reasoning effort with thinking enabled;
+its 120-request aggregate cap retains all prior GLM usage. Every episode is bounded
+by 32 requests, five tasks and a 16384-token output ceiling. Increasing a local
+work-package allowance does not increase the original 200 CNY cash ceiling.
 
 ## Install and verify
 

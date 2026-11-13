@@ -96,7 +96,9 @@ globalThis.__ModuleLoader__.load({
               h('option', { value: 'rqdata', style: optionStyle }, 'RiceQuant RQData'))),
           h('p', { style: { margin: 0, fontSize: 13 } },
             state.researchMode
-              ? 'Development prototype: BaoStock is pinned. The fixed-scope pilot allowance is exhausted. Existing results remain readable; broader research workflows are under modular development.'
+              ? (globalThis.__QFH_RESEARCH_PROFILE__?.workflow === 'adaptive'
+                ? 'Development diagnostic: completed-output review and targeted native worker follow-ups. This package uses frozen synthetic sources; market-data tools are disabled. Each package admits one bounded session.'
+                : 'Development prototype: BaoStock is pinned. The fixed-scope pilot allowance is exhausted. Existing results remain readable; broader research workflows are under modular development.')
               : 'Change source before starting a new session. An existing session refuses source changes.'),
           h('div', { style: { border: '1px solid #bbb', borderRadius: 10, padding: 20 } },
             h('h3', { style: { margin: '0 0 8px' } }, 'BaoStock free testing'),
@@ -123,7 +125,9 @@ globalThis.__ModuleLoader__.load({
         h('p', { style: { margin: 0 } },
           'Use the zai-coding-cn provider above to save your Coding Plan Pro API key. Saving makes no provider request.'),
         h('p', { style: { margin: 0 } },
-          'GLM 5.3 Flash is pinned for the supervisor and both native Agent Teams workers. Model and endpoint changes are checked by the host.'),
+          'GLM 5.3 Flash is pinned for the supervisor and native Agent Teams workers. Model and endpoint changes are checked by the host.'),
+        h('p', { style: { margin: 0 } },
+          'A finished chat turn does not mean its research output passed review. An accepted diagnostic has a finalized artifact tied to the review of that exact version.'),
         h('p', { style: { margin: 0 } },
           'The scheduled DeepSeek run is canceled. GLM remains active until quota exhaustion or an owner-directed switch. The original 200 CNY total cap and a separate subscription quota limit apply to every request. Failed requests stay in the ledger.'),
         h('p', { style: { margin: 0, fontSize: 13 } },

@@ -155,7 +155,9 @@ class Board:
         with (self.directory / ".lock").open("a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             # Refuse operator manifest changes across restarts/objects.
-            saved = Episode.model_validate_json((self.directory / "episode.json").read_bytes())
+            saved = type(self.episode).model_validate_json(
+                (self.directory / "episode.json").read_bytes()
+            )
             if saved != self.episode:
                 raise ValueError("episode changed")
             yield self._events()

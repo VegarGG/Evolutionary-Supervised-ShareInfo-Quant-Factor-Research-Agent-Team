@@ -164,6 +164,27 @@ def test_package_amendment_cannot_expand_original_cash_ceiling(tmp_path):
     assert not amended.snapshot()["calls"]
 
 
+def test_request_extension_and_effort_change_keep_all_historical_calls(tmp_path):
+    original = ledger(tmp_path, max_requests=1)
+    usage = Usage(input_uncached=1, input_cached=0, input_cache_write=0, output=1)
+    original.reserve("old", "old", NOW, output_tokens=128)
+    original.settle("old", usage)
+    before = original.snapshot()
+    configured = CodingPolicy.model_validate(
+        yaml.safe_load((CONFIGS / "glm-coding-review-low-2026-11-13.yaml").read_text())
+    )
+    assert configured.max_requests == 120 and configured.reasoning_effort == "low"
+    # Exercise the same amendment at a small boundary without 120 synthetic writes.
+    smaller = configured.model_copy(update={"max_requests": 2, "starts_at": NOW})
+    amended = CodingLedger(original, smaller)
+    amended.reserve("new", "new", NOW, output_tokens=128)
+    amended.settle("new", usage)
+    assert amended.snapshot()["calls"][0] == before["calls"][0]
+    assert amended.policy.total_micro_cny == original.policy.total_micro_cny == 200000000
+    with pytest.raises(BudgetRefused, match="request allowance"):
+        amended.reserve("extra", "extra", NOW, output_tokens=128)
+
+
 def test_reviewed_auth_rejection_keeps_both_reservations_and_request_count(tmp_path):
     obj = ledger(tmp_path, max_requests=2)
     obj.reserve("first", "probe:1", NOW)

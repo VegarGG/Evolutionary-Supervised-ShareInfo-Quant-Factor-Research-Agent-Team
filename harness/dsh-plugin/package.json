@@ -14,6 +14,7 @@
   "files": [
     "index.js",
     "research.js",
+    "adaptive.js",
     "native-models.js",
     "cordis.patch.yml",
     "client.js",

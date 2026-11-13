@@ -5,6 +5,7 @@ import { defineTool } from '@deepseek-ai/dsh-tools'
 import { catalogModelInfo, registerDeepSeekProvider, resolveAdapterOptions } from '@deepseek-ai/dsh-llm-deepseek'
 import { runResearch } from './index.js'
 import { guardNativeModels } from './native-models.js'
+import { registerAdaptiveResearch } from './adaptive.js'
 
 export const name = 'qfh-research'
 export const inject = ['llm', 'tools', 'subagents', 'agentTeams', 'credentials']
@@ -13,6 +14,7 @@ export const Config = Schema.object({
   sourceRoot: Schema.string().required(),
   researchConfig: Schema.string().required(),
   researchPrivateRoot: Schema.string().required(),
+  adaptivePackage: Schema.string().default(''),
   relayURL: Schema.string().required(),
   relayCredential: Schema.string().required(),
   model: Schema.string().required(),
@@ -51,6 +53,13 @@ export async function apply(ctx, config) {
         if (requested !== config.model) throw new Error('Only the authorized trial model is enabled')
       },
     })
+  }
+  if (config.adaptivePackage) {
+    if (!isAbsolute(config.adaptivePackage) || config.modelProvider !== 'glm_coding') {
+      throw new Error('Adaptive review requires an absolute package and the guarded GLM route')
+    }
+    registerAdaptiveResearch(ctx, config)
+    return
   }
   const output = { schema: { type: 'json' },
     render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] }

@@ -18,6 +18,7 @@ export const Config = Schema.object({
   researchPrivateRoot: Schema.string().default(''),
   researchSampleDescription: Schema.string().default(''),
   researchModelProvider: Schema.union(['deepseek', 'glm_coding']).default('deepseek'),
+  researchWorkflow: Schema.string().default('fixed'),
   enabledKinds: Schema.array(Schema.string()).default(['bars', 'report_summaries', 'announcements', 'news']),
   requestTimeoutMs: Schema.number().min(1000).max(180000).default(90000),
 })
@@ -28,6 +29,9 @@ export function runBackend(config, request, signal) {
 }
 
 export function runResearch(config, request, signal) {
+  if (config.adaptivePackage) return runPython(config, ['-m', 'qfh.adaptive_research',
+    '--config', config.researchConfig, '--private', config.researchPrivateRoot,
+    '--package', config.adaptivePackage], request, signal)
   return runPython(config, ['-m', 'qfh.research', '--config', config.researchConfig,
     '--private', config.researchPrivateRoot], request, signal)
 }
@@ -68,7 +72,7 @@ export function apply(ctx, config) {
   ctx.on('webserver/index-inject', table => {
     table.push({ kind: 'global', name: '__QFH_RESEARCH_PROFILE__',
       value: { enabled: !!config.researchConfig, sampleDescription: config.researchSampleDescription,
-        modelProvider: config.researchModelProvider } })
+        modelProvider: config.researchModelProvider, workflow: config.researchWorkflow } })
   })
   for (const [toolName, kind, description] of [
     ['market_daily_bars', 'bars', 'Fetch daily stock data from the selected data source within the operator quota.'],
@@ -115,6 +119,7 @@ export function apply(ctx, config) {
       presentCall: args => ({ card: 'generic', title: description, kind: 'other', rawInput: args }),
     })))
   }
+  if (!config.enabledKinds.length) return
   ctx.effect(() => ctx.tools.register(defineTool({
     name: 'read_research_evidence',
     description: 'Read an immutable result already fetched by THIS research session. First call market_daily_bars and await success, even when another agent supplied the evidence ID. Do not batch this read before that access step completes.',

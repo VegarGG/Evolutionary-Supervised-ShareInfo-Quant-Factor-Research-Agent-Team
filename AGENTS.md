@@ -32,12 +32,20 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
 - Latest verified native GLM trial: `docs/harness/LIVE_GLM_NATIVE_2026-11-13.md`.
-  Active route `glm-coding-modular-2026-11-13` retains the 20 CNY package sublimit
-  inside the original 200 CNY ceiling. This work package has 100 aggregate requests
+  Active route `glm-coding-review-low-2026-11-13` retains the 20 CNY package sublimit
+  inside the original 200 CNY ceiling. This work package has 120 aggregate requests
   and 1,500 conservative credits; these are local caps, not account quota readings.
   All eight fixed-scope pilot sessions are used. Standalone module tests have
   distinct step grants in the same ledger; never reset history to create slots.
-  Current work: `docs/harness/MODULAR_DEVELOPMENT_2026-11-13.md`.
+  Current work: `docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md`. Current reruns
+  are GLM 5.3 Flash only; native low reasoning effort follows recorded high-effort
+  output-cap failures. Adaptive packages admit one supervisor, at most five native
+  tasks and 32 requests, with a 16384-token response ceiling. These grants retain
+  every earlier debit/reservation and do not replenish the exhausted fixed pilot.
+  Completed-output amendments preserve computational definitions. Finalization
+  requires a review of the exact current version plus source-derived unit checks,
+  including recognized explicit prose relationships. This limited grammar does
+  not establish general semantic correctness; retain false model passes separately.
 - Run offline checks with `just harness-check` and `just harness-test`. Live
   experiments are separate commands with explicit campaign state and audit records.
   No ordinary test target may call a real model or data provider.

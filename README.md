@@ -12,7 +12,7 @@ passed at **12:12–12:20 Beijing on 13 November**: one supervisor, two workers,
 independently executed the frozen specification on all 121 real observations.
 The result is **inconclusive**, with model-prose caveats recorded separately.
 Input cache hit rate was 57.47%; its independent arithmetic audit passed.
-The current modular work package passes 180 offline tests.
+The current completed-output review package passes 212 offline tests.
 
 Use **Settings → Models → Z.ai Coding (China) · guarded research** for the
 Coding Plan Pro key. The native `zai-coding-cn` route works with the saved key;
@@ -27,10 +27,13 @@ GLM Coding Plan Pro, using GLM 5.3 Flash until quota exhaustion or an explicit
 owner switch. There is no 18:00 provider switch. The original 200 CNY ceiling and
 all reservations remain intact.
 
-The next work package implements and independently tests a versioned shared-state
-and review module: source-linked findings, explicit review decisions, immutable
-candidate revisions and stale-write refusal. Live module demonstrations are
-separate from the fixed BaoStock UI pilot. See the [development record](docs/harness/MODULAR_DEVELOPMENT_2026-11-13.md).
+The shared-state module now supports review of a completed output, immutable
+explanation-only amendments and native DSH supervisor follow-ups. The supervisor
+can delegate a targeted repair after a failed review, then request review of the
+new version before finalization. A source-derived unit check validates exact scale
+relationships and recognized explicit prose equations; it does not prove arbitrary prose. See the
+[adaptive review record](docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md) and
+[earlier module experiments](docs/harness/MODULAR_DEVELOPMENT_2026-11-13.md).
 
 Read the [approved plan](docs/harness/PLAN.md),
 [trial guide](docs/harness/INTERACTIVE_TRIAL.md),
@@ -76,6 +79,15 @@ Full results and counterexamples are in the development record. The GLM trial's
 upper estimate. Neither is an incremental cash invoice. Full per-role accounting
 and every retained failure are in the latest report.
 
+The subsequent [completed-output review package](docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md)
+made 53 real Flash requests and used 565,131 tokens. Both unit counterexamples are
+repaired and the adaptive clean-output control passes. Three token-cap failures and
+one false model pass remain recorded; the latter led to explicit prose-unit checks.
+Its additional conservative debit is **1.590600 CNY**. Current accounting is
+**25.157504 CNY**, **5.242880 CNY reserved**, and **169.599616 CNY unreserved**.
+The active native route requests low reasoning effort, with a bounded 120-request
+aggregate allowance; model-only prose review remains insufficient for general acceptance.
+
 ## Local setup and checks
 
 Use Python 3.12, uv, Node and pnpm. From the repository root:
@@ -92,11 +104,14 @@ port 3080. Use its authenticated bootstrap link printed locally. In Settings →
 Research data, select BaoStock, iFind or RQData. Saving a credential sends no
 provider request. This setup profile has model providers disabled; guarded live
 experiments use the separate SDK runner, as described in [harness/README.md](harness/README.md).
-The current trial uses **`deepseek-flash` only for all three roles**.
-For the guarded chat/Agent Teams profile, use `just harness-research-ui --private
-.qfh-private --key-file /operator/deepseek-key-file --install-plugin`. The real key
-stays in the parent relay. Follow the [trial guide](docs/harness/INTERACTIVE_TRIAL.md);
-the existing setup-only command remains available.
+Current development uses **`glm-5.3-flash` only**, with its Coding Plan Pro key in
+native Models. The guarded profile is `just harness-research-ui --private
+.qfh-private --install-plugin`; the adaptive diagnostic additionally requires
+`--adaptive-package /operator/prepared-package.json`. Its one-session allowance is
+separate from the exhausted fixed pilot, while every request uses the same original
+campaign ledger. Package preparation alone sends no provider request. Follow the
+[adaptive review record](docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md); the
+setup-only command remains available.
 
 `just harness-data-plan` prints the tiny initial data test without contacting a
 provider. Execution requires the explicit `--execute` argument. The current pilot

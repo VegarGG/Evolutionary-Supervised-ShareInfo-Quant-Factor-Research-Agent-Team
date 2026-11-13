@@ -15,6 +15,8 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+from qfh.adaptive_research import TOOLS as ADAPTIVE_TOOLS
+from qfh.adaptive_research import AdaptiveResearch
 from qfh.coding_plan import CodingLedger, CodingPolicy
 from qfh.experiment import Resources, write_new
 from qfh.proxy import GuardProxy
@@ -40,6 +42,7 @@ def serve(
     install_plugin: bool,
     *,
     evidence_mode="live",
+    adaptive_package: Path | None = None,
 ):
     root = Path(__file__).resolve().parents[1]
     private.mkdir(parents=True, exist_ok=True)
@@ -49,6 +52,8 @@ def serve(
     with research.db() as db:
         active_route = research.active_model_route(db)
     coding = CodingPolicy.model_validate(active_route) if active_route else None
+    adaptive = AdaptiveResearch(config, private, adaptive_package) if adaptive_package else None
+    output_cap = adaptive.policy.max_output_tokens if adaptive else policy.max_output_tokens
     credential = None
     if not coding:
         if key_file is None:
@@ -92,6 +97,17 @@ def serve(
         f"{query['end']}, daily unadjusted close. Existing trials retain their frozen scope. "
         "Exact source data are cached; model views may be previews of full calculations."
     )
+    if adaptive:
+        sample_description = (
+            f"Adaptive package {adaptive.policy.package_id}: frozen synthetic unit sources. "
+            "Review the complete output; repair only after an observed review issue. "
+            "No market-data request or official evaluation."
+        )
+    if adaptive:
+        for path in source_files:
+            frozen = evidence / "source-snapshot" / path.relative_to(root)
+            frozen.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, frozen)
     write_new(
         evidence / "manifest.json",
         {
@@ -125,6 +141,10 @@ def serve(
             "pilot_allowance": research.allowance(),
             "active_sample": active_sample,
             "active_model_route": active_route,
+            "adaptive_package": adaptive.policy.model_dump(exclude_unset=True)
+            if adaptive
+            else None,
+            "effective_output_cap": output_cap,
             "budget_before": research.ledger.snapshot(),
         },
     )
@@ -133,15 +153,17 @@ def serve(
         private / "campaign/wire",
         credential,
         model,
-        policy.max_output_tokens,
+        output_cap,
         policy.max_body_bytes,
         policy.request_timeout_seconds,
-        session_admitter=lambda session: research.admit(
+        session_admitter=adaptive.admit
+        if adaptive
+        else lambda session: research.admit(
             session, expected_route_id=coding.id if coding else "deepseek"
         ),
         coding_policy=coding,
     ) as guard:
-        guard.allowed_tools = TOOLS
+        guard.allowed_tools = ADAPTIVE_TOOLS if adaptive else TOOLS
         native_patch = evidence / "native-provider.patch.yml"
         if coding:
             # Native Models validates settings against the composition layer.
@@ -151,7 +173,7 @@ def serve(
             native_patch.write_text(
                 template.replace(
                     "!!js process.env.QFH_RELAY_URL", json.dumps(guard.base_url)
-                ).replace("!!js Number(process.env.QFH_MAX_TOKENS)", str(policy.max_output_tokens))
+                ).replace("!!js Number(process.env.QFH_MAX_TOKENS)", str(output_cap))
             )
         # DeepSeek's key stays in the parent relay. Native GLM resolves its key
         # from DSH's credential store and sends it only to the trusted relay.
@@ -179,13 +201,14 @@ def serve(
                 "QFH_MODEL_PROVIDER": "glm_coding" if coding else "deepseek",
                 "QFH_ROUTE_LABEL": route_label,
                 "QFH_SAMPLE_DESCRIPTION": sample_description,
-                "QFH_MAX_TOKENS": str(policy.max_output_tokens),
+                "QFH_MAX_TOKENS": str(output_cap),
                 "QFH_REASONING_EFFORT": coding.reasoning_effort
                 if coding
                 else policy.roles["supervisor"].reasoning_effort,
                 "DSH_TELEMETRY_MODE": "DISABLED",
                 "OTEL_SDK_DISABLED": "true",
                 "DSH_PRIMARY_RUNTIME": "",
+                "QFH_ADAPTIVE_PACKAGE": str(adaptive_package) if adaptive_package else "",
             }
         )
         if install_plugin:
@@ -204,6 +227,11 @@ def serve(
                     "--patch",
                     str(root / "configs/web-research.patch.yml"),
                     *(["--patch", str(native_patch)] if coding else []),
+                    *(
+                        ["--patch", str(root / "configs/web-adaptive.patch.yml")]
+                        if adaptive
+                        else []
+                    ),
                     "--host",
                     "127.0.0.1",
                     "--port",
@@ -251,6 +279,7 @@ def main():
     )
     parser.add_argument("--port", type=int, default=3080)
     parser.add_argument("--install-plugin", action="store_true")
+    parser.add_argument("--adaptive-package", type=Path)
     args = parser.parse_args()
     serve(
         args.config.resolve(),
@@ -258,6 +287,7 @@ def main():
         args.key_file.resolve() if args.key_file else None,
         args.port,
         args.install_plugin,
+        adaptive_package=args.adaptive_package.resolve() if args.adaptive_package else None,
     )
 
 

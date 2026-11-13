@@ -1,0 +1,279 @@
+{
+  "browser_plugin": "not available",
+  "driver": "installed Chrome via Playwright",
+  "checks": [
+    {
+      "package_id": "final-peer-001",
+      "surface": {
+        "status": "pass",
+        "at": "2026-11-13T07:08:36.154Z",
+        "title": "Review the frozen completed research — DeepSeek Harness",
+        "origin": "http://127.0.0.1:3080",
+        "browser": "installed Chrome via Playwright",
+        "browser_plugin": "not available",
+        "viewports": [
+          [
+            1440,
+            1000
+          ],
+          [
+            390,
+            844
+          ]
+        ],
+        "errors": [],
+        "limitations": [
+          "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+        ],
+        "checks": [
+          "page identity",
+          "nonblank",
+          "no framework overlay",
+          "submitted through native chat",
+          "result rendered",
+          "reload persisted",
+          "desktop and mobile screenshots"
+        ]
+      },
+      "workflow": "incomplete",
+      "semantic": "incomplete"
+    },
+    {
+      "package_id": "final-peer-002",
+      "surface": {
+        "status": "pass",
+        "at": "2026-11-13T07:15:16.104Z",
+        "title": "Review the frozen completed research — DeepSeek Harness",
+        "origin": "http://127.0.0.1:3080",
+        "browser": "installed Chrome via Playwright",
+        "browser_plugin": "not available",
+        "viewports": [
+          [
+            1440,
+            1000
+          ],
+          [
+            390,
+            844
+          ]
+        ],
+        "errors": [],
+        "limitations": [
+          "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+        ],
+        "checks": [
+          "page identity",
+          "nonblank",
+          "no framework overlay",
+          "submitted through native chat",
+          "result rendered",
+          "reload persisted",
+          "desktop and mobile screenshots"
+        ]
+      },
+      "workflow": "incomplete",
+      "semantic": "incomplete"
+    },
+    {
+      "package_id": "final-peer-003",
+      "surface": {
+        "status": "pass",
+        "at": "2026-11-13T07:26:14.017Z",
+        "title": "Review the frozen completed research — DeepSeek Harness",
+        "origin": "http://127.0.0.1:3080",
+        "browser": "installed Chrome via Playwright",
+        "browser_plugin": "not available",
+        "viewports": [
+          [
+            1440,
+            1000
+          ],
+          [
+            390,
+            844
+          ]
+        ],
+        "errors": [],
+        "limitations": [
+          "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+        ],
+        "checks": [
+          "page identity",
+          "nonblank",
+          "no framework overlay",
+          "submitted through native chat",
+          "result rendered",
+          "reload persisted",
+          "desktop and mobile screenshots"
+        ]
+      },
+      "workflow": "finalized_diagnostic",
+      "semantic": "targeted_unit_counterexample_pass"
+    },
+    {
+      "package_id": "final-control-001",
+      "surface": {
+        "status": "pass",
+        "at": "2026-11-13T07:34:22.186Z",
+        "title": "Review the frozen completed research — DeepSeek Harness",
+        "origin": "http://127.0.0.1:3080",
+        "browser": "installed Chrome via Playwright",
+        "browser_plugin": "not available",
+        "viewports": [
+          [
+            1440,
+            1000
+          ],
+          [
+            390,
+            844
+          ]
+        ],
+        "errors": [],
+        "limitations": [
+          "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+        ],
+        "checks": [
+          "page identity",
+          "nonblank",
+          "no framework overlay",
+          "submitted through native chat",
+          "result rendered",
+          "reload persisted",
+          "desktop and mobile screenshots"
+        ]
+      },
+      "workflow": "incomplete",
+      "semantic": "incomplete"
+    },
+    {
+      "package_id": "final-control-002",
+      "surface": {
+        "status": "pass",
+        "at": "2026-11-13T07:40:57.472Z",
+        "title": "Review the frozen completed research — DeepSeek Harness",
+        "origin": "http://127.0.0.1:3080",
+        "browser": "installed Chrome via Playwright",
+        "browser_plugin": "not available",
+        "viewports": [
+          [
+            1440,
+            1000
+          ],
+          [
+            390,
+            844
+          ]
+        ],
+        "errors": [],
+        "limitations": [
+          "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+        ],
+        "checks": [
+          "page identity",
+          "nonblank",
+          "no framework overlay",
+          "submitted through native chat",
+          "result rendered",
+          "reload persisted",
+          "desktop and mobile screenshots"
+        ]
+      },
+      "workflow": "finalized_diagnostic",
+      "semantic": "fail_false_model_acceptance"
+    },
+    {
+      "package_id": "final-control-003",
+      "surface": {
+        "status": "pass",
+        "at": "2026-11-13T07:55:31.004Z",
+        "title": "Review the frozen completed research — DeepSeek Harness",
+        "origin": "http://127.0.0.1:3080",
+        "browser": "installed Chrome via Playwright",
+        "browser_plugin": "not available",
+        "viewports": [
+          [
+            1440,
+            1000
+          ],
+          [
+            390,
+            844
+          ]
+        ],
+        "errors": [],
+        "limitations": [
+          "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+        ],
+        "checks": [
+          "page identity",
+          "nonblank",
+          "no framework overlay",
+          "submitted through native chat",
+          "result rendered",
+          "reload persisted",
+          "desktop and mobile screenshots"
+        ]
+      },
+      "workflow": "finalized_diagnostic",
+      "semantic": "targeted_unit_counterexample_pass"
+    },
+    {
+      "package_id": "final-clean-001",
+      "surface": {
+        "status": "pass",
+        "at": "2026-11-13T07:58:31.310Z",
+        "title": "Review the frozen completed research — DeepSeek Harness",
+        "origin": "http://127.0.0.1:3080",
+        "browser": "installed Chrome via Playwright",
+        "browser_plugin": "not available",
+        "viewports": [
+          [
+            1440,
+            1000
+          ],
+          [
+            390,
+            844
+          ]
+        ],
+        "errors": [],
+        "limitations": [
+          "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+        ],
+        "checks": [
+          "page identity",
+          "nonblank",
+          "no framework overlay",
+          "submitted through native chat",
+          "result rendered",
+          "reload persisted",
+          "desktop and mobile screenshots"
+        ]
+      },
+      "workflow": "finalized_diagnostic",
+      "semantic": "clean_output_control_pass"
+    }
+  ],
+  "settings_guard_check": {
+    "status": "pass",
+    "url": "http://127.0.0.1:3080",
+    "viewport": [
+      1440,
+      1000
+    ],
+    "browser": "Browser plugin not available; existing Playwright and Chrome used",
+    "flow": "Settings -> Models -> Research data -> cancellation, exact-version review and adaptive diagnostic status",
+    "checks": {
+      "page_identity": true,
+      "not_blank": true,
+      "no_framework_overlay": true,
+      "no_console_errors": true,
+      "interaction": true,
+      "screenshots": true
+    },
+    "no_settings_saved": true,
+    "no_model_request": true,
+    "errors": []
+  }
+}

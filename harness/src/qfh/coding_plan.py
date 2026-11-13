@@ -66,7 +66,9 @@ class CodingPolicy(BaseModel):
     starts_at: datetime
     ends_at: datetime | None
     admission_mode: Literal["window", "until_stopped"] = "window"
-    max_requests: int = Field(ge=1, le=100)
+    # A finite operator work-package cap, checked against ALL historical GLM calls.
+    # A route amendment may extend a pilot; it cannot reset usage or cash/credit limits.
+    max_requests: int = Field(ge=1, le=1000)
     max_microcredits: int = Field(gt=0)
     # Operator route amendment only; the original saved budget policy is immutable.
     cash_package_micro_cny: int | None = Field(default=None, gt=0)

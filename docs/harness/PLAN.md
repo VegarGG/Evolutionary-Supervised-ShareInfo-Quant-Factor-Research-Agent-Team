@@ -88,7 +88,8 @@ cannot expand tool privileges or select a credential/host/path.
 confirmed this is far from production ready. The scheduled DeepSeek run is canceled.
 Continue on GLM Coding Plan Pro / GLM 5.3 Flash until quota exhaustion or an owner
 switch, preserving the original budget and history. The shared-state/review package
-is tracked in [modular development](MODULAR_DEVELOPMENT_2026-11-13.md).
+is tracked in [modular development](MODULAR_DEVELOPMENT_2026-11-13.md) and
+[completed-output review](FINAL_OUTPUT_REVIEW_2026-11-13.md).
 Native Models and Agent Teams remain the host; a fixed-definition trial does not
 establish adaptive coordination or general discovery capability. Mixed role models
 and bounded market/news context remain staged in the design below.
@@ -128,9 +129,13 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
   explicit decisions, conflict preservation and concurrency/replay checks.
 - [x] Two paired real GLM diagnostic cases with feedback-disabled controls, including
   every failed attempt: eleven calls, 69,923 tokens, 0.463528 CNY exposure.
-- [ ] Final-synthesis semantic review gate: units formulas were correct but both
-  explanations reversed the scale relationship; preserve these counterexamples.
-- [ ] Native board tools and an adaptive supervisor follow-up that changes the candidate.
+- [x] Completed-output review, explanation-only amendments and targeted repair of both
+  preserved unit counterexamples. Explicit prose unit checks block the recorded false pass.
+- [x] Native board tools and adaptive supervisor follow-up that changes the attributed
+  output version; a clean control skips the author. Computational definitions are preserved.
+- [ ] General semantic reliability and an unseen open-ended research case. One model-only
+  final review falsely passed contradictory prose; the current host grammar is deliberately limited.
+- [ ] Adaptive follow-up that revises the research idea or computational definition on new evidence.
 - [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
 - [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 
