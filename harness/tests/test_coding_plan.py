@@ -8,7 +8,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from qfh.budget import BudgetRefused, Ledger, Usage
+from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, Usage
 from qfh.coding_plan import (
     CodingLedger,
     CodingPolicy,
@@ -79,6 +79,45 @@ def test_unknown_usage_retains_subscription_reservation_across_restart(tmp_path)
     assert detail["route_id"] == obj.coding.id
     with pytest.raises(BudgetRefused, match="unknown"):
         restarted.reserve("next", "next", NOW)
+
+
+def test_operator_package_amendment_counts_old_calls_and_preserves_saved_policy(tmp_path):
+    obj = ledger(tmp_path)
+    usage = Usage(input_uncached=1048576, input_cached=0, input_cache_write=0, output=8192)
+    for i in range(4):
+        obj.reserve(str(i), str(i), NOW, output_tokens=8192)
+        obj.settle(str(i), usage)
+    before = obj.snapshot()
+    with pytest.raises(BudgetRefused, match="work-package"):
+        obj.reserve("blocked", "blocked", NOW, output_tokens=8192)
+    amended = CodingLedger(
+        obj, policy(id="bounded-package-amendment", cash_package_micro_cny=20000000)
+    )
+    amended.reserve("next", "next", NOW, output_tokens=8192)
+    after = amended.snapshot()
+    assert [c for c in after["calls"] if c["id"] != "next"] == before["calls"]
+    assert obj.policy.package_micro_cny == 10000000
+    assert (
+        coding_detail(next(c for c in after["calls"] if c["id"] == "next"))[
+            "cash_package_micro_cny"
+        ]
+        == 20000000
+    )
+    assert Ledger(obj.path, obj.policy).policy == obj.policy
+
+
+def test_package_amendment_cannot_expand_original_cash_ceiling(tmp_path):
+    obj = ledger(tmp_path)
+    with pytest.raises(ValueError, match="original cumulative ceiling"):
+        CodingLedger(obj, policy(cash_package_micro_cny=200000001))
+    cash_policy = BudgetPolicy.model_validate(
+        {**obj.policy.model_dump(), "carry_micro_cny": 198000000}
+    )
+    cash = Ledger(tmp_path / "near-original-limit.sqlite3", cash_policy)
+    amended = CodingLedger(cash, policy(cash_package_micro_cny=20000000))
+    with pytest.raises(BudgetRefused, match="original cumulative budget"):
+        amended.reserve("blocked", "blocked", NOW, output_tokens=8192)
+    assert not amended.snapshot()["calls"]
 
 
 def test_reviewed_auth_rejection_keeps_both_reservations_and_request_count(tmp_path):

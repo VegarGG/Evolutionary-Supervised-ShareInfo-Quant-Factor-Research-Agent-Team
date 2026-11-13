@@ -53,7 +53,7 @@ for probes. Existing requests, official baseline and the 200 CNY ceiling are unc
   for the editor to close. Failed checks, rejected local requests and successive
   offline fixtures 012–018 remain under private `integration/expansion-005`.
 
-167 offline tests pass after the evidence-access repair below. The native synthetic team completed 15 responses, both
+169 offline tests pass after the evidence-access repair below. The native synthetic team completed 15 responses, both
 workers and a draft. Synthetic usage is not real inference or provider spending.
 Desktop browser checks pass for native key save/reload, endpoint refusal, removal
 of the duplicate tab, and light/dark readable options. Headless Chrome does not
@@ -107,3 +107,21 @@ tests; rerunning with local sockets permitted passed all tests. Both logs remain
 - [Native request-header extension](https://github.com/deepseek-ai/deepseek-harness/blob/e8f7b93a344964de3dca1ace9e72b6e4d6de87cb/packages/llm/llm-pi-ai/src/index.ts).
 - [GLM 5.3 Flash parameters](https://docs.bigmodel.cn/cn/guide/models/vlm/glm-5.3-flash).
 - [Zhipu streamed tool calls](https://docs.bigmodel.cn/cn/guide/capabilities/stream-tool).
+
+## Package-limit preflight correction
+
+The next session was refused locally before its first provider request. Its
+reservation would have exceeded the original 10 CNY work-package sublimit because
+the retained 401 reservation counts there as well. The full 200 CNY ceiling was
+not exhausted. Preserve this sixth session and its native Failed status; there
+were zero model requests, tokens or debits.
+
+A new append-only GLM route explicitly raises only its package sublimit to
+20 CNY. The original saved budget policy, every call and the official baseline
+remain intact. The atomic cash check still applies the original 200 CNY ceiling;
+a test proves the package amendment cannot bypass it. The earlier route remains
+immutable. Aggregate GLM requests stay at 60 and prepaid credits at 1,500. A
+recorded session amendment raises the cumulative limit from seven to eight so the
+seventh can verify the repair and the eighth remains an owner trial. All prior
+failures, including the zero-call attempt, count. Read-only capacity checks precede
+the next browser submission. 169 offline tests pass.

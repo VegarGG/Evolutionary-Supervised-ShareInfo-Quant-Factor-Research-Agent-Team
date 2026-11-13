@@ -67,6 +67,8 @@ class CodingPolicy(BaseModel):
     ends_at: datetime
     max_requests: int = Field(ge=1, le=100)
     max_microcredits: int = Field(gt=0)
+    # Operator route amendment only; the original saved budget policy is immutable.
+    cash_package_micro_cny: int | None = Field(default=None, gt=0)
     input_microcredits_per_token: int = Field(gt=0)
     output_microcredits_per_token: int = Field(gt=0)
     maximum_input_tokens: int = Field(gt=0)
@@ -142,6 +144,12 @@ class CodingLedger(Ledger):
             or coding.maximum_output_tokens > self.policy.provider_max_output_tokens
         ):
             raise ValueError("GLM token maxima exceed the shared cash reservation bounds")
+        if coding.cash_package_micro_cny is not None and not (
+            self.policy.package_micro_cny
+            <= coding.cash_package_micro_cny
+            <= self.policy.total_micro_cny
+        ):
+            raise ValueError("package amendment must stay within the original cumulative ceiling")
 
     def reserve(self, request_id, step, now, *, output_tokens=None):
         policy = self.coding
@@ -167,6 +175,9 @@ class CodingLedger(Ledger):
             "maximum_output_tokens": output,
             "quota_settled_upper_microcredits": None,
             "cache_tokens_reported": None,
+            "cash_package_micro_cny": policy.cash_package_micro_cny
+            if policy.cash_package_micro_cny is not None
+            else self.policy.package_micro_cny,
             "cash_basis": "Existing Coding Plan subscription; no metered fallback. "
             "The shared cash ledger still debits its conservative exposure allowance, "
             "not an assertion of incremental billing or allocated subscription purchase cost.",
@@ -193,7 +204,13 @@ class CodingLedger(Ledger):
                 raise BudgetRefused("GLM subscription quota allowance exhausted or reserved")
 
         self._reserve(
-            request_id, step, now, cash_reservation, detail=json.dumps(detail), check=check
+            request_id,
+            step,
+            now,
+            cash_reservation,
+            detail=json.dumps(detail),
+            check=check,
+            package_allowance=policy.cash_package_micro_cny,
         )
 
     def settle(self, request_id, usage, *, metadata=None):

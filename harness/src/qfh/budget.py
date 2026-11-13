@@ -192,8 +192,16 @@ class Ledger:
             raise BudgetRefused("outside authorized Beijing admission window")
         self._reserve(request_id, step, now, self.policy.reservation)
 
-    def _reserve(self, request_id, step, now, reservation, *, detail=None, check=None):
+    def _reserve(
+        self, request_id, step, now, reservation, *, detail=None, check=None, package_allowance=None
+    ):
         """Shared atomic cash/concurrency/request checks for trusted funding adapters."""
+        package = self.policy.package_micro_cny if package_allowance is None else package_allowance
+        if (
+            type(package) is not int
+            or not self.policy.package_micro_cny <= package <= self.policy.total_micro_cny
+        ):
+            raise ValueError("package amendment must stay within the original cumulative ceiling")
         with self.transaction() as db:
             if db.execute("SELECT 1 FROM calls WHERE id=?", (request_id,)).fetchone():
                 raise BudgetRefused("request id already used; never redispatch")
@@ -230,7 +238,7 @@ class Ledger:
             if check:
                 check(db)
             new = spent + reservation
-            if new > self.policy.package_micro_cny:
+            if new > package:
                 raise BudgetRefused("work-package budget exhausted or reserved")
             if self._effective_total(db) + reservation > self.policy.total_micro_cny:
                 raise BudgetRefused("original cumulative budget exhausted or reserved")

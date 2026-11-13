@@ -672,3 +672,18 @@ to seven, covering one repair rerun and one owner trial. All historical requests
 failed sessions and the 401's full cash/credit reservations remain counted. Keep
 200 CNY, 1,500 credits, the same expiry, data scope, concurrency and per-trial caps.
 167 offline tests pass; the repair rerun will be recorded separately.
+
+
+## 2026-11-13 — Preserve zero-dispatch package refusal and amend only GLM sublimit
+
+The sixth native session was refused before any provider dispatch: the retained
+401 reservation plus prior calls and the next full-input reservation exceeded
+the old ten-CNY work-package sublimit. There was no new token use or debit.
+Preserve this session; do not reset the ledger or classify its refusal as an LLM
+failure. Add a frozen operator GLM route with a twenty-CNY package allowance;
+keep the original two-hundred-CNY cumulative ceiling, all usage/reservations,
+sixty-request aggregate cap, fifteen-hundred-credit cap and expiry unchanged.
+The original policy row is untouched. Tests prove both historical accounting and
+the original cumulative bound survive the amendment. Extend cumulative sessions
+to eight to retain one owner slot after the actual repair run. 169 offline tests
+pass; use a read-only capacity preflight before the next submission.
