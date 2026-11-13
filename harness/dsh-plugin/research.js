@@ -63,7 +63,7 @@ export async function apply(ctx, config) {
     description: 'Read the fixed research sample, budget, worker status and required draft/report schemas. Supervisor: call first. Workers already receive scope and schema in their assignment; use this only for a needed status check.',
     parameters: {}, execute: (_args, exec) => operation('scope', {}, exec) })
   register({ name: 'research_metrics',
-    description: 'Compute deterministic daily returns, moments and lookback/next-close alignment on granted closes. Copy measurement_id and fact keys into worker measurement_refs; never recalculate observations in prose. This is not a strategy backtest or evaluation.',
+    description: 'After your own market_daily_bars call succeeds, compute deterministic daily returns, moments and lookback/next-close alignment on granted closes. Copy measurement_id and fact keys into worker measurement_refs; never recalculate observations in prose. This is not a strategy backtest or evaluation.',
     parameters: { evidence_id: { type: 'string', required: true } },
     execute: (args, exec) => operation('metrics', args, exec) })
   register({ name: 'submit_worker_report',
@@ -73,7 +73,7 @@ export async function apply(ctx, config) {
     isConcurrencySafe: () => false,
     execute: (args, exec) => operation('submit_report', args, exec) })
   register({ name: 'research_specification',
-    description: 'Execute one fully resolved close-return contrast specification on your own evidence. Returns canonical formula, tie/support counts, exact label overlap geometry and a host-derived inference outcome. Tiny samples return insufficient_data, never confirmation or disproof. This is development analysis, not a strategy backtest or official evaluation.',
+    description: 'After your own market_daily_bars call succeeds, execute one fully resolved close-return contrast specification on your own evidence. Returns canonical formula, tie/support counts, exact label overlap geometry and a host-derived inference outcome. Tiny samples return insufficient_data, never confirmation or disproof. This is development analysis, not a strategy backtest or official evaluation.',
     parameters: { evidence_id: { type: 'string', required: true },
       specification_json: { type: 'string', required: true,
         description: 'One concrete JSON object matching specification_schema; every parameter required, no alternative methods or unresolved symbols.' } },

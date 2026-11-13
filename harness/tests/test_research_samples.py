@@ -174,6 +174,53 @@ def test_activation_reconstructs_composite_from_verified_sources(sample):
     assert research.trial_sample("historical-root") is None
 
 
+def test_shared_id_requires_own_grant_and_recovery_does_not_fetch_vendor(sample, monkeypatch):
+    research, _, _, record, amendment = sample
+    research.activate_sample(amendment)
+    research.admit("expanded-root")
+    worker = research.begin_worker(
+        "expanded-root", "reviewer", "Independently check the supplied evidence identifier."
+    )
+    child = worker["child_id"]
+    access = json.loads(worker["prompt"])["evidence_access"]
+    assert access["first_tool"] == "market_daily_bars"
+    assert access["arguments"] == record["query"]
+    research.scope(child)
+    assert not research.data.can_read(child, amendment.evidence_id)
+    with research.data.db() as db:
+        count_before = db.execute("SELECT COUNT(*) FROM requests").fetchone()[0]
+    with monkeypatch.context() as guarded:
+        guarded.setattr(
+            "qfh.research.dispatch", lambda *_a, **_k: pytest.fail("no provider dispatch")
+        )
+        for op, args in (
+            ("data", {"kind": "read", "evidence_id": amendment.evidence_id}),
+            ("metrics", {"evidence_id": amendment.evidence_id}),
+            (
+                "specification",
+                {
+                    "evidence_id": amendment.evidence_id,
+                    "specification_json": amendment.fixed_definition.model_dump_json(),
+                },
+            ),
+        ):
+            with pytest.raises(ValueError, match="first call market_daily_bars"):
+                research.operate(Operation(op=op, session_id=child, args=args))
+            assert not research.data.can_read(child, amendment.evidence_id)
+        bars = research.operate(
+            Operation(op="data", session_id=child, args={"kind": "bars", "query": record["query"]})
+        )
+    assert bars["cache_reused"] and research.data.can_read(child, amendment.evidence_id)
+    read = research.operate(
+        Operation(
+            op="data", session_id=child, args={"kind": "read", "evidence_id": amendment.evidence_id}
+        )
+    )
+    assert read["evidence_id"] == bars["evidence_id"]
+    with research.data.db() as db:
+        assert db.execute("SELECT COUNT(*) FROM requests").fetchone()[0] == count_before
+
+
 def test_expanded_two_worker_round_uses_full_data_but_bounded_views(sample, monkeypatch):
     research, _, _, record, amendment = sample
     research.activate_sample(amendment)

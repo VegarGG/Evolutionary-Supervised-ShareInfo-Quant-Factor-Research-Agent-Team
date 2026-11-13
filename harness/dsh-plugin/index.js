@@ -78,7 +78,10 @@ export function apply(ctx, config) {
   ]) {
     if (!config.enabledKinds.includes(kind)) continue
     ctx.effect(() => ctx.tools.register(defineTool({
-      name: toolName, description,
+      name: toolName,
+      description: config.researchConfig && kind === 'bars'
+        ? 'Required first evidence step for EACH worker: call with the exact scope.query and await success. Grants this session access to the permitted sample. Composed samples reuse frozen cache with no new vendor query. An evidence ID from another agent is not an access grant.'
+        : description,
       parameters: {
         symbols: { type: 'array', required: true, items: { type: 'string' },
           description: 'Canonical identifiers, e.g. 000001.XSHE; converted for the selected source.' },
@@ -114,7 +117,7 @@ export function apply(ctx, config) {
   }
   ctx.effect(() => ctx.tools.register(defineTool({
     name: 'read_research_evidence',
-    description: 'Read an immutable result already fetched by this research session.',
+    description: 'Read an immutable result already fetched by THIS research session. First call market_daily_bars and await success, even when another agent supplied the evidence ID. Do not batch this read before that access step completes.',
     parameters: {
       evidence_id: { type: 'string', required: true, description: 'Evidence hash from a source tool' },
       offset: { type: 'integer', description: 'First row, default 0' },

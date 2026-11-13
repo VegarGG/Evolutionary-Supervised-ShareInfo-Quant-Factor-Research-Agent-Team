@@ -650,3 +650,25 @@ operator review; it does not zero charges, reset request counts or increase the
 200 CNY cap. Subscription limits aggregate both protocol routes. New calls reserve
 the full input capacity and their output bound at the final wire boundary. All
 uncertain streams still block continuation. See NATIVE_MODELS_2026-11-13.md.
+
+
+## 2026-11-13 — Record first native GLM failure and repair evidence-access guidance
+
+Both native GLM Flash probes passed with the saved credential. The first full
+team trial used fourteen calls: researcher completed; reviewer eventually
+performed the full calculation and submitted its report but exhausted its
+six-call allowance before normal completion. The shared evidence hash had been
+mistaken for an access grant. Preserve all six rejected evidence/calculation
+operations, native failure and conservative 0.556952 CNY debit; no draft accepted.
+
+Make each worker's first required source call explicit and return precise recovery
+instructions for denied reads. Do not grant access automatically or increase
+per-role limits. Both independently executed full calculations matched the frozen
+reference; no model intelligence upgrade or statistical-method change is justified.
+
+Within the owner's test/polish and trial-readiness authorization, append a new
+route with sixty aggregate GLM requests and extend the session allowance from six
+to seven, covering one repair rerun and one owner trial. All historical requests,
+failed sessions and the 401's full cash/credit reservations remain counted. Keep
+200 CNY, 1,500 credits, the same expiry, data scope, concurrency and per-trial caps.
+167 offline tests pass; the repair rerun will be recorded separately.

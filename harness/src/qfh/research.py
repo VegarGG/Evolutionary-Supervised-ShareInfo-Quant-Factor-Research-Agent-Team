@@ -498,7 +498,7 @@ class Research:
     def extend_allowance(self, extension):
         """Operator-only append-only amendment; never exposed as a research tool."""
         budget = self.ledger.snapshot()
-        if any(c["state"] != "settled" for c in budget["calls"]):
+        if any(c["state"] not in ("settled", "rejected_reserved") for c in budget["calls"]):
             raise ValueError("settle all pending or unknown charges before extending allowance")
         body = extension.model_dump()
         with self.db() as db:
@@ -625,7 +625,11 @@ class Research:
             raise ValueError("unique, granted evidence ids required")
         for ident in ids:
             if not self.data.can_read(session_id, ident):
-                raise ValueError("citation was not granted to this agent")
+                raise ValueError(
+                    "citation was not granted to this agent; first call market_daily_bars "
+                    "with the exact scope.query and await its successful result. An evidence "
+                    "ID supplied by another agent and a research_scope read do not grant access."
+                )
             self.store.get(ident)  # Verify content hash, not just row membership.
 
     def begin_worker(self, session_id, role, task):
@@ -659,7 +663,16 @@ class Research:
             "role": role,
             "task": task,
             "scope": {k: scope[k] for k in ("provider", "query", "scope_limit", "sample")},
-            "instruction": "Use market_daily_bars to inspect the allowed real evidence yourself. "
+            "evidence_access": {
+                "first_tool": "market_daily_bars",
+                "arguments": scope["query"],
+                "order": "Call this first and await success before read_research_evidence, "
+                "research_metrics or research_specification. An evidence ID in the assignment "
+                "is a reference, not an access grant. For composed samples this required "
+                "call reuses the frozen cache and makes no new vendor query.",
+            },
+            "instruction": "Follow evidence_access before using any shared evidence ID. "
+            "Use market_daily_bars to inspect the allowed real evidence yourself. "
             "The assignment already supplies your scope and schema; no initial scope call is "
             "needed. Bars includes the returned rows, so read_research_evidence is optional "
             "when those rows are already complete. Preserve calls for validation feedback. "
@@ -1128,6 +1141,8 @@ class Research:
                 kind = args.get("kind")
                 if kind not in ("bars", "read"):
                     raise ValueError("only daily closes and granted evidence reads are enabled")
+                if kind == "read":
+                    self.check_citations(request.session_id, [args["evidence_id"]])
                 sample = scope["sample"]
                 if kind == "bars" and (
                     SampleRange.model_validate(args["query"]).model_dump(mode="json")

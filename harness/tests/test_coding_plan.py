@@ -16,7 +16,7 @@ from qfh.coding_plan import (
     parse_coding_usage,
     read_coding_credential,
 )
-from qfh.research import Research
+from qfh.research import PilotExtension, Research
 from qfh.trial_metrics import model_metrics
 
 CONFIGS = Path(__file__).resolve().parents[1] / "configs"
@@ -111,6 +111,18 @@ def test_reviewed_auth_rejection_keeps_both_reservations_and_request_count(tmp_p
     assert call["state"] == "rejected_reserved" and call["charged"] is None
     assert coding_detail(call)["quota_settled_upper_microcredits"] is None
     assert coding_detail(call)["quota_reserved_microcredits"] == obj.coding.reservation
+    research = Research(CONFIGS / "research-trial.yaml", tmp_path)
+    research.extend_allowance(
+        PilotExtension(
+            amendment_id="reviewed-rejection-repair",
+            expected_limit=3,
+            new_limit=4,
+            authority="Owner authorized a bounded repair and a pilot allowance extension.",
+            reason="Permit a new trial while retaining both reviewed rejection reservations.",
+        )
+    )
+    assert research.ledger.snapshot() == after
+    assert research.allowance()["effective_limit"] == 4
     with pytest.raises(ValueError, match="matching unknown"):
         obj.review_auth_rejection(wire, authority=authority)
     restarted = ledger(tmp_path, max_requests=2)

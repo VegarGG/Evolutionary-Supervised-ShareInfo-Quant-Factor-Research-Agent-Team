@@ -1,5 +1,12 @@
 # Quant Factor Harness
 
+Current native GLM status: both real `zai-coding-cn` probes passed; the first team
+trial exposed an evidence-access workflow failure. Its repair passes 167 offline
+tests; a separate bounded rerun is next. The built-in Models editor now owns keys.
+See the [native integration record](docs/harness/NATIVE_MODELS_2026-11-13.md). Earlier
+readiness counts below are historical; the amended pilot has one repair slot and
+one bounded owner slot remaining, under the original cash and time limits.
+
 Current development is a small research harness built on **DeepSeek Harness (DSH)**
 in the existing [QFR repository](https://github.com/VegarGG/Evolutionary-Supervised-ShareInfo-Quant-Factor-Research-Agent-Team).
 DSH owns sessions and model/tool loops; QFH adds bounded data access, evidence,

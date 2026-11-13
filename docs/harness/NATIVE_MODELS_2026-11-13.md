@@ -53,16 +53,52 @@ for probes. Existing requests, official baseline and the 200 CNY ceiling are unc
   for the editor to close. Failed checks, rejected local requests and successive
   offline fixtures 012–018 remain under private `integration/expansion-005`.
 
-166 offline tests pass. The native synthetic team completed 15 responses, both
+167 offline tests pass after the evidence-access repair below. The native synthetic team completed 15 responses, both
 workers and a draft. Synthetic usage is not real inference or provider spending.
 Desktop browser checks pass for native key save/reload, endpoint refusal, removal
 of the duplicate tab, and light/dark readable options. Headless Chrome does not
 capture OS-native popup windows; expanded option lists and computed colors were
 inspected. Native DSH settings remain clipped at 390px width; mobile is not accepted.
 
-Live probe and team results will be appended after each recorded attempt. Before
-native retry, settled cash accounting is 21.608190 CNY; the failed request additionally
-holds 5.242880 CNY, leaving 173.148930 CNY unreserved.
+## Real native verification and bounded repair
+
+Two real native probes passed: a short READY response (68 tokens, 4.05 seconds)
+and a function call with the required argument (234 tokens, 6.05 seconds). The
+same saved credential works through the native Coding Plan route. This does not
+isolate the original header as the sole cause of the earlier 401.
+
+The first full native GLM trial used 14 actual requests over 697.88 seconds.
+The researcher completed. The reviewer initially used the supplied evidence ID
+without obtaining its own session grant. Six operations were rejected; it then
+fetched the frozen sample, calculated the full metrics and specification and
+submitted a valid report. Its final acknowledgment exceeded the unchanged
+six-request cap, so native completion failed and no draft was accepted. Both
+workers' full calculation artifacts exactly match the independent reference.
+Retain this as a failed workflow, not a passing team trial.
+
+The repair gives each worker an explicit first-tool instruction with the exact
+allowed query. Tool descriptions state the dependency; denied evidence reads now
+return an actionable grant instruction instead of an opaque DataUnavailable.
+The permission check remains enforced. A regression verifies that a shared hash
+and scope read grant no access, and that recovery uses cache without a vendor query.
+
+An append-only operator amendment permits one repair rerun and one bounded owner
+trial: aggregate GLM request allowance rises from 24 to 60, and cumulative pilot
+sessions from six to seven. All earlier calls and failed trials remain counted.
+The 200 CNY ceiling, 1,500 prepaid-credit cap, 18:00 Beijing expiry, one concurrent
+request, 20 calls per trial and eight/six/six role limits are unchanged. The first
+401 retains both full reservations. Reviewed rejected requests can coexist with
+an allowance amendment, but pending and unknown responses still block it.
+
+After the two probes and first full trial, settled cash allowance accounting is
+22.166328 CNY; 5.242880 CNY remains reserved, leaving 172.590792 CNY unreserved.
+The new GLM allowance debits are conservative exposure, not incremental cash
+invoices. Detailed failed-run metrics: [retained first native trial](evidence/expansion-2026-11-13/NATIVE_GLM_FIRST_LIVE.json).
+The separate repair trial remains pending.
+
+Required checks pass: 167 tests. An initial sandbox run denied six loopback socket
+tests; rerunning with local sockets permitted passed all tests. Both logs remain.
+
 
 ## Primary references
 

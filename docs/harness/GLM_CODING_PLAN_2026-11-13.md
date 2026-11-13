@@ -3,8 +3,10 @@
 Status update: the first real Anthropic-route probe returned HTTP 401, with no
 model response and both reservations retained. The owner verified the same key
 in another DSH using `zai-coding-cn`. The native provider, built-in Models editor
-and guard extensions now pass 166 offline tests and a full 15-response synthetic
-team workflow. Native-route live verification follows. Details and retained
+and guard extensions now pass 167 offline tests and a full 15-response synthetic
+team workflow. Both real native probes passed. The first real team trial failed
+after a reviewer evidence-grant recovery exhausted its call cap; a bounded repair
+is recorded separately. Details and retained
 failed checks: [native Models integration](NATIVE_MODELS_2026-11-13.md).
 
 ## Owner authority and model choice

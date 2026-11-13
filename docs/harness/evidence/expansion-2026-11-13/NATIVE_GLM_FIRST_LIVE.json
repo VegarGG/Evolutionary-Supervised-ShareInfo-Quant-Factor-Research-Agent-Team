@@ -1,0 +1,736 @@
+{
+  "trial_id": "session-12790abd-04d4-41b3-92bd-ee2c939a67bd",
+  "mode": "live_GLM_Coding_Plan_with_BaoStock",
+  "status": "partial_or_failed",
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": true,
+    "both_workers_valid": false,
+    "draft_recorded": false,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": true,
+    "no_tool_failures": false,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "configured_route_matches_ledger": true,
+    "resource_samples_required_for_live": true,
+    "raw_data_transport_required_for_live": true
+  },
+  "started_utc": "2026-11-13T03:47:37.490171+00:00",
+  "finished_utc": "2026-11-13T03:59:15.372569+00:00",
+  "wall_seconds": 697.882398,
+  "roles": {
+    "researcher": {
+      "session_id": "qfh-79b4c0fd7f6847c2aa26018e3001f9e2",
+      "report_state": "completed",
+      "admission_state": "completed",
+      "provider_requests": 3,
+      "conservative_cny": 0.170668,
+      "requests": 3,
+      "requests_with_known_usage": 3,
+      "all_usage_settled": true,
+      "tokens": {
+        "input_uncached": 20258,
+        "input_cached": 17344,
+        "input_cache_write": 0,
+        "output": 11933
+      },
+      "total_tokens": 49535,
+      "input_cache_hit_ratio": 0.46125206106058186,
+      "cache_tokens_reported_for_all_calls": true,
+      "cache_reporting_note": "Explicit provider cache counters.",
+      "peak_rolling_60s_dispatch_rpm": 1,
+      "peak_rolling_60s_completion_rpm": 2,
+      "peak_rolling_60s_dispatch_tpm": 20409,
+      "peak_rolling_60s_completion_tpm": 40495,
+      "conservative_settled_cny": 0.170668,
+      "unresolved_reserved_cny": 0.0,
+      "published_price_estimate_cny": null,
+      "unpriced_requests": 3,
+      "cost_invoice_verified": false,
+      "funding": "coding_plan",
+      "subscription_credits_settled_upper_bound": 18.19486,
+      "subscription_credits_unresolved_reserved": 0.0,
+      "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+      "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice.",
+      "work": {
+        "model_authored_report": {
+          "summary": "Executed the owner-frozen close-return contrast unchanged on the fixed composed BaoStock evidence for the single in-scope ticker and window. The bars read returned a marked preview of the composed sample only; full-sample arithmetic comes exclusively from the host research_metrics and research_specification tools. The frozen rule treats a strictly below-zero prior single-day close return as the signal, assigns unchanged closes (explicit ties) to the control bucket, executes at the next close, and measures the next single-day close return as the label, with an expected lower direction and a small positive effect margin. Host alignment shows each label runs from the execution close to the following close; consecutive labels touch at endpoints rather than positively overlapping, and the host records no positive-overlap pairs while marking serial independence as not established. The host inference outcome is inconclusive: the nominal interval is not wholly on either side of the margin, which under the frozen protocol neither confirms nor disproves the expected continuation-style direction. Economically, a lower conditional next-day return after a down day would indicate short-horizon continuation; the zero threshold with ties-to-control is a deliberate, valid split, and the margin filters economically negligible differences without modeling costs. The nominal moving-block percentile interval remains exploratory and assumption-conditional; support counts are floors, not proof of coverage, power or independence. This is post-observation development exploration on a modest single-instrument window; no alpha, gate, profitability or independence claim is made, and the owner's gradual sample-expansion and rerun plan is the appropriate next step, keeping the frozen definition unchanged.",
+          "findings": [
+            "The frozen definition was executed exactly as supplied — single-day lookback, strictly below-zero comparison, ties assigned to control, single-day label horizon, lower expected direction, small positive effect margin — with no parameter tuning after seeing results.",
+            "Bars reads were preview-only rows of a composed sample; the host metrics and specification tools computed the complete permitted sample, so no claim of having read every raw row is made.",
+            "Host label geometry: with this lookback and horizon, consecutive labels touch at endpoints and positive-overlap pairs are recorded as none; the host explicitly marks serial independence as not established, so nonoverlap cannot be read as observation independence.",
+            "Unlabeled tail signals at the end of the window are dropped by alignment, leaving fewer aligned cases than signal candidates; treated and control buckets ended balanced after unchanged closes were routed to control.",
+            "The host outcome is inconclusive: the nominal moving-block percentile interval spans the margin region on both sides, so the frozen protocol classifies the contrast as unclassified rather than confirming or disproving the expected direction.",
+            "Economic reading: an expected lower next-day return after a prior down day would indicate short-horizon continuation of downward moves; the opposite sign would have indicated reversal or mean reversion. The frozen direction encodes the continuation hypothesis for the negative bucket only.",
+            "The zero threshold with explicit ties-to-control is a valid design choice: unchanged closes are economically neutral days and keeping them in the control bucket preserves usable cases and avoids arbitrary exclusion.",
+            "The small positive effect margin matters because the contrast must clear it before supporting the expected direction, filtering economically negligible daily differences; the protocol states it is a contrast threshold, not a transaction-cost or profitability model."
+          ],
+          "proposed_formula": null,
+          "recommended_changes": [
+            "Follow the owner authority note: gradually expand the composed BaoStock sample across longer windows and more tickers, then rerun the supervisor plus two-worker trial with enough data for genuine statistical inference, preserving the recorded budget and time windows.",
+            "Keep the frozen definition byte-identical when rerunning on expanded data; any parameter change must be a new, separately recorded post-observation exploration, not a tuning of this contrast.",
+            "Prefer adjusted or corporate-action-aware closes, or explicitly document corporate actions, since unadjusted close ratios can misattribute ex-dividend or ex-rights jumps to ordinary daily returns.",
+            "Verify exchange-calendar completeness before treating returned observations as a full trading calendar; the timing limit states returned rows are not a verified exchange calendar.",
+            "In a future round, evaluate the mirror contrast for the above-zero bucket as a separate fully resolved specification to characterize continuation versus reversal symmetrically — post-observation exploration only.",
+            "Record plan and protocol hashes and worker roles for every future trial as this session does, keeping post-observation exploration auditable.",
+            "Treat block length, replicate count, seed and nominal confidence level as fixed protocol assumptions to be stress-examined only in future rounds, never adjusted after seeing an outcome.",
+            "Do not extrapolate interval width or a decision for larger samples from this round's dispersion; only an observed expanded-sample run can speak to its own interval and decision."
+          ],
+          "limitations": [
+            "Preview-only bar access: the composed sample is read as a marked preview; full-sample values live in host artifacts, and I did not read every raw row.",
+            "Unadjusted historical closes: corporate actions are unadjusted and the point-in-time vintage is unverified; returned observations are not a verified exchange calendar.",
+            "Single instrument and a single fixed window; nothing here generalizes across tickers, regimes or periods.",
+            "Tail alignment drops the final unlabeled signals; usable cases are a subset of returned observations.",
+            "The nominal moving-block percentile interval is exploratory and conditional on stationarity and dependence assumptions; nominal coverage is not certified, and enough observations alone do not certify coverage or power.",
+            "Endpoint-touching labels share no bars but dependence is not ruled out; the very effect under study, serial correlation, would violate independence, so support counts are floors rather than proof of power or independence.",
+            "An inconclusive or insufficient-data host outcome never confirms or disproves the expected direction; absence of evidence here is not evidence of absence.",
+            "Post-observation exploration without preregistration or multiple-hypothesis adjustment; no strategy P&L, backtest, official evaluation, publication or gate result exists for this round."
+          ],
+          "measurement_refs": [
+            {
+              "keys": [
+                "sample.observations",
+                "returns.count",
+                "returns.median",
+                "returns.positive_count",
+                "returns.negative_count",
+                "returns.zero_count",
+                "lag.1.signal_count",
+                "lag.1.aligned_case_count"
+              ],
+              "measurement_id": "d7d7d430fcd39f5175ff40e4db005f45fa22d8505867bfab2fc1567bbb0f20d0"
+            }
+          ],
+          "specification_id": "deb9edcb360ca6a927ca3633a27a5b7938201eafbd008699ece32e5cfb843d2f"
+        },
+        "verified_measurements": [
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "key": "sample.observations",
+            "measurement_id": "d7d7d430fcd39f5175ff40e4db005f45fa22d8505867bfab2fc1567bbb0f20d0",
+            "unit": "count",
+            "value": "121"
+          },
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "key": "returns.count",
+            "measurement_id": "d7d7d430fcd39f5175ff40e4db005f45fa22d8505867bfab2fc1567bbb0f20d0",
+            "unit": "count",
+            "value": "120"
+          },
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "key": "returns.median",
+            "measurement_id": "d7d7d430fcd39f5175ff40e4db005f45fa22d8505867bfab2fc1567bbb0f20d0",
+            "unit": "return_fraction",
+            "value": "0"
+          },
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "key": "returns.positive_count",
+            "measurement_id": "d7d7d430fcd39f5175ff40e4db005f45fa22d8505867bfab2fc1567bbb0f20d0",
+            "unit": "count",
+            "value": "57"
+          },
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "key": "returns.negative_count",
+            "measurement_id": "d7d7d430fcd39f5175ff40e4db005f45fa22d8505867bfab2fc1567bbb0f20d0",
+            "unit": "count",
+            "value": "59"
+          },
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "key": "returns.zero_count",
+            "measurement_id": "d7d7d430fcd39f5175ff40e4db005f45fa22d8505867bfab2fc1567bbb0f20d0",
+            "unit": "count",
+            "value": "4"
+          },
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "key": "lag.1.signal_count",
+            "measurement_id": "d7d7d430fcd39f5175ff40e4db005f45fa22d8505867bfab2fc1567bbb0f20d0",
+            "unit": "count",
+            "value": "120"
+          },
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "key": "lag.1.aligned_case_count",
+            "measurement_id": "d7d7d430fcd39f5175ff40e4db005f45fa22d8505867bfab2fc1567bbb0f20d0",
+            "unit": "count",
+            "value": "118"
+          }
+        ],
+        "executed_specifications": [
+          {
+            "alignment": [
+              {
+                "execution_date": "2026-05-08",
+                "label_available": true,
+                "label_end_date": "2026-05-11",
+                "signal_date": "2026-05-07"
+              },
+              {
+                "execution_date": "2026-05-11",
+                "label_available": true,
+                "label_end_date": "2026-05-12",
+                "signal_date": "2026-05-08"
+              },
+              {
+                "execution_date": "2026-10-30",
+                "label_available": false,
+                "label_end_date": null,
+                "signal_date": "2026-10-29"
+              },
+              {
+                "execution_date": null,
+                "label_available": false,
+                "label_end_date": null,
+                "signal_date": "2026-10-30"
+              }
+            ],
+            "alignment_total_rows": 120,
+            "analysis_phase": "post_observation_exploration",
+            "assessment_id": "95357462da436ab52ae1e9e3498a0db3f1b38c9c9595102ea10ce5c965c77488",
+            "calculation_artifact_id": "6ba9caac5a21d102c2b8b4ba7e7e37510e75544ef03d2eb8a2c870580b96107f",
+            "calculator_sha256": "59c04ba742b8332adf1ad777bb1fa4fa4999d3e69de6e2809878c847b7591551",
+            "canonical_formula": "r_t = close_t / close_(t-1) - 1; signal_t = 1[r_t < 0]; equality goes to control. Signal known at close_t; execution at close_(t+1); label_t = close_(t+1+1) / close_(t+1) - 1. Indices count returned observations; exchange-calendar verification is required. Effect = -1 * (mean(label | signal) - mean(label | control)); effect margin = 0.001; minimum per bucket = 20; minimum blocks = 8. Joint non-wrapping moving-block percentile interval, coverage 0.95, block length 5, replicates 2000, seed 20261112. Insufficient support: insufficient_data. Interval wholly above/below margin: interval_above_margin/interval_below_margin; otherwise inconclusive. No confirmation, disconfirmation, profitability, independence or absence-of-effect claim.",
+            "definition": {
+              "comparison": "lt",
+              "effect_margin": "0.001",
+              "expected_direction": "lower",
+              "family": "close_return_contrast",
+              "label_horizon": 1,
+              "lookback": 1,
+              "threshold": "0",
+              "tie_policy": "control"
+            },
+            "effective_block_length": 5,
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "inference": {
+              "bootstrap_replicates_run": 2000,
+              "effect": "0.002730988975537854942075131180",
+              "interval": {
+                "lower": "-0.001476712930544064236754710811",
+                "unit": "return_fraction",
+                "upper": "0.007025561298466270388000955350"
+              },
+              "outcome": "inconclusive",
+              "reason_codes": []
+            },
+            "label_geometry": {
+              "adjacent_pairs": 117,
+              "positive_overlap_pairs": 0,
+              "serial_independence": "not_established",
+              "touching_endpoint_pairs": 117
+            },
+            "limits": [
+              "Development contrast, not a strategy P&L, official evaluation or publication.",
+              "Nominal interval requires suitable stationarity/dependence assumptions; coverage is not certified.",
+              "No adjustment for post-observation selection or multiple hypotheses; not confirmatory.",
+              "Effect margin is a contrast threshold, not a transaction-cost or profitability model.",
+              "Zero threshold and explicit ties-to-control are valid choices, not automatically defective.",
+              "Unadjusted historical closes; exchange calendar and point-in-time vintage unverified."
+            ],
+            "protocol": {
+              "block_length": 5,
+              "bootstrap_replicates": 2000,
+              "confidence_level": "0.95",
+              "decimal_precision": 28,
+              "execution_lag": 1,
+              "max_effect_margin": "1",
+              "max_label_horizon": 5,
+              "max_lookback": 5,
+              "max_threshold_magnitude": "1",
+              "maximum_observations": 10000,
+              "method": "moving_block_percentile",
+              "minimum_blocks": 8,
+              "minimum_bucket_size": 20,
+              "protocol": "development-contrast-v1",
+              "seed": 20261112
+            },
+            "specification_id": "deb9edcb360ca6a927ca3633a27a5b7938201eafbd008699ece32e5cfb843d2f",
+            "support": {
+              "aligned_cases": 118,
+              "control_bucket": 59,
+              "dropped_tail_cases": 2,
+              "signal_bucket": 59,
+              "signal_candidates": 120,
+              "ties_assigned_to_control": 4
+            },
+            "view_scope": "Summary facts and first/last alignment rows only. The full permitted "
+          }
+        ],
+        "successful_tool_operations": {
+          "data:bars": 1,
+          "data:read": 1,
+          "metrics": 1,
+          "specification": 1,
+          "submit_report": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 0,
+        "report_submission_rejections": 0,
+        "evidence_fetches": [
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "cache_reused": true,
+            "row_count": 121
+          }
+        ],
+        "contribution_decisions": [],
+        "draft_recorded": false
+      },
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-13T03:49:24.711952+00:00",
+            "2026-11-13T03:53:36.928435+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 252.216483,
+        "samples": 124,
+        "process_tree_peak_rss_bytes": 599048192,
+        "process_tree_peak_sampled_cpu_cores": 0.09779223244088839,
+        "process_tree_mean_sampled_cpu_cores": 0.03525649011190421,
+        "cpu_sample_coverage_seconds": 248.96284899999998,
+        "host_cpu_max_percent": 14.2,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 11490787328,
+        "work_volume_min_free_bytes": 361416581120,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 4151606,
+      "native_session_archive_bytes": 68980
+    },
+    "reviewer": {
+      "session_id": "qfh-8bc43fb9782f4b568c1234c1b64e46c9",
+      "report_state": "failed",
+      "admission_state": "failed",
+      "provider_requests": 6,
+      "conservative_cny": 0.183916,
+      "requests": 6,
+      "requests_with_known_usage": 6,
+      "all_usage_settled": true,
+      "tokens": {
+        "input_uncached": 17074,
+        "input_cached": 34560,
+        "input_cache_write": 0,
+        "output": 10081
+      },
+      "total_tokens": 61715,
+      "input_cache_hit_ratio": 0.6693264128287563,
+      "cache_tokens_reported_for_all_calls": true,
+      "cache_reporting_note": "Explicit provider cache counters.",
+      "peak_rolling_60s_dispatch_rpm": 5,
+      "peak_rolling_60s_completion_rpm": 5,
+      "peak_rolling_60s_dispatch_tpm": 56170,
+      "peak_rolling_60s_completion_tpm": 40560,
+      "conservative_settled_cny": 0.183916,
+      "unresolved_reserved_cny": 0.0,
+      "published_price_estimate_cny": null,
+      "unpriced_requests": 6,
+      "cost_invoice_verified": false,
+      "funding": "coding_plan",
+      "subscription_credits_settled_upper_bound": 19.94062,
+      "subscription_credits_unresolved_reserved": 0.0,
+      "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+      "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice.",
+      "work": {
+        "model_authored_report": null,
+        "verified_measurements": [],
+        "executed_specifications": [
+          {
+            "alignment": [
+              {
+                "execution_date": "2026-05-08",
+                "label_available": true,
+                "label_end_date": "2026-05-11",
+                "signal_date": "2026-05-07"
+              },
+              {
+                "execution_date": "2026-05-11",
+                "label_available": true,
+                "label_end_date": "2026-05-12",
+                "signal_date": "2026-05-08"
+              },
+              {
+                "execution_date": "2026-10-30",
+                "label_available": false,
+                "label_end_date": null,
+                "signal_date": "2026-10-29"
+              },
+              {
+                "execution_date": null,
+                "label_available": false,
+                "label_end_date": null,
+                "signal_date": "2026-10-30"
+              }
+            ],
+            "alignment_total_rows": 120,
+            "analysis_phase": "post_observation_exploration",
+            "assessment_id": "95357462da436ab52ae1e9e3498a0db3f1b38c9c9595102ea10ce5c965c77488",
+            "calculation_artifact_id": "6ba9caac5a21d102c2b8b4ba7e7e37510e75544ef03d2eb8a2c870580b96107f",
+            "calculator_sha256": "59c04ba742b8332adf1ad777bb1fa4fa4999d3e69de6e2809878c847b7591551",
+            "canonical_formula": "r_t = close_t / close_(t-1) - 1; signal_t = 1[r_t < 0]; equality goes to control. Signal known at close_t; execution at close_(t+1); label_t = close_(t+1+1) / close_(t+1) - 1. Indices count returned observations; exchange-calendar verification is required. Effect = -1 * (mean(label | signal) - mean(label | control)); effect margin = 0.001; minimum per bucket = 20; minimum blocks = 8. Joint non-wrapping moving-block percentile interval, coverage 0.95, block length 5, replicates 2000, seed 20261112. Insufficient support: insufficient_data. Interval wholly above/below margin: interval_above_margin/interval_below_margin; otherwise inconclusive. No confirmation, disconfirmation, profitability, independence or absence-of-effect claim.",
+            "definition": {
+              "comparison": "lt",
+              "effect_margin": "0.001",
+              "expected_direction": "lower",
+              "family": "close_return_contrast",
+              "label_horizon": 1,
+              "lookback": 1,
+              "threshold": "0",
+              "tie_policy": "control"
+            },
+            "effective_block_length": 5,
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "inference": {
+              "bootstrap_replicates_run": 2000,
+              "effect": "0.002730988975537854942075131180",
+              "interval": {
+                "lower": "-0.001476712930544064236754710811",
+                "unit": "return_fraction",
+                "upper": "0.007025561298466270388000955350"
+              },
+              "outcome": "inconclusive",
+              "reason_codes": []
+            },
+            "label_geometry": {
+              "adjacent_pairs": 117,
+              "positive_overlap_pairs": 0,
+              "serial_independence": "not_established",
+              "touching_endpoint_pairs": 117
+            },
+            "limits": [
+              "Development contrast, not a strategy P&L, official evaluation or publication.",
+              "Nominal interval requires suitable stationarity/dependence assumptions; coverage is not certified.",
+              "No adjustment for post-observation selection or multiple hypotheses; not confirmatory.",
+              "Effect margin is a contrast threshold, not a transaction-cost or profitability model.",
+              "Zero threshold and explicit ties-to-control are valid choices, not automatically defective.",
+              "Unadjusted historical closes; exchange calendar and point-in-time vintage unverified."
+            ],
+            "protocol": {
+              "block_length": 5,
+              "bootstrap_replicates": 2000,
+              "confidence_level": "0.95",
+              "decimal_precision": 28,
+              "execution_lag": 1,
+              "max_effect_margin": "1",
+              "max_label_horizon": 5,
+              "max_lookback": 5,
+              "max_threshold_magnitude": "1",
+              "maximum_observations": 10000,
+              "method": "moving_block_percentile",
+              "minimum_blocks": 8,
+              "minimum_bucket_size": 20,
+              "protocol": "development-contrast-v1",
+              "seed": 20261112
+            },
+            "specification_id": "deb9edcb360ca6a927ca3633a27a5b7938201eafbd008699ece32e5cfb843d2f",
+            "support": {
+              "aligned_cases": 118,
+              "control_bucket": 59,
+              "dropped_tail_cases": 2,
+              "signal_bucket": 59,
+              "signal_candidates": 120,
+              "ties_assigned_to_control": 4
+            },
+            "view_scope": "Summary facts and first/last alignment rows only. The full permitted "
+          }
+        ],
+        "successful_tool_operations": {
+          "scope": 1,
+          "data:bars": 1,
+          "data:read": 1,
+          "metrics": 1,
+          "specification": 1,
+          "submit_report": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 6,
+        "report_submission_rejections": 0,
+        "evidence_fetches": [
+          {
+            "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+            "cache_reused": true,
+            "row_count": 121
+          }
+        ],
+        "contribution_decisions": [],
+        "draft_recorded": false
+      },
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-13T03:54:02.734893+00:00",
+            "2026-11-13T03:57:36.012036+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 213.277143,
+        "samples": 106,
+        "process_tree_peak_rss_bytes": 625393664,
+        "process_tree_peak_sampled_cpu_cores": 0.11159574298164891,
+        "process_tree_mean_sampled_cpu_cores": 0.033325454895363774,
+        "cpu_sample_coverage_seconds": 212.48628299999993,
+        "host_cpu_max_percent": 12.1,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 11496947712,
+        "work_volume_min_free_bytes": 361426952192,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 3606770,
+      "native_session_archive_bytes": 72449
+    },
+    "supervisor": {
+      "session_id": "session-12790abd-04d4-41b3-92bd-ee2c939a67bd",
+      "report_state": "no_draft",
+      "admission_state": "active",
+      "provider_requests": 5,
+      "conservative_cny": 0.202368,
+      "requests": 5,
+      "requests_with_known_usage": 5,
+      "all_usage_settled": true,
+      "tokens": {
+        "input_uncached": 20476,
+        "input_cached": 35712,
+        "input_cache_write": 0,
+        "output": 11249
+      },
+      "total_tokens": 67437,
+      "input_cache_hit_ratio": 0.6355805510073326,
+      "cache_tokens_reported_for_all_calls": true,
+      "cache_reporting_note": "Explicit provider cache counters.",
+      "peak_rolling_60s_dispatch_rpm": 2,
+      "peak_rolling_60s_completion_rpm": 2,
+      "peak_rolling_60s_dispatch_tpm": 22697,
+      "peak_rolling_60s_completion_tpm": 40596,
+      "conservative_settled_cny": 0.202368,
+      "unresolved_reserved_cny": 0.0,
+      "published_price_estimate_cny": null,
+      "unpriced_requests": 5,
+      "cost_invoice_verified": false,
+      "funding": "coding_plan",
+      "subscription_credits_settled_upper_bound": 21.92244,
+      "subscription_credits_unresolved_reserved": 0.0,
+      "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+      "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice.",
+      "work": {
+        "model_authored_report": null,
+        "verified_measurements": [],
+        "executed_specifications": [],
+        "successful_tool_operations": {
+          "scope": 2,
+          "begin_worker": 2,
+          "finish_worker": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 2,
+        "report_submission_rejections": 0,
+        "evidence_fetches": [],
+        "contribution_decisions": [],
+        "draft_recorded": false
+      },
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-13T03:47:37.490171+00:00",
+            "2026-11-13T03:49:24.711952+00:00"
+          ],
+          [
+            "2026-11-13T03:53:36.928435+00:00",
+            "2026-11-13T03:54:02.734893+00:00"
+          ],
+          [
+            "2026-11-13T03:57:36.012036+00:00",
+            "2026-11-13T03:59:15.372569+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 232.388772,
+        "samples": 115,
+        "process_tree_peak_rss_bytes": 611909632,
+        "process_tree_peak_sampled_cpu_cores": 0.07325871018497537,
+        "process_tree_mean_sampled_cpu_cores": 0.0357223976775724,
+        "cpu_sample_coverage_seconds": 226.67970299999996,
+        "host_cpu_max_percent": 11.7,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 11452973056,
+        "work_volume_min_free_bytes": 361420124160,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 4064010,
+      "native_session_archive_bytes": 88158
+    }
+  },
+  "model_usage": {
+    "provider": "glm_coding",
+    "configured_model": "glm-5.3-flash",
+    "requests": 14,
+    "requests_with_known_usage": 14,
+    "all_usage_settled": true,
+    "tokens": {
+      "input_uncached": 57808,
+      "input_cached": 87616,
+      "input_cache_write": 0,
+      "output": 33263
+    },
+    "total_tokens": 178687,
+    "input_cache_hit_ratio": 0.6024865221696556,
+    "cache_tokens_reported_for_all_calls": true,
+    "cache_reporting_note": "Explicit provider cache counters.",
+    "peak_rolling_60s_dispatch_rpm": 5,
+    "peak_rolling_60s_completion_rpm": 5,
+    "peak_rolling_60s_dispatch_tpm": 56170,
+    "peak_rolling_60s_completion_tpm": 60990,
+    "conservative_settled_cny": 0.556952,
+    "unresolved_reserved_cny": 0.0,
+    "published_price_estimate_cny": null,
+    "unpriced_requests": 14,
+    "cost_invoice_verified": false,
+    "funding": "coding_plan",
+    "subscription_credits_settled_upper_bound": 60.05792,
+    "subscription_credits_unresolved_reserved": 0.0,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice.",
+    "pricing": {
+      "authority": "I propose to use GLM replace the scheduled work. Before Beijing Time today 18:00, we use GLM to test and polish the QRH first. Owner identified the working native zai-coding-cn route and requested Models-page guard extensions.",
+      "concurrency": 1,
+      "eligibility_authority": "Don't worry. I've confirmed with Zhipu official that DSH is allowed.",
+      "endpoint": "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions",
+      "ends_at": "2026-11-13T18:00:00+08:00",
+      "funding": "coding_plan",
+      "id": "glm-coding-native-2026-11-13",
+      "input_microcredits_per_token": 230,
+      "max_microcredits": 1500000000,
+      "max_requests": 24,
+      "maximum_input_tokens": 1048576,
+      "maximum_output_tokens": 393216,
+      "model": "glm-5.3-flash",
+      "output_microcredits_per_token": 800,
+      "platform": "bigmodel-cn",
+      "pricing_source": "https://docs.bigmodel.cn/cn/coding-plan/overview",
+      "pricing_verified_on": "2026-11-13",
+      "provider": "glm_coding",
+      "reasoning_effort": "high",
+      "starts_at": "2026-11-13T00:00:00+08:00",
+      "subscription_tier": "Pro",
+      "transport": "openai-completions"
+    },
+    "pricing_sha256": "8896beb73ddbc1cb0ad664a5a2935b3aad6944c615fbf269ca064dd2972b6d18"
+  },
+  "accounting": {
+    "trial_conservative_cny": 0.556952,
+    "campaign": {
+      "carry_micro_cny": 56256735,
+      "new_settled_micro_cny": 2644506,
+      "unresolved_micro_cny": 5242880,
+      "cumulative_micro_cny": 22166328,
+      "conservative_unreconciled_cumulative_micro_cny": 58901241,
+      "remaining_unreserved_micro_cny": 172590792,
+      "invoice_verified": false,
+      "billing_baseline": {
+        "id": 1,
+        "at": "2026-11-12T07:05:53.036243+00:00",
+        "actual": 20350000,
+        "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+        "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+      }
+    },
+    "basis": "Owner-reported official baseline + subsequent conservative charges. Original ceiling unchanged."
+  },
+  "resources": {
+    "activity_windows_utc": [
+      [
+        "2026-11-13T03:47:37.490171+00:00",
+        "2026-11-13T03:59:15.372569+00:00"
+      ]
+    ],
+    "activity_wall_seconds": 697.882398,
+    "samples": 345,
+    "process_tree_peak_rss_bytes": 625393664,
+    "process_tree_peak_sampled_cpu_cores": 0.11159574298164891,
+    "process_tree_mean_sampled_cpu_cores": 0.03508942618213252,
+    "cpu_sample_coverage_seconds": 696.2208440000004,
+    "host_cpu_max_percent": 14.2,
+    "swap_peak_bytes": 0,
+    "host_total_ram_bytes": 38654705664,
+    "host_available_ram_min_bytes": 11452973056,
+    "work_volume_min_free_bytes": 361416581120,
+    "measurement_errors": [],
+    "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+    "frozen_evidence_bytes": 13747548,
+    "trial_wire_bytes": 11822386,
+    "native_session_archive_bytes": 229587,
+    "disk_footprint_scope": "File lengths, not allocated filesystem blocks. Frozen evidence includes shared ledger snapshots and overlapping server logs; wire and session archives are trial-specific."
+  },
+  "tool_failures": [
+    {
+      "seq": 99,
+      "principal": "qfh-8bc43fb9782f4b568c1234c1b64e46c9",
+      "op": "data",
+      "reason": "DataUnavailable"
+    },
+    {
+      "seq": 100,
+      "principal": "qfh-8bc43fb9782f4b568c1234c1b64e46c9",
+      "op": "metrics",
+      "reason": "citation was not granted to this agent"
+    },
+    {
+      "seq": 101,
+      "principal": "qfh-8bc43fb9782f4b568c1234c1b64e46c9",
+      "op": "specification",
+      "reason": "citation was not granted to this agent"
+    },
+    {
+      "seq": 103,
+      "principal": "qfh-8bc43fb9782f4b568c1234c1b64e46c9",
+      "op": "data",
+      "reason": "DataUnavailable"
+    },
+    {
+      "seq": 104,
+      "principal": "qfh-8bc43fb9782f4b568c1234c1b64e46c9",
+      "op": "metrics",
+      "reason": "citation was not granted to this agent"
+    },
+    {
+      "seq": 105,
+      "principal": "qfh-8bc43fb9782f4b568c1234c1b64e46c9",
+      "op": "specification",
+      "reason": "citation was not granted to this agent"
+    },
+    {
+      "seq": 113,
+      "principal": "session-12790abd-04d4-41b3-92bd-ee2c939a67bd",
+      "op": "finish_worker",
+      "reason": "worker report failed validation; raw result retained and no automatic replay. Completed worker operations: {\"data:bars\": 1, \"data:read\": 1, \"metrics\": 1, \"scope\": 1, \"specification\": 1, \"submit_report\": 1}. Report rejection does not mean no data or arithmetic was performed."
+    },
+    {
+      "seq": 115,
+      "principal": "session-12790abd-04d4-41b3-92bd-ee2c939a67bd",
+      "op": "draft",
+      "reason": "trial stopped after a failed worker; only status reads remain"
+    }
+  ],
+  "pilot_allowance_at_export": {
+    "original_limit": 3,
+    "effective_limit": 6,
+    "used": 5,
+    "remaining": 1
+  },
+  "failure": "Reviewer skipped its session evidence grant, recovered after six rejected operations, then exhausted its six-request cap before normal completion. Its submitted report and full calculation remain retained. No draft was accepted.",
+  "calculation_audit": {
+    "both_full_calculations_equal_independent_reference": true,
+    "outcome": "inconclusive",
+    "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671"
+  }
+}
