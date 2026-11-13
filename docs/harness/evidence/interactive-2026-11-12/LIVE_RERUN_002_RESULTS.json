@@ -1,0 +1,600 @@
+{
+  "trial_id": "session-39582667-3a51-4256-97cb-65da0f2b75f7",
+  "mode": "live_DeepSeek_with_BaoStock",
+  "status": "partial_or_failed",
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": true,
+    "both_workers_valid": false,
+    "draft_recorded": false,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": true,
+    "no_tool_failures": false,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "resource_samples_required_for_live": true,
+    "raw_data_transport_required_for_live": true
+  },
+  "started_utc": "2026-11-12T13:15:50.942815+00:00",
+  "finished_utc": "2026-11-12T13:18:21.145274+00:00",
+  "wall_seconds": 150.202459,
+  "model_usage": {
+    "provider": "deepseek",
+    "configured_model": "deepseek-flash",
+    "requests": 16,
+    "requests_with_known_usage": 16,
+    "all_usage_settled": true,
+    "tokens": {
+      "input_uncached": 22767,
+      "input_cached": 83072,
+      "input_cache_write": 0,
+      "output": 18525
+    },
+    "total_tokens": 124364,
+    "input_cache_hit_ratio": 0.7848902578444619,
+    "peak_rolling_60s_dispatch_rpm": 11,
+    "peak_rolling_60s_completion_rpm": 11,
+    "peak_rolling_60s_dispatch_tpm": 78405,
+    "peak_rolling_60s_completion_tpm": 67072,
+    "conservative_settled_cny": 0.359878,
+    "unresolved_reserved_cny": 0.0,
+    "published_price_estimate_cny": 0.09852844,
+    "unpriced_requests": 0,
+    "cost_invoice_verified": false,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "cost_basis": "Actual provider token counts at published off-peak rates; estimate, not invoice. The separate conservative amount remains the budget debit.",
+    "pricing": {
+      "id": "deepseek-flash-cn-offpeak-2026-11-12",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "documented_alias_target": "DeepSeek-V4.1-Flash-1017",
+      "source_url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+      "verified_on_utc": "2026-11-12",
+      "currency": "CNY",
+      "tokens_per_price_unit": 1000000,
+      "offpeak_per_million": {
+        "input_uncached": "1",
+        "input_cached": "0.02",
+        "output": "4"
+      },
+      "timezone": "Asia/Shanghai",
+      "possible_peak_hours": [
+        [
+          9,
+          12
+        ],
+        [
+          14,
+          18
+        ]
+      ],
+      "billing_observation": {
+        "endpoint": "https://api.deepseek.com/user/balance",
+        "documentation": "https://api-docs.deepseek.com/zh-cn/api/get-user-balance/",
+        "timeout_seconds": 15,
+        "max_response_bytes": 65536
+      },
+      "limitations": [
+        "Computed from measured token counts and published rates, not a provider invoice.",
+        "Alias documentation is not independent verification of the served model version.",
+        "Nonzero cache-creation tokens or incomplete usage leave the call unpriced.",
+        "An interval crossing possible peak hours is unpriced instead of guessing tariff timing."
+      ]
+    },
+    "pricing_sha256": "464cfc0c359d9cdf523faa706a90ca53ead7c402e025dc42e06a238f8cd278fa"
+  },
+  "accounting": {
+    "trial_conservative_cny": 0.359878,
+    "campaign": {
+      "carry_micro_cny": 56256735,
+      "new_settled_micro_cny": 1303628,
+      "unresolved_micro_cny": 0,
+      "cumulative_micro_cny": 20825450,
+      "conservative_unreconciled_cumulative_micro_cny": 57560363,
+      "remaining_unreserved_micro_cny": 179174550,
+      "invoice_verified": false,
+      "billing_baseline": {
+        "id": 1,
+        "at": "2026-11-12T07:05:53.036243+00:00",
+        "actual": 20350000,
+        "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+        "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+      }
+    },
+    "basis": "Owner-reported official baseline + subsequent conservative charges. Original ceiling unchanged.",
+    "balance_observations": {
+      "read_requests": 2,
+      "statuses": [
+        "success",
+        "success"
+      ],
+      "inference_requests": 0,
+      "account_balance_decrease_by_currency": {
+        "CNY": "0.05",
+        "USD": "0.00"
+      },
+      "scope": "Account-level observation across the trial, not an invoice or per-agent charge. Other account activity, credits or delayed billing can affect it. Absolute balances remain in private snapshots; the ledger is unchanged."
+    }
+  },
+  "resources": {
+    "activity_windows_utc": [
+      [
+        "2026-11-12T13:15:50.942815+00:00",
+        "2026-11-12T13:18:21.145274+00:00"
+      ]
+    ],
+    "activity_wall_seconds": 150.202459,
+    "samples": 74,
+    "process_tree_peak_rss_bytes": 609304576,
+    "process_tree_peak_sampled_cpu_cores": 0.13862932123027943,
+    "process_tree_mean_sampled_cpu_cores": 0.05895664883195545,
+    "cpu_sample_coverage_seconds": 147.75643399999998,
+    "host_cpu_max_percent": 10.5,
+    "swap_peak_bytes": 0,
+    "host_total_ram_bytes": 38654705664,
+    "host_available_ram_min_bytes": 12059508736,
+    "work_volume_min_free_bytes": 361507897344,
+    "measurement_errors": [],
+    "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+    "frozen_evidence_bytes": 6058097,
+    "trial_wire_bytes": 5329875,
+    "native_session_archive_bytes": 148519,
+    "disk_footprint_scope": "File lengths, not allocated filesystem blocks. Frozen evidence includes shared ledger snapshots and overlapping server logs; wire and session archives are trial-specific."
+  },
+  "data": {
+    "query": {
+      "symbols": [
+        "000001.XSHE"
+      ],
+      "start": "2026-10-19",
+      "end": "2026-10-30"
+    },
+    "requests_during_trial": [],
+    "tool_fetches": 2,
+    "exact_cache_hits": 2,
+    "evidence_ids": [
+      "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108"
+    ]
+  },
+  "roles": {
+    "researcher": {
+      "session_id": "qfh-40752d8b195840c7926491cfcb81f4c4",
+      "report_state": "completed",
+      "provider_requests": 5,
+      "conservative_cny": 0.087854,
+      "requests": 5,
+      "requests_with_known_usage": 5,
+      "all_usage_settled": true,
+      "tokens": {
+        "input_uncached": 6887,
+        "input_cached": 20224,
+        "input_cache_write": 0,
+        "output": 4204
+      },
+      "total_tokens": 31315,
+      "input_cache_hit_ratio": 0.7459702703699606,
+      "peak_rolling_60s_dispatch_rpm": 5,
+      "peak_rolling_60s_completion_rpm": 5,
+      "peak_rolling_60s_dispatch_tpm": 31315,
+      "peak_rolling_60s_completion_tpm": 31315,
+      "conservative_settled_cny": 0.087854,
+      "unresolved_reserved_cny": 0.0,
+      "published_price_estimate_cny": 0.02410748,
+      "unpriced_requests": 0,
+      "cost_invoice_verified": false,
+      "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+      "cost_basis": "Actual provider token counts at published off-peak rates; estimate, not invoice. The separate conservative amount remains the budget debit.",
+      "work": {
+        "model_authored_report": {
+          "summary": "Observation. The permitted window for the reviewed single name returns a short but contiguous run of daily unadjusted closes with no interior gaps other than an ordinary weekend break, exercising the full permitted span. The measured series is mildly two-sided: the daily-return statistics show both rising and falling sessions with falling sessions slightly outnumbering rising ones, and an average daily return that is negligible relative to the dispersion of daily moves. Hypothesis. Because the daily-return dispersion is large relative to the drift across the window, the simplest falsifiable price-only idea is a contrarian close-to-close rule: take the opposite sign of a short-horizon, volatility-scaled deviation of the close from its own short moving average, and carry that position to the next trading day's close. This is post-observation exploration of one fixed historical sample; it is not a backtest, not preregistered, and asserts no alpha and no gate outcome.",
+          "proposed_formula": "r_t = close_t / close_{t-1} - 1; d_t = close_t / SMA_m(close)_t - 1; s_t = d_t / (k * sd_m(r)); position_t = -sign(s_t) if |s_t| >= z_min else 0; signal_time = close_t; execution = next_trading_day_close; parameters: m = 3, k = 1, z_min = 1.0",
+          "recommended_changes": [
+            "Widen the sample window substantially and include many names before drawing any inference, since a single name over a short span cannot separate name-specific noise from generic behaviour.",
+            "Use adjusted closes in any follow-up so that corporate actions cannot masquerade as reversal or continuation.",
+            "Pre-specify the lookback length, scaling constant and threshold before future data access, rather than selecting them after inspecting the window.",
+            "Reserve a disjoint evaluation window so that the fit and the check are never the same observations.",
+            "Report the count of aligned label cases next to every statistic, so that discarded tail signals are never silently folded into a result.",
+            "State execution costs, slippage and close-to-close fill assumptions explicitly, since next-close execution is a modelling convention rather than a tradable promise."
+          ],
+          "limitations": [
+            "Single name, no cross-sectional breadth: any observed pattern may be idiosyncratic to the reviewed name rather than a general daily-return regularity.",
+            "Very short window with few usable return observations, so every statistic is dominated by sampling error and the estimate of dispersion is itself fragile.",
+            "Closes are unadjusted, so any distribution or split inside or around the window would contaminate successive returns, although the scope declares unadjusted history.",
+            "The bars are a current download of historical data rather than a vintage archive, so point-in-time availability of these closes cannot be guaranteed.",
+            "Exchange-calendar completeness is unverified by the calculator: the alignment lags count returned observations, not confirmed trading sessions.",
+            "Next-trading-day-close execution ignores intraday fills, price limits, suspension days, transaction costs and market impact.",
+            "The idea was formed after seeing this window, so lookback and threshold choices are post-observation and carry an unquantified selection bias; nothing here is preregistered.",
+            "Price-only inputs cannot condition on volatility regime, liquidity or news, so the rule has no mechanism to distinguish a genuine reversal from a liquidity or event-driven move."
+          ],
+          "measurement_refs": [
+            {
+              "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+              "keys": [
+                "sample.observations",
+                "sample.first_date",
+                "sample.last_date",
+                "sample.net_return",
+                "sample.minimum_close",
+                "sample.maximum_close",
+                "returns.count",
+                "returns.mean",
+                "returns.median",
+                "returns.positive_count",
+                "returns.negative_count",
+                "returns.zero_count",
+                "returns.sample_stdev"
+              ]
+            },
+            {
+              "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+              "keys": [
+                "lag.1.signal_count",
+                "lag.1.aligned_case_count",
+                "lag.1.first_signal_date",
+                "lag.1.latest_return",
+                "lag.5.signal_count",
+                "lag.5.aligned_case_count",
+                "lag.5.first_signal_date",
+                "lag.5.latest_return"
+              ]
+            }
+          ]
+        },
+        "verified_measurements": [
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.observations",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "10"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.first_date",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "date",
+            "value": "2026-10-19"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.last_date",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "date",
+            "value": "2026-10-30"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.net_return",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "-0.0008583690987124463519313305"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.minimum_close",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "price",
+            "value": "11.2"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.maximum_close",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "price",
+            "value": "11.65"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "9"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.mean",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "-0.00001260769661609466952994255556"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.median",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "-0.0026223776223776223776223776"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.positive_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "4"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.negative_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "5"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.zero_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "0"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.sample_stdev",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "0.01365805220955669229204526674"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.1.signal_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "9"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.1.aligned_case_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "7"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.1.first_signal_date",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "date",
+            "value": "2026-10-20"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.1.latest_return",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "0.008665511265164644714038128"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.5.signal_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "5"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.5.aligned_case_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "3"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.5.first_signal_date",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "date",
+            "value": "2026-10-26"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.5.latest_return",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "0.039285714285714285714285714"
+          }
+        ],
+        "successful_tool_operations": {
+          "scope": 1,
+          "data:bars": 1,
+          "metrics": 1,
+          "data:read": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 0,
+        "evidence_fetches": [
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "cache_reused": true,
+            "row_count": 10
+          }
+        ],
+        "contribution_decisions": [],
+        "draft_recorded": false
+      },
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-12T13:16:01.931151+00:00",
+            "2026-11-12T13:16:37.986404+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 36.055253,
+        "samples": 17,
+        "process_tree_peak_rss_bytes": 590659584,
+        "process_tree_peak_sampled_cpu_cores": 0.11163892508480695,
+        "process_tree_mean_sampled_cpu_cores": 0.05682045914263745,
+        "cpu_sample_coverage_seconds": 32.386929,
+        "host_cpu_max_percent": 8.7,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 12322160640,
+        "work_volume_min_free_bytes": 361512710144,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 1204246,
+      "native_session_archive_bytes": 34504
+    },
+    "reviewer": {
+      "session_id": "qfh-b2fac5bd96044c9bbd076cc2dfc29d0b",
+      "report_state": "failed",
+      "provider_requests": 5,
+      "conservative_cny": 0.120412,
+      "requests": 5,
+      "requests_with_known_usage": 5,
+      "all_usage_settled": true,
+      "tokens": {
+        "input_uncached": 7026,
+        "input_cached": 22400,
+        "input_cache_write": 0,
+        "output": 7695
+      },
+      "total_tokens": 37121,
+      "input_cache_hit_ratio": 0.7612315639230612,
+      "peak_rolling_60s_dispatch_rpm": 5,
+      "peak_rolling_60s_completion_rpm": 5,
+      "peak_rolling_60s_dispatch_tpm": 37121,
+      "peak_rolling_60s_completion_tpm": 37121,
+      "conservative_settled_cny": 0.120412,
+      "unresolved_reserved_cny": 0.0,
+      "published_price_estimate_cny": 0.038254,
+      "unpriced_requests": 0,
+      "cost_invoice_verified": false,
+      "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+      "cost_basis": "Actual provider token counts at published off-peak rates; estimate, not invoice. The separate conservative amount remains the budget debit.",
+      "work": {
+        "model_authored_report": null,
+        "verified_measurements": [],
+        "successful_tool_operations": {
+          "scope": 1,
+          "data:bars": 1,
+          "metrics": 1,
+          "data:read": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 0,
+        "evidence_fetches": [
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "cache_reused": true,
+            "row_count": 10
+          }
+        ],
+        "contribution_decisions": [],
+        "draft_recorded": false
+      },
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-12T13:16:47.603366+00:00",
+            "2026-11-12T13:17:46.769424+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 59.166058,
+        "samples": 29,
+        "process_tree_peak_rss_bytes": 582582272,
+        "process_tree_peak_sampled_cpu_cores": 0.07814847684810104,
+        "process_tree_mean_sampled_cpu_cores": 0.05628499300360687,
+        "cpu_sample_coverage_seconds": 56.68992500000002,
+        "host_cpu_max_percent": 10.5,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 12274384896,
+        "work_volume_min_free_bytes": 361510297600,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 2147200,
+      "native_session_archive_bytes": 51024
+    },
+    "supervisor": {
+      "session_id": "session-39582667-3a51-4256-97cb-65da0f2b75f7",
+      "report_state": "no_draft",
+      "provider_requests": 6,
+      "conservative_cny": 0.151612,
+      "requests": 6,
+      "requests_with_known_usage": 6,
+      "all_usage_settled": true,
+      "tokens": {
+        "input_uncached": 8854,
+        "input_cached": 40448,
+        "input_cache_write": 0,
+        "output": 6626
+      },
+      "total_tokens": 55928,
+      "input_cache_hit_ratio": 0.8204129649912782,
+      "peak_rolling_60s_dispatch_rpm": 3,
+      "peak_rolling_60s_completion_rpm": 3,
+      "peak_rolling_60s_dispatch_tpm": 39553,
+      "peak_rolling_60s_completion_tpm": 39553,
+      "conservative_settled_cny": 0.151612,
+      "unresolved_reserved_cny": 0.0,
+      "published_price_estimate_cny": 0.03616696,
+      "unpriced_requests": 0,
+      "cost_invoice_verified": false,
+      "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+      "cost_basis": "Actual provider token counts at published off-peak rates; estimate, not invoice. The separate conservative amount remains the budget debit.",
+      "work": {
+        "model_authored_report": null,
+        "verified_measurements": [],
+        "successful_tool_operations": {
+          "scope": 1,
+          "begin_worker": 2,
+          "finish_worker": 1,
+          "data:read": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 2,
+        "evidence_fetches": [],
+        "contribution_decisions": [],
+        "draft_recorded": false
+      },
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-12T13:15:50.942815+00:00",
+            "2026-11-12T13:16:01.931151+00:00"
+          ],
+          [
+            "2026-11-12T13:16:37.986404+00:00",
+            "2026-11-12T13:16:47.603366+00:00"
+          ],
+          [
+            "2026-11-12T13:17:46.769424+00:00",
+            "2026-11-12T13:18:21.145274+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 54.981148,
+        "samples": 28,
+        "process_tree_peak_rss_bytes": 609304576,
+        "process_tree_peak_sampled_cpu_cores": 0.13862932123027943,
+        "process_tree_mean_sampled_cpu_cores": 0.059268337746507194,
+        "cpu_sample_coverage_seconds": 50.58868600000001,
+        "host_cpu_max_percent": 10.3,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 12059508736,
+        "work_volume_min_free_bytes": 361507897344,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 1978429,
+      "native_session_archive_bytes": 62991,
+      "admission_state": "active"
+    }
+  },
+  "live_source_commit": "34e72d7b2c82dc22c6623dcb6490b4134d5e97a4",
+  "host": {
+    "logical_cpus": 18,
+    "machine": "arm64",
+    "platform": "macOS-27.2-arm64-arm-64bit"
+  },
+  "runtime": {
+    "baostock": "0.9.4",
+    "deepseek-harness-runtime-bin": "0.2.2rc2",
+    "deepseek-harness-sdk": "0.2.2rc2",
+    "psutil": "7.2.2"
+  },
+  "native_turn_completed": true,
+  "draft_recorded": false,
+  "frozen_evidence_files": 77,
+  "raw_manifest_sha256": "0073e65c6e2caecbd988634e4fd6107a2694c610aadab82976b79b9d3c787aed",
+  "readiness": "Failed: reviewer findings list exceeded its schema limit; no draft. Native chat commentary is not a validated numerical report."
+}

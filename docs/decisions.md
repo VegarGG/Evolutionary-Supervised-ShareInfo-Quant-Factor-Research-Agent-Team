@@ -387,3 +387,412 @@ licenses, and vendor-data terms. MIT does not require matching downstream
 licenses; this transition is the owner's affirmative licensing choice. Earlier
 commit/review records remain historical. See LICENSING_REVIEW.md for the exact
 source, scope and distribution verification.
+
+## Interactive research and billing clarification — 12 November 2026
+
+The owner directed: "Please proceed with the integration and make DSH ready for
+me to test." The concrete live scope is: "Run one real trial with a supervisor
+and two workers using DeepSeek and BaoStock, keep the original 200 CNY budget and
+time windows, and record everything."
+
+Use native DSH subagent sessions and Agent Teams tasks behind a small bounded
+research-worker tool. Keep the original ledger, one-provider data policy and
+independent evaluator boundary. Allow at most three small interactive sessions
+(one validation plus two owner trials), 20 model requests per trial and one new
+12-calendar-day BaoStock query. Exact repeats reuse the same evidence. Preserve
+all previous failed data attempts and old model traces. Do not infer acceptance
+of the full Hybrid v1 system from this trial.
+
+The owner clarified: "Let me clarify the actual deepseek cost, the data is from
+the official api usage record, CNY 20.35." Record this as an owner-reported
+official cumulative billing baseline at the then-current 908 recorded calls.
+Preserve raw call counts and conservative historical estimates; reserve/estimate
+new requests separately. Do not reset or enlarge the original 200 CNY budget.
+
+The owner identified the experimental "Agent teams" interface and requested
+different model/provider choices for different roles, plus limited market data
+and news for researchers. Review the pinned native Team/subagent implementation
+and stage these modules in `docs/harness/ROLE_MODELS_AND_CONTEXT.md`. Additional
+provider designs do not authorize additional live providers in this trial.
+
+## 2026-11-12: per-agent evidence for the scheduled real trial
+
+Owner: "Proceed with the real DeepSeek/BaoStock trial at 18:00 Beijing. Report each
+agent’s actual work, cost, TPM/RPM, cache hit rate and machine usage, and tell me
+whether DSH is ready for my own trials."
+
+Keep the existing one-time continuation and all budget/data/time limits. Extend
+the export with measured per-role request/token totals, weighted cache hits,
+rolling rates, observed operations and contribution decisions. Because native DSH
+agents share a process, report shared CPU/RAM during activity windows and the
+sampling coverage; do not label these isolated per-agent allocations. Record wire
+and native-session file sizes separately.
+
+Price measured tokens using a dated official tariff for reporting while preserving
+the conservative ledger debit. Two read-only account-balance observations may
+compare the account-level change before/after the trial; keep absolute balances
+private, count those requests separately, and never use them as an automatic
+billing reconciliation. Readiness remains pending the actual three-role desktop
+trial, settled accounting and retained evidence. Synthetic tests do not establish it.
+
+## 2026-11-12: Flash-only trial clarification
+
+Owner: "One thing I forget to emphasize: we use deepseek-flash only."
+
+The supervisor, researcher and reviewer must all use the exact `deepseek-flash`
+model ID. The current role policy and running guard already enforce this; preserve
+their existing ledger and reject any other model ID before provider dispatch.
+Make this restriction explicit in the scheduled continuation and trial docs.
+The 18:00 Beijing start, BaoStock scope and original 200 CNY total cap are unchanged.
+
+## 2026-11-12: real Flash/BaoStock result and boundary repair
+
+The authorized scheduled round dispatched at 18:01:22 Beijing. Seven actual Flash
+requests and one BaoStock query/login completed. A single JSON code fence caused
+the researcher's report to fail validation; the supervisor stopped, so the reviewer
+and draft never ran. Preserve that failed state and all usage. Do not use an offline
+format recheck to retroactively accept it or start a second paid trial automatically.
+
+Accept one entire JSON/unlabelled fence as presentation, with unchanged contents,
+size/schema/citation checks and raw-result retention. Submit worker settlement only
+once; failed/uncertain settlement is not grounds for a replacement write. Include
+completed worker-operation counts in failure messages so the supervisor can report
+actual work. Verify those changes in unit tests and native synthetic success/failure
+flows. Independent arithmetic found additional incorrect model calculations and
+an unsupported preregistration claim; JSON validity does not resolve those issues.
+
+The round's tariff estimate is 0.04310952 CNY, conservative debit 0.115572 CNY,
+remaining original budget 179.534428 CNY. Both account observations showed zero
+displayed delta, which does not prove free usage or verify actual invoiced cost.
+Keep the ledger unchanged by those observations. Readiness remains unaccepted
+pending a real complete three-role run; the UI is available to inspect the trace.
+
+## 2026-11-12: owner-authorized arithmetic repair and real rerun
+
+Owner: "Please fix the remaining arithmetic and reporting issues, then rerun the
+full supervisor plus two-worker trial using deepseek-flash only and BaoStock.
+Keep the original 200 CNY budget and time windows, and record everything."
+
+Implement deterministic development-sample return statistics and explicit
+lookback/execution/label alignment. New workers cite measurement IDs and fact
+keys observed through their own tool calls; the host supplies numerical values
+and attaches both workers' facts to the draft. Keep prose qualitative and formula
+parameters separate. Add host audit summaries and label all proposals as
+post-observation exploration. Preserve the previous failed trial and all charges.
+
+The rerun uses the same bounded real BaoStock evidence through exact-cache reuse,
+the existing three-session allowance and 179.534428 CNY remaining before new calls.
+No data quota, model route, time window or total spending cap is enlarged. The
+current 18:00–24:00 Beijing window permits execution after offline verification.
+See `MEASUREMENT_CONTRACT.md` for the contract and its scientific limits.
+
+The first rerun attempt at 21:15 Beijing reached both actual workers. The researcher
+passed; the reviewer's nine findings violated the unchanged eight-item limit.
+All sixteen Flash calls settled; no draft was accepted. Preserve its 0.359878 CNY
+conservative debit and frozen evidence. Before the next attempt, the accounted total
+is 20.825450 CNY, leaving 179.174550 CNY of the original budget.
+
+Use `submitted-reports-v3`: each active worker submits its own report through a
+validated tool before ending. Return field-level rejection diagnostics; permit
+correction only in that same active native turn and existing six-call role allowance.
+Freeze accepted reports in append-only events and require normal native completion.
+Do not silently truncate oversized lists or replay completed/failed workers. Block
+further research tools after a final worker failure, apart from status and settlement.
+Keep native final chat brief; only host-validated reports/facts constitute the record.
+The third and final configured pilot slot is used for the fresh full rerun after
+offline validation. No automatic extension or reset of the three-trial cap is allowed.
+
+## 2026-11-12: full real rerun completed, with separate quality audit
+
+The frozen `69053ae` source completed the full round at 21:29:22–21:31:49 Beijing.
+Sixteen actual Flash calls settled: seven supervisor, four researcher and five
+reviewer. The reviewer corrected the same nine-findings error through the new
+submission tool inside its active turn. Both workers and native tasks completed;
+one immutable draft contains twenty-eight host-resolved fact references. All three
+data reads reused the real BaoStock cache; no new vendor query or quota expansion.
+
+Keep workflow and scientific acceptance separate. Independent exact-rational
+checks verified all forty-four calculator facts and alignment, with seventy-seven
+frozen-file hashes verified. The draft still overstates label overlap and the
+meaning of non-significance, and leaves an incomplete executable specification.
+Those issues are append-only audit findings; do not rewrite the model draft or
+claim an evaluator/backtest/alpha pass. See `LIVE_RERUN_2026-11-12.md`.
+
+The final round's published-tariff estimate is 0.11078532 CNY; its conservative
+debit is 0.427794 CNY. Accounted cumulative spending is 21.253244 CNY, leaving
+178.746756 CNY under the original total. There are no unsettled reservations.
+Account observations are not reconciled invoices. All three pilot sessions are
+now used; no fourth run or automatic allowance increase was made. The tested
+desktop remains available for history inspection. Further paid trials require a
+deliberate allowance amendment preserving the existing ledger and original bounds.
+
+## 2026-11-12: owner-authorized statistical repairs and pilot extension
+
+Owner: "Please fix the remaining statistical and specification issues, extend the
+pilot allowance, and rerun the full trial using DeepSeek-flash only and BaoStock.
+Keep the original 200 CNY budget and time windows, and record everything."
+
+Implement `executable-contrast-v4`: each worker executes one fully specified
+development contrast against its own permitted evidence. The reviewer must
+independently execute the selected definition; the host renders draft parameters,
+timings and inference. Calculate positive label overlap separately from touching
+endpoints. Report insufficient/inconclusive states without claiming independence,
+confirmation or absence of effect. Fixed inference protocol, sample floors and
+bootstrap semantics remain operator configuration. Ten live rows cannot satisfy
+the floors. This is a bounded contrast, not a strategy or official evaluator.
+
+135 offline tests and native synthetic DSH workflow checks pass. Record one
+operator-only immutable amendment from three to six cumulative pilot sessions:
+one repair verification and two small owner trials. Before/after logical hashes
+prove unchanged budget/data tables and preserved original research policy/history;
+exactly one event was appended. No model call or data quota is enlarged. Accounted
+spending before the fresh trial remains 21.253244 CNY, leaving 178.746756 CNY.
+Use Flash only and the existing real BaoStock cache in the current permitted
+window. The new live result must be recorded separately; earlier drafts, failures
+and charges remain unchanged. See `STATISTICAL_SPECIFICATION.md`.
+
+## 2026-11-12: full specification-repair trial passed
+
+Frozen clean source `ef71f3f` completed at 22:49:31–22:51:15 Beijing. Each real
+Flash role made five calls; all fifteen settled. Both workers independently fetched
+the same cached BaoStock evidence, computed metrics, executed the exact concrete
+contrast and submitted accepted reports. Both Team tasks and the immutable draft
+completed, with no report rejection, retry or new vendor query. Independent checks
+verified seventy-three frozen files, forty-four facts per calculation, seventeen
+draft references, seven aligned cases, five signal/two control cases and zero
+positive label overlap. The outcome is insufficient_data with no bootstrap run.
+
+The three prior blockers are resolved in this run. Retain a new qualitative audit
+caveat: the researcher speculates about a larger-sample interval based on observed
+dispersion, which the available evidence cannot justify, and the reviewer does not
+challenge it. Exclude that speculation from verified conclusions; do not rewrite
+the immutable report or claim all prose is scientifically validated.
+
+Tariff estimate: 0.08414564 CNY; conservative debit: 0.354946 CNY. Accounted total:
+21.608190 CNY; remaining original allowance: 178.391810 CNY. All seventy-eight
+harness calls are settled. Two balance observations show 0.02 CNY account decline,
+not a reconciled invoice; no billing baseline change. Four of six pilot sessions
+are now used, leaving two bounded owner trials. Desktop completion/reload/Team
+checks pass; mobile clipping remains. See `LIVE_SPECIFICATION_TRIAL_2026-11-12.md`
+for per-agent work, costs, rates, cache and shared-machine observations. Keep the
+server available for owner trials under the existing time/model/data guards.
+
+## 2026-11-13: owner-authorized gradual sample expansion
+
+Owner: "Please gradually expand the BaoStock sample and rerun the supervisor plus
+two-worker trial with enough data for statistical inference. Keep DeepSeek-flash
+only, the original 200 CNY budget and time windows, and record everything."
+
+Keep the same stock/cutoff and freeze the previous concrete candidate before new
+downloads. Add adjacent older chunks one at a time, each at most sixty-one calendar
+days. Stop solely at the predeclared quality/support target: at least one hundred
+aligned cases, forty per group and twenty complete blocks. Do not inspect effects
+or intervals to decide whether to enlarge the sample. The maximum prepared scope
+is March through October; smaller planned stages precede it. Only BaoStock quotas
+increase for those explicit queries; paid sources and all model/budget/time limits
+remain unchanged. Reuse the original ledger and remaining two pilot slots.
+
+Compose immutable evidence with source lineage, preserve full calculations behind
+bounded model views, and activate the new scope through an operator-only append-only
+event. Old trials keep their original scopes. Expanded drafts say next observation
+close rather than assuming verified trading-calendar completeness. The first
+146 tests and a larger native synthetic team trial pass; no new paid inference has
+run. The noon Beijing window is the next admission opportunity. See
+`SAMPLE_EXPANSION_2026-11-13.md` for the fixed design and recording rubric.
+
+## 2026-11-13 — GLM Coding Plan Pro replaces the noon trial
+
+The owner authorized GLM, specified GLM 5.3 Flash before any evidence-backed
+upgrade to GLM 5.3, confirmed DSH eligibility with Zhipu, and then directed:
+"I propose to use GLM replace the scheduled work. Before Beijing Time today 18:00,
+we use GLM to test and polish the QRH first." The owner identified the plan as Pro.
+The noon DeepSeek run is therefore superseded. No new automation or model request
+had been dispatched for that run. DeepSeek retains its prior time windows later.
+
+Add an owner-only local DSH credential form and an operator-only append-only GLM
+route activation. Freeze the selected route in each new trial; never rewrite old
+DeepSeek trials or the original research policy. Use the existing DSH Messages
+transport and native Team lifecycle through the local guard. No new model loop,
+automatic provider fallback, credential environment fallback or live evaluator
+access is introduced. The exact allowed model is `glm-5.3-flash`; expiry is
+18:00 Beijing on 13 November. Preserve the original session allowance.
+
+Retain the shared original cash reservations even for subscription calls; these
+are conservative exposure debits, not claimed incremental subscription bills.
+Separately cap this initial GLM package at 24 requests and 1,500 prepaid credits,
+with one request at a time and retained reservations for unknown usage. Start
+with two small transport probes, then one native team trial. Report missing cache
+counters as unreported, not zero. The owner enters the key only in DSH.
+
+The real BaoStock expansion stopped at its first qualifying stage: 121 rows,
+118 aligned cases, 59 per bucket and 23 complete five-case blocks. Only afterward
+did the independent bootstrap audit reproduce the primary result: inconclusive.
+Longer-block sensitivities and all source/query limitations are retained; there
+was no effect-based enlargement or candidate tuning.
+
+155 offline tests and the final native synthetic GLM team run pass. Browser
+dummy-key save/reload/remove checks pass; known native mobile clipping remains.
+Real GLM access is pending owner credential entry. See
+`docs/harness/GLM_CODING_PLAN_2026-11-13.md` for authority, controls and the rubric.
+
+
+## 2026-11-13 — Use native Models and zai-coding-cn with guard extensions
+
+The owner identified the working native Coding Plan provider and requested guard
+extensions in DSH's Models page. Replace the temporary custom model form and
+Messages route with native pi-ai `zai-coding-cn`; retain native Agent Teams and
+subagents. Use the documented Models footer and host configuration/request-header
+extension points, with the existing relay as the atomic budget boundary.
+
+The first HTTP 401 remains a reviewed authentication rejection with its full cash
+and credit reservations. A separately bounded repair attempt is allowed only after
+operator review; it does not zero charges, reset request counts or increase the
+200 CNY cap. Subscription limits aggregate both protocol routes. New calls reserve
+the full input capacity and their output bound at the final wire boundary. All
+uncertain streams still block continuation. See NATIVE_MODELS_2026-11-13.md.
+
+
+## 2026-11-13 — Record first native GLM failure and repair evidence-access guidance
+
+Both native GLM Flash probes passed with the saved credential. The first full
+team trial used fourteen calls: researcher completed; reviewer eventually
+performed the full calculation and submitted its report but exhausted its
+six-call allowance before normal completion. The shared evidence hash had been
+mistaken for an access grant. Preserve all six rejected evidence/calculation
+operations, native failure and conservative 0.556952 CNY debit; no draft accepted.
+
+Make each worker's first required source call explicit and return precise recovery
+instructions for denied reads. Do not grant access automatically or increase
+per-role limits. Both independently executed full calculations matched the frozen
+reference; no model intelligence upgrade or statistical-method change is justified.
+
+Within the owner's test/polish and trial-readiness authorization, append a new
+route with sixty aggregate GLM requests and extend the session allowance from six
+to seven, covering one repair rerun and one owner trial. All historical requests,
+failed sessions and the 401's full cash/credit reservations remain counted. Keep
+200 CNY, 1,500 credits, the same expiry, data scope, concurrency and per-trial caps.
+167 offline tests pass; the repair rerun will be recorded separately.
+
+
+## 2026-11-13 — Preserve zero-dispatch package refusal and amend only GLM sublimit
+
+The sixth native session was refused before any provider dispatch: the retained
+401 reservation plus prior calls and the next full-input reservation exceeded
+the old ten-CNY work-package sublimit. There was no new token use or debit.
+Preserve this session; do not reset the ledger or classify its refusal as an LLM
+failure. Add a frozen operator GLM route with a twenty-CNY package allowance;
+keep the original two-hundred-CNY cumulative ceiling, all usage/reservations,
+sixty-request aggregate cap, fifteen-hundred-credit cap and expiry unchanged.
+The original policy row is untouched. Tests prove both historical accounting and
+the original cumulative bound survive the amendment. Extend cumulative sessions
+to eight to retain one owner slot after the actual repair run. 169 offline tests
+pass; use a read-only capacity preflight before the next submission.
+
+
+## 2026-11-13 — Final native GLM trial passes with qualitative caveats
+
+At 12:12–12:20 Beijing, clean source 8150415 ran fifteen real GLM 5.3 Flash
+Coding Plan requests through native zai-coding-cn and native Agent Teams. All
+three roles made five requests, both workers completed, both tasks completed,
+and the immutable draft was recorded with zero tool/report failures. Both full
+specifications match the frozen independent bootstrap reference: inconclusive.
+The independent raw-wire/data/accounting audit verified ninety-six frozen files
+and all 377 descriptive facts per calculation. Retain a qualitative finding:
+reviewer and supervisor overstate what an interval containing zero says about
+the information in a point estimate. Record the correction without rewriting the
+draft. Multi-symbol recommendations remain suggestions, not scope authority.
+
+Usage: 180,678 tokens, 57.47% cache hit ratio, 54.60039-credit upper estimate and
+0.498666 CNY conservative exposure debit, not an incremental subscription bill.
+The original official baseline remains 20.35 CNY; current accounting 22.664994,
+reservation 5.242880 and unreserved 172.092126 CNY. There are 110 harness requests,
+109 settled and one reviewed auth rejection retaining its reservations. Seven
+of eight sessions are used; one bounded owner trial remains before route expiry.
+
+Native Models key editing, dark/light readability, desktop completion/reload and
+Team board checks pass. 169 offline tests and both CI suites pass on the live
+source. Keep the idle guarded server available; no further provider request is
+scheduled. Mobile clipping, broader scientific validation, mixed role providers
+and current-market context remain staged. See LIVE_GLM_NATIVE_2026-11-13.md for
+complete per-agent work, token/rate/cost/cache/resource measurements and evidence.
+
+
+## 2026-11-13: return to modular capability development
+
+The owner completed the eighth fixed-scope pilot and rejected production readiness.
+Cancel the planned DeepSeek run and continue GLM Coding Plan Pro / GLM 5.3 Flash
+until quota exhaustion or an explicit owner switch. No queued Codex automation,
+user crontab or separate test scheduler was found. Enforce GLM-only admission in
+the shared ledger, atomically with reservations, so old launchers cannot dispatch
+DeepSeek. Previously dispatched requests can still settle. Retain the original
+200 CNY cap, official 20.35 baseline and unresolved 401 reservation.
+
+The next package follows the approved standalone-module stage: versioned shared
+state and review, using native DSH SDK sessions without a custom inference loop.
+Findings cite exact source excerpts and pin a candidate version. Revisions retain
+parentage and explicit adopt/reject/defer decisions. Host principals, immutable
+events, optimistic concurrency and bounded state are checked independently from
+semantic truth. This is not an official pool, evaluator or production core.
+
+The owner trial accounting and independent data audit pass after repairing an
+exporter attribution error: a killed server without stopped.json was incorrectly
+associated with a later trial despite contributing no resource samples. The
+original export and failed audit are retained. See MODULAR_DEVELOPMENT_2026-11-13.md
+for subsequent live module attempts and their capability limits.
+
+The first module package made eleven real GLM Flash calls across two paired
+diagnostic cases and retained two failed attempts. The output-token limit and
+case-insensitive export-name collision were repaired; source ids are now enumerated
+in schemas after a correct units finding cited an invented source. All wire
+accounting audits and 180 offline tests pass. Both timing arms correct the known
+defect; no collaboration accuracy benefit is demonstrated. Both units formulas
+are correct but their explanatory scale relationships are wrong, so semantic
+acceptance is explicitly withheld. Review of final synthesis is a gate before
+native adaptive coordination and broader research, not an excuse to label schema
+success as scientific correctness. No GLM 5.3 upgrade is justified by this package.
+
+Budget after the module package: 23.566904 CNY accounted, 5.242880 reserved and
+171.190216 unreserved under the original 200 CNY ceiling. GLM has 58 aggregate
+requests, 209.79563 upper-estimated settled credits and 555.74528 reserved credits.
+These are local accounting quantities, not subscription cash invoices or an account
+quota reading. Detailed source snapshots, runtime/wire records, comparisons and
+per-agent resources are indexed in MODULAR_DEVELOPMENT_2026-11-13.md.
+
+## 2026-11-13: completed-output review and adaptive native follow-ups
+
+The owner authorized final-output review, adaptive supervisor follow-ups and repair
+of the unit explanations using GLM 5.3 Flash only. Keep native DSH Models, subagents
+and Agent Teams; the host adds versioned output/review records and bounded grants,
+not another model loop. Explanation-only amendments must not force a computational
+definition change. Finalization pins a clean review of the current exact version,
+after the native tasks complete. A clean review may finish without an author task.
+
+Live testing found three output-cap failures and a false semantic pass. At low
+reasoning effort, both model reviewers missed an incorrect raw/target equality; an
+author appended the right relationship without removing the old contradiction.
+The artifact and native finalization are retained, while the separate audit rejects
+semantic acceptance. Add a restricted source-derived unit-expression checker and
+explicit English unit-relationship checks throughout the current output. Recognized
+contradictions block review, amendment and finalization; obsolete equations remain
+in historical versions. This grammar does not prove arbitrary natural language.
+
+After the cap failures, the output ceiling increased from 8192 to 16384. The native
+route `glm-coding-review-low-2026-11-13` requests low effort, retains thinking and Flash,
+and extends the operator request cap from 100 to 120 without resetting prior usage.
+The original 200 CNY ceiling, 20 CNY package sublimit, 1500-credit cap and old 401
+reservations remain unchanged. No automatic provider or model fallback is added.
+
+The final two unit repairs and clean-output control pass, with 212 offline tests
+and native runtime/UI verification. Across all attempts: 53 actual API calls,
+565131 tokens, 45.97% input cache hits and 1.590600 CNY conservative exposure.
+Current accounting: 25.157504 CNY accounted, 5.242880 reserved, 169.599616 unreserved.
+These amounts are not incremental subscription invoices. See
+FINAL_OUTPUT_REVIEW_2026-11-13.md for every attempt, actor, resource sample summary,
+source freeze, false pass and remaining capability gate. No official evaluation,
+publication, pool operation or production-readiness claim follows from this diagnostic.
+
+Final offline hardening preserves the written decimal rather than a rounded float
+and rejects extreme prose/formula exponents before allocating large fractions.
+All saved accepted outputs still pass. Separate reviewer tasks can see prior issues;
+they are not blinded replications. Model chat acknowledgments are not themselves
+the exact reviewed artifact. These limitations remain explicit in the report.

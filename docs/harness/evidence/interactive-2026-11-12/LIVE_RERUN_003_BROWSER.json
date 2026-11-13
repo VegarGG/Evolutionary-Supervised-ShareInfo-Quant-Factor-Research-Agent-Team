@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "at": "2026-11-12T13:31:50.681Z",
+  "title": "Run one bounded daily China \u2014 DeepSeek Harness",
+  "origin": "http://127.0.0.1:3080",
+  "browser": "installed Chrome via Playwright",
+  "browser_plugin": "not available",
+  "viewports": [
+    [
+      1440,
+      1000
+    ],
+    [
+      390,
+      844
+    ]
+  ],
+  "errors": [],
+  "limitations": [
+    "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+  ],
+  "checks": [
+    "page identity",
+    "nonblank",
+    "no framework overlay",
+    "submitted through native chat",
+    "result rendered",
+    "reload persisted",
+    "desktop and mobile screenshots"
+  ],
+  "native_workers_completed": 2,
+  "native_tasks_completed": 2,
+  "selection": "latest session and matching final draft hash"
+}

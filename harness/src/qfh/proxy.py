@@ -8,6 +8,7 @@ import secrets
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -62,7 +63,7 @@ def validate_request(body: dict, model: str, max_tokens: int, allowed_tools: set
     if set(body) - allowed:
         raise BudgetRefused("unapproved request extension")
     if body.get("model") != model or body.get("stream") is not True:
-        raise BudgetRefused("only the configured streaming DeepSeek model is allowed")
+        raise BudgetRefused("only the configured streaming model is allowed")
     if type(body.get("max_tokens")) is not int or not 0 < body["max_tokens"] <= max_tokens:
         raise BudgetRefused("missing or excessive requested output cap")
     for tool in body.get("tools", []):
@@ -80,6 +81,9 @@ class GuardProxy:
         max_tokens: int,
         max_body_bytes: int,
         timeout_seconds: int,
+        session_admitter: Callable[[str], str] | None = None,
+        *,
+        coding_policy=None,
     ):
         self.ledger, self.directory, self.key = ledger, directory, key
         self.model, self.max_tokens = model, max_tokens
@@ -87,6 +91,10 @@ class GuardProxy:
         self.allowed_tools: set[str] = set()
         self.local_key = "sk-" + secrets.token_hex(16)
         self.step: str | None = None
+        self.session_admitter = session_admitter
+        self.coding_policy = coding_policy
+        self.upstream = coding_policy.endpoint if coding_policy else UPSTREAM
+        self.chat = bool(coding_policy and coding_policy.transport == "openai-completions")
         directory.mkdir(parents=True, exist_ok=True)
         proxy = self
 
@@ -97,11 +105,21 @@ class GuardProxy:
             def do_POST(self):
                 self.close_connection = True
                 request_id = None
+                response_started = False
+                session_id = self.headers.get(
+                    "x-qfh-session-id" if proxy.chat else "x-deepseek-harness-session-id", ""
+                )
                 try:
-                    if self.path not in ("/anthropic/v1/messages", "/anthropic/messages"):
+                    paths = (
+                        ("/v1/chat/completions",)
+                        if proxy.chat
+                        else ("/anthropic/v1/messages", "/anthropic/messages")
+                    )
+                    if self.path not in paths:
                         raise BudgetRefused("endpoint not allowed")
                     if not secrets.compare_digest(
-                        self.headers.get("x-api-key", ""), proxy.local_key
+                        self.headers.get("x-qfh-relay-key" if proxy.chat else "x-api-key", ""),
+                        proxy.local_key,
                     ):
                         raise BudgetRefused("invalid local credential")
                     size = int(self.headers.get("Content-Length", "0"))
@@ -109,11 +127,33 @@ class GuardProxy:
                         raise BudgetRefused("request body size limit")
                     raw = self.rfile.read(size)
                     body = json.loads(raw)
-                    validate_request(body, proxy.model, proxy.max_tokens, proxy.allowed_tools)
-                    if not proxy.step:
+                    if proxy.chat:
+                        from qfh.chat_transport import validate_chat_request
+
+                        output_bound = validate_chat_request(
+                            body, proxy.model, proxy.max_tokens, proxy.allowed_tools
+                        )
+                    else:
+                        validate_request(body, proxy.model, proxy.max_tokens, proxy.allowed_tools)
+                        output_bound = body["max_tokens"]
+                    upstream_key = (
+                        self.headers.get("x-qfh-glm-key", "") if proxy.coding_policy else proxy.key
+                    )
+                    if proxy.chat:
+                        authorization = self.headers.get("Authorization", "")
+                        upstream_key = (
+                            authorization[7:] if authorization.startswith("Bearer ") else ""
+                        )
+                    if not upstream_key:
+                        raise BudgetRefused("Configure the GLM Coding Plan key in Research models")
+                    step = (
+                        proxy.session_admitter(session_id) if proxy.session_admitter else proxy.step
+                    )
+                    if not step:
                         raise BudgetRefused("no admitted experiment step")
                     candidate_id = uuid.uuid4().hex
-                    proxy.ledger.reserve(candidate_id, proxy.step, datetime.now(UTC))
+                    reserve_options = {"output_tokens": output_bound} if proxy.coding_policy else {}
+                    proxy.ledger.reserve(candidate_id, step, datetime.now(UTC), **reserve_options)
                     request_id = candidate_id
                     target = proxy.directory / request_id
                     target.mkdir()
@@ -121,42 +161,75 @@ class GuardProxy:
                     started = time.monotonic()
                     events = []
                     peer_connected = True
+                    terminal = None
+                    timings = []
                     with httpx.Client(
                         timeout=proxy.timeout_seconds, trust_env=False, follow_redirects=False
                     ) as client:
                         with client.stream(
                             "POST",
-                            UPSTREAM,
+                            proxy.upstream,
                             content=raw,
                             headers={
-                                "x-api-key": proxy.key,
+                                **(
+                                    {"Authorization": "Bearer " + upstream_key}
+                                    if proxy.coding_policy
+                                    else {"x-api-key": upstream_key}
+                                ),
                                 "content-type": "application/json",
                                 "anthropic-version": "2023-06-01",
                                 "user-agent": "qfh-experiment/0.1",
+                                "x-deepseek-harness-session-id": session_id,
                             },
                         ) as response:
                             (target / "http.json").write_text(
                                 json.dumps(
                                     {
                                         "status": response.status_code,
-                                        "endpoint": UPSTREAM,
+                                        "endpoint": proxy.upstream,
                                         "request_sha256": hashlib.sha256(raw).hexdigest(),
-                                        "step": proxy.step,
+                                        "step": step,
+                                        "session_id": session_id,
                                     }
                                 )
                             )
-                            self.send_response(response.status_code)
-                            self.send_header(
-                                "Content-Type",
-                                response.headers.get("content-type", "text/event-stream"),
-                            )
-                            self.end_headers()
+                            # A disconnected browser must not interrupt upstream
+                            # usage collection, including before the first header.
+                            response_started = True
+                            try:
+                                self.send_response(response.status_code)
+                                self.send_header(
+                                    "Content-Type",
+                                    response.headers.get("content-type", "text/event-stream"),
+                                )
+                                self.end_headers()
+                            except (BrokenPipeError, ConnectionResetError):
+                                peer_connected = False
                             with (target / "response.sse").open("w") as output:
                                 for line in response.iter_lines():
                                     output.write(line + "\n")
                                     output.flush()
                                     if line.startswith("data: "):
-                                        events.append(json.loads(line[6:]))
+                                        if proxy.chat and line[6:].strip() == "[DONE]":
+                                            terminal = line
+                                            continue
+                                        event = json.loads(line[6:])
+                                        events.append(event)
+                                        timings.append(
+                                            {
+                                                "event": event.get("type"),
+                                                "at": datetime.now(UTC).isoformat(),
+                                                "elapsed_seconds": time.monotonic() - started,
+                                            }
+                                        )
+                                        if event.get("type") == "message_stop":
+                                            # Settle before the client can start its next
+                                            # tool/model step. Otherwise a fast loop can
+                                            # race our pending concurrency reservation.
+                                            terminal = line
+                                            continue
+                                    if terminal is not None:
+                                        continue
                                     if peer_connected:
                                         try:
                                             self.wfile.write((line + "\n").encode())
@@ -165,14 +238,36 @@ class GuardProxy:
                                             peer_connected = False  # Drain and account upstream.
                             if response.status_code != 200:
                                 raise ValueError("provider rejected request; charge unverified")
-                    usage = parse_usage(events)
-                    proxy.ledger.settle(request_id, usage)
+                    usage_metadata = {}
+                    if proxy.coding_policy:
+                        if proxy.chat:
+                            from qfh.chat_transport import parse_chat_usage
+
+                            usage, usage_metadata = parse_chat_usage(
+                                events, complete=terminal is not None, model=proxy.model
+                            )
+                        else:
+                            from qfh.coding_plan import parse_coding_usage
+
+                            usage, usage_metadata = parse_coding_usage(events)
+                        proxy.ledger.settle(request_id, usage, metadata=usage_metadata)
+                    else:
+                        usage = parse_usage(events)
+                        proxy.ledger.settle(request_id, usage)
+                    if peer_connected and terminal:
+                        try:
+                            self.wfile.write((terminal + "\n\n").encode())
+                            self.wfile.flush()
+                        except (BrokenPipeError, ConnectionResetError):
+                            peer_connected = False
                     (target / "result.json").write_text(
                         json.dumps(
                             {
                                 "usage": usage.model_dump(),
+                                "usage_metadata": usage_metadata,
                                 "latency_seconds": time.monotonic() - started,
                                 "peer_connected": peer_connected,
+                                "event_timings": timings,
                             },
                             indent=2,
                         )
@@ -180,13 +275,44 @@ class GuardProxy:
                 except Exception as exc:
                     if request_id:
                         proxy.ledger.unknown(request_id, type(exc).__name__)
-                    else:
-                        self.send_response(403)
+                    with (proxy.directory / "refusals.jsonl").open("a") as output:
+                        output.write(
+                            json.dumps(
+                                {
+                                    "at": datetime.now(UTC).isoformat(),
+                                    "session_id": session_id[:200],
+                                    "request_id": request_id,
+                                    "reason": str(exc)
+                                    if isinstance(exc, BudgetRefused)
+                                    else type(exc).__name__,
+                                }
+                            )
+                            + "\n"
+                        )
+                    if not response_started:
+                        # DSH sanitizes AUTH failures and displays "invalid key".
+                        # A valid local credential conflicting with time/budget
+                        # policy is a 409, so the actual refusal stays visible.
+                        status = (
+                            401
+                            if str(exc) == "invalid local credential"
+                            else 409
+                            if isinstance(exc, BudgetRefused)
+                            else 500
+                        )
+                        self.send_response(status)
                         self.send_header("Content-Type", "application/json")
                         self.end_headers()
                         self.wfile.write(
                             json.dumps(
-                                {"error": {"type": "qfh_admission_refused", "message": str(exc)}}
+                                {
+                                    "error": {
+                                        "type": "qfh_admission_refused",
+                                        "message": str(exc)
+                                        if isinstance(exc, BudgetRefused)
+                                        else "Request stopped; inspect accounting before retrying.",
+                                    }
+                                }
                             ).encode()
                         )
 
@@ -195,7 +321,8 @@ class GuardProxy:
 
     @property
     def base_url(self) -> str:
-        return f"http://127.0.0.1:{self.server.server_port}/anthropic"
+        suffix = "/v1" if self.chat else "/anthropic"
+        return f"http://127.0.0.1:{self.server.server_port}{suffix}"
 
     def __enter__(self):
         self.thread.start()

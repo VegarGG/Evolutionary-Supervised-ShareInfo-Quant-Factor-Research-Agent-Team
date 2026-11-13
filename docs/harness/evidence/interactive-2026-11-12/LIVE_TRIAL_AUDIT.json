@@ -1,0 +1,61 @@
+{
+  "at": "2026-11-12T10:09:55.035668+00:00",
+  "trial_id": "session-c1ec8f89-16a6-40b4-8840-25a01dc18319",
+  "mode": "offline_post_run_arithmetic_diagnostic_not_official_evaluation",
+  "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+  "checks": {
+    "frozen_hashes_match": true,
+    "seven_actual_wire_requests": true,
+    "all_wire_model_ids_deepseek_flash": true,
+    "all_model_usage_settled": true,
+    "no_second_live_trial": true,
+    "deterministic_tool_arithmetic_matches_source": true
+  },
+  "frozen_files_verified": 40,
+  "numeric_claim_checks": {
+    "first_daily_return_percent": {
+      "researcher_claim": "-2.1888",
+      "recomputed": "-1.802575107296137339055793990"
+    },
+    "mean_daily_return_percent": {
+      "researcher_claim": "-0.04417",
+      "recomputed": "-0.001260769661609466952994255556"
+    },
+    "sample_daily_stdev_percent": {
+      "researcher_claim": "1.4339",
+      "recomputed": "1.365805220955669229204526674"
+    },
+    "lag_5_signal_count": {
+      "researcher_claim": 6,
+      "recomputed": 5
+    },
+    "first_lag_5_signal_date": {
+      "researcher_claim": "2026-10-23",
+      "recomputed": "2026-10-26"
+    },
+    "timing_correct_illustrative_count": {
+      "researcher_claim": 4,
+      "recomputed": 3
+    },
+    "illustrative_mean_percent": {
+      "researcher_claim": "-0.6977",
+      "recomputed": "-0.8539969297444867257657513767"
+    },
+    "illustrative_positive_fraction": {
+      "researcher_claim": "0.25",
+      "recomputed": "0.3333333333333333333333333333"
+    }
+  },
+  "interpretation": "The deterministic tool summaries agree with the source closes. The worker added incorrect hand-calculated statistics and used a four-lag start for a stated five-lag formula. This audit checks those statements only; it is not a backtest or evidence of alpha.",
+  "supervisor_claim_check": {
+    "claim": "No market data was ever fetched and no arithmetic was computed.",
+    "observed": "Researcher completed one real BaoStock bars fetch (10 observations) and one deterministic metrics operation.",
+    "verdict": "false; supervisor saw a generic rejected-report error, not the worker activity audit"
+  },
+  "preregistration_claim_check": "The claimed fixed-before-looking condition was written after data retrieval. No pre-data registry artifact supports the claim.",
+  "worker_observed_operations": [
+    "scope",
+    "data",
+    "metrics"
+  ]
+}

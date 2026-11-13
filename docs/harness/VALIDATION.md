@@ -1,5 +1,9 @@
 # Work-package verification — 12 November 2026
 
+This is the initial data/settings package record. The later native-team integration
+has its own [validation record](INTERACTIVE_VALIDATION.md) and
+[trial guide](INTERACTIVE_TRIAL.md); its live trial is tracked separately.
+
 The prototype's bounded checks pass. This record distinguishes software checks
 from real inference, data acquisition and research acceptance. Full outputs remain
 in `.qfh-private/`; public result indexes retain measurements and evidence hashes.

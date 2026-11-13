@@ -16,9 +16,36 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   Reports/news are read-only cited evidence with publication, ingestion and
   retrieval timestamps kept distinct. Keep paid data pilots narrowly bounded.
 - DSH's native DeepSeek Messages transport is authorized for these experiments.
-  It still calls DeepSeek only; no other paid provider or local model is authorized.
+  On 13 November the owner additionally authorized GLM Coding Plan during
+  DeepSeek peak hours, using GLM 5.3 Flash first. GLM 5.3 requires clear recorded
+  evidence that Flash is insufficient. The owner confirmed DSH eligibility with
+  Zhipu. Credentials are entered in DSH Settings; no metered-API fallback is
+  authorized. The owner has now canceled the scheduled DeepSeek run and directed
+  GLM testing until quota exhaustion or an explicit owner switch. The earlier
+  18:00 cutoff is superseded. The append-only provider restriction in the shared
+  ledger enforces GLM-only dispatch; there is no automatic fallback.
+  Other providers and local models remain unauthorized.
+  The owner subsequently identified DSH's working `zai-coding-cn` route and
+  requested guard extensions in the native Models page. Use its native pi-ai
+  Coding Plan transport, editor and credential reference; preserve the failed
+  Anthropic probe and both reservations. Details: `NATIVE_MODELS_2026-11-13.md`.
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
+- Latest verified native GLM trial: `docs/harness/LIVE_GLM_NATIVE_2026-11-13.md`.
+  Active route `glm-coding-review-low-2026-11-13` retains the 20 CNY package sublimit
+  inside the original 200 CNY ceiling. This work package has 120 aggregate requests
+  and 1,500 conservative credits; these are local caps, not account quota readings.
+  All eight fixed-scope pilot sessions are used. Standalone module tests have
+  distinct step grants in the same ledger; never reset history to create slots.
+  Current work: `docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md`. Current reruns
+  are GLM 5.3 Flash only; native low reasoning effort follows recorded high-effort
+  output-cap failures. Adaptive packages admit one supervisor, at most five native
+  tasks and 32 requests, with a 16384-token response ceiling. These grants retain
+  every earlier debit/reservation and do not replenish the exhausted fixed pilot.
+  Completed-output amendments preserve computational definitions. Finalization
+  requires a review of the exact current version plus source-derived unit checks,
+  including recognized explicit prose relationships. This limited grammar does
+  not establish general semantic correctness; retain false model passes separately.
 - Run offline checks with `just harness-check` and `just harness-test`. Live
   experiments are separate commands with explicit campaign state and audit records.
   No ordinary test target may call a real model or data provider.
@@ -26,6 +53,14 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   evaluation. The invariants below continue to govern any reused QFR services.
 - End each work package with updated README, decision/experiment records and a
   commit. Do not merge a new PR without authorization.
+- The owner now authorizes the bounded interactive supervisor/two-worker prototype
+  in `docs/harness/INTERACTIVE_TRIAL.md`. Use native DSH Agent Teams/subagents;
+  preserve every earlier trace. Additional role/provider designs are staged in
+  `ROLE_MODELS_AND_CONTEXT.md`; the GLM replacement and its bounds are recorded in
+  `GLM_CODING_PLAN_2026-11-13.md` without changing prior trial histories.
+- The owner-reported official cumulative 20.35 CNY observation supersedes the old
+  conservative spending estimate as the budget baseline. Keep the immutable
+  reconciliation, covered-call digest and raw usage; charge new calls afterward.
 
 ## Non-negotiable invariants (each one has tests; never weaken them)
 1. Research code never invokes, configures, prioritizes or cancels evaluation, and never touches simulated accounts or pools. No such tool, endpoint or credential may exist on the research side.

@@ -1,0 +1,32 @@
+id: glm-coding-native-package-2026-11-13
+provider: glm_coding
+funding: coding_plan
+platform: bigmodel-cn
+subscription_tier: Pro
+model: glm-5.3-flash
+endpoint: https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+authority: I propose to use GLM replace the scheduled work. Before Beijing Time today
+  18:00, we use GLM to test and polish the QRH first. Owner identified the working
+  native zai-coding-cn route and requested Models-page guard extensions. Operator
+  bounded amendment for one evidence-access repair rerun and one owner trial, under
+  the existing test-and-polish and owner-readiness authorization. Aggregate history
+  is counted; the 200 CNY ceiling, 1500-credit cap, expiry, model, concurrency and
+  per-trial limits are unchanged. Operator raises only the GLM work-package sublimit
+  from 10 to 20 CNY after a zero-dispatch refusal; the original saved budget policy
+  and 200 CNY cumulative ceiling are unchanged.
+eligibility_authority: Don't worry. I've confirmed with Zhipu official that DSH is
+  allowed.
+starts_at: '2026-11-13T00:00:00+08:00'
+ends_at: '2026-11-13T18:00:00+08:00'
+max_requests: 60
+max_microcredits: 1500000000
+input_microcredits_per_token: 230
+output_microcredits_per_token: 800
+maximum_input_tokens: 1048576
+maximum_output_tokens: 393216
+concurrency: 1
+pricing_source: https://docs.bigmodel.cn/cn/coding-plan/overview
+pricing_verified_on: '2026-11-13'
+reasoning_effort: high
+transport: openai-completions
+cash_package_micro_cny: 20000000

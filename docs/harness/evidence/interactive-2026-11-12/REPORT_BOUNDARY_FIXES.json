@@ -1,0 +1,132 @@
+{
+  "offline-003-fenced": {
+    "members": [
+      [
+        "supervisor",
+        "active"
+      ],
+      [
+        "researcher",
+        "completed"
+      ],
+      [
+        "reviewer",
+        "completed"
+      ]
+    ],
+    "drafts": 1,
+    "settlements": [
+      {
+        "role": "researcher",
+        "validation_error": null,
+        "report_format": "json_fence"
+      },
+      {
+        "role": "reviewer",
+        "validation_error": null,
+        "report_format": "json_fence"
+      }
+    ],
+    "failures": [],
+    "scripted_requests": 11,
+    "live_model_calls": 0,
+    "live_data_calls": 0,
+    "browser": {
+      "status": "pass",
+      "at": "2026-11-12T10:10:01.629Z",
+      "title": "Run the bounded offline integration \u2014 DeepSeek Harness",
+      "origin": "http://127.0.0.1:3081",
+      "browser": "installed Chrome via Playwright",
+      "browser_plugin": "not available",
+      "viewports": [
+        [
+          1440,
+          1000
+        ],
+        [
+          390,
+          844
+        ]
+      ],
+      "errors": [],
+      "limitations": [
+        "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+      ],
+      "checks": [
+        "page identity",
+        "nonblank",
+        "no framework overlay",
+        "submitted through native chat",
+        "result rendered",
+        "reload persisted",
+        "desktop and mobile screenshots"
+      ]
+    }
+  },
+  "offline-004-invalid": {
+    "members": [
+      [
+        "supervisor",
+        "active"
+      ],
+      [
+        "researcher",
+        "failed"
+      ]
+    ],
+    "drafts": 0,
+    "settlements": [
+      {
+        "role": "researcher",
+        "validation_error": "ValidationError",
+        "report_format": null
+      }
+    ],
+    "failures": [
+      "worker report failed validation; raw result retained and no automatic replay. Completed worker operations: {\"data:bars\": 1, \"metrics\": 1}. Report rejection does not mean no data or arithmetic was performed."
+    ],
+    "scripted_requests": 6,
+    "live_model_calls": 0,
+    "live_data_calls": 0,
+    "browser": {
+      "status": "pass",
+      "at": "2026-11-12T10:13:13.158Z",
+      "title": "Run the bounded offline integration \u2014 DeepSeek Harness",
+      "origin": "http://127.0.0.1:3082",
+      "browser": "installed Chrome via Playwright",
+      "browser_plugin": "not available",
+      "viewports": [
+        [
+          1440,
+          1000
+        ],
+        [
+          390,
+          844
+        ]
+      ],
+      "errors": [],
+      "limitations": [
+        "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+      ],
+      "checks": [
+        "page identity",
+        "nonblank",
+        "no framework overlay",
+        "submitted through native chat",
+        "result rendered",
+        "reload persisted",
+        "desktop and mobile screenshots"
+      ]
+    }
+  },
+  "retained_live_report": {
+    "schema_and_citations_after_fence_normalization": "pass",
+    "format": "json_fence",
+    "original_failed_state_unchanged": true,
+    "new_model_requests": 0,
+    "live_round_acceptance": "failed; reviewer never ran and no draft exists"
+  },
+  "offline_harness_tests": 91,
+  "status": "pass"
+}

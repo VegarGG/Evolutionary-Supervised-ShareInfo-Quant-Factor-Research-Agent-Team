@@ -8,10 +8,14 @@
     ".": "./index.js",
     "./package.json": "./package.json",
     "./cordis.patch.yml": "./cordis.patch.yml",
-    "./client": "./client.js"
+    "./client": "./client.js",
+    "./research": "./research.js"
   },
   "files": [
     "index.js",
+    "research.js",
+    "adaptive.js",
+    "native-models.js",
     "cordis.patch.yml",
     "client.js",
     "LICENSE",
@@ -27,6 +31,7 @@
       "platform": "web",
       "inject": [
         "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-settings-models",
         "@deepseek-ai/dsh-api-remotes",
         "@deepseek-ai/dsh-client-ui-renderer"
       ]
@@ -36,7 +41,8 @@
     "@deepseek-ai/cordis": "*",
     "@deepseek-ai/schemastery": "*",
     "@deepseek-ai/dsh-credentials": "0.2.2-rc.2",
-    "@deepseek-ai/dsh-tools": "0.2.2-rc.2"
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.2",
+    "@deepseek-ai/dsh-llm-deepseek": "0.2.2-rc.2"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
@@ -49,6 +55,9 @@
       "optional": true
     },
     "@deepseek-ai/dsh-tools": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-llm-deepseek": {
       "optional": true
     }
   }

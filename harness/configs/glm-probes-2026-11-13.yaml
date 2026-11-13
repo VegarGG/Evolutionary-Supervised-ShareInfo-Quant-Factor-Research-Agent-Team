@@ -1,0 +1,19 @@
+request_timeout_seconds: 180
+sample_seconds: 1
+probes:
+  - prompt: Reply with READY only.
+    max_tokens: 128
+    thinking: {type: disabled}
+    expected_text: READY
+  - prompt: Call qfh_probe_echo exactly once with value 7. Do not answer in text.
+    max_tokens: 512
+    thinking: {type: disabled}
+    tool:
+      name: qfh_probe_echo
+      description: Return the supplied test integer. This is a transport test without external effects.
+      input_schema:
+        type: object
+        properties: {value: {type: integer}}
+        required: [value]
+        additionalProperties: false
+    expected_arguments: {value: 7}

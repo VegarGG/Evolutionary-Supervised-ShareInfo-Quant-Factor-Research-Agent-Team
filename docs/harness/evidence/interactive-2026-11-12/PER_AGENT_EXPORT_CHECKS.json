@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "mode": "synthetic replay only",
+  "checks": [
+    "per-role calls and byte totals reconcile",
+    "activity windows cover the research round",
+    "supervisor contribution decisions present",
+    "synthetic balance difference calculated without exposing absolute balances",
+    "no synthetic values labeled paid cost",
+    "frozen evidence hashes match"
+  ],
+  "snapshot_files": 56,
+  "external_provider_requests": 0
+}

@@ -14,13 +14,31 @@ export const Config = Schema.object({
   sourceRoot: Schema.string().required(),
   policyPath: Schema.string().required(),
   privateRoot: Schema.string().required(),
+  researchConfig: Schema.string().default(''),
+  researchPrivateRoot: Schema.string().default(''),
+  researchSampleDescription: Schema.string().default(''),
+  researchModelProvider: Schema.union(['deepseek', 'glm_coding']).default('deepseek'),
+  researchWorkflow: Schema.string().default('fixed'),
+  enabledKinds: Schema.array(Schema.string()).default(['bars', 'report_summaries', 'announcements', 'news']),
   requestTimeoutMs: Schema.number().min(1000).max(180000).default(90000),
 })
 
 export function runBackend(config, request, signal) {
+  return runPython(config, ['-m', 'qfh.data_gateway', '--policy', config.policyPath,
+    '--root', config.privateRoot], request, signal)
+}
+
+export function runResearch(config, request, signal) {
+  if (config.adaptivePackage) return runPython(config, ['-m', 'qfh.adaptive_research',
+    '--config', config.researchConfig, '--private', config.researchPrivateRoot,
+    '--package', config.adaptivePackage], request, signal)
+  return runPython(config, ['-m', 'qfh.research', '--config', config.researchConfig,
+    '--private', config.researchPrivateRoot], request, signal)
+}
+
+function runPython(config, args, request, signal) {
   return new Promise((resolve, reject) => {
-    const child = spawn(config.python, ['-m', 'qfh.data_gateway', '--policy', config.policyPath,
-      '--root', config.privateRoot], {
+    const child = spawn(config.python, args, {
       env: { PATH: process.env.PATH ?? '', PYTHONPATH: config.sourceRoot },
       stdio: ['pipe', 'pipe', 'ignore'], signal,
     })
@@ -49,14 +67,25 @@ export function apply(ctx, config) {
   for (const key of ['python', 'sourceRoot', 'policyPath', 'privateRoot']) {
     if (!isAbsolute(config[key])) throw new Error(`qfh-data ${key} must be an absolute path`)
   }
+  // Static configuration is intentionally absent from editable settings forms.
+  // Publish only this non-secret UI fact through DSH's native page bootstrap.
+  ctx.on('webserver/index-inject', table => {
+    table.push({ kind: 'global', name: '__QFH_RESEARCH_PROFILE__',
+      value: { enabled: !!config.researchConfig, sampleDescription: config.researchSampleDescription,
+        modelProvider: config.researchModelProvider, workflow: config.researchWorkflow } })
+  })
   for (const [toolName, kind, description] of [
     ['market_daily_bars', 'bars', 'Fetch daily stock data from the selected data source within the operator quota.'],
     ['research_reports', 'report_summaries', 'Read broker report summaries where supported and enabled.'],
     ['company_announcements', 'announcements', 'Read company disclosure metadata and original document links where enabled.'],
     ['research_news', 'news', 'Read news titles, source links and publication times where supported and enabled.'],
   ]) {
+    if (!config.enabledKinds.includes(kind)) continue
     ctx.effect(() => ctx.tools.register(defineTool({
-      name: toolName, description,
+      name: toolName,
+      description: config.researchConfig && kind === 'bars'
+        ? 'Required first evidence step for EACH worker: call with the exact scope.query and await success. Grants this session access to the permitted sample. Composed samples reuse frozen cache with no new vendor query. An evidence ID from another agent is not an access grant.'
+        : description,
       parameters: {
         symbols: { type: 'array', required: true, items: { type: 'string' },
           description: 'Canonical identifiers, e.g. 000001.XSHE; converted for the selected source.' },
@@ -68,6 +97,9 @@ export function apply(ctx, config) {
       async execute(args, exec) {
         if (!exec.agent) throw new Error('Research data requires an owning session')
         const provider = config.activeProvider.get()
+        if (config.researchConfig) return runResearch(config, { op: 'data',
+          session_id: exec.agent.session.id, selected_provider: provider,
+          args: { kind, query: { symbols: args.symbols, start: args.start, end: args.end } } }, exec.signal)
         let payload = {}
         if (provider !== 'baostock') {
           const credential = await ctx.credentials.resolve(credentialRef(
@@ -87,9 +119,10 @@ export function apply(ctx, config) {
       presentCall: args => ({ card: 'generic', title: description, kind: 'other', rawInput: args }),
     })))
   }
+  if (!config.enabledKinds.length) return
   ctx.effect(() => ctx.tools.register(defineTool({
     name: 'read_research_evidence',
-    description: 'Read an immutable result already fetched by this research session.',
+    description: 'Read an immutable result already fetched by THIS research session. First call market_daily_bars and await success, even when another agent supplied the evidence ID. Do not batch this read before that access step completes.',
     parameters: {
       evidence_id: { type: 'string', required: true, description: 'Evidence hash from a source tool' },
       offset: { type: 'integer', description: 'First row, default 0' },
@@ -98,6 +131,9 @@ export function apply(ctx, config) {
     output: { schema: { type: 'json' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
     async execute(args, exec) {
       if (!exec.agent) throw new Error('Research data requires an owning session')
+      if (config.researchConfig) return runResearch(config, { op: 'data',
+        session_id: exec.agent.session.id, selected_provider: config.activeProvider.get(),
+        args: { kind: 'read', ...args } }, exec.signal)
       return runBackend(config, { provider: config.activeProvider.get(), kind: 'read',
         run_id: exec.agent.session.id, ...args }, exec.signal)
     },

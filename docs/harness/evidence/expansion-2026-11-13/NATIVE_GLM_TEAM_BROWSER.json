@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "at": "2026-11-13T04:21:26.583Z",
+  "draft_sha256": "d675e6eea553eb3469ea00d0307155f8595ffa33d17d3a98c9e9bfa5f7d8b619",
+  "checks": [
+    "audited draft visible in native chat",
+    "two native workers",
+    "both Agent Teams tasks completed",
+    "no browser page errors"
+  ],
+  "errors": []
+}

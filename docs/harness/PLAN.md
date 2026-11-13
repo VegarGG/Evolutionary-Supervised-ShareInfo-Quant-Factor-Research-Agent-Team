@@ -21,7 +21,9 @@ as BaoStock after bounded comparisons; only one provider is used per session.
    session uploads, package inventory uploads and general shell/file tools.
 3. Enforce the original cumulative 200 CNY allowance at the actual provider wire,
    including retries, helper requests and unknown outcomes. Prior conservative
-   spending is 56.256735 CNY across 884 calls; it is not reset for this project.
+   spending was estimated at 56.256735 CNY across 884 calls. Retain that history;
+   the owner's later official 20.35 CNY observation is the recorded baseline for
+   subsequent conservative charges, not a renewed allowance.
 4. Build bounded read-only iFind, RQData and BaoStock adapters. RQData also
    provides the initial report/disclosure/news discovery seams. No credentials or licensed rows are committed. Credential/entitlement
    failures are recorded as unavailable, never replaced by synthetic real data.
@@ -56,7 +58,7 @@ The answer key never enters the runtime workspace, prompts, MCP tools or provide
 wire. Diagnostic and open-ended results are separate. Diagnostic fixtures are not
 production factors and are never imported into a pool.
 
-Live admission remains DeepSeek-only, sequential initially, within the original
+The original DeepSeek diagnostic admission is sequential within the original
 schedule: 12:00–14:00 and 18:00–24:00 Beijing. At a closed window, stop admitting
 new work and let an already dispatched request finish; checkpoint unfinished work.
 500 is the authorized concurrency ceiling, not an experimental target. A smaller
@@ -82,6 +84,22 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
+13 November development update: the owner completed the eighth UI pilot and
+confirmed this is far from production ready. The scheduled DeepSeek run is canceled.
+Continue on GLM Coding Plan Pro / GLM 5.3 Flash until quota exhaustion or an owner
+switch, preserving the original budget and history. The shared-state/review package
+is tracked in [modular development](MODULAR_DEVELOPMENT_2026-11-13.md) and
+[completed-output review](FINAL_OUTPUT_REVIEW_2026-11-13.md).
+Native Models and Agent Teams remain the host; a fixed-definition trial does not
+establish adaptive coordination or general discovery capability. Mixed role models
+and bounded market/news context remain staged in the design below.
+
+Owner update, 12 November: proceed with guarded chat and one real supervisor/two-
+worker BaoStock trial. This authorizes the bounded prototype now; a universal
+collaboration advantage is not a prerequisite to implementing this trial. Earlier
+single-case comparisons retain their limitations. See [the interactive trial](INTERACTIVE_TRIAL.md)
+and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
+
 - [x] Same repository and current main baseline, separate worktree/branch.
 - [x] Superseded open PRs closed; source branches preserved.
 - [x] Pinned DSH boot and exact request routing verified locally.
@@ -93,8 +111,36 @@ cannot expand tool privileges or select a credential/host/path.
 - [x] One-case equal-evidence diagnostic live comparison completed (24 real calls).
 - [ ] Repeats, other mechanisms and open-ended cases completed.
 - [ ] Capability card supports progression to the minimal core.
+- [x] Native DSH Agent Teams source and model-selection interfaces reviewed.
+- [x] Bounded chat/worker integration implemented and exercised with synthetic inference.
+- [x] One real Flash/BaoStock browser attempt with full trace/resources recorded:
+  [failed before the reviewer and draft](LIVE_TRIAL_2026-11-12.md).
+- [x] Fenced-report boundary and duplicate-settlement fixes pass offline/native fixtures.
+- [x] Complete real three-role workflow after arithmetic/submission fixes:
+  [sixteen Flash calls, two workers and one draft](LIVE_RERUN_2026-11-12.md).
+- [x] Extend the exhausted pilot allowance explicitly from three to six sessions;
+  retain the existing ledger and original spending/data bounds.
+- [x] Implement the [statistical/specification repairs](STATISTICAL_SPECIFICATION.md):
+  geometry, explicit uncertainty states and one host-executed concrete definition.
+- [x] Fresh real three-role verification of those repairs: [fifteen Flash calls,
+  two workers and a host-executed contrast](LIVE_SPECIFICATION_TRIAL_2026-11-12.md).
+  Insufficient data is correctly recorded; no research-quality acceptance claimed.
+- [x] Standalone versioned shared-state/review module with exact citations, parentage,
+  explicit decisions, conflict preservation and concurrency/replay checks.
+- [x] Two paired real GLM diagnostic cases with feedback-disabled controls, including
+  every failed attempt: eleven calls, 69,923 tokens, 0.463528 CNY exposure.
+- [x] Completed-output review, explanation-only amendments and targeted repair of both
+  preserved unit counterexamples. Explicit prose unit checks block the recorded false pass.
+- [x] Native board tools and adaptive supervisor follow-up that changes the attributed
+  output version; a clean control skips the author. Computational definitions are preserved.
+- [ ] General semantic reliability and an unseen open-ended research case. One model-only
+  final review falsely passed contradictory prose; the current host grammar is deliberately limited.
+- [ ] Adaptive follow-up that revises the research idea or computational definition on new evidence.
+- [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
+- [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 
 Current evidence and gate assessment: [first pilot](FIRST_PILOT.md),
 [data-source record](DATA_SOURCES.md), [legacy deployment archive](LEGACY_EXPERIMENTS.md).
-The minimal-core gate remains open: no measured collaboration advantage has yet
-been demonstrated. Repeats are complete only for single/blackboard on the first case.
+No measured collaboration advantage has yet been demonstrated. Repeats are complete
+only for single/blackboard on the first case; the new native-team trial tests
+integration and research traceability, not general collaboration superiority.
