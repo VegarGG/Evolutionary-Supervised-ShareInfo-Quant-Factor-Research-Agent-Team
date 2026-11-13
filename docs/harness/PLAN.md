@@ -84,12 +84,14 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
-13 November update: the owner-authorized native GLM Coding Plan Pro integration
-and final supervisor/two-worker BaoStock trial pass; 169 offline tests pass. Use
-native Models (`zai-coding-cn`) and native Agent Teams with guard extensions.
-All failures and cash/credit reservations remain counted. One bounded owner trial
-remains before 18:00 Beijing. [Measured results and limits](LIVE_GLM_NATIVE_2026-11-13.md).
-Mixed role models and bounded market/news context remain staged in the design below.
+13 November development update: the owner completed the eighth UI pilot and
+confirmed this is far from production ready. The scheduled DeepSeek run is canceled.
+Continue on GLM Coding Plan Pro / GLM 5.3 Flash until quota exhaustion or an owner
+switch, preserving the original budget and history. The shared-state/review package
+is tracked in [modular development](MODULAR_DEVELOPMENT_2026-11-13.md).
+Native Models and Agent Teams remain the host; a fixed-definition trial does not
+establish adaptive coordination or general discovery capability. Mixed role models
+and bounded market/news context remain staged in the design below.
 
 Owner update, 12 November: proceed with guarded chat and one real supervisor/two-
 worker BaoStock trial. This authorizes the bounded prototype now; a universal

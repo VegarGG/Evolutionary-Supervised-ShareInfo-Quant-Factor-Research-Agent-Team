@@ -1,11 +1,12 @@
 # Bounded interactive research trial
 
-Status: the [latest real native GLM Flash/BaoStock trial](LIVE_GLM_NATIVE_2026-11-13.md)
-passed at 12:12–12:20 Beijing on 13 November. Both workers and Team tasks completed,
-fifteen calls settled, and the supervisor recorded an immutable draft. The full
-121-row calculation is inconclusive. 169 offline tests pass; model prose still
-requires review. One bounded owner trial remains under the eight-session allowance,
-with seven used. The GLM route expires at 18:00 Beijing on 13 November.
+Status: the owner completed the eighth and final fixed-scope pilot session. Both
+workers completed, fifteen actual GLM calls settled, and a draft was recorded.
+This profile is exhausted and remains an integration diagnostic, not a production
+research interface. Continued work is tracked in
+[modular development](MODULAR_DEVELOPMENT_2026-11-13.md). The scheduled DeepSeek
+run is canceled; GLM development has no 18:00 cutoff and retains the original
+cumulative cash budget and separate subscription limits.
 
 The owner authorized that rerun after arithmetic/reporting repairs. New
 reports use the [measurement contract](MEASUREMENT_CONTRACT.md): deterministic
@@ -66,12 +67,12 @@ remain available for preparation, while this trial's active source is BaoStock.
 | Model | `glm-5.3-flash` through native `zai-coding-cn` for all three roles |
 | Team | Supervisor + researcher + reviewer, one activation each; sequential workers |
 | Requests | Eight/six/six role caps; twenty per trial; one concurrent request |
-| Trials | Eight cumulative sessions under recorded amendments; seven used, one remaining |
+| Trials | Eight cumulative fixed-scope sessions; all eight used |
 | Data | Frozen `000001.XSHE`, requested 2026-05-01..10-30; 121 unadjusted daily closes |
 | Definition | Frozen close-return contrast and bootstrap protocol; no retuning |
 | New vendor requests | None from workers; the composed sample is preloaded from verified BaoStock chunks |
 | Paid data | No iFind or RQData call in this trial; their initial quotas remain unchanged |
-| Time | GLM admission until 18:00 Beijing on 13 November; no automatic provider switch |
+| Time | GLM development until quota exhaustion or owner switch; no automatic fallback |
 | Cash | Original 200 CNY cap; explicit 20 CNY GLM package sublimit; all charges/reservations retained |
 | Subscription | Sixty aggregate GLM requests and 1,500 local credits; other account activity is outside these local observations |
 

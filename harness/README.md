@@ -18,12 +18,13 @@ See [native Models integration](../docs/harness/NATIVE_MODELS_2026-11-13.md).
 The original 401 keeps its full reservation, and both the failed first team and
 zero-dispatch package refusal remain in history.
 
-One further bounded desktop owner trial remains before **18:00 Beijing on
-13 November**, with GLM 5.3 Flash, the fixed definition/sample and native Agent Teams.
-The same original 200 CNY ledger has 172.092126 CNY unreserved; Coding Plan credits
-are recorded separately. Seven of eight sessions and 32 of 60 GLM requests are
-used. Each trial retains twenty calls split eight/six/six. Broader models/data,
-market context and evaluator integration remain staged; mobile is not accepted.
+The owner completed the eighth fixed-scope trial. Development now follows the
+[modular work package](../docs/harness/MODULAR_DEVELOPMENT_2026-11-13.md).
+DeepSeek is disabled at the shared ledger. GLM Coding Plan Pro / GLM 5.3 Flash
+continues without the previous 18:00 cutoff, subject to bounded work packages,
+subscription exhaustion and the original 200 CNY total ceiling. The unchanged
+interactive eight-session pilot is exhausted; module tests use separate explicit
+step grants in the same ledger. This is not yet a production-ready research UI.
 
 ## Install and verify
 
@@ -118,7 +119,8 @@ owner's later official 20.35 CNY total supersedes covered estimates through the
 immutable billing-baseline record; newer conservative debits accumulate under
 the same 200 CNY ceiling. See the interactive guide for the current balance.
 
-Admission is DeepSeek-only, 12:00–14:00 and 18:00–24:00 Beijing; an in-flight request
+The historical diagnostic runner used DeepSeek, 12:00–14:00 and 18:00–24:00 Beijing;
+current campaign controls refuse DeepSeek dispatch. Historically, an in-flight request
 may drain after the window closes. Current concurrency is one, below the authorized
 ceiling of 500. `deepseek-flash` is the configured/observed response alias; it is
 not an independent identification of the backend model.

@@ -1,0 +1,9 @@
+{
+  "withheld_from_runtime": true,
+  "module-timing": {
+    "required": ["Use actual release timestamp, not reporting period end", "The first eligible signal close is 2026-05-06", "Execution is 2026-05-07 close; label starts there", "Retain dimensionless CNY ratio", "No profitability or measured-return claim"]
+  },
+  "module-units": {
+    "required": ["Convert profit to CNY with 10000 multiplier", "Convert capitalization to CNY with 100000000 multiplier", "Equivalent factor is raw profit/capitalization times 0.0001", "Retain profit over capitalization direction", "Retain release and next-close timing; no profitability claim"]
+  }
+}

@@ -8,7 +8,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, Usage
+from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, ProviderAdmission, Usage
 from qfh.coding_plan import (
     CodingLedger,
     CodingPolicy,
@@ -35,6 +35,50 @@ def policy(**changes):
 def ledger(tmp_path, **changes):
     cash = Research(CONFIGS / "research-trial.yaml", tmp_path).ledger
     return CodingLedger(cash, policy(**changes))
+
+
+def test_campaign_cancellation_applies_to_old_launchers_and_keeps_settlements(tmp_path):
+    obj = ledger(tmp_path)
+    cash = Ledger(obj.path, obj.policy)
+    open_window = datetime.fromisoformat("2026-11-13T18:01:00+08:00")
+    cash.reserve("already_dispatched", "old", open_window)
+    control = ProviderAdmission(
+        providers=["glm_coding"], authority="Owner canceled DeepSeek and authorized GLM only."
+    )
+    amendment = cash.set_provider_admission(control)
+    cash.settle(
+        "already_dispatched", Usage(input_uncached=1, input_cached=0, input_cache_write=0, output=1)
+    )
+    with pytest.raises(BudgetRefused, match="provider disabled"):
+        cash.reserve("canceled", "later", open_window)
+    with pytest.raises(BudgetRefused, match="provider disabled"):
+        Ledger(cash.path, cash.policy).reserve("restarted", "later", open_window)
+    obj.reserve("allowed", "glm", NOW, output_tokens=100)
+    assert len(cash.snapshot()["calls"]) == 2
+    assert cash.set_provider_admission(control) == amendment
+    with pytest.raises(ValueError, match="changed"):
+        cash.set_provider_admission(
+            ProviderAdmission(
+                providers=["deepseek"],
+                authority="A different operator switch with a stale revision.",
+            )
+        )
+    with pytest.raises(Exception, match="append only"):
+        with cash.transaction() as db:
+            db.execute("DELETE FROM config WHERE id>1")
+
+
+def test_continuing_glm_route_has_no_old_clock_cutoff_but_keeps_quota(tmp_path):
+    obj = ledger(tmp_path, admission_mode="until_stopped", ends_at=None, max_requests=1)
+    later = datetime.fromisoformat("2026-11-14T09:00:00+08:00")
+    obj.reserve("one", "one", later, output_tokens=100)
+    obj.settle("one", Usage(input_uncached=1, input_cached=0, input_cache_write=0, output=1))
+    with pytest.raises(BudgetRefused, match="request allowance"):
+        obj.reserve("two", "two", later, output_tokens=100)
+    with pytest.raises(ValidationError, match="finite"):
+        policy(ends_at=None)
+    with pytest.raises(ValidationError, match="clock expiry"):
+        policy(admission_mode="until_stopped")
 
 
 def test_coding_quota_is_atomic_and_preserves_cash_ledger(tmp_path):

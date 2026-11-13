@@ -96,7 +96,7 @@ globalThis.__ModuleLoader__.load({
               h('option', { value: 'rqdata', style: optionStyle }, 'RiceQuant RQData'))),
           h('p', { style: { margin: 0, fontSize: 13 } },
             state.researchMode
-              ? 'Interactive trial: BaoStock is pinned. Start a new chat, describe a research idea, and keep Use Agent Teams enabled. One supervisor and two workers will produce a cited draft.'
+              ? 'Development prototype: BaoStock is pinned. The fixed-scope pilot allowance is exhausted. Existing results remain readable; broader research workflows are under modular development.'
               : 'Change source before starting a new session. An existing session refuses source changes.'),
           h('div', { style: { border: '1px solid #bbb', borderRadius: 10, padding: 20 } },
             h('h3', { style: { margin: '0 0 8px' } }, 'BaoStock free testing'),
@@ -109,7 +109,7 @@ globalThis.__ModuleLoader__.load({
           h('p', { style: { margin: 0, fontSize: 13 } },
             state.researchMode
               ? (globalThis.__QFH_RESEARCH_PROFILE__?.sampleDescription || 'The research scope tool identifies this session’s frozen sample.') + (globalThis.__QFH_RESEARCH_PROFILE__?.modelProvider === 'glm_coding'
-                ? ' Current trials use GLM 5.3 Flash through Coding Plan Pro until 18:00 Beijing on 13 November. Subscription quota is bounded and recorded separately; the original 200 CNY cash cap is retained.'
+                ? ' Development tests use GLM 5.3 Flash through Coding Plan Pro until quota exhaustion or an owner-directed switch. Subscription quota is bounded and recorded separately; the original 200 CNY cash cap is retained.'
                 : ' DeepSeek runs only 12:00–14:00 and 18:00–24:00 Beijing, within the original shared 200 CNY cap.') + ' No backtest or publication is included.'
               : 'Initial scope: one symbol, up to three calendar days, close price only. iFind and RQData each allow one data query and one authentication request. BaoStock allows three attempts, including two retained failed attempts. Exact repeats reuse saved results.'),
           h('p', { style: { margin: 0, fontSize: 13 } },
@@ -125,7 +125,7 @@ globalThis.__ModuleLoader__.load({
         h('p', { style: { margin: 0 } },
           'GLM 5.3 Flash is pinned for the supervisor and both native Agent Teams workers. Model and endpoint changes are checked by the host.'),
         h('p', { style: { margin: 0 } },
-          'GLM admission ends at 18:00 Beijing on 13 November. The original 200 CNY total cap and a separate subscription quota limit apply to every request. Failed requests stay in the ledger.'),
+          'The scheduled DeepSeek run is canceled. GLM remains active until quota exhaustion or an owner-directed switch. The original 200 CNY total cap and a separate subscription quota limit apply to every request. Failed requests stay in the ledger.'),
         h('p', { style: { margin: 0, fontSize: 13 } },
           'Different models per role remain planned. GLM 5.3 requires recorded evidence that Flash is insufficient.'))
     }

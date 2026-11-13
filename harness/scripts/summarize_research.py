@@ -18,6 +18,36 @@ from qfh.research import Research
 from qfh.trial_metrics import model_metrics, resource_metrics, role_windows, work_metrics
 
 
+def collect_resources(servers, started, finished):
+    samples, manifests = [], []
+    for server in servers.iterdir():
+        manifest = json.loads((server / "manifest.json").read_text())
+        file = server / "resources.jsonl"
+        selected = []
+        if file.exists():
+            for line in file.read_text().splitlines():
+                try:
+                    sample = json.loads(line)
+                except json.JSONDecodeError:
+                    continue  # A still-running sampler may have an unfinished final line.
+                if started <= datetime.fromisoformat(sample["at"]) <= finished:
+                    selected.append(sample)
+        stopped_file = server / "stopped.json"
+        stopped = (
+            datetime.fromisoformat(json.loads(stopped_file.read_text())["at"])
+            if stopped_file.exists()
+            else datetime.now(UTC)
+        )
+        overlaps = datetime.fromisoformat(manifest["started_at"]) <= finished and stopped >= started
+        # A killed server has no stopped.json. Its open manifest is not evidence
+        # that it served a later trial; require samples inside this trial's window.
+        if overlaps and selected:
+            samples.extend(selected)
+            manifests.append({"path": str(server / "manifest.json"), "manifest": manifest})
+    samples.sort(key=lambda sample: sample["at"])
+    return samples, manifests
+
+
 def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
     research = Research(config, private)
     route = research.trial_model_route(trial_id)
@@ -48,30 +78,7 @@ def summarize(config, private, trial_id, pricing_path=None, balance_paths=()):
         + [datetime.fromisoformat(c["finished"]) for c in calls if c["finished"]]
         + [datetime.fromisoformat(e["at"]) for e in events]
     )
-    samples, manifests = [], []
-    for server in (private / "research/servers").iterdir():
-        manifest = json.loads((server / "manifest.json").read_text())
-        file = server / "resources.jsonl"
-        selected = []
-        if file.exists():
-            for line in file.read_text().splitlines():
-                try:
-                    sample = json.loads(line)
-                except json.JSONDecodeError:
-                    continue  # A still-running sampler may have an unfinished final line.
-                if started <= datetime.fromisoformat(sample["at"]) <= finished:
-                    selected.append(sample)
-        stopped_file = server / "stopped.json"
-        stopped = (
-            datetime.fromisoformat(json.loads(stopped_file.read_text())["at"])
-            if stopped_file.exists()
-            else datetime.now(UTC)
-        )
-        overlaps = datetime.fromisoformat(manifest["started_at"]) <= finished and stopped >= started
-        if overlaps:
-            samples.extend(selected)
-            manifests.append({"path": str(server / "manifest.json"), "manifest": manifest})
-    samples.sort(key=lambda sample: sample["at"])
+    samples, manifests = collect_resources(private / "research/servers", started, finished)
     windows = role_windows(members, events, started, finished)
     by_role = {}
     for member in members:

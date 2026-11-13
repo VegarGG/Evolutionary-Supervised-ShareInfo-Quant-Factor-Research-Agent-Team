@@ -715,3 +715,27 @@ source. Keep the idle guarded server available; no further provider request is
 scheduled. Mobile clipping, broader scientific validation, mixed role providers
 and current-market context remain staged. See LIVE_GLM_NATIVE_2026-11-13.md for
 complete per-agent work, token/rate/cost/cache/resource measurements and evidence.
+
+
+## 2026-11-13: return to modular capability development
+
+The owner completed the eighth fixed-scope pilot and rejected production readiness.
+Cancel the planned DeepSeek run and continue GLM Coding Plan Pro / GLM 5.3 Flash
+until quota exhaustion or an explicit owner switch. No queued Codex automation,
+user crontab or separate test scheduler was found. Enforce GLM-only admission in
+the shared ledger, atomically with reservations, so old launchers cannot dispatch
+DeepSeek. Previously dispatched requests can still settle. Retain the original
+200 CNY cap, official 20.35 baseline and unresolved 401 reservation.
+
+The next package follows the approved standalone-module stage: versioned shared
+state and review, using native DSH SDK sessions without a custom inference loop.
+Findings cite exact source excerpts and pin a candidate version. Revisions retain
+parentage and explicit adopt/reject/defer decisions. Host principals, immutable
+events, optimistic concurrency and bounded state are checked independently from
+semantic truth. This is not an official pool, evaluator or production core.
+
+The owner trial accounting and independent data audit pass after repairing an
+exporter attribution error: a killed server without stopped.json was incorrectly
+associated with a later trial despite contributing no resource samples. The
+original export and failed audit are retained. See MODULAR_DEVELOPMENT_2026-11-13.md
+for subsequent live module attempts and their capability limits.

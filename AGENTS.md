@@ -20,9 +20,10 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   DeepSeek peak hours, using GLM 5.3 Flash first. GLM 5.3 requires clear recorded
   evidence that Flash is insufficient. The owner confirmed DSH eligibility with
   Zhipu. Credentials are entered in DSH Settings; no metered-API fallback is
-  authorized. The owner subsequently replaced the scheduled expanded-BaoStock
-  trial with GLM 5.3 Flash on Coding Plan Pro until 18:00 Beijing on 13 November.
-  Preserve DeepSeek's original admission windows for any later DeepSeek calls.
+  authorized. The owner has now canceled the scheduled DeepSeek run and directed
+  GLM testing until quota exhaustion or an explicit owner switch. The earlier
+  18:00 cutoff is superseded. The append-only provider restriction in the shared
+  ledger enforces GLM-only dispatch; there is no automatic fallback.
   Other providers and local models remain unauthorized.
   The owner subsequently identified DSH's working `zai-coding-cn` route and
   requested guard extensions in the native Models page. Use its native pi-ai
@@ -31,10 +32,12 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
 - Latest verified native GLM trial: `docs/harness/LIVE_GLM_NATIVE_2026-11-13.md`.
-  Active route `glm-coding-native-package-2026-11-13` has a recorded 20 CNY
-  package sublimit inside the original 200 CNY ceiling; 60 aggregate requests,
-  1,500 credits and the same 18:00 Beijing expiry. Seven of eight pilot sessions
-  are used. One bounded owner trial remains; never reset history to create slots.
+  Active route `glm-coding-modular-2026-11-13` retains the 20 CNY package sublimit
+  inside the original 200 CNY ceiling. This work package has 100 aggregate requests
+  and 1,500 conservative credits; these are local caps, not account quota readings.
+  All eight fixed-scope pilot sessions are used. Standalone module tests have
+  distinct step grants in the same ledger; never reset history to create slots.
+  Current work: `docs/harness/MODULAR_DEVELOPMENT_2026-11-13.md`.
 - Run offline checks with `just harness-check` and `just harness-test`. Live
   experiments are separate commands with explicit campaign state and audit records.
   No ordinary test target may call a real model or data provider.

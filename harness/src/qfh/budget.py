@@ -8,6 +8,7 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -53,6 +54,13 @@ class Usage(BaseModel):
         return self.input_uncached + self.input_cached + self.input_cache_write
 
 
+class ProviderAdmission(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    kind: Literal["provider_admission"] = "provider_admission"
+    providers: list[Literal["deepseek", "glm_coding"]] = Field(min_length=1, max_length=2)
+    authority: str = Field(min_length=20)
+
+
 def admission_open(now: datetime) -> bool:
     """Owner-authorized windows, deliberately narrower than weekend tariff hours."""
     if now.tzinfo is None:
@@ -85,7 +93,7 @@ class Ledger:
                 "id INTEGER PRIMARY KEY, at TEXT NOT NULL, actual INTEGER NOT NULL, "
                 "covered_calls TEXT NOT NULL, calls_sha256 TEXT NOT NULL, authority TEXT NOT NULL)"
             )
-            for table in ("step_grants", "billing_baselines"):
+            for table in ("config", "step_grants", "billing_baselines"):
                 for action in ("UPDATE", "DELETE"):
                     db.execute(
                         f"CREATE TRIGGER IF NOT EXISTS {table}_no_{action.lower()} "
@@ -97,6 +105,26 @@ class Ledger:
             if saved and saved[0] != body:
                 raise ValueError("budget policy changed; explicit reconciliation required")
             db.execute("INSERT OR IGNORE INTO config VALUES (1, ?)", (body,))
+
+    @staticmethod
+    def provider_admission(db):
+        row = db.execute(
+            "SELECT id,body FROM config WHERE id>1 ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        return {"revision": row[0], **json.loads(row[1])} if row else None
+
+    def set_provider_admission(self, control: ProviderAdmission, *, expected_revision=None):
+        """Operator-only cancellation/switch, atomic with dispatch; no ledger reset."""
+        with self.transaction() as db:
+            prior = self.provider_admission(db)
+            if prior and all(prior[k] == v for k, v in control.model_dump().items()):
+                return prior
+            if (prior["revision"] if prior else None) != expected_revision:
+                raise ValueError("campaign provider admission changed")
+            revision = (prior["revision"] if prior else 1) + 1
+            body = {**control.model_dump(), "at": datetime.now(UTC).isoformat()}
+            db.execute("INSERT INTO config VALUES (?,?)", (revision, json.dumps(body)))
+            return {"revision": revision, **body}
 
     def reconcile_official_total(self, actual: int, expected_calls_sha256: str, authority: str):
         """Record an owner-reported official cumulative bill, keeping every old call.
@@ -193,7 +221,16 @@ class Ledger:
         self._reserve(request_id, step, now, self.policy.reservation)
 
     def _reserve(
-        self, request_id, step, now, reservation, *, detail=None, check=None, package_allowance=None
+        self,
+        request_id,
+        step,
+        now,
+        reservation,
+        *,
+        detail=None,
+        check=None,
+        package_allowance=None,
+        provider="deepseek",
     ):
         """Shared atomic cash/concurrency/request checks for trusted funding adapters."""
         package = self.policy.package_micro_cny if package_allowance is None else package_allowance
@@ -203,6 +240,9 @@ class Ledger:
         ):
             raise ValueError("package amendment must stay within the original cumulative ceiling")
         with self.transaction() as db:
+            control = self.provider_admission(db)
+            if control and provider not in control["providers"]:
+                raise BudgetRefused("provider disabled by the owner's campaign instruction")
             if db.execute("SELECT 1 FROM calls WHERE id=?", (request_id,)).fetchone():
                 raise BudgetRefused("request id already used; never redispatch")
             spent, pending = db.execute(
@@ -287,6 +327,7 @@ class Ledger:
             ).fetchone()
             baseline = dict(baseline_row) if baseline_row else None
             effective = self._effective_total(db)
+            provider_control = self.provider_admission(db)
         settled = sum(c["charged"] or 0 for c in calls)
         reserved = sum(c["reserved"] for c in calls if c["charged"] is None)
         return {
@@ -297,6 +338,7 @@ class Ledger:
             "conservative_unreconciled_cumulative_micro_cny": self.policy.carry_micro_cny + settled,
             "remaining_unreserved_micro_cny": self.policy.total_micro_cny - effective,
             "invoice_verified": False,
+            "provider_admission": provider_control,
             "billing_baseline": {k: v for k, v in baseline.items() if k != "covered_calls"}
             if baseline
             else None,

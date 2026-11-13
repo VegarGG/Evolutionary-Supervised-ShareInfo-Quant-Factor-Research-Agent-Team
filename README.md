@@ -19,14 +19,17 @@ the duplicate Research models panel is removed and light/dark select readability
 is repaired. See the [native integration record](docs/harness/NATIVE_MODELS_2026-11-13.md).
 The original 401, first team failure and a zero-call package refusal remain recorded.
 
-The desktop is ready for **one further bounded owner trial before 18:00 Beijing
-on 13 November**. Start a new session on the frozen single-stock definition and
-sample, with GLM 5.3 Flash and Agent Teams enabled. Seven of eight pilot sessions
-are used; the shared ledger has 172.092126 CNY unreserved under the original
-200 CNY cap. GLM uses separate prepaid-credit accounting and conservative cash
-exposure debits, not claimed incremental cash invoices. No automatic provider
-switch occurs at expiry. Mobile clipping and qualitative interpretation limits
-remain; this is a prototype, not a completed Hybrid v1 or accepted alpha engine.
+The owner completed the eighth bounded trial and directed continued modular
+work. **This is a development prototype, not production ready or completed Hybrid
+v1.** The scheduled DeepSeek run is canceled; the shared ledger now permits only
+GLM Coding Plan Pro, using GLM 5.3 Flash until quota exhaustion or an explicit
+owner switch. There is no 18:00 provider switch. The original 200 CNY ceiling and
+all reservations remain intact.
+
+The next work package implements and independently tests a versioned shared-state
+and review module: source-linked findings, explicit review decisions, immutable
+candidate revisions and stale-write refusal. Live module demonstrations are
+separate from the fixed BaoStock UI pilot. See the [development record](docs/harness/MODULAR_DEVELOPMENT_2026-11-13.md).
 
 Read the [approved plan](docs/harness/PLAN.md),
 [trial guide](docs/harness/INTERACTIVE_TRIAL.md),
@@ -62,8 +65,9 @@ estimates under the unchanged **200 CNY** ceiling. The raw call history and old
 estimates are preserved. The first diagnostic pilot's input cache hit rate was 22.64%.
 The interactive-trial export reports each role's token usage, cache hits, TPM/RPM,
 tariff-estimated cost and shared-process resource observations separately.
-Current accounted baseline plus conservative debits is **22.664994 CNY**,
-with **5.242880 CNY reserved** and **172.092126 CNY unreserved**. The GLM trial's
+After the owner trial, the accounted baseline plus conservative debits was
+**23.103376 CNY**, with **5.242880 CNY reserved** and **171.653744 CNY unreserved**.
+Subsequent module-test usage is recorded in the development record. The GLM trial's
 0.498666 CNY is a conservative exposure debit; 54.60039 prepaid credits is an
 upper estimate. Neither is an incremental cash invoice. Full per-role accounting
 and every retained failure are in the latest report.

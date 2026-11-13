@@ -64,7 +64,8 @@ class CodingPolicy(BaseModel):
     authority: str = Field(min_length=20)
     eligibility_authority: str = Field(min_length=20)
     starts_at: datetime
-    ends_at: datetime
+    ends_at: datetime | None
+    admission_mode: Literal["window", "until_stopped"] = "window"
     max_requests: int = Field(ge=1, le=100)
     max_microcredits: int = Field(gt=0)
     # Operator route amendment only; the original saved budget policy is immutable.
@@ -82,8 +83,15 @@ class CodingPolicy(BaseModel):
     def bounded_window(self):
         if (self.transport == "openai-completions") != self.endpoint.endswith("chat/completions"):
             raise ValueError("transport must match the approved Coding Plan endpoint")
-        if not self.starts_at.tzinfo or not self.ends_at.tzinfo or self.ends_at <= self.starts_at:
-            raise ValueError("a finite timezone-aware subscription admission window is required")
+        if not self.starts_at.tzinfo:
+            raise ValueError("timezone-aware subscription start is required")
+        if self.admission_mode == "window":
+            if self.ends_at is None or not self.ends_at.tzinfo or self.ends_at <= self.starts_at:
+                raise ValueError(
+                    "a finite timezone-aware subscription admission window is required"
+                )
+        elif self.ends_at is not None:
+            raise ValueError("until_stopped admission must not carry a clock expiry")
         if self.reservation > self.max_microcredits:
             raise ValueError("subscription allowance cannot cover one reserved request")
         return self
@@ -96,7 +104,11 @@ class CodingPolicy(BaseModel):
         )
 
     def admission_open(self, now):
-        return now.tzinfo is not None and self.starts_at <= now < self.ends_at
+        return (
+            now.tzinfo is not None
+            and self.starts_at <= now
+            and (self.ends_at is None or now < self.ends_at)
+        )
 
 
 def coding_detail(call):
@@ -211,6 +223,7 @@ class CodingLedger(Ledger):
             detail=json.dumps(detail),
             check=check,
             package_allowance=policy.cash_package_micro_cny,
+            provider="glm_coding",
         )
 
     def settle(self, request_id, usage, *, metadata=None):

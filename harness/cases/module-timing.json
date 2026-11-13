@@ -1,0 +1,21 @@
+{
+  "id": "module-timing",
+  "category": "diagnostic",
+  "synthetic_evidence": true,
+  "question": "Review and revise this daily China A-share research specification using only the supplied synthetic records. Preserve the economic hypothesis unless evidence challenges it. This is a diagnostic, not observed market data or a profitability claim.",
+  "sources": {
+    "filing": "Synthetic issuer TEST-A: period end 2026-03-31. Filing published 2026-04-30 at 18:30 Asia/Shanghai. The revenue field first became available in this filing; no preliminary release is in this fixture.",
+    "calendar": "Synthetic exchange calendar: 2026-04-30, 2026-05-06 and 2026-05-07 are consecutive trading sessions. Daily close is 15:00 Asia/Shanghai. The research convention forms the signal at a close using only information available by that close, executes at the next trading-session close, and begins the forward label at execution.",
+    "units": "The reported revenue and market capitalization fields are both denominated in CNY. This fixture supplies no realized returns and no cost estimates."
+  },
+  "initial": {
+    "name": "Revenue relative to capitalization",
+    "expression": "reported_revenue / market_capitalization",
+    "input_units": "CNY divided by CNY",
+    "availability_rule": "Use period end as the first available date for reported revenue.",
+    "signal_rule": "Form the signal at the 2026-03-31 close.",
+    "execution_rule": "Execute at the next trading-session close after the signal.",
+    "universe": "Synthetic issuer TEST-A only",
+    "hypothesis": "Revenue relative to capitalization may be informative about future returns; direction and investment value remain unmeasured."
+  }
+}
