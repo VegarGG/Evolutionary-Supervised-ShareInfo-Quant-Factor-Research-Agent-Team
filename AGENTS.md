@@ -32,13 +32,34 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   Anthropic probe and both reservations. Details: `NATIVE_MODELS_2026-11-13.md`.
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
+- Latest owner direction, 16 November: retry the same task with GLM 5.3 at maximum
+  reasoning effort. `glm53-max-unseen-2026-11-16` pins max on every native role and
+  wire request. The exact old pre-HTTP ConnectTimeout remains unknown and fully
+  reserved. A fingerprinted operator continuation permits only the two named fresh
+  max-effort groups, not replay of the old task or release of its reservation.
+  Any new unknown usage blocks again. This implements the explicit retry instruction;
+  it is not a billing reconciliation. See `MAX_EFFORT_2026-11-16.md`.
+  After the first maximum-effort analyst hit the 16384-token response limit, a
+  recorded operator amendment creates the fresh `glm53-max-32k-unseen-2026-11-16`
+  pair at 32768 tokens/request and a 60 CNY local historical-exposure sublimit.
+  The original 200 CNY ceiling, 240 historical requests, 4000 conservative credits,
+  frozen case and all prior reservations remain. No automatic cap expansion or replay.
+  That three-stage package is now recorded: 34 settled calls, 880655 tokens and
+  9.363500 CNY exposure. The 32k adaptive arm retained the factor and failed independent
+  prose review; the fixed arm inspected an alternative but retained the baseline,
+  then exhausted its five-request worker bound after submission, before review.
+  Never relabel that native error as completion. Current accounting is 40.411908 CNY,
+  14.090240 reserved and 145.497852 unreserved. 249 offline tests pass. Export uses
+  native session events when model-visible tool JSON is truncated; the two live
+  arms used the same 125-file source freeze. No minimal-core acceptance is claimed.
 - Earlier verified native GLM trial: `docs/harness/LIVE_GLM_NATIVE_2026-11-13.md`.
-  Current unseen-case package: `docs/harness/UNSEEN_CASE_2026-11-16.md` and route
-  `glm53-coding-unseen-2026-11-16`. GLM 5.3 uses explicit model-specific cash/credit
+  Earlier unseen-case package: `docs/harness/UNSEEN_CASE_2026-11-16.md` and route
+  `glm53-coding-unseen-2026-11-16`. That earlier GLM 5.3 route used model-specific cash/credit
   reservations, a 40 CNY local package sublimit inside the original 200 CNY ceiling,
   240 aggregate historical GLM requests and 4,000 conservative credits. These are
-  local caps, not account quota readings. Unknown charges block further dispatch;
-  preserve the unknown state and reservation until supported reconciliation.
+  local caps, not account quota readings. Unknown charges block further dispatch
+  except the specifically authorized reserved continuation above; preserve the
+  unknown state and full reservation until supported reconciliation.
   All eight fixed-scope pilot sessions are used. Standalone module tests have
   distinct step grants in the same ledger; never reset history to create slots.
   Prior diagnostic work: `docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md`. Those reruns

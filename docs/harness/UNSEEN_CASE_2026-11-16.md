@@ -1,5 +1,10 @@
 # Unseen BaoStock case and fixed workflow control
 
+Historical checkpoint below. The owner subsequently authorized a maximum-effort
+retry with the old timeout still fully reserved; [the later record](MAX_EFFORT_2026-11-16.md)
+contains all stages, scoped continuation and current accounting. No earlier attempt
+or usage record was replaced.
+
 Status: the first fixed/adaptive GLM 5.3 pair completed; the repeat adaptive attempt
 failed before final review. Further dispatch is blocked by one unresolved charge.
 The unseen-case experiment is recorded, but the substantive adaptive-revision

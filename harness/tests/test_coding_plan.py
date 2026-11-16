@@ -12,6 +12,8 @@ from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, ProviderAdmission, U
 from qfh.coding_plan import (
     CodingLedger,
     CodingPolicy,
+    ReservedConnectionTimeout,
+    call_fingerprint,
     coding_detail,
     parse_coding_usage,
     read_coding_credential,
@@ -123,6 +125,91 @@ def test_unknown_usage_retains_subscription_reservation_across_restart(tmp_path)
     assert detail["route_id"] == obj.coding.id
     with pytest.raises(BudgetRefused, match="unknown"):
         restarted.reserve("next", "next", NOW)
+
+
+def reserved_connection_fixture(tmp_path, cash=None):
+    obj = CodingLedger(cash, policy(max_requests=10)) if cash else ledger(tmp_path, max_requests=10)
+    obj.grant_step("old", "old-group", 2, 2, "Original bounded synthetic experiment.")
+    obj.reserve("lost", "old", NOW, output_tokens=128)
+    obj.unknown("lost", "ConnectTimeout")
+    call = obj.snapshot()["calls"][0]
+    wire = obj.path.parent / "wire/lost"
+    wire.mkdir(parents=True)
+    raw = json.dumps({"model": obj.coding.model}).encode()
+    (wire / "request.json").write_bytes(raw)
+    carry = ReservedConnectionTimeout(
+        request_id="lost",
+        call_sha256=call_fingerprint(call),
+        request_sha256=hashlib.sha256(raw).hexdigest(),
+        groups=["fresh-group", "next-group"],
+        authority="Owner explicitly requested this fresh retry; retain both old reservations.",
+    )
+    route = policy(id="owner-max-retry", max_requests=10, reserved_connection_timeouts=[carry])
+    new = CodingLedger(obj, route)
+    new.grant_step("fresh", "fresh-group", 2, 2, carry.authority)
+    return obj, new, wire, call
+
+
+def test_owner_retry_carries_exact_unknown_without_settlement_or_old_replay(tmp_path):
+    old, new, wire, call = reserved_connection_fixture(tmp_path)
+    before = old.snapshot()
+    with pytest.raises(BudgetRefused, match="unknown"):
+        new.reserve("old-replay", "old", NOW, output_tokens=128)
+    with pytest.raises(BudgetRefused, match="restricted"):
+        new.reserve("ungranted", "arbitrary", NOW, output_tokens=128)
+    new.reserve("fresh-call", "fresh", NOW, output_tokens=128)
+    fresh = next(c for c in new.snapshot()["calls"] if c["id"] == "fresh-call")
+    new.settle(
+        "fresh-call", Usage(input_uncached=100, input_cached=0, input_cache_write=0, output=10)
+    )
+    after = old.snapshot()
+    assert next(c for c in after["calls"] if c["id"] == "lost") == call
+    assert after["unresolved_micro_cny"] == before["unresolved_micro_cny"]
+    assert after["remaining_unreserved_micro_cny"] == before["remaining_unreserved_micro_cny"] - 280
+    assert coding_detail(fresh)["carried_unknown_ids"] == ["lost"]
+    assert CodingLedger(old, new.coding).verify_reserved_timeout(call).request_id == "lost"
+    new.reserve("second-call", "fresh", NOW, output_tokens=128)
+    new.unknown("second-call", "ConnectTimeout")
+    new.grant_step("other", "next-group", 2, 2, "Same bounded fresh experiment authority.")
+    with pytest.raises(BudgetRefused, match="unknown"):
+        new.reserve("third-call", "other", NOW, output_tokens=128)
+    assert old.policy.total_micro_cny == 200000000
+
+
+def test_carried_unknown_still_counts_fully_against_original_cash_ceiling(tmp_path):
+    original = ledger(tmp_path / "base")
+    cash = Ledger(
+        tmp_path / "near-limit/spend.sqlite3",
+        original.policy.model_copy(update={"carry_micro_cny": 196000000}),
+    )
+    old, new, _, _ = reserved_connection_fixture(tmp_path, cash=cash)
+    before = old.snapshot()
+    with pytest.raises(BudgetRefused, match="original cumulative budget"):
+        new.reserve("fresh-call", "fresh", NOW, output_tokens=128)
+    assert old.snapshot() == before
+
+
+@pytest.mark.parametrize("damage", ["request", "http", "stream", "fingerprint", "read_timeout"])
+def test_reserved_connection_carry_rejects_changed_or_post_http_evidence(tmp_path, damage):
+    old, new, wire, call = reserved_connection_fixture(tmp_path)
+    if damage == "request":
+        (wire / "request.json").write_text('{"model":"different"}')
+    elif damage in ("http", "stream"):
+        (wire / ("http.json" if damage == "http" else "response.sse")).write_text("{}")
+    elif damage == "fingerprint":
+        call = {**call, "reserved": call["reserved"] - 1}
+    else:
+        detail = coding_detail(call)
+        detail["error_type"] = "ReadTimeout"
+        call = {**call, "detail": json.dumps(detail)}
+        item = new.coding.reserved_connection_timeouts[0].model_copy(
+            update={"call_sha256": call_fingerprint(call)}
+        )
+        new = CodingLedger(
+            old, new.coding.model_copy(update={"reserved_connection_timeouts": [item]})
+        )
+    with pytest.raises(BudgetRefused):
+        new.verify_reserved_timeout(call)
 
 
 def test_operator_package_amendment_counts_old_calls_and_preserves_saved_policy(tmp_path):

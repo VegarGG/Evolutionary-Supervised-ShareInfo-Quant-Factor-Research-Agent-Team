@@ -1,0 +1,17 @@
+{
+  "baseline_rows": 177,
+  "calculations": [],
+  "checks": [
+    "source CSV equals frozen rows",
+    "raw/normalized scores and eligibility",
+    "sample SD n-1",
+    "per-symbol summaries",
+    "execution timing"
+  ],
+  "limits": "Arithmetic only. Source interpretations, rationale and claimed improvements require separate semantic review. No performance test.",
+  "method": "independent 50-digit Decimal calculation",
+  "snapshot_sha256": "125e11f539975266b71285da7094eec359c396caffa80d6fe18a6d11a86a0f74",
+  "status": "pass",
+  "projection_note": "No worker inspection exists in the 16k failure. No future-perturbation calculation was executed; frozen source/initial-factor checks passed.",
+  "original_private_sha256": "c688faf55c27526ecf7f598a256cb3e54befbca52427c52ad727f2712952895e"
+}

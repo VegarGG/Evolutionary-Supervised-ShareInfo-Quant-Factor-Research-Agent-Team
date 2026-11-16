@@ -72,7 +72,7 @@ class CasePolicy(Record):
     supervisor_requests: int = Field(ge=1, le=12)
     worker_requests: int = Field(ge=1, le=6)
     total_requests: int = Field(ge=1, le=36)
-    max_output_tokens: int = Field(ge=128, le=16384)
+    max_output_tokens: int = Field(ge=128, le=32768)
     max_inspections: int = Field(ge=1, le=6)
 
 

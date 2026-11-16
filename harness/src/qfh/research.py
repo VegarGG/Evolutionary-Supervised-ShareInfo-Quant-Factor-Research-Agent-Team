@@ -24,7 +24,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from qfh.budget import BudgetPolicy, BudgetRefused, Ledger, admission_open
-from qfh.coding_plan import CodingPolicy
+from qfh.coding_plan import CodingLedger, CodingPolicy
 from qfh.data_gateway import DataGuard, DataPolicy, dispatch, evidence_page
 from qfh.evidence import EvidenceStore, Query, canonical
 from qfh.research_metrics import ArithmeticProtocol, MeasurementRef, calculate_observations
@@ -346,8 +346,16 @@ class Research:
     def activate_model_route(self, route: CodingPolicy, *, expected_previous_id=None):
         """Trusted operator only; no research tool can select or enable a provider."""
         budget = self.ledger.snapshot()
-        if any(c["state"] not in ("settled", "rejected_reserved") for c in budget["calls"]):
+        if any(c["state"] == "pending" for c in budget["calls"]):
             raise ValueError("resolve pending/unknown model usage before changing route")
+        for call in budget["calls"]:
+            if call["state"] == "unknown":
+                try:
+                    CodingLedger(self.ledger, route).verify_reserved_timeout(call)
+                except BudgetRefused as exc:
+                    raise ValueError(
+                        "resolve pending/unknown model usage before changing route"
+                    ) from exc
         value = route.model_dump(mode="json")
         with self.db() as db:
             active = self.active_model_route(db)

@@ -168,6 +168,16 @@ def test_failed_native_task_cannot_be_replayed(tmp_path):
         obj.begin("root", "analyze", "Retry", [])
 
 
+def test_explicit_32k_package_preserves_other_bounds_and_rejects_larger_cap(tmp_path):
+    original = host(tmp_path).policy
+    value = {**original.model_dump(), "max_output_tokens": 32768}
+    expanded = CasePolicy.model_validate(value)
+    assert expanded.total_requests == original.total_requests == 32
+    assert expanded.episode == original.episode
+    with pytest.raises(ValueError, match="32768"):
+        CasePolicy.model_validate({**value, "max_output_tokens": 32769})
+
+
 def test_independent_calculator_detects_corrupted_result(tmp_path):
     from qfh.case_audit import audit
 

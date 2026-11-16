@@ -72,3 +72,23 @@ def test_native_chat_request_is_bounded_before_dispatch():
     ):
         with pytest.raises(BudgetRefused):
             validate_chat_request({**valid, **change}, MODEL, 8192, {"read_evidence"})
+
+
+def test_frozen_max_effort_cannot_be_silently_lowered():
+    request = {
+        "model": "glm-5.3",
+        "stream": True,
+        "max_tokens": 16384,
+        "stream_options": {"include_usage": True},
+        "reasoning_effort": "max",
+    }
+    assert validate_chat_request(request, "glm-5.3", 16384, set(), reasoning_effort="max") == 16384
+    for changed in (None, "low", "high"):
+        with pytest.raises(BudgetRefused, match="reasoning effort"):
+            validate_chat_request(
+                {**request, "reasoning_effort": changed},
+                "glm-5.3",
+                16384,
+                set(),
+                reasoning_effort="max",
+            )

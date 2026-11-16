@@ -12,6 +12,7 @@ from qfh.case_research import CaseBoard, CasePolicy
 from qfh.coding_plan import CodingPolicy
 from qfh.experiment import write_new
 from qfh.final_output import FinalBoard
+from qfh.native_audit import assert_completed_tasks, audited_tasks, read_task_log
 from qfh.research import Research
 from qfh.shared_state import digest
 from qfh.trial_metrics import model_metrics, resource_metrics, role_windows
@@ -126,7 +127,9 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
                 continue
             if isinstance(value, dict) and "team_task" in value:
                 task = value["team_task"]
-                native_team[(task["id"], task["revision"])] = task
+                key = (task["id"], task["revision"])
+                assert key not in native_team or native_team[key] == task
+                native_team[key] = task
         assert "data: [DONE]" in raw
         chunks = [json.loads(line[6:]) for line in raw.splitlines() if line.startswith("data: {")]
         assert {c["model"] for c in chunks if c.get("model")} == {route.model}
@@ -183,9 +186,7 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
     samples = [json.loads(line) for line in (server / "resources.jsonl").read_text().splitlines()]
     # Freeze the activity samples; the server's idle sampler may still be running.
     selected = [s for s in samples if start <= datetime.fromisoformat(s["at"]) <= finish]
-    write_new(output / "resource-samples.json", selected)
     files.append(output / "resource-samples.json")
-    write_new(output / "FINAL_BOARD.json", scope)
     files.append(output / "FINAL_BOARD.json")
     actors = sorted({r["actor"] for r in rows})
     members = [
@@ -239,6 +240,9 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
         if event["kind"] == "task_finished":
             result = json.loads((directory / f"native-{event['body']['actor']}.json").read_bytes())
             assert digest(result) == event["body"]["result_sha256"]
+    native_log = read_task_log(private / "research-ui-home", members[0]["session_id"])
+    native_proof = native_log[1] if native_log else None
+    native_tasks = audited_tasks(native_team, native_proof)
     accepted = scope["finalized"] is not None
     assert not (accepted and unresolved), "Unresolved usage cannot support accepted export"
     if accepted:
@@ -250,12 +254,18 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
         if not case:
             assert scope["unit_proof"]["formula_ok"] and scope["unit_proof"]["structured_claims_ok"]
             assert scope["unit_proof"]["recognized_prose_ok"]
-        for member in members:
-            if member["role"] != "supervisor":
-                assert any(
-                    t["ownerId"] == member["session_id"] and t["status"] == "completed"
-                    for t in native_team.values()
-                ), "Native Team completion not observed"
+        assert_completed_tasks(members, native_tasks)
+    write_new(output / "resource-samples.json", selected)
+    write_new(output / "FINAL_BOARD.json", scope)
+    if native_log:
+        frozen_log = output / "native-session-log.zstd"
+        if frozen_log.exists():
+            assert frozen_log.read_bytes() == native_log[0], "Frozen native log changed"
+        else:
+            with frozen_log.open("xb") as stream:
+                stream.write(native_log[0])
+        write_new(output / "NATIVE_TEAM_AUDIT.json", native_proof)
+        files.extend([frozen_log, output / "NATIVE_TEAM_AUDIT.json"])
     hashes = [
         {
             "path": str(p.relative_to(private)),
@@ -279,7 +289,8 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
         "actors": reports,
         "wire_calls": rows,
         "tools_called": tool_calls,
-        "native_team_tasks": list(native_team.values()),
+        "native_team_tasks": native_tasks,
+        "native_team_evidence": "native_session_log" if native_log else "wire_tool_receipts",
         "resources": resource_metrics(selected, [(start, finish)]),
         "recorded_artifact_bytes": sum(h["bytes"] for h in hashes),
         "budget_before": {k: v for k, v in manifest["budget_before"].items() if k != "calls"},
@@ -302,7 +313,7 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
                 "wire usage, quota and cash",
                 "all role rates",
                 "native task attribution",
-                "current version and final review",
+                "current version and final review" if accepted else "unfinished candidate retained",
                 "artifact hashes",
             ],
             "semantic_limit": "Prose interpretation requires a separate source-based review.",

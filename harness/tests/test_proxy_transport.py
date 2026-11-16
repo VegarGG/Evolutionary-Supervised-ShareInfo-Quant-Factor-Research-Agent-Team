@@ -185,12 +185,13 @@ def test_native_chat_guard_settles_before_done_and_rejects_wrong_models(tmp_path
         ) as proxy:
             proxy.step = "native"
 
-            def call(model):
+            def call(model, effort=route.reasoning_effort):
                 return urllib.request.Request(
                     proxy.base_url + "/chat/completions",
                     data=json.dumps(
                         {
                             "model": model,
+                            "reasoning_effort": effort,
                             "stream": True,
                             "max_tokens": 128,
                             "stream_options": {"include_usage": True},
@@ -205,6 +206,9 @@ def test_native_chat_guard_settles_before_done_and_rejects_wrong_models(tmp_path
 
             with pytest.raises(urllib.error.HTTPError) as error:
                 urllib.request.urlopen(call("glm-5.3"), timeout=10)
+            assert error.value.code == 409 and not book.snapshot()["calls"]
+            with pytest.raises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(call(route.model, "off"), timeout=10)
             assert error.value.code == 409 and not book.snapshot()["calls"]
             with urllib.request.urlopen(call(route.model), timeout=10) as response:
                 for line in response:

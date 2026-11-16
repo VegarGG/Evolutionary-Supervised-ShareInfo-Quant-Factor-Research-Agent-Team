@@ -84,12 +84,25 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
+16 November maximum-effort update: [the same-case GLM 5.3/max stages](MAX_EFFORT_2026-11-16.md)
+are recorded. A 16384-token response-limit failure led to a fresh 32768-token
+adaptive/fixed pair with the same 125 source files and frozen data. The adaptive
+arm retained the factor and received a false prose pass; the control explored
+normalization but retained the baseline and exhausted its five-request worker
+allowance before review. No substantive accepted revision. All 34 new calls settled,
+adding 880655 tokens and 9.363500 CNY exposure. Current accounting is 40.411908 CNY,
+14.090240 reserved and 145.497852 unreserved. The old timeout remains exactly unknown
+and fully reserved under narrow named retry authority. 249 offline tests pass,
+including native-log export after tool-result truncation. Next repair bounded tool
+responses, terminal acknowledgement accounting, count/prose validation and research
+criteria that distinguish exploratory hypotheses from proven investment benefit.
+
 16 November update: [the unseen BaoStock case](UNSEEN_CASE_2026-11-16.md) and
 [workflow capability cards](WORKFLOW_CAPABILITY_CARDS.md) are recorded. The owner
 directed a GLM 5.3 rerun after fixes. Its first fixed/adaptive pair completed with
 retained candidates; the repeat adaptive attempt failed before review with unknown
 usage. The frozen stop rule withheld the last control repeat and the ledger blocks
-further dispatch. No substantive adaptive factor revision or minimal-core acceptance
+further dispatch at that checkpoint. No substantive adaptive factor revision or minimal-core acceptance
 is claimed. The current package passes 232 offline tests. Accounting is 31.048408 CNY,
 14.090240 reserved and 154.861352 unreserved within the original 200 CNY ceiling.
 
@@ -157,4 +170,7 @@ No measured collaboration advantage has yet been demonstrated. Single/blackboard
 diagnostic repeats and targeted unit repairs are recorded. The unseen case's first
 fixed/adaptive pair completed, but a reverse-order repeat stopped on unknown usage.
 Integration, retention and research traceability do not establish general discovery
-or collaboration superiority. Reconcile the timeout before further live work.
+or collaboration superiority. The later maximum-effort stages do not change that
+conclusion. The timeout still needs reconciliation; its bounded reserved continuation
+does not establish general recovery. Keep the observed cap, prose, tool-truncation
+and workspace-attribution failures in the next module acceptance tests.

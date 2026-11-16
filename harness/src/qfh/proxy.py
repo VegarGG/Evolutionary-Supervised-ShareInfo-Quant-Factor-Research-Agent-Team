@@ -131,7 +131,11 @@ class GuardProxy:
                         from qfh.chat_transport import validate_chat_request
 
                         output_bound = validate_chat_request(
-                            body, proxy.model, proxy.max_tokens, proxy.allowed_tools
+                            body,
+                            proxy.model,
+                            proxy.max_tokens,
+                            proxy.allowed_tools,
+                            reasoning_effort=proxy.coding_policy.reasoning_effort,
                         )
                     else:
                         validate_request(body, proxy.model, proxy.max_tokens, proxy.allowed_tools)

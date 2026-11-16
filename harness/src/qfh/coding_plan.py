@@ -48,6 +48,29 @@ def read_coding_credential(private):
         ) from None
 
 
+class ReservedConnectionTimeout(BaseModel):
+    """Operator-authorized fresh experiment; never settlement of the old call."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    request_id: str = Field(pattern=r"^[a-zA-Z0-9_-]{1,100}$")
+    call_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    request_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    groups: list[str] = Field(min_length=1, max_length=2)
+    authority: str = Field(min_length=20)
+
+    @model_validator(mode="after")
+    def unique_groups(self):
+        if len(set(self.groups)) != len(self.groups) or any(not g for g in self.groups):
+            raise ValueError("fresh experiment groups must be nonempty and unique")
+        return self
+
+
+def call_fingerprint(call):
+    return hashlib.sha256(
+        json.dumps(call, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
 class CodingPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     id: str = Field(pattern=r"^[a-z0-9-]+$")
@@ -82,6 +105,9 @@ class CodingPolicy(BaseModel):
     pricing_source: str
     pricing_verified_on: str
     reasoning_effort: Literal["low", "high", "max"]
+    reserved_connection_timeouts: list[ReservedConnectionTimeout] = Field(
+        default_factory=list, max_length=1
+    )
 
     @model_validator(mode="after")
     def bounded_window(self):
@@ -180,6 +206,41 @@ class CodingLedger(Ledger):
     def cash_output_rate(self):
         return self.coding.cash_output_micro_cny_per_token or self.policy.output_micro_cny_per_token
 
+    def verify_reserved_timeout(self, call):
+        """Keep the exact unknown row and both reserves; check pre-HTTP evidence."""
+        matches = [
+            item
+            for item in self.coding.reserved_connection_timeouts
+            if item.request_id == call["id"]
+        ]
+        if len(matches) != 1 or call_fingerprint(call) != matches[0].call_sha256:
+            raise BudgetRefused("unknown usage has no matching owner retry authority")
+        item = matches[0]
+        detail = coding_detail(call)
+        wire = self.path.parent / "wire" / call["id"]
+        if (
+            call["state"] != "unknown"
+            or call["finished"] is None
+            or call["usage"] is not None
+            or call["charged"] is not None
+            or call["reserved"] <= 0
+            or detail.get("error_type") != "ConnectTimeout"
+            or detail.get("model") != self.coding.model
+            or detail.get("endpoint") != self.coding.endpoint
+            or detail.get("quota_settled_upper_microcredits") is not None
+            or detail.get("quota_reserved_microcredits", 0) <= 0
+            or not wire.is_dir()
+            or {p.name for p in wire.iterdir()} != {"request.json"}
+        ):
+            raise BudgetRefused("owner retry requires a fully reserved pre-HTTP connection timeout")
+        raw = (wire / "request.json").read_bytes()
+        if (
+            hashlib.sha256(raw).hexdigest() != item.request_sha256
+            or json.loads(raw).get("model") != self.coding.model
+        ):
+            raise BudgetRefused("reserved timeout request evidence changed")
+        return item
+
     def reserve(self, request_id, step, now, *, output_tokens=None):
         policy = self.coding
         output = policy.maximum_output_tokens if output_tokens is None else output_tokens
@@ -203,6 +264,9 @@ class CodingLedger(Ledger):
             "maximum_output_tokens": output,
             "cash_input_micro_cny_per_token": self.cash_input_rate,
             "cash_output_micro_cny_per_token": self.cash_output_rate,
+            "carried_unknown_ids": [
+                item.request_id for item in policy.reserved_connection_timeouts
+            ],
             "quota_settled_upper_microcredits": None,
             "cache_tokens_reported": None,
             "cash_package_micro_cny": policy.cash_package_micro_cny
@@ -220,8 +284,24 @@ class CodingLedger(Ledger):
             own = [(d, s) for d, s in own if d.get("funding") == "coding_plan"]
             if len(own) >= policy.max_requests:
                 raise BudgetRefused("GLM route request allowance exhausted")
-            if any(s == "unknown" for _, s in own):
-                raise BudgetRefused("GLM usage is unknown; inspect before continuing")
+            group = db.execute("SELECT group_id FROM step_grants WHERE step=?", (step,)).fetchone()
+            if policy.reserved_connection_timeouts and (
+                not group
+                or any(group[0] not in item.groups for item in policy.reserved_connection_timeouts)
+            ):
+                raise BudgetRefused("owner retry is restricted to the named fresh experiments")
+            cursor = db.execute("SELECT * FROM calls WHERE state='unknown'")
+            names = [column[0] for column in cursor.description]
+            for row in cursor.fetchall():
+                call = dict(zip(names, row, strict=True))
+                if call["usage"] is not None:
+                    call["usage"] = json.loads(call["usage"])
+                item = self.verify_reserved_timeout(call)
+                old = db.execute(
+                    "SELECT group_id FROM step_grants WHERE step=?", (call["step"],)
+                ).fetchone()
+                if not group or group[0] not in item.groups or old and old[0] == group[0]:
+                    raise BudgetRefused("unknown request cannot be replayed in its old experiment")
             if sum(s == "pending" for _, s in own) >= policy.concurrency:
                 raise BudgetRefused("GLM concurrency limit")
             used = sum(

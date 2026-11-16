@@ -848,3 +848,50 @@ reservations; the regression also verifies pending-export refusal and blocked re
 232 offline tests, format/lint, JS parsing and MIT checks pass. See
 UNSEEN_CASE_2026-11-16.md for full agent work, resources, native UI checks, failures,
 protocol amendments and evidence. Keep PR 22 draft and unmerged.
+
+## 2026-11-16: owner-directed maximum reasoning effort and bounded retry
+
+Pin GLM 5.3/max on the native Models/Agent Teams route and enforce the frozen effort
+on every wire request before admission. Keep the exact prior ConnectTimeout row,
+request hash and full cash/credit reservation unchanged. The explicit retry direction
+authorizes only named fresh groups through an operator continuation; it does not
+reconcile old usage, permit old-turn replay or waive another unknown charge.
+
+The initial max/16384 analyst response ended at the output ceiling without a finding.
+Record its six calls and failure, then freeze a fresh adaptive/fixed pair at 32768
+output tokens. Increase only the local historical cash sublimit from 40 to 60 CNY
+inside the original 200 CNY ceiling. Keep 240 historical requests, 4000 conservative
+credits, 32 requests/case, five requests/worker, six tasks/inspections and the original
+177-row BaoStock case. Both 32k arms use identical 125-file source snapshots.
+
+The adaptive arm completed with retention, 15 calls and 479799 tokens. Independent
+review rejects its incorrect count/warm-up explanation despite the model review's
+pass; no change is forced to satisfy the revision criterion. The fixed control
+inspected normalization (162 changed calculation values) but deferred it and submitted
+retention. Two rejected submissions consumed time/requests. A sixth worker request
+was refused after the accepted fifth-response submission, leaving the native task
+failed/in progress and preventing final review. Preserve that 13-call incomplete
+outcome; an accepted tool artifact does not establish successful native completion.
+
+Across all stages: 34 settled calls, 880655 tokens, 60.57% input cache hits,
+9.363500 CNY exposure and 805.86318 conservative credits. Current accounting is
+40.411908 CNY plus 14.090240 reserved, leaving 145.497852 unreserved. The official
+20.35 CNY baseline and both old reservations remain. These are exposure/credit
+estimates, not incremental subscription invoices. No new data or DeepSeek request.
+
+Large board tool responses exceeded DSH's roughly 50 KB model-visible output bound,
+so the first export missed completion receipts. Verify the append-only native
+session log, freeze it and its hash, then update only the exporter. Read every
+Zstandard frame, check identity/event/revision ordering and latest task ownership,
+and corroborate wire fields while excluding two derived display fields. The fixed
+native task correctly remains incomplete. All failed export/preparation attempts
+remain in evidence; the fix has offline regressions and 249 full tests pass.
+
+Do not conclude that optimization is impossible or that low effort alone caused
+retention. Operator authority/cap metadata changed from the low-effort comparison;
+one case cannot establish model or workflow superiority. Next address compact board
+delivery, terminal acknowledgement accounting, closed-attempt status, count/prose
+validation and exploratory hypothesis criteria. DSH's Git-diff cards attributed
+concurrent Codex edits to these research sessions; isolate the research workspace
+and use audited tool events for agent-work claims. MAX_EFFORT_2026-11-16.md contains
+all stage/actor/resource measurements. Core, Hybrid v1 and production gates stay open.

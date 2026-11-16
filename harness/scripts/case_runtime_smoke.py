@@ -148,6 +148,8 @@ if __name__ == "__main__":
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--port", type=int, default=3081)
     parser.add_argument("--model", choices=["glm-5.3-flash", "glm-5.3"], default="glm-5.3-flash")
+    parser.add_argument("--effort", choices=["low", "high", "max"], default="low")
+    parser.add_argument("--output-cap", type=int, choices=[16384, 32768], default=16384)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     private = args.directory.resolve()
@@ -174,6 +176,7 @@ if __name__ == "__main__":
         ).read_text()
     )
     raw["starts_at"] = "2000-01-01T00:00:00Z"
+    raw["reasoning_effort"] = args.effort
     research.activate_model_route(CodingPolicy.model_validate(raw))
     spec = FactorSpec(
         lookback=5,
@@ -216,7 +219,7 @@ if __name__ == "__main__":
         supervisor_requests=12,
         worker_requests=5,
         total_requests=32,
-        max_output_tokens=16384,
+        max_output_tokens=args.output_cap,
         max_inspections=6,
     )
     package = private / "package.json"

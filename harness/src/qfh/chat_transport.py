@@ -3,7 +3,7 @@
 from qfh.budget import BudgetRefused, Usage
 
 
-def validate_chat_request(body, model, max_tokens, allowed_tools):
+def validate_chat_request(body, model, max_tokens, allowed_tools, *, reasoning_effort=None):
     allowed = {
         "model",
         "messages",
@@ -33,6 +33,8 @@ def validate_chat_request(body, model, max_tokens, allowed_tools):
         raise BudgetRefused("the configured GLM model requires thinking enabled")
     if body.get("model") != model or body.get("stream") is not True:
         raise BudgetRefused("only the configured streaming model is allowed")
+    if reasoning_effort is not None and body.get("reasoning_effort") != reasoning_effort:
+        raise BudgetRefused("request must use the frozen reasoning effort")
     caps = [body[k] for k in ("max_tokens", "max_completion_tokens") if k in body]
     if len(caps) != 1 or type(caps[0]) is not int or not 0 < caps[0] <= max_tokens:
         raise BudgetRefused("missing or excessive requested output cap")

@@ -12,16 +12,30 @@ passed at **12:12–12:20 Beijing on 13 November**: one supervisor, two workers,
 independently executed the frozen specification on all 121 real observations.
 The result is **inconclusive**, with model-prose caveats recorded separately.
 Input cache hit rate was 57.47%; its independent arithmetic audit passed.
-The current unseen-case package passes 232 offline tests.
+The current unseen-case package passes 249 offline tests.
 
 The [16 November unseen-case comparison](docs/harness/UNSEEN_CASE_2026-11-16.md)
 reused 177 BaoStock rows in fixed and adaptive workflows. After submission fixes,
 the owner directed an exact-task **GLM 5.3** rerun. Both first-pair arms completed
 and retained the original factor; no substantive adaptive factor revision was
 demonstrated. A repeat stopped before final review on a connection timeout with
-unknown usage. Further live dispatch is blocked, its reservation is retained, and
-the final planned control repeat was not run. See the report for every attempt and
+unknown usage. Its reservation is retained, and the final planned control repeat
+was not run. See the report for every attempt and
 [per-agent measurements](docs/harness/evidence/unseen-2026-11-16/METRICS.md).
+
+The owner subsequently requested **GLM 5.3 at maximum reasoning effort** on the
+same case. The guard now enforces the frozen effort on every request. A narrowly
+scoped continuation holds the exact old timeout reservation in full and permits
+only the named fresh experiments; a new unknown charge still stops dispatch.
+The 16384-token attempt failed at its response limit, leading to a fresh bounded
+32768-token pair. See [the maximum-effort record](docs/harness/MAX_EFFORT_2026-11-16.md)
+for the staged protocol, results and limits; this is not a strict effort-only ablation.
+The adaptive arm completed but retained the factor and failed independent prose
+review. The fixed control inspected normalization, retained the baseline, then
+exhausted its worker request allowance before final review. All 34 new calls settled:
+880655 tokens and 9.363500 CNY exposure. The native-log exporter now survives
+truncated tool receipts. Current accounting is **40.411908 CNY accounted**,
+**14.090240 reserved**, and **145.497852 unreserved** under the original 200 CNY cap.
 
 Use **Settings → Models → Z.ai Coding (China) · guarded research** for the
 Coding Plan Pro key. The native `zai-coding-cn` route works with the saved key;
@@ -96,13 +110,14 @@ Its additional conservative debit was **1.590600 CNY**. Accounting at that check
 **25.157504 CNY**, **5.242880 CNY reserved**, and **169.599616 CNY unreserved**.
 That diagnostic route used low reasoning effort and a 120-request aggregate bound.
 
-Current accounting after the unseen-case attempts is **31.048408 CNY** baseline
+Accounting before the maximum-effort retry was **31.048408 CNY** baseline
 plus conservative debits, **14.090240 CNY reserved**, and **154.861352 CNY unreserved**.
 The reservations include the earlier 401 and the new unresolved connection timeout.
-The GLM 5.3 route has 240 aggregate historical requests, 4000 conservative credits
-and a 40 CNY local sublimit inside the unchanged 200 CNY total. These are local
-bounds, not provider quota readings or subscription invoices. The unknown charge
-must be reconciled before live dispatch resumes. Model-only prose review remains
+The maximum-effort 32768-token route retains 240 aggregate historical requests and
+4000 conservative credits, with a 60 CNY local sublimit inside the unchanged 200 CNY
+total. These are local bounds, not provider quota readings or subscription invoices.
+The old unknown charge is still fully reserved under the named retry authority;
+it has not been reconciled or treated as free. Model-only prose review remains
 insufficient for general acceptance; [capability cards](docs/harness/WORKFLOW_CAPABILITY_CARDS.md)
 keep the minimal core provisional.
 
@@ -122,8 +137,9 @@ port 3080. Use its authenticated bootstrap link printed locally. In Settings →
 Research data, select BaoStock, iFind or RQData. Saving a credential sends no
 provider request. This setup profile has model providers disabled; guarded live
 experiments use the separate SDK runner, as described in [harness/README.md](harness/README.md).
-Current development uses **`glm-5.3-flash` only**, with its Coding Plan Pro key in
-native Models. The guarded profile is `just harness-research-ui --private
+The active unseen-case package uses **`glm-5.3` with maximum reasoning effort**,
+with its Coding Plan Pro key in native Models. Earlier diagnostic packages retain
+their recorded Flash settings. The guarded profile is `just harness-research-ui --private
 .qfh-private --install-plugin`; the adaptive diagnostic additionally requires
 `--adaptive-package /operator/prepared-package.json`. Its one-session allowance is
 separate from the exhausted fixed pilot, while every request uses the same original

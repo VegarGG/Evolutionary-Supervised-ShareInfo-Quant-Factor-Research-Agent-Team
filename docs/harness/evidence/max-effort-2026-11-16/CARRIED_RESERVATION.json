@@ -1,0 +1,13 @@
+{
+  "id": "a56ac7e768ab433ca20f0523548d73b3",
+  "state": "unknown",
+  "call_sha256": "72efe09d51ec4710e3a9aec2df5257bfb7d7185ef679d79d29cb6641f687a425",
+  "matches_frozen_authority": true,
+  "request_sha256": "ffb88e05a6ba8b8d29c99275ea4847abbc39d22b480a515d28a3065749108eaf",
+  "usage": null,
+  "charged": null,
+  "reserved_micro_cny": 8847360,
+  "quota_reserved_microcredits": 762839040,
+  "reservation_released": false,
+  "old_turn_replayed": false
+}

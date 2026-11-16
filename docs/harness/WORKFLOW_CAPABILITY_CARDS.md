@@ -84,6 +84,10 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
 - Limits: the first Flash run changed scores but its explanation failed review.
   The GLM 5.3 runs and failures are recorded separately. A fixed sequence cannot
   request a repair after its final review within this control's protocol.
+  In the [maximum-effort control](MAX_EFFORT_2026-11-16.md), the designer inspected
+  a normalization hypothesis but deferred it. Citation/parent repairs used the
+  five-request allowance; the accepted retention lacked a native terminal
+  acknowledgement and never reached review. Inspection is not adoption.
 - Suitable use: equal-evidence control for adaptive assignments.
 - Next experiment: retain the fixed stage assignments while changing the research
   case under a new predeclared protocol; do not tune the control after seeing results.
@@ -100,6 +104,12 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   revision. The correct starting formula and close-only evidence may be weak
   stimuli for evolution. Contract repairs and a transport timeout remain recorded.
   A defensible retention decision does not establish general discovery capability.
+  Maximum effort used substantially more output tokens but again retained the
+  baseline; its reviewer approved an incorrect count explanation. The supervisor
+  narrowed later assignments around the initial analyst's conclusion. These are
+  observed failure mechanisms, not a controlled proof that effort or supervision
+  generally reduces quality. Tool-result truncation also exposed an export gap;
+  native session-event auditing now verifies actual task states independently.
 - Suitable use: provisional research core for bounded, auditable development.
 - Next experiment: a new frozen case with an evidence-supported applicability
   constraint or competing testable specifications. Permit justified exploratory
@@ -125,3 +135,8 @@ integrate one accepted loop. Parallel research, frozen-pool curation and composi
 need their own module fixtures and failure records before Hybrid v2. Timeout
 reconciliation, operational recovery and broader source/semantic tests remain
 production work, separate from the early research-capability gate.
+
+Before another open-ended comparison, repair compact/paged board delivery and
+terminal acknowledgement accounting, add the count/prose counterexamples, separate
+exploration from adoption criteria, and isolate the research workspace from unrelated
+Git edits. Keep the original 200 CNY ledger and unresolved reservations intact.

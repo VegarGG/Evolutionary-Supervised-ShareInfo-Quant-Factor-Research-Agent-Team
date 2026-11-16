@@ -10,7 +10,7 @@ completed both workers, both Team tasks and an immutable draft: 15 actual Flash
 requests, 180,678 tokens, 57.47% input cache hits and zero tool failures. Both workers
 executed the full 121-row BaoStock sample; the host result is inconclusive.
 That source passed 169 offline tests and GitHub checks; the current module package
-passes 232 offline tests. Quantitative audit passed; the
+passes 249 offline tests. Quantitative audit passed; the
 separate qualitative audit flags overly categorical interpretation of the estimate.
 
 Credentials now use **Settings → Models → Z.ai Coding (China) · guarded research**.
@@ -31,10 +31,16 @@ step grants in the same ledger. This is not yet a production-ready research UI.
 The [unseen BaoStock case](../docs/harness/UNSEEN_CASE_2026-11-16.md) freezes three
 symbols and 177 real rows for fixed/adaptive controls. The first GLM 5.3 pair
 completed with unchanged candidates; the adaptive repeat timed out before review.
-Its full reservation remains unknown and blocks further dispatch. The final control
-repeat was not run. Current balance: 31.048408 CNY accounted, 14.090240 reserved,
-154.861352 unreserved under the original 200 CNY ceiling. The 40 CNY/4000-credit
-local route bounds and 240 historical-request ceiling do not reset earlier usage.
+Its full reservation remains unknown; the final control repeat was not run.
+The owner's later [maximum-effort retry](../docs/harness/MAX_EFFORT_2026-11-16.md)
+uses GLM 5.3/max for every role. A fingerprinted continuation preserves that exact
+old reservation and permits only named fresh cases; another unknown charge still
+blocks dispatch. After a 16384-token length failure, a 32768-token pair retained
+the baseline: adaptive completion failed independent prose review, and the fixed
+control stopped before review at its five-request worker bound. All 34 new calls
+settled. Current balance: 40.411908 CNY accounted, 14.090240 reserved and 145.497852
+unreserved. The original 200 CNY cap remains; the current route has a 60 CNY local
+sublimit, 4000 conservative credits and 240 aggregate historical GLM requests.
 
 The case profile exposes native `case_board`, `case_task`, `inspect_case_factor`,
 `submit_case_findings`, `revise_case_factor`, `review_case_factor` and `finalize_case`.
@@ -52,8 +58,12 @@ uses the existing Models editor and Agent Teams. Existing run IDs refuse paid re
 `export_case_run.py` audits wire/accounting and independent factor arithmetic;
 `--allow-unresolved` explicitly exports a failed attempt with missing usage, preserving
 its blocking reservation. It never resumes inference or reconciles a charge.
-`case_runtime_smoke.py` is scripted and offline. Do not launch a fresh live case
-while the recorded connection-timeout charge remains unknown.
+`case_runtime_smoke.py` is scripted and offline; `--effort max --output-cap 32768`
+exercises the current settings without a provider. The named operator continuation
+does not release or reconcile the old timeout or authorize unrelated cases.
+The exporter checks native DSH compressed session events as well as wire receipts,
+so model-visible tool truncation cannot silently erase task-completion evidence.
+Missing, mismatched or in-progress native tasks do not pass as completed.
 
 The [completed-output review module](../docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md)
 adds a native adaptive profile: `research_board`, initial `research_delegate`,
