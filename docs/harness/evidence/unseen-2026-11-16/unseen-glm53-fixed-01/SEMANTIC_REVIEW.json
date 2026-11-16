@@ -1,0 +1,20 @@
+{
+  "reviewer": "Codex source-based manual audit",
+  "artifact": "RESULT.json",
+  "official_evaluation_or_publication": false,
+  "status": "acceptable_retained_candidate_with_limits",
+  "factor_revision_demonstrated": false,
+  "adaptive_revision_demonstrated": false,
+  "acceptance": false,
+  "findings": [
+    "The original dimensionless return specification is executable on the frozen common dates.",
+    "Coverage and descriptive figures match the source bundle and independent Decimal recomputation.",
+    "Retaining the baseline is a defensible research decision; no changed score or eligibility row is claimed.",
+    "A hypothetical normalization need not be profitable to be worth investigating; absence of forward labels limits performance conclusions, not all exploratory changes. The retained choice does not prove every alternative invalid.",
+    "Exact-version review and host finalization completed. This is not the substantive adaptive-revision checkpoint."
+  ],
+  "limits": [
+    "Reviewer re-inspection calls the same host calculator; independent arithmetic is provided separately by the Decimal audit.",
+    "Neither retained sign nor five-observation lookback has been predictively validated."
+  ]
+}

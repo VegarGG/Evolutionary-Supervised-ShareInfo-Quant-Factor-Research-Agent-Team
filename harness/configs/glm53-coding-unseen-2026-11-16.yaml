@@ -1,0 +1,30 @@
+id: glm53-coding-unseen-2026-11-16
+provider: glm_coding
+funding: coding_plan
+platform: bigmodel-cn
+subscription_tier: Pro
+model: glm-5.3
+endpoint: https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+authority: >-
+  Owner: After your fix, switch model to GLM 5.3 and let it rerun the exact same
+  task again. Retain the original 200 CNY total. Operator work-package bounds:
+  40 CNY exposure sublimit and 4000 conservative credits for the larger model's full-context
+  reservation; keep all history and at most two paired fixed/adaptive runs.
+eligibility_authority: Owner confirmed DSH eligibility directly with Zhipu.
+starts_at: '2026-11-16T00:00:00+08:00'
+ends_at: null
+admission_mode: until_stopped
+max_requests: 240
+max_microcredits: 4000000000
+input_microcredits_per_token: 690
+output_microcredits_per_token: 2400
+maximum_input_tokens: 1048576
+maximum_output_tokens: 131072
+concurrency: 1
+pricing_source: https://docs.bigmodel.cn/cn/coding-plan/overview
+pricing_verified_on: '2026-11-16'
+reasoning_effort: low
+transport: openai-completions
+cash_package_micro_cny: 40000000
+cash_input_micro_cny_per_token: 8
+cash_output_micro_cny_per_token: 28

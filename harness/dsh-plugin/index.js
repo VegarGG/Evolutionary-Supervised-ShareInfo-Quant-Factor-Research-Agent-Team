@@ -29,6 +29,9 @@ export function runBackend(config, request, signal) {
 }
 
 export function runResearch(config, request, signal) {
+  if (config.casePackage) return runPython(config, ['-m', 'qfh.case_research',
+    '--config', config.researchConfig, '--private', config.researchPrivateRoot,
+    '--package', config.casePackage], request, signal)
   if (config.adaptivePackage) return runPython(config, ['-m', 'qfh.adaptive_research',
     '--config', config.researchConfig, '--private', config.researchPrivateRoot,
     '--package', config.adaptivePackage], request, signal)

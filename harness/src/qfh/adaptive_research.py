@@ -42,6 +42,8 @@ class AdaptivePolicy(Record):
 
 
 class AdaptiveResearch:
+    accepted_submission_kinds = {"final_review", "output_amendment"}
+
     def __init__(self, config: Path, private: Path, package: Path):
         self.research = Research(config, private)
         self.policy = AdaptivePolicy.model_validate_json(package.read_bytes())
@@ -245,8 +247,7 @@ class AdaptiveResearch:
             accepted = [
                 e
                 for e in events
-                if e["actor"] == member["actor"]
-                and e["kind"] in ("final_review", "output_amendment")
+                if e["actor"] == member["actor"] and e["kind"] in self.accepted_submission_kinds
             ]
             atomic_new(self.directory / f"native-{member['actor']}.json", result)
             event = self.board._append(

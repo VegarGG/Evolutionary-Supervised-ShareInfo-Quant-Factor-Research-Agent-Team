@@ -37,7 +37,7 @@ class Response:
         pass
 
     def iter_lines(self):
-        if self.model == "glm-5.3-flash":
+        if self.model in ("glm-5.3-flash", "glm-5.3"):
             delta = (
                 {
                     "role": "assistant",

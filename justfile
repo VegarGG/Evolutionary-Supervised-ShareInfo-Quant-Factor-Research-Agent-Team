@@ -9,6 +9,7 @@ harness-check:
     node --check harness/dsh-plugin/research.js
     node --check harness/dsh-plugin/native-models.js
     node --check harness/dsh-plugin/adaptive.js
+    node --check harness/dsh-plugin/case.js
     uv run --project harness --locked python scripts/check_licenses.py
 
 harness-test:

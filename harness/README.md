@@ -10,7 +10,7 @@ completed both workers, both Team tasks and an immutable draft: 15 actual Flash
 requests, 180,678 tokens, 57.47% input cache hits and zero tool failures. Both workers
 executed the full 121-row BaoStock sample; the host result is inconclusive.
 That source passed 169 offline tests and GitHub checks; the current module package
-passes 212 offline tests. Quantitative audit passed; the
+passes 232 offline tests. Quantitative audit passed; the
 separate qualitative audit flags overly categorical interpretation of the estimate.
 
 Credentials now use **Settings → Models → Z.ai Coding (China) · guarded research**.
@@ -21,11 +21,39 @@ zero-dispatch package refusal remain in history.
 
 The owner completed the eighth fixed-scope trial. Development now follows the
 [modular work package](../docs/harness/MODULAR_DEVELOPMENT_2026-11-13.md).
-DeepSeek is disabled at the shared ledger. GLM Coding Plan Pro / GLM 5.3 Flash
-continues without the previous 18:00 cutoff, subject to bounded work packages,
+DeepSeek is disabled at the shared ledger. The owner directed an exact-task switch
+from Flash to GLM 5.3 for the 16 November case. GLM Coding Plan Pro has no previous
+18:00 cutoff, subject to bounded work packages,
 subscription exhaustion and the original 200 CNY total ceiling. The unchanged
 interactive eight-session pilot is exhausted; module tests use separate explicit
 step grants in the same ledger. This is not yet a production-ready research UI.
+
+The [unseen BaoStock case](../docs/harness/UNSEEN_CASE_2026-11-16.md) freezes three
+symbols and 177 real rows for fixed/adaptive controls. The first GLM 5.3 pair
+completed with unchanged candidates; the adaptive repeat timed out before review.
+Its full reservation remains unknown and blocks further dispatch. The final control
+repeat was not run. Current balance: 31.048408 CNY accounted, 14.090240 reserved,
+154.861352 unreserved under the original 200 CNY ceiling. The 40 CNY/4000-credit
+local route bounds and 240 historical-request ceiling do not reset earlier usage.
+
+The case profile exposes native `case_board`, `case_task`, `inspect_case_factor`,
+`submit_case_findings`, `revise_case_factor`, `review_case_factor` and `finalize_case`.
+The supervisor assigns native child tasks; the host restricts executable factor
+specifications, checks source citations and records exact versions/decisions.
+Python tools import each server's frozen source snapshot. Raw/normalized scores
+and timing are independently recomputed with Decimal; semantic acceptance remains
+separate. No evaluator, official publication or arbitrary code execution is exposed.
+Two worker role types may create more than two child activations.
+
+`prepare_unseen_case.py` separates the bounded data preparation from model dispatch;
+`prepare_case_rerun.py` freezes the owner-directed same-task model amendment.
+`start_research_ui.py --case-package PATH --private .qfh-private --install-plugin`
+uses the existing Models editor and Agent Teams. Existing run IDs refuse paid replay.
+`export_case_run.py` audits wire/accounting and independent factor arithmetic;
+`--allow-unresolved` explicitly exports a failed attempt with missing usage, preserving
+its blocking reservation. It never resumes inference or reconciles a charge.
+`case_runtime_smoke.py` is scripted and offline. Do not launch a fresh live case
+while the recorded connection-timeout charge remains unknown.
 
 The [completed-output review module](../docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md)
 adds a native adaptive profile: `research_board`, initial `research_delegate`,
@@ -47,7 +75,7 @@ Prepare an explicitly selected prior output with
 `adaptive_runtime_smoke.py` is explicitly offline and scripted; real sessions never
 substitute its responses. `export_adaptive_run.py` audits the completed live run
 against raw provider responses, native task results and frozen source files.
-The active diagnostic route requests low reasoning effort with thinking enabled;
+The earlier diagnostic route requests low reasoning effort with thinking enabled;
 its 120-request aggregate cap retains all prior GLM usage. Every episode is bounded
 by 32 requests, five tasks and a 16384-token output ceiling. Increasing a local
 work-package allowance does not increase the original 200 CNY cash ceiling.

@@ -268,6 +268,25 @@ def test_quota_reservation_accounts_for_previously_settled_usage(tmp_path):
         obj.reserve("second", "second", NOW)
 
 
+def test_explicit_glm53_route_uses_own_prices_and_keeps_flash_history(tmp_path):
+    flash = ledger(tmp_path)
+    flash.reserve("flash", "flash", NOW, output_tokens=100)
+    flash.settle("flash", Usage(input_uncached=10, input_cached=20, input_cache_write=0, output=5))
+    before = flash.snapshot()["calls"][0]
+    raw = yaml.safe_load((CONFIGS / "glm53-coding-unseen-2026-11-16.yaml").read_text())
+    new = CodingLedger(Ledger(flash.path, flash.policy), CodingPolicy.model_validate(raw))
+    new.reserve(
+        "full", "full", datetime.fromisoformat("2026-11-16T16:00:00+08:00"), output_tokens=100
+    )
+    full = next(c for c in new.snapshot()["calls"] if c["id"] == "full")
+    assert full["reserved"] == 1048576 * 8 + 100 * 28
+    new.settle("full", Usage(input_uncached=10, input_cached=20, input_cache_write=0, output=5))
+    calls = {c["id"]: c for c in new.snapshot()["calls"]}
+    assert calls["flash"] == before and calls["full"]["charged"] == 380
+    assert coding_detail(calls["full"])["quota_settled_upper_microcredits"] == 30 * 690 + 5 * 2400
+    assert new.policy.total_micro_cny == flash.policy.total_micro_cny == 200_000_000
+
+
 def test_glm_missing_cache_counters_are_reported_unknown_not_zero(tmp_path):
     events = [
         {"type": "message_start", "message": {"usage": {"input_tokens": 20}}},

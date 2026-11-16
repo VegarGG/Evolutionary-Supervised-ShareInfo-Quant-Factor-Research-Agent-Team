@@ -796,3 +796,55 @@ and rejects extreme prose/formula exponents before allocating large fractions.
 All saved accepted outputs still pass. Separate reviewer tasks can see prior issues;
 they are not blinded replications. Model chat acknowledgments are not themselves
 the exact reviewed artifact. These limitations remain explicit in the report.
+
+## 2026-11-16: unseen BaoStock controls and owner-directed GLM 5.3 rerun
+
+Freeze a correct five-observation raw-return candidate, a new three-symbol BaoStock
+bundle (177 rows, 59 common observed dates), question and bounded fixed/adaptive
+workflows before dispatch. The host calculates a restricted factor specification;
+DSH owns inference and native Agent Teams. Source-linked findings, explicit
+dispositions, exact-version reviews and changed executable scores distinguish a
+factor revision from explanation or retention. Never force a change to pass a gate.
+
+The Flash fixed arm changed 162 scores through volatility normalization but its
+explanation failed final review. Retain five rejected submissions and the incomplete
+outcome. Clarify exact literal citations, initial versus repair resolutions and
+defects versus ordinary limits; validate finding batches before append and use the
+server's frozen Python source for native workers.
+
+The owner then explicitly requested GLM 5.3 on the exact same task. Freeze the
+unchanged source/question/initial candidate with model-specific cash and credit
+rates. Use native zai-coding-cn, low reasoning effort, thinking enabled and
+concurrency one. Local route bounds become 240 aggregate historical GLM requests,
+4000 conservative credits and 40 CNY, all within the original 200 CNY ceiling.
+No account quota is inferred and no metered/provider fallback is authorized.
+Model and contract guidance both changed, so comparisons with Flash cannot isolate
+model quality. The three GLM 5.3 runs share all 120 frozen source files and inputs.
+
+The GLM 5.3 fixed/adaptive first pair completed and retained the baseline. The
+adaptive arm repaired two contract errors; the larger model did not eliminate them.
+The reverse-order adaptive attempt completed analysis/design, then DSH timed out
+after 300 seconds without stream progress. The guard ended with ConnectTimeout
+before an HTTP receipt and retained the full 8.847360 CNY/762.83904-credit reservation.
+It remains blocking unknown usage, not a reviewed 401 or a zero-cost call. Stop
+under the frozen rule; do not run the final control or replay the failed turn.
+
+Record 41 GLM 5.3 attempts, 40 settled, 613321 known tokens and 5.223628 CNY exposure.
+Including Flash, this checkpoint adds 59 attempts, 898176 known tokens and 5.890904
+CNY exposure. Current accounting: 31.048408 CNY baseline plus conservative debits,
+14.090240 reserved and 154.861352 unreserved. The official 20.35 baseline and every
+earlier debit/reservation remain. Credits and cash exposure are not subscription
+invoices. No additional source was fetched after the model switch.
+
+Independent Decimal arithmetic passes; semantic limits and the unfinished review
+remain separate. The unseen research experiment and capability cards are recorded,
+but substantive adaptive revision, minimal-core acceptance and Hybrid v1 remain open.
+An exploratory hypothesis need not prove alpha; the coherent starting definition
+and limited evidence may be a weak stimulus for evolution. Before further live work,
+reconcile the unknown charge and diagnose connection/recovery behavior.
+
+After live dispatch stopped, add explicit unresolved-usage export without releasing
+reservations; the regression also verifies pending-export refusal and blocked replay.
+232 offline tests, format/lint, JS parsing and MIT checks pass. See
+UNSEEN_CASE_2026-11-16.md for full agent work, resources, native UI checks, failures,
+protocol amendments and evidence. Keep PR 22 draft and unmerged.

@@ -30,7 +30,7 @@ def validate_chat_request(body, model, max_tokens, allowed_tools):
     if "tool_stream" in body and type(body["tool_stream"]) is not bool:
         raise BudgetRefused("invalid streamed tool-call option")
     if body.get("thinking", {}).get("type", "enabled") != "enabled":
-        raise BudgetRefused("GLM 5.3 Flash requires thinking enabled")
+        raise BudgetRefused("the configured GLM model requires thinking enabled")
     if body.get("model") != model or body.get("stream") is not True:
         raise BudgetRefused("only the configured streaming model is allowed")
     caps = [body[k] for k in ("max_tokens", "max_completion_tokens") if k in body]

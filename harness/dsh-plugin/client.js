@@ -96,7 +96,9 @@ globalThis.__ModuleLoader__.load({
               h('option', { value: 'rqdata', style: optionStyle }, 'RiceQuant RQData'))),
           h('p', { style: { margin: 0, fontSize: 13 } },
             state.researchMode
-              ? (globalThis.__QFH_RESEARCH_PROFILE__?.workflow === 'adaptive'
+              ? (globalThis.__QFH_RESEARCH_PROFILE__?.workflow === 'case'
+                ? 'Open research experiment: frozen BaoStock closes, executable factor revisions and a fixed-workflow comparison. One bounded native session per package; results require independent audit.'
+                : globalThis.__QFH_RESEARCH_PROFILE__?.workflow === 'adaptive'
                 ? 'Development diagnostic: completed-output review and targeted native worker follow-ups. This package uses frozen synthetic sources; market-data tools are disabled. Each package admits one bounded session.'
                 : 'Development prototype: BaoStock is pinned. The fixed-scope pilot allowance is exhausted. Existing results remain readable; broader research workflows are under modular development.')
               : 'Change source before starting a new session. An existing session refuses source changes.'),
@@ -111,7 +113,7 @@ globalThis.__ModuleLoader__.load({
           h('p', { style: { margin: 0, fontSize: 13 } },
             state.researchMode
               ? (globalThis.__QFH_RESEARCH_PROFILE__?.sampleDescription || 'The research scope tool identifies this session’s frozen sample.') + (globalThis.__QFH_RESEARCH_PROFILE__?.modelProvider === 'glm_coding'
-                ? ' Development tests use GLM 5.3 Flash through Coding Plan Pro until quota exhaustion or an owner-directed switch. Subscription quota is bounded and recorded separately; the original 200 CNY cash cap is retained.'
+                ? ' Development tests use the host-selected GLM model through Coding Plan Pro until quota exhaustion or an owner-directed switch. Subscription quota is bounded and recorded separately; the original 200 CNY cash cap is retained.'
                 : ' DeepSeek runs only 12:00–14:00 and 18:00–24:00 Beijing, within the original shared 200 CNY cap.') + ' No backtest or publication is included.'
               : 'Initial scope: one symbol, up to three calendar days, close price only. iFind and RQData each allow one data query and one authentication request. BaoStock allows three attempts, including two retained failed attempts. Exact repeats reuse saved results.'),
           h('p', { style: { margin: 0, fontSize: 13 } },
@@ -125,13 +127,13 @@ globalThis.__ModuleLoader__.load({
         h('p', { style: { margin: 0 } },
           'Use the zai-coding-cn provider above to save your Coding Plan Pro API key. Saving makes no provider request.'),
         h('p', { style: { margin: 0 } },
-          'GLM 5.3 Flash is pinned for the supervisor and native Agent Teams workers. Model and endpoint changes are checked by the host.'),
+          'The displayed model is pinned for the supervisor and native Agent Teams workers. Model and endpoint changes are checked by the host.'),
         h('p', { style: { margin: 0 } },
           'A finished chat turn does not mean its research output passed review. An accepted diagnostic has a finalized artifact tied to the review of that exact version.'),
         h('p', { style: { margin: 0 } },
           'The scheduled DeepSeek run is canceled. GLM remains active until quota exhaustion or an owner-directed switch. The original 200 CNY total cap and a separate subscription quota limit apply to every request. Failed requests stay in the ledger.'),
         h('p', { style: { margin: 0, fontSize: 13 } },
-          'Different models per role remain planned. GLM 5.3 requires recorded evidence that Flash is insufficient.'))
+          'Different models per role remain planned. An owner-directed model switch creates a new frozen route and retains previous usage.'))
     }
 
     return {

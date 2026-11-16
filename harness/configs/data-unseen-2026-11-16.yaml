@@ -1,0 +1,17 @@
+# Same historical ledger, cutoff, paid-source limits and transport; six new queries.
+max_business_requests: 1
+max_auth_requests: 1
+max_calendar_days: 3
+max_symbols: 1
+max_estimated_cells: 3
+max_response_bytes: 1048576
+timeout_seconds: 30
+allowed_kinds: [bars]
+research_cutoff: '2026-10-30T23:59:59.999999+08:00'
+provider_allowances:
+  baostock:
+    max_business_requests: 15
+    max_auth_requests: 15
+    max_estimated_cells: 520
+    max_calendar_days: 61
+    max_symbols: 1

@@ -1,0 +1,28 @@
+id: glm-coding-unseen-2026-11-16
+provider: glm_coding
+funding: coding_plan
+platform: bigmodel-cn
+subscription_tier: Pro
+model: glm-5.3-flash
+endpoint: https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+authority: >-
+  Owner authorized the unseen BaoStock adaptive factor revision and fixed-workflow
+  control checkpoint, GLM 5.3 Flash only, original 200 CNY ceiling. Extend the local
+  aggregate request allowance to 240 for at most two paired runs. Keep all earlier
+  calls, 1500 conservative credits, 20 CNY package sublimit and reservations.
+eligibility_authority: Owner confirmed DSH eligibility directly with Zhipu.
+starts_at: '2026-11-16T00:00:00+08:00'
+ends_at: null
+admission_mode: until_stopped
+max_requests: 240
+max_microcredits: 1500000000
+input_microcredits_per_token: 230
+output_microcredits_per_token: 800
+maximum_input_tokens: 1048576
+maximum_output_tokens: 393216
+concurrency: 1
+pricing_source: https://docs.bigmodel.cn/cn/coding-plan/overview
+pricing_verified_on: '2026-11-13'
+reasoning_effort: low
+transport: openai-completions
+cash_package_micro_cny: 20000000

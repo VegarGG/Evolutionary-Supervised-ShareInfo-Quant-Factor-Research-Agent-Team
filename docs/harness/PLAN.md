@@ -84,6 +84,15 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
+16 November update: [the unseen BaoStock case](UNSEEN_CASE_2026-11-16.md) and
+[workflow capability cards](WORKFLOW_CAPABILITY_CARDS.md) are recorded. The owner
+directed a GLM 5.3 rerun after fixes. Its first fixed/adaptive pair completed with
+retained candidates; the repeat adaptive attempt failed before review with unknown
+usage. The frozen stop rule withheld the last control repeat and the ledger blocks
+further dispatch. No substantive adaptive factor revision or minimal-core acceptance
+is claimed. The current package passes 232 offline tests. Accounting is 31.048408 CNY,
+14.090240 reserved and 154.861352 unreserved within the original 200 CNY ceiling.
+
 13 November development update: the owner completed the eighth UI pilot and
 confirmed this is far from production ready. The scheduled DeepSeek run is canceled.
 Continue on GLM Coding Plan Pro / GLM 5.3 Flash until quota exhaustion or an owner
@@ -110,6 +119,9 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
 - [ ] Live report/news entitlement and full-content extraction checks.
 - [x] One-case equal-evidence diagnostic live comparison completed (24 real calls).
 - [ ] Repeats, other mechanisms and open-ended cases completed.
+- [x] One unseen BaoStock case with frozen same-evidence fixed/adaptive controls,
+  recorded retentions, failed review and failed repeat; no capability pass inferred.
+- [x] Workflow-specific capability cards with evidence, limits and next experiments.
 - [ ] Capability card supports progression to the minimal core.
 - [x] Native DSH Agent Teams source and model-selection interfaces reviewed.
 - [x] Bounded chat/worker integration implemented and exercised with synthetic inference.
@@ -133,7 +145,7 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
   preserved unit counterexamples. Explicit prose unit checks block the recorded false pass.
 - [x] Native board tools and adaptive supervisor follow-up that changes the attributed
   output version; a clean control skips the author. Computational definitions are preserved.
-- [ ] General semantic reliability and an unseen open-ended research case. One model-only
+- [ ] General semantic reliability across broader research cases. One model-only
   final review falsely passed contradictory prose; the current host grammar is deliberately limited.
 - [ ] Adaptive follow-up that revises the research idea or computational definition on new evidence.
 - [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
@@ -141,6 +153,8 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
 
 Current evidence and gate assessment: [first pilot](FIRST_PILOT.md),
 [data-source record](DATA_SOURCES.md), [legacy deployment archive](LEGACY_EXPERIMENTS.md).
-No measured collaboration advantage has yet been demonstrated. Repeats are complete
-only for single/blackboard on the first case; the new native-team trial tests
-integration and research traceability, not general collaboration superiority.
+No measured collaboration advantage has yet been demonstrated. Single/blackboard
+diagnostic repeats and targeted unit repairs are recorded. The unseen case's first
+fixed/adaptive pair completed, but a reverse-order repeat stopped on unknown usage.
+Integration, retention and research traceability do not establish general discovery
+or collaboration superiority. Reconcile the timeout before further live work.

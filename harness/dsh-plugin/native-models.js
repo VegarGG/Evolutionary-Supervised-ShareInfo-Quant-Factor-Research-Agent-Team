@@ -42,7 +42,7 @@ export async function guardNativeModels(ctx, config) {
         models[0].id !== config.model || models[0].maxTokens > config.maxTokens)],
     ].filter(([, failed]) => failed).map(([field]) => field)
     if (refused.length) {
-      throw new Error('Research guard: keep zai-coding-cn, GLM 5.3 Flash and the guarded endpoint. API keys remain editable. Refused fields: ' + refused.join(', '))
+      throw new Error('Research guard: keep zai-coding-cn, the frozen model and the guarded endpoint. API keys remain editable. Refused fields: ' + refused.join(', '))
     }
     return raw
   })

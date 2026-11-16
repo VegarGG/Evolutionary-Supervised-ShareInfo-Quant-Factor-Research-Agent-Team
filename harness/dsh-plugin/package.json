@@ -15,6 +15,7 @@
     "index.js",
     "research.js",
     "adaptive.js",
+    "case.js",
     "native-models.js",
     "cordis.patch.yml",
     "client.js",

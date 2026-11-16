@@ -352,7 +352,7 @@ class Research:
         with self.db() as db:
             active = self.active_model_route(db)
             if active and active["id"] == route.id:
-                if active != value:
+                if CodingPolicy.model_validate(active) != route:
                     raise ValueError("model-route activation is immutable")
                 return value
             if (active["id"] if active else None) != expected_previous_id:

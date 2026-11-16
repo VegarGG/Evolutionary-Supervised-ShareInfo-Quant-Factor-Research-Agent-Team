@@ -1,0 +1,12 @@
+{
+  "status": "first_pair_auditable_and_settled",
+  "same_sources_initial_question_model_limits_and_source_hashes": true,
+  "outputs": "both retained baseline; zero changed rows",
+  "arithmetic_integrity_failures": 0,
+  "semantic_limits": "Retained choice is defensible; stronger model is not proof of adaptive revision or general correctness. Preserve conservative reasoning and contract-error examples.",
+  "reverse_order_pair": "authorized by frozen repeat rule; no source, prompt or code changes",
+  "packages": [
+    "unseen-glm53-fixed-01",
+    "unseen-glm53-adaptive-02"
+  ]
+}

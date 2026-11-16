@@ -7,6 +7,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from qfh.adaptive_research import TOOLS, AdaptivePolicy
+from qfh.case_research import TOOLS as CASE_TOOLS
+from qfh.case_research import CaseBoard, CasePolicy
 from qfh.coding_plan import CodingPolicy
 from qfh.experiment import write_new
 from qfh.final_output import FinalBoard
@@ -15,39 +17,48 @@ from qfh.shared_state import digest
 from qfh.trial_metrics import model_metrics, resource_metrics, role_windows
 
 
-def export(private, package_id, output=None):
-    directory = private / "adaptive" / package_id
+def export(private, package_id, output=None, *, case=False, allow_unresolved=False):
+    profile = "case" if case else "adaptive"
+    directory = private / ("cases" if case else "adaptive") / package_id
     output = output or directory
     output.mkdir(parents=True, exist_ok=True)
-    policy = AdaptivePolicy.model_validate_json((directory / "package.json").read_bytes())
-    board = FinalBoard(directory / "board")
+    policy = (CasePolicy if case else AdaptivePolicy).model_validate_json(
+        (directory / "package.json").read_bytes()
+    )
+    board = (CaseBoard if case else FinalBoard)(directory / "board")
     scope = board.snapshot("supervisor")
     with board.locked() as entries:
         events = list(entries)
     config = Path(__file__).resolve().parents[1] / "configs/research-trial.yaml"
     research = Research(config, private)
     budget = research.ledger.snapshot()
-    calls = [c for c in budget["calls"] if c["step"].startswith(f"adaptive:{package_id}:")]
-    assert calls and all(c["state"] == "settled" for c in calls)
+    calls = [c for c in budget["calls"] if c["step"].startswith(f"{profile}:{package_id}:")]
+    assert calls and all(c["state"] != "pending" for c in calls), "Wait for guard drainage"
+    unresolved = [c for c in calls if c["state"] != "settled"]
+    assert not unresolved or allow_unresolved, "Explicit unresolved-usage export required"
+    assert all(c["state"] in ("unknown", "rejected_reserved") for c in unresolved)
     assert len(calls) <= policy.total_requests
     servers = []
     for path in (private / "research/servers").glob("*/manifest.json"):
         manifest = json.loads(path.read_bytes())
-        package = manifest.get("adaptive_package")
+        package = manifest.get(f"{profile}_package")
         if package and package["package_id"] == package_id:
             servers.append((path.parent, manifest))
     assert len(servers) == 1, "Record explicit restart attribution before exporting"
     server, manifest = servers[0]
     route = CodingPolicy.model_validate(manifest["active_model_route"])
     assert route.id == policy.route_id
-    assert manifest["adaptive_package"] == policy.model_dump(exclude_unset=True)
-    assert manifest["active_model_route"] == route.model_dump(mode="json")
+    assert manifest[f"{profile}_package"] == policy.model_dump(exclude_unset=True)
+    assert CodingPolicy.model_validate(manifest["active_model_route"]) == route
     source_checks = 0
     for name, sha in manifest["source_sha256"].items():
         assert hashlib.sha256((server / "source-snapshot" / name).read_bytes()).hexdigest() == sha
         source_checks += 1
-    origin = policy.episode.import_origin
-    assert hashlib.sha256(Path(origin["path"]).read_bytes()).hexdigest() == origin["file_sha256"]
+    if not case:
+        origin = policy.episode.import_origin
+        assert (
+            hashlib.sha256(Path(origin["path"]).read_bytes()).hexdigest() == origin["file_sha256"]
+        )
     rows, files = (
         [],
         [directory / "package.json", directory / "root.json", server / "manifest.json"],
@@ -57,23 +68,55 @@ def export(private, package_id, output=None):
         files.append(directory / "final-ack.json")
     files.extend((directory / "board").glob("*.json"))
     files.extend(directory.glob("native-*.json"))
+    if case:
+        files.extend(directory.glob("calculation-*.json"))
     tool_calls = []
     native_team = {}
     for call in calls:
         folder = private / "campaign/wire" / call["id"]
         request_bytes = (folder / "request.json").read_bytes()
         request = json.loads(request_bytes)
-        http = json.loads((folder / "http.json").read_bytes())
-        raw = (folder / "response.sse").read_text()
-        assert http["status"] == 200 and http["endpoint"] == route.endpoint
-        assert http["request_sha256"] == hashlib.sha256(request_bytes).hexdigest()
-        assert request["model"] == route.model == "glm-5.3-flash"
+        assert request["model"] == route.model
+        assert route.model == (policy.model if case else "glm-5.3-flash")
         assert request["max_tokens"] == manifest.get(
             "effective_output_cap", manifest["policy"]["max_output_tokens"]
         )
         assert request["thinking"] == {"type": "enabled", "clear_thinking": False}
         assert request["reasoning_effort"] == route.reasoning_effort
-        assert {t["function"]["name"] for t in request["tools"]} == TOOLS
+        assert {t["function"]["name"] for t in request["tools"]} == (CASE_TOOLS if case else TOOLS)
+        files.extend(folder.glob("*"))
+        if call["state"] != "settled":
+            # Missing provider usage is not a free call or a completed response.
+            # Export it explicitly without modifying its blocking reservation.
+            assert call["usage"] is None and call["charged"] is None and call["reserved"] > 0
+            detail = json.loads(call["detail"])
+            assert detail["quota_settled_upper_microcredits"] is None
+            assert detail["quota_reserved_microcredits"] > 0
+            http_path = folder / "http.json"
+            if http_path.exists():
+                receipt = json.loads(http_path.read_bytes())
+                assert receipt["endpoint"] == route.endpoint
+                assert receipt["request_sha256"] == hashlib.sha256(request_bytes).hexdigest()
+            rows.append(
+                {
+                    "id": call["id"],
+                    "actor": call["step"].split(":")[-1],
+                    "tokens": None,
+                    "finish_reason": None,
+                    "started": call["started"],
+                    "finished": call["finished"],
+                    "charged": None,
+                    "reserved": call["reserved"],
+                    "state": call["state"],
+                    "response_model_verified": False,
+                    "http_receipt_present": http_path.exists(),
+                }
+            )
+            continue
+        http = json.loads((folder / "http.json").read_bytes())
+        raw = (folder / "response.sse").read_text()
+        assert http["status"] == 200 and http["endpoint"] == route.endpoint
+        assert http["request_sha256"] == hashlib.sha256(request_bytes).hexdigest()
         for message in request["messages"]:
             if message.get("role") != "tool":
                 continue
@@ -98,7 +141,10 @@ def export(private, package_id, output=None):
             "output": usage["completion_tokens"],
         }
         assert call["usage"] == tokens and usage["total_tokens"] == sum(tokens.values())
-        assert call["charged"] == usage["prompt_tokens"] * 2 + usage["completion_tokens"] * 8
+        assert call["charged"] == (
+            usage["prompt_tokens"] * (route.cash_input_micro_cny_per_token or 2)
+            + usage["completion_tokens"] * (route.cash_output_micro_cny_per_token or 8)
+        )
         assert (
             detail["quota_settled_upper_microcredits"]
             == usage["prompt_tokens"] * route.input_microcredits_per_token
@@ -132,7 +178,6 @@ def export(private, package_id, output=None):
                 "charged": call["charged"],
             }
         )
-        files.extend(folder.glob("*"))
     start = min(datetime.fromisoformat(c["started"]) for c in calls)
     finish = max(datetime.fromisoformat(c["finished"]) for c in calls)
     samples = [json.loads(line) for line in (server / "resources.jsonl").read_text().splitlines()]
@@ -175,14 +220,15 @@ def export(private, package_id, output=None):
     # Independently check reported rolling rates from audited wire totals.
     for actor, metrics in [(None, model), *[(a, r["model"]) for a, r in reports.items()]]:
         own = [r for r in rows if actor is None or r["actor"] == actor]
-        assert metrics["total_tokens"] == sum(sum(r["tokens"].values()) for r in own)
+        assert metrics["total_tokens"] == sum(sum((r["tokens"] or {}).values()) for r in own)
         if actor:
             assert len(own) <= (
                 policy.supervisor_requests if actor == "supervisor" else policy.worker_requests
             )
         for time_field, label in (("started", "dispatch"), ("finished", "completion")):
             points = [
-                (datetime.fromisoformat(r[time_field]), sum(r["tokens"].values())) for r in own
+                (datetime.fromisoformat(r[time_field]), sum((r["tokens"] or {}).values()))
+                for r in own
             ]
             rolling = [
                 [n for t, n in points if 0 <= (end - t).total_seconds() < 60] for end, _ in points
@@ -194,14 +240,16 @@ def export(private, package_id, output=None):
             result = json.loads((directory / f"native-{event['body']['actor']}.json").read_bytes())
             assert digest(result) == event["body"]["result_sha256"]
     accepted = scope["finalized"] is not None
+    assert not (accepted and unresolved), "Unresolved usage cannot support accepted export"
     if accepted:
         final = scope["finalized"]["body"]
         assert final["output_id"] == scope["head"]["id"]
         review = next(e for e in scope["reviews"] if e["id"] == final["review_id"])
-        assert review["body"]["output_id"] == final["output_id"]
+        assert review["body"]["candidate_id" if case else "output_id"] == final["output_id"]
         assert review["body"]["verdict"] == "reviewed_with_limits" and not review["body"]["issues"]
-        assert scope["unit_proof"]["formula_ok"] and scope["unit_proof"]["structured_claims_ok"]
-        assert scope["unit_proof"]["recognized_prose_ok"]
+        if not case:
+            assert scope["unit_proof"]["formula_ok"] and scope["unit_proof"]["structured_claims_ok"]
+            assert scope["unit_proof"]["recognized_prose_ok"]
         for member in members:
             if member["role"] != "supervisor":
                 assert any(
@@ -221,7 +269,9 @@ def export(private, package_id, output=None):
     result = {
         "package_id": package_id,
         "exported_at": datetime.now(UTC).isoformat(),
-        "status": "finalized_diagnostic" if accepted else "incomplete",
+        "status": ("finalized_research_prototype" if case else "finalized_diagnostic")
+        if accepted
+        else "incomplete",
         "mode": manifest["mode"],
         "source_files_verified": source_checks,
         "board": scope,
@@ -237,11 +287,18 @@ def export(private, package_id, output=None):
         "budget_snapshot_note": "Global campaign snapshots at server launch and export; "
         "new requests from other episodes may appear in a later re-export snapshot.",
         "audit": {
-            "status": "pass",
+            "status": "partial_unresolved_usage" if unresolved else "pass",
+            "unresolved_call_ids": [c["id"] for c in unresolved],
+            "model": route.model,
+            "unknown_usage_limit": "Only retained requests and reservations verified for "
+            "unresolved calls; response identity, tokens and charge remain unverified. "
+            "No reservation was released and no provider retry was made."
+            if unresolved
+            else None,
             "checks": [
                 "immutable source snapshot",
-                "original import retained",
-                "native Flash endpoint and no fallback",
+                "frozen research snapshot retained" if case else "original import retained",
+                "frozen native model and endpoint; no fallback on settled calls",
                 "wire usage, quota and cash",
                 "all role rates",
                 "native task attribution",

@@ -1,0 +1,19 @@
+{
+  "reviewer": "Codex source-based manual audit",
+  "artifact": "RESULT.json",
+  "official_evaluation_or_publication": false,
+  "status": "requires_revision",
+  "factor_revision_demonstrated": true,
+  "adaptive_revision_demonstrated": false,
+  "acceptance": false,
+  "findings": [
+    "Five-observation realized-volatility normalization changes 162 eligible signal values; independent arithmetic passed.",
+    "The designer treats unequal dispersion as making returns not comparable, although the baseline is already dimensionless; normalization is an optional research hypothesis.",
+    "The claims of established comparable dispersion and the only source-supported revision overstate these descriptive sources.",
+    "The model reviewer identified these claims and issued needs_revision. Fixed sequence correctly stopped without finalization."
+  ],
+  "limits": [
+    "No forward labels or performance evidence.",
+    "No causal proof that a peer finding was necessary: all workers saw the same complete sources."
+  ]
+}

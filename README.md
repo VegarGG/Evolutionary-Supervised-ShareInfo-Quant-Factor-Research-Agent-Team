@@ -12,7 +12,16 @@ passed at **12:12–12:20 Beijing on 13 November**: one supervisor, two workers,
 independently executed the frozen specification on all 121 real observations.
 The result is **inconclusive**, with model-prose caveats recorded separately.
 Input cache hit rate was 57.47%; its independent arithmetic audit passed.
-The current completed-output review package passes 212 offline tests.
+The current unseen-case package passes 232 offline tests.
+
+The [16 November unseen-case comparison](docs/harness/UNSEEN_CASE_2026-11-16.md)
+reused 177 BaoStock rows in fixed and adaptive workflows. After submission fixes,
+the owner directed an exact-task **GLM 5.3** rerun. Both first-pair arms completed
+and retained the original factor; no substantive adaptive factor revision was
+demonstrated. A repeat stopped before final review on a connection timeout with
+unknown usage. Further live dispatch is blocked, its reservation is retained, and
+the final planned control repeat was not run. See the report for every attempt and
+[per-agent measurements](docs/harness/evidence/unseen-2026-11-16/METRICS.md).
 
 Use **Settings → Models → Z.ai Coding (China) · guarded research** for the
 Coding Plan Pro key. The native `zai-coding-cn` route works with the saved key;
@@ -23,8 +32,8 @@ The original 401, first team failure and a zero-call package refusal remain reco
 The owner completed the eighth bounded trial and directed continued modular
 work. **This is a development prototype, not production ready or completed Hybrid
 v1.** The scheduled DeepSeek run is canceled; the shared ledger now permits only
-GLM Coding Plan Pro, using GLM 5.3 Flash until quota exhaustion or an explicit
-owner switch. There is no 18:00 provider switch. The original 200 CNY ceiling and
+GLM Coding Plan Pro; the owner explicitly switched the current case to GLM 5.3.
+There is no automatic fallback or 18:00 provider switch. The original 200 CNY ceiling and
 all reservations remain intact.
 
 The shared-state module now supports review of a completed output, immutable
@@ -69,7 +78,7 @@ estimates under the unchanged **200 CNY** ceiling. The raw call history and old
 estimates are preserved. The first diagnostic pilot's input cache hit rate was 22.64%.
 The interactive-trial export reports each role's token usage, cache hits, TPM/RPM,
 tariff-estimated cost and shared-process resource observations separately.
-After the owner trial and eleven new GLM module calls, the accounted baseline plus
+Historically, after the owner trial and eleven GLM module calls, the accounted baseline plus
 conservative debits is **23.566904 CNY**, with **5.242880 CNY reserved** and
 **171.190216 CNY unreserved**. The module tests consumed 69,923 tokens and a
 0.463528 CNY exposure debit. Timing corrections passed in both comparison arms;
@@ -83,10 +92,19 @@ The subsequent [completed-output review package](docs/harness/FINAL_OUTPUT_REVIE
 made 53 real Flash requests and used 565,131 tokens. Both unit counterexamples are
 repaired and the adaptive clean-output control passes. Three token-cap failures and
 one false model pass remain recorded; the latter led to explicit prose-unit checks.
-Its additional conservative debit is **1.590600 CNY**. Current accounting is
+Its additional conservative debit was **1.590600 CNY**. Accounting at that checkpoint was
 **25.157504 CNY**, **5.242880 CNY reserved**, and **169.599616 CNY unreserved**.
-The active native route requests low reasoning effort, with a bounded 120-request
-aggregate allowance; model-only prose review remains insufficient for general acceptance.
+That diagnostic route used low reasoning effort and a 120-request aggregate bound.
+
+Current accounting after the unseen-case attempts is **31.048408 CNY** baseline
+plus conservative debits, **14.090240 CNY reserved**, and **154.861352 CNY unreserved**.
+The reservations include the earlier 401 and the new unresolved connection timeout.
+The GLM 5.3 route has 240 aggregate historical requests, 4000 conservative credits
+and a 40 CNY local sublimit inside the unchanged 200 CNY total. These are local
+bounds, not provider quota readings or subscription invoices. The unknown charge
+must be reconciled before live dispatch resumes. Model-only prose review remains
+insufficient for general acceptance; [capability cards](docs/harness/WORKFLOW_CAPABILITY_CARDS.md)
+keep the minimal core provisional.
 
 ## Local setup and checks
 

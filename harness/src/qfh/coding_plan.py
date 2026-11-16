@@ -55,7 +55,7 @@ class CodingPolicy(BaseModel):
     funding: Literal["coding_plan"]
     platform: Literal["bigmodel-cn"]
     subscription_tier: Literal["Pro"]
-    model: Literal["glm-5.3-flash"]
+    model: Literal["glm-5.3-flash", "glm-5.3"]
     endpoint: Literal[
         "https://open.bigmodel.cn/api/anthropic/v1/messages",
         "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions",
@@ -72,6 +72,8 @@ class CodingPolicy(BaseModel):
     max_microcredits: int = Field(gt=0)
     # Operator route amendment only; the original saved budget policy is immutable.
     cash_package_micro_cny: int | None = Field(default=None, gt=0)
+    cash_input_micro_cny_per_token: int | None = Field(default=None, gt=0)
+    cash_output_micro_cny_per_token: int | None = Field(default=None, gt=0)
     input_microcredits_per_token: int = Field(gt=0)
     output_microcredits_per_token: int = Field(gt=0)
     maximum_input_tokens: int = Field(gt=0)
@@ -83,6 +85,11 @@ class CodingPolicy(BaseModel):
 
     @model_validator(mode="after")
     def bounded_window(self):
+        if self.model == "glm-5.3" and (
+            self.cash_input_micro_cny_per_token is None
+            or self.cash_output_micro_cny_per_token is None
+        ):
+            raise ValueError("GLM 5.3 requires an explicit model-specific cash exposure policy")
         if (self.transport == "openai-completions") != self.endpoint.endswith("chat/completions"):
             raise ValueError("transport must match the approved Coding Plan endpoint")
         if not self.starts_at.tzinfo:
@@ -165,14 +172,21 @@ class CodingLedger(Ledger):
         ):
             raise ValueError("package amendment must stay within the original cumulative ceiling")
 
+    @property
+    def cash_input_rate(self):
+        return self.coding.cash_input_micro_cny_per_token or self.policy.input_micro_cny_per_token
+
+    @property
+    def cash_output_rate(self):
+        return self.coding.cash_output_micro_cny_per_token or self.policy.output_micro_cny_per_token
+
     def reserve(self, request_id, step, now, *, output_tokens=None):
         policy = self.coding
         output = policy.maximum_output_tokens if output_tokens is None else output_tokens
         if type(output) is not int or not 0 < output <= policy.maximum_output_tokens:
             raise BudgetRefused("invalid requested output bound")
         cash_reservation = (
-            policy.maximum_input_tokens * self.policy.input_micro_cny_per_token
-            + output * self.policy.output_micro_cny_per_token
+            policy.maximum_input_tokens * self.cash_input_rate + output * self.cash_output_rate
         )
         quota_reservation = (
             policy.maximum_input_tokens * policy.input_microcredits_per_token
@@ -187,6 +201,8 @@ class CodingLedger(Ledger):
             "endpoint": policy.endpoint,
             "quota_reserved_microcredits": quota_reservation,
             "maximum_output_tokens": output,
+            "cash_input_micro_cny_per_token": self.cash_input_rate,
+            "cash_output_micro_cny_per_token": self.cash_output_rate,
             "quota_settled_upper_microcredits": None,
             "cache_tokens_reported": None,
             "cash_package_micro_cny": policy.cash_package_micro_cny
@@ -238,10 +254,7 @@ class CodingLedger(Ledger):
             usage.input_total * self.coding.input_microcredits_per_token
             + usage.output * self.coding.output_microcredits_per_token
         )
-        cash_upper = (
-            usage.input_total * self.policy.input_micro_cny_per_token
-            + usage.output * self.policy.output_micro_cny_per_token
-        )
+        cash_upper = usage.input_total * self.cash_input_rate + usage.output * self.cash_output_rate
         with self.transaction() as db:
             row = db.execute(
                 "SELECT usage,detail,reserved FROM calls WHERE id=?", (request_id,)

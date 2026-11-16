@@ -17,8 +17,9 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   retrieval timestamps kept distinct. Keep paid data pilots narrowly bounded.
 - DSH's native DeepSeek Messages transport is authorized for these experiments.
   On 13 November the owner additionally authorized GLM Coding Plan during
-  DeepSeek peak hours, using GLM 5.3 Flash first. GLM 5.3 requires clear recorded
-  evidence that Flash is insufficient. The owner confirmed DSH eligibility with
+  DeepSeek peak hours, using GLM 5.3 Flash first. On 16 November the owner explicitly
+  directed a GLM 5.3 rerun of the exact same task after fixes; this supersedes the
+  earlier Flash-only condition for the unseen-case package. The owner confirmed DSH eligibility with
   Zhipu. Credentials are entered in DSH Settings; no metered-API fallback is
   authorized. The owner has now canceled the scheduled DeepSeek run and directed
   GLM testing until quota exhaustion or an explicit owner switch. The earlier
@@ -31,21 +32,30 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   Anthropic probe and both reservations. Details: `NATIVE_MODELS_2026-11-13.md`.
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
-- Latest verified native GLM trial: `docs/harness/LIVE_GLM_NATIVE_2026-11-13.md`.
-  Active route `glm-coding-review-low-2026-11-13` retains the 20 CNY package sublimit
-  inside the original 200 CNY ceiling. This work package has 120 aggregate requests
-  and 1,500 conservative credits; these are local caps, not account quota readings.
+- Earlier verified native GLM trial: `docs/harness/LIVE_GLM_NATIVE_2026-11-13.md`.
+  Current unseen-case package: `docs/harness/UNSEEN_CASE_2026-11-16.md` and route
+  `glm53-coding-unseen-2026-11-16`. GLM 5.3 uses explicit model-specific cash/credit
+  reservations, a 40 CNY local package sublimit inside the original 200 CNY ceiling,
+  240 aggregate historical GLM requests and 4,000 conservative credits. These are
+  local caps, not account quota readings. Unknown charges block further dispatch;
+  preserve the unknown state and reservation until supported reconciliation.
   All eight fixed-scope pilot sessions are used. Standalone module tests have
   distinct step grants in the same ledger; never reset history to create slots.
-  Current work: `docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md`. Current reruns
-  are GLM 5.3 Flash only; native low reasoning effort follows recorded high-effort
-  output-cap failures. Adaptive packages admit one supervisor, at most five native
+  Prior diagnostic work: `docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md`. Those reruns
+  were GLM 5.3 Flash only; native low reasoning effort follows recorded high-effort
+  output-cap failures. Those adaptive packages admit one supervisor, at most five native
   tasks and 32 requests, with a 16384-token response ceiling. These grants retain
   every earlier debit/reservation and do not replenish the exhausted fixed pilot.
   Completed-output amendments preserve computational definitions. Finalization
   requires a review of the exact current version plus source-derived unit checks,
   including recognized explicit prose relationships. This limited grammar does
   not establish general semantic correctness; retain false model passes separately.
+- Unseen case packages use the same frozen BaoStock evidence, initial executable
+  definition and question in fixed/adaptive controls. At most six native tasks,
+  32 requests and six factor inspections are allowed. Native DSH retains its model
+  loop; Python tools import the server's frozen source snapshot. Retention and
+  explanation changes are not substantive factor revisions. Follow the frozen stop
+  rule; never replay a failed attempt or bypass uncertainty to finish a comparison.
 - Run offline checks with `just harness-check` and `just harness-test`. Live
   experiments are separate commands with explicit campaign state and audit records.
   No ordinary test target may call a real model or data provider.

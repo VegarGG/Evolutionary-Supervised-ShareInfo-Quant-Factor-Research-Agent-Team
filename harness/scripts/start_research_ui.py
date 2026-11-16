@@ -17,6 +17,8 @@ from pathlib import Path
 
 from qfh.adaptive_research import TOOLS as ADAPTIVE_TOOLS
 from qfh.adaptive_research import AdaptiveResearch
+from qfh.case_research import TOOLS as CASE_TOOLS
+from qfh.case_research import CaseResearch
 from qfh.coding_plan import CodingLedger, CodingPolicy
 from qfh.experiment import Resources, write_new
 from qfh.proxy import GuardProxy
@@ -43,6 +45,7 @@ def serve(
     *,
     evidence_mode="live",
     adaptive_package: Path | None = None,
+    case_package: Path | None = None,
 ):
     root = Path(__file__).resolve().parents[1]
     private.mkdir(parents=True, exist_ok=True)
@@ -52,7 +55,15 @@ def serve(
     with research.db() as db:
         active_route = research.active_model_route(db)
     coding = CodingPolicy.model_validate(active_route) if active_route else None
-    adaptive = AdaptiveResearch(config, private, adaptive_package) if adaptive_package else None
+    if adaptive_package and case_package:
+        raise ValueError("choose one native workflow package")
+    adaptive = (
+        CaseResearch(config, private, case_package)
+        if case_package
+        else AdaptiveResearch(config, private, adaptive_package)
+        if adaptive_package
+        else None
+    )
     output_cap = adaptive.policy.max_output_tokens if adaptive else policy.max_output_tokens
     credential = None
     if not coding:
@@ -66,7 +77,11 @@ def serve(
     provider_id = "zai-coding-cn" if coding else "qfh-deepseek"
     if coding and coding.transport != "openai-completions":
         raise ValueError("activate the native Coding Plan transport before starting the UI")
-    route_label = "GLM 5.3 Flash · Coding Plan Pro" if coding else "DeepSeek · guarded research"
+    route_label = (
+        coding.model.replace("glm-", "GLM ").replace("-flash", " Flash") + " · Coding Plan Pro"
+        if coding
+        else "DeepSeek · guarded research"
+    )
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     evidence = private / "research/servers" / stamp
     evidence.mkdir(parents=True)
@@ -102,6 +117,11 @@ def serve(
             f"Adaptive package {adaptive.policy.package_id}: frozen synthetic unit sources. "
             "Review the complete output; repair only after an observed review issue. "
             "No market-data request or official evaluation."
+        )
+    if case_package:
+        sample_description = (
+            f"Open BaoStock case {adaptive.policy.package_id}; {adaptive.policy.variant} workflow. "
+            "Frozen historical closes; no new data request, evaluation or publication."
         )
     if adaptive:
         for path in source_files:
@@ -142,8 +162,9 @@ def serve(
             "active_sample": active_sample,
             "active_model_route": active_route,
             "adaptive_package": adaptive.policy.model_dump(exclude_unset=True)
-            if adaptive
+            if adaptive and not case_package
             else None,
+            "case_package": adaptive.policy.model_dump() if case_package else None,
             "effective_output_cap": output_cap,
             "budget_before": research.ledger.snapshot(),
         },
@@ -163,7 +184,7 @@ def serve(
         ),
         coding_policy=coding,
     ) as guard:
-        guard.allowed_tools = ADAPTIVE_TOOLS if adaptive else TOOLS
+        guard.allowed_tools = CASE_TOOLS if case_package else ADAPTIVE_TOOLS if adaptive else TOOLS
         native_patch = evidence / "native-provider.patch.yml"
         if coding:
             # Native Models validates settings against the composition layer.
@@ -171,9 +192,10 @@ def serve(
             # concrete non-secret route facts so ordinary key edits remain valid.
             template = (root / "configs/web-glm-native.patch.yml").read_text()
             native_patch.write_text(
-                template.replace(
-                    "!!js process.env.QFH_RELAY_URL", json.dumps(guard.base_url)
-                ).replace("!!js Number(process.env.QFH_MAX_TOKENS)", str(output_cap))
+                template.replace("__QFH_MODEL__", model)
+                .replace("__QFH_MODEL_LABEL__", route_label)
+                .replace("!!js process.env.QFH_RELAY_URL", json.dumps(guard.base_url))
+                .replace("!!js Number(process.env.QFH_MAX_TOKENS)", str(output_cap))
             )
         # DeepSeek's key stays in the parent relay. Native GLM resolves its key
         # from DSH's credential store and sends it only to the trusted relay.
@@ -189,7 +211,9 @@ def serve(
                 "DSH_HOME": str(home),
                 "QFH_WORKSPACE_BASE": str(workspace),
                 "QFH_PYTHON": sys.executable,
-                "QFH_SOURCE_ROOT": str(root / "src"),
+                "QFH_SOURCE_ROOT": str(
+                    evidence / "source-snapshot/src" if adaptive else root / "src"
+                ),
                 "QFH_PRIVATE": str(private),
                 "QFH_DATA_POLICY": str(config.parent / policy.data_config),
                 "QFH_DATA_PRIVATE": str(private / "data"),
@@ -209,6 +233,7 @@ def serve(
                 "OTEL_SDK_DISABLED": "true",
                 "DSH_PRIMARY_RUNTIME": "",
                 "QFH_ADAPTIVE_PACKAGE": str(adaptive_package) if adaptive_package else "",
+                "QFH_CASE_PACKAGE": str(case_package) if case_package else "",
             }
         )
         if install_plugin:
@@ -228,7 +253,17 @@ def serve(
                     str(root / "configs/web-research.patch.yml"),
                     *(["--patch", str(native_patch)] if coding else []),
                     *(
-                        ["--patch", str(root / "configs/web-adaptive.patch.yml")]
+                        [
+                            "--patch",
+                            str(
+                                root
+                                / (
+                                    "configs/web-case.patch.yml"
+                                    if case_package
+                                    else "configs/web-adaptive.patch.yml"
+                                )
+                            ),
+                        ]
                         if adaptive
                         else []
                     ),
@@ -280,6 +315,7 @@ def main():
     parser.add_argument("--port", type=int, default=3080)
     parser.add_argument("--install-plugin", action="store_true")
     parser.add_argument("--adaptive-package", type=Path)
+    parser.add_argument("--case-package", type=Path)
     args = parser.parse_args()
     serve(
         args.config.resolve(),
@@ -288,6 +324,7 @@ def main():
         args.port,
         args.install_plugin,
         adaptive_package=args.adaptive_package.resolve() if args.adaptive_package else None,
+        case_package=args.case_package.resolve() if args.case_package else None,
     )
 
 

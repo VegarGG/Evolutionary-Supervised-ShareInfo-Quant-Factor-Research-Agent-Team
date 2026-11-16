@@ -1,0 +1,19 @@
+{
+  "reviewer": "Codex source-based manual audit",
+  "status": "acceptable_retained_candidate_with_limits",
+  "factor_revision_demonstrated": false,
+  "adaptive_revision_demonstrated": false,
+  "acceptance": false,
+  "official_evaluation_or_publication": false,
+  "findings": [
+    "Coverage, dimensionlessness, timing, unchanged scores and source limitations are supported.",
+    "The supervisor used observed finding IDs for design and exact-version review; three native tasks completed.",
+    "The supervisor incorrectly implied a retained spec need not be inspected; the host rejected that submission and the worker repaired it.",
+    "The team treats lack of proven improvement as a reason to reject an exploratory normalization hypothesis. Retention is defensible, but this is stricter than early capability acceptance, which does not require alpha.",
+    "No substantive factor or applicability revision was produced."
+  ],
+  "limits": [
+    "One descriptive case with an already coherent initial return formula.",
+    "Citations and task-contract adherence still required repairs despite the model upgrade."
+  ]
+}

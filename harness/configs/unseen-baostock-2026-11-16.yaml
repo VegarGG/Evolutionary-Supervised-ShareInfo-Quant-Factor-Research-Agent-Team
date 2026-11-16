@@ -1,0 +1,37 @@
+id: unseen-baostock-20261116
+authority: >-
+  Owner: Please proceed with the next checkpoint: run an unseen BaoStock research
+  case with adaptive factor revisions and a fixed-workflow control. Use GLM 5.3
+  Flash only, keep the original 200 CNY budget, and record everything.
+question: >-
+  Investigate whether a five-observation close-return score is a coherent daily
+  cross-sectional short-horizon momentum specification for this small frozen
+  A-share universe. Examine source coverage, score comparability and assumptions.
+  Revise the factor only when a source-supported finding justifies a substantive
+  change. There is no prescribed winning normalization, lookback or sign. Retain
+  an unchanged or rejected proposal if the evidence does not justify a revision.
+symbols: [600000.XSHG, 600519.XSHG, 000651.XSHE]
+ranges:
+  - {start: '2026-08-03', end: '2026-09-30'}
+  - {start: '2026-10-01', end: '2026-10-30'}
+minimum_rows_per_symbol: 40
+minimum_common_dates: 40
+initial_spec:
+  lookback: 5
+  direction: 1
+  normalization: none
+  volatility_window: null
+  max_absolute_daily_return: null
+max_tasks: 6
+supervisor_requests: 12
+worker_requests: 5
+total_requests: 32
+max_output_tokens: 16384
+max_inspections: 6
+board: {max_events: 100, max_findings: 12, max_versions: 4, max_text_length: 24000}
+planned_order: [fixed, adaptive, adaptive, fixed]
+repeat_rule: >-
+  Run one pair first. A second counterbalanced pair is allowed only after both
+  first-pair runs are audited and usage is settled. Stop on unknown usage, quota
+  exhaustion, data failure or unresolved arithmetic/integrity failure. Retain all
+  unsuccessful or unchanged results; never tune the data selection to outcomes.

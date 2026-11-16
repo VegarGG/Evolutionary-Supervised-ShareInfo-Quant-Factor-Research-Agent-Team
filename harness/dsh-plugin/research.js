@@ -6,6 +6,7 @@ import { catalogModelInfo, registerDeepSeekProvider, resolveAdapterOptions } fro
 import { runResearch } from './index.js'
 import { guardNativeModels } from './native-models.js'
 import { registerAdaptiveResearch } from './adaptive.js'
+import { registerCaseResearch } from './case.js'
 
 export const name = 'qfh-research'
 export const inject = ['llm', 'tools', 'subagents', 'agentTeams', 'credentials']
@@ -15,6 +16,7 @@ export const Config = Schema.object({
   researchConfig: Schema.string().required(),
   researchPrivateRoot: Schema.string().required(),
   adaptivePackage: Schema.string().default(''),
+  casePackage: Schema.string().default(''),
   relayURL: Schema.string().required(),
   relayCredential: Schema.string().required(),
   model: Schema.string().required(),
@@ -59,6 +61,13 @@ export async function apply(ctx, config) {
       throw new Error('Adaptive review requires an absolute package and the guarded GLM route')
     }
     registerAdaptiveResearch(ctx, config)
+    return
+  }
+  if (config.casePackage) {
+    if (!isAbsolute(config.casePackage) || config.modelProvider !== 'glm_coding') {
+      throw new Error('Open case requires an absolute package and guarded GLM route')
+    }
+    registerCaseResearch(ctx, config)
     return
   }
   const output = { schema: { type: 'json' },
