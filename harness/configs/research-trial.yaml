@@ -1,0 +1,30 @@
+# Owner-authorized integration trial, followed by two small owner trials.
+# Every role still routes through the ORIGINAL campaign ledger and guard.
+budget_config: phase1.yaml
+data_config: data-research.yaml
+max_trials: 3
+max_requests_per_trial: 20
+role_request_limits:
+  supervisor: 8
+  researcher: 6
+  reviewer: 6
+roles:
+  supervisor: {provider: deepseek, model: deepseek-flash, reasoning_effort: high}
+  researcher: {provider: deepseek, model: deepseek-flash, reasoning_effort: high}
+  reviewer: {provider: deepseek, model: deepseek-flash, reasoning_effort: high}
+max_output_tokens: 8192
+max_task_chars: 6000
+max_tool_result_chars: 50000
+sample_seconds: 2
+request_timeout_seconds: 900
+max_body_bytes: 524288
+allowed_provider: baostock
+query:
+  symbols: [000001.XSHE]
+  start: '2026-10-19'
+  end: '2026-10-30'
+descriptive_lookbacks: [1, 5]
+authority: >-
+  Owner: Run one real trial with a supervisor and two workers using DeepSeek and
+  BaoStock, keep the original 200 CNY budget and time windows, and record everything.
+  Owner: Please proceed with the integration and make DSH ready for me to test.

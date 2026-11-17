@@ -1,0 +1,100 @@
+{
+  "trial_id": "session-915990c7-dc82-4bb5-b152-87ad882bb558",
+  "status": "bounded_workflow_and_specification_pass",
+  "scientific_acceptance": "not_assessed",
+  "source_commit": "ef71f3f9c17b157136093f635688f611510decd6",
+  "frozen_files_verified": 73,
+  "actual_flash_requests": 15,
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": true,
+    "both_workers_valid": true,
+    "draft_recorded": true,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": true,
+    "no_tool_failures": true,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "resource_samples_required_for_live": true,
+    "raw_data_transport_required_for_live": true,
+    "frozen_hashes_match": true,
+    "all_wire_models_flash": true,
+    "source_clean_at_launch": true,
+    "metrics_independently_verified": true,
+    "specification_and_support_independently_verified": true,
+    "reviewer_executed_selected_definition": true,
+    "report_draft_and_specification_hashes_match": true,
+    "zero_positive_overlap_for_actual_one_observation_labels": true,
+    "insufficient_data_no_inference_run": true,
+    "native_two_workers_and_two_tasks_completed": true,
+    "desktop_reload_persists": true,
+    "pilot_extension_retains_history": true,
+    "independent_usage_tariff_debit_cache_and_rolling_rates_match": true,
+    "original_official_baseline_and_remaining_budget_match": true
+  },
+  "independent_reference": {
+    "method": "Exact rational arithmetic over retained closes; 60-digit Decimal square root only for sample dispersion. Separate date and bucket reconstruction; no production calculator imported.",
+    "facts_per_calculation": 44,
+    "metric_calculations": 2,
+    "specification_calculations": 2,
+    "maximum_absolute_decimal_difference": "4.2857142857142857142857142857142857E-28",
+    "tolerance": "1e-26"
+  },
+  "definition": {
+    "comparison": "lt",
+    "effect_margin": "0.001",
+    "expected_direction": "lower",
+    "family": "close_return_contrast",
+    "label_horizon": 1,
+    "lookback": 1,
+    "threshold": "0",
+    "tie_policy": "control"
+  },
+  "support": {
+    "aligned_cases": 7,
+    "control_bucket": 2,
+    "dropped_tail_cases": 2,
+    "signal_bucket": 5,
+    "signal_candidates": 9,
+    "ties_assigned_to_control": 0
+  },
+  "label_geometry": {
+    "adjacent_pairs": 6,
+    "positive_overlap_pairs": 0,
+    "serial_independence": "not_established",
+    "touching_endpoint_pairs": 6
+  },
+  "inference": {
+    "bootstrap_replicates_run": 0,
+    "effect": null,
+    "interval": null,
+    "outcome": "insufficient_data",
+    "reason_codes": [
+      "signal_bucket_below_minimum",
+      "control_bucket_below_minimum",
+      "too_few_blocks"
+    ]
+  },
+  "draft_sha256": "9ab146456a86ec7c97f00a57db5ff17cb30d36fe73407eb4866317bf628f26d2",
+  "specification_id": "7e17282889186a991f6e04470173f50cd9d6977b7769634a0c3d246a8304e5ec",
+  "draft_fact_references": 17,
+  "semantic_report_review": {
+    "Q1": "Resolved for this run: accepted worker reports, draft and final recap distinguish touching endpoints from positive interval overlap and do not infer independence.",
+    "Q2": "Resolved for this run: all accepted outputs describe insufficient support without treating it as disconfirmation or absence of effect.",
+    "Q3": "Resolved: one concrete bounded definition and full protocol, independently executed by reviewer, selected by hash and rendered by host; no unresolved parameter or alternative test.",
+    "Q4": {
+      "severity": "quality_caveat",
+      "location": "researcher findings[5]",
+      "finding": "The researcher speculates that a larger supported sample might still have an interval straddling the margin, based on dispersion. It labels this an expectation, not measured inference, but the supplied evidence cannot justify a counterfactual interval; the reviewer does not challenge it.",
+      "disposition": "Unsupported qualitative speculation, excluded from verified conclusions. It is not present in the host inference, canonical formula or final recap. Preserve the immutable report and this audit finding; no alpha or universal prose-validity claim."
+    },
+    "timing_note": "The compatibility execution_time label next_trading_day_close means the next returned observation in this bounded profile; actual dates and canonical formula are authoritative. Calendar completeness is explicitly unverified.",
+    "tie_note": "The live sample has no exact threshold ties. Tie assignment is tested offline; do not claim the live run exercised a nonempty tie bucket."
+  },
+  "limits": [
+    "One real stock and ten historical unadjusted closes; no strategy P&L, official evaluation, publication or alpha acceptance.",
+    "Inference implementation has synthetic branch tests, not validated statistical coverage on market data.",
+    "Machine resources are the shared process tree, not isolated agent allocations."
+  ]
+}

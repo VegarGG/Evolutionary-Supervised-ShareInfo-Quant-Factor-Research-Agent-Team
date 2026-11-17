@@ -1,0 +1,19 @@
+# Existing four BaoStock business attempts/logins and 21 estimated cells remain counted.
+# At most five additional older chunks, sequential and never automatically retried.
+# This policy is used by the operator preparation script; worker access is cache-only.
+max_business_requests: 1
+max_auth_requests: 1
+max_calendar_days: 3
+max_symbols: 1
+max_estimated_cells: 3
+max_response_bytes: 1048576
+timeout_seconds: 30
+allowed_kinds: [bars]
+research_cutoff: '2026-10-30T23:59:59.999999+08:00'
+provider_allowances:
+  baostock:
+    max_business_requests: 9
+    max_auth_requests: 9
+    max_estimated_cells: 253
+    max_calendar_days: 61
+    max_symbols: 1

@@ -1,0 +1,201 @@
+{
+  "trial_id": "session-79066cee-20e4-4f08-9896-738576743926",
+  "audit_status": "pass",
+  "workflow_status": "pass",
+  "source_commit": "8150415bce5b98b1bfee8bc4904da0690054cad8",
+  "frozen_files_verified": 96,
+  "actual_flash_requests": 15,
+  "checks": {
+    "snapshot_hashes_match": true,
+    "clean_source_at_launch": true,
+    "native_endpoint_and_flash_only": true,
+    "wire_usage_and_ledger_match": true,
+    "reasoning_not_double_counted": true,
+    "per_role_cache_cash_credits_and_rolling_rates_match": true,
+    "original_official_baseline_and_retained_reservation_match": true,
+    "source_union_and_full_arithmetic_match": true,
+    "both_specifications_equal_independent_bootstrap_reference": true,
+    "zero_new_vendor_queries": true
+  },
+  "full_metric_fact_count": 377,
+  "maximum_arithmetic_difference": "4.906367041198501872659176029962547E-28",
+  "statistical_audit_sha256": "1cd81068833f21e3088263812cf795ded296e499c761777fe932c6a830c2498b",
+  "support": {
+    "signal_candidates": 120,
+    "aligned_cases": 118,
+    "dropped_tail_cases": 2,
+    "signal_bucket": 59,
+    "control_bucket": 59,
+    "ties_assigned_to_control": 4
+  },
+  "inference": {
+    "outcome": "inconclusive",
+    "reason_codes": [],
+    "effect": "0.002730988975537854942075131180",
+    "interval": {
+      "lower": "-0.001476712930544064236754710811",
+      "upper": "0.007025561298466270388000955350",
+      "unit": "return_fraction"
+    },
+    "bootstrap_replicates_run": 2000
+  },
+  "draft_sha256": "d675e6eea553eb3469ea00d0307155f8595ffa33d17d3a98c9e9bfa5f7d8b619",
+  "calls": [
+    {
+      "request_id": "e961112ed4584060ab9eef438bb7ab79",
+      "role": "supervisor",
+      "prompt_tokens": 2527,
+      "cached_tokens": 0,
+      "completion_tokens": 30,
+      "reasoning_tokens": 24,
+      "finish_reason": "tool_calls",
+      "seconds": 20.091967
+    },
+    {
+      "request_id": "9e2573a88f4a4028858ab9797b03daa8",
+      "role": "supervisor",
+      "prompt_tokens": 4916,
+      "cached_tokens": 2496,
+      "completion_tokens": 3306,
+      "reasoning_tokens": 2405,
+      "finish_reason": "tool_calls",
+      "seconds": 62.63313
+    },
+    {
+      "request_id": "bb82fdbe104148248db00d367125b6cb",
+      "role": "researcher",
+      "prompt_tokens": 4656,
+      "cached_tokens": 0,
+      "completion_tokens": 719,
+      "reasoning_tokens": 653,
+      "finish_reason": "tool_calls",
+      "seconds": 15.07178
+    },
+    {
+      "request_id": "3fdd034cc0bd4e6a90b233c47904ca11",
+      "role": "researcher",
+      "prompt_tokens": 6367,
+      "cached_tokens": 1024,
+      "completion_tokens": 99,
+      "reasoning_tokens": 17,
+      "finish_reason": "tool_calls",
+      "seconds": 4.430908
+    },
+    {
+      "request_id": "0135ad9e6fdc4429aed62f9ccd47510f",
+      "role": "researcher",
+      "prompt_tokens": 7412,
+      "cached_tokens": 6336,
+      "completion_tokens": 241,
+      "reasoning_tokens": 47,
+      "finish_reason": "tool_calls",
+      "seconds": 6.638359
+    },
+    {
+      "request_id": "8b4ea411c2624390bbe48da366ac2cb4",
+      "role": "researcher",
+      "prompt_tokens": 9727,
+      "cached_tokens": 7360,
+      "completion_tokens": 5784,
+      "reasoning_tokens": 4402,
+      "finish_reason": "tool_calls",
+      "seconds": 104.6478
+    },
+    {
+      "request_id": "9e83ebfb06244839a0cf05c7d3bb8668",
+      "role": "researcher",
+      "prompt_tokens": 15593,
+      "cached_tokens": 9664,
+      "completion_tokens": 319,
+      "reasoning_tokens": 13,
+      "finish_reason": "stop",
+      "seconds": 9.752631
+    },
+    {
+      "request_id": "e76dee7018a24961829e0e60c6ae3615",
+      "role": "supervisor",
+      "prompt_tokens": 12613,
+      "cached_tokens": 4864,
+      "completion_tokens": 1437,
+      "reasoning_tokens": 303,
+      "finish_reason": "tool_calls",
+      "seconds": 27.001164
+    },
+    {
+      "request_id": "6d2803386aa34552a91691dba282ec96",
+      "role": "reviewer",
+      "prompt_tokens": 4937,
+      "cached_tokens": 0,
+      "completion_tokens": 213,
+      "reasoning_tokens": 132,
+      "finish_reason": "tool_calls",
+      "seconds": 6.670421
+    },
+    {
+      "request_id": "af746ce8c17147349fc3630c17e93363",
+      "role": "reviewer",
+      "prompt_tokens": 6142,
+      "cached_tokens": 1792,
+      "completion_tokens": 773,
+      "reasoning_tokens": 600,
+      "finish_reason": "tool_calls",
+      "seconds": 18.782057
+    },
+    {
+      "request_id": "007d099906084a77925c3e8094e9d0ad",
+      "role": "reviewer",
+      "prompt_tokens": 8391,
+      "cached_tokens": 6080,
+      "completion_tokens": 303,
+      "reasoning_tokens": 90,
+      "finish_reason": "tool_calls",
+      "seconds": 8.821879
+    },
+    {
+      "request_id": "cd924c66f4e74fbcb79a300876e3766d",
+      "role": "reviewer",
+      "prompt_tokens": 10768,
+      "cached_tokens": 8384,
+      "completion_tokens": 6369,
+      "reasoning_tokens": 4655,
+      "finish_reason": "tool_calls",
+      "seconds": 120.795481
+    },
+    {
+      "request_id": "c2bff458dfee44939710b2751fa32f2f",
+      "role": "reviewer",
+      "prompt_tokens": 17218,
+      "cached_tokens": 10752,
+      "completion_tokens": 119,
+      "reasoning_tokens": 12,
+      "finish_reason": "stop",
+      "seconds": 5.717303
+    },
+    {
+      "request_id": "6a7bf9e2096f484c8a1f0d532456c071",
+      "role": "supervisor",
+      "prompt_tokens": 19383,
+      "cached_tokens": 12608,
+      "completion_tokens": 2559,
+      "reasoning_tokens": 1313,
+      "finish_reason": "tool_calls",
+      "seconds": 47.873855
+    },
+    {
+      "request_id": "19576f1c32544c71b672f81d36eb41df",
+      "role": "supervisor",
+      "prompt_tokens": 27143,
+      "cached_tokens": 19328,
+      "completion_tokens": 614,
+      "reasoning_tokens": 162,
+      "finish_reason": "stop",
+      "seconds": 14.856075
+    }
+  ],
+  "reasoning_output_tokens": 14828,
+  "finish_reasons": {
+    "tool_calls": 12,
+    "stop": 3
+  },
+  "semantic_review": "Completed separately in NATIVE_GLM_QUALITATIVE_REVIEW.json; the immutable quantitative audit remains in the private export."
+}

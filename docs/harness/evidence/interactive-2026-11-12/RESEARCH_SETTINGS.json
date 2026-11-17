@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "at": "2026-11-12T08:08:22.016Z",
+  "checks": [
+    "BaoStock selected and locked for research trial",
+    "bounded-trial instructions visible",
+    "paid credential entry masked",
+    "no credential saved or removed",
+    "no provider request"
+  ],
+  "errors": []
+}

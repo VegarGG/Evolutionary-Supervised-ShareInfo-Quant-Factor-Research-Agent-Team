@@ -1,0 +1,444 @@
+[
+  {
+    "id": "30ebdbb261a8410ea6b7aaaecc75e41f",
+    "package_id": "unseen-glm53-max-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 16384,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "3c7ae2926228494783937040dba90897",
+    "package_id": "unseen-glm53-max-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 16384,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "1f9e7b0ad73b4b7f84efa8a1c024e317",
+    "package_id": "unseen-glm53-max-adaptive-01",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 16384,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "78f9ccf1745544b5a4b943f940d65688",
+    "package_id": "unseen-glm53-max-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 16384,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "c3ee162159b847e89d57012623c8391e",
+    "package_id": "unseen-glm53-max-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 16384,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "e6e732895beb4753937e4082a6e2f91b",
+    "package_id": "unseen-glm53-max-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 16384,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "449d774c2812467d867f42da6e8a60b1",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "0284f4eb43174f0890bf292ea27c821d",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "cd460265f78d454eb42cc7d58b380e9b",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "3d61db4268be4030965704cd9c476109",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a037628e7d8c4f519c02a0fae581d7ad",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a3d91d49df704f3ca76ecc0922fa0d9b",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "bd6ecb1cfd9d44eeb185ca780c9cff47",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a275392dbd184b23af6a7ddf6eabfdd8",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "1f58231b6cac4d48a14dc4c5b7610daa",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "49a06618ded0432b9259d9f3dd5920ff",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "822b8200a7cb4143b19e150cb22e8c44",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "eb3f292e8204476a9999a60708d0173d",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "dad1ff378929498693b8f3ebad94df73",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "398a2a402dbc4b5d827c148a5ce7b8cb",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "6e374ae13cea44fe817060a365356f36",
+    "package_id": "unseen-glm53-max32-adaptive-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a2f051a04e0941ecb1faf2f9aef195ac",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "494eb0555da94939b0324074ad42b380",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a87f3349e11c42c997670132258c204f",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "b7f60d960fd742b6b84babad40a8cad1",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "d101cc43d3814fcf90dfa718815116fb",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "efa70579b1f24480b3b1f5171856789c",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "403ab34a9bff42f3b74f2699a5744872",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "3e7ff000d7e14d908f3d44c3a9dbf429",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "1af1ac640a3840c3abaa08dfc67b0fbe",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "b66049385b474d568e333812dd93ab7a",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "f8c5688235004e49895e803125476d47",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "8fcfa2b429db41edb7be696d955003f1",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "4f89dfd717604e5d986f540fa00a2391",
+    "package_id": "unseen-glm53-max32-fixed-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  }
+]

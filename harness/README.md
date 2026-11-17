@@ -1,10 +1,118 @@
 # Quant Factor Harness prototype
 
-Read the [current plan](../docs/harness/PLAN.md),
-[measured first pilot](../docs/harness/FIRST_PILOT.md), and
-[data-source protocol and limits](../docs/harness/DATA_SOURCES.md).
-This module uses DSH through its SDK and native plugin APIs. It does not fork the
-agent loop or claim that the original multi-agent framework is complete.
+DSH owns the native chat, Models editor, Agent Teams and child sessions. QRH adds
+bounded evidence, shared accounting and deterministic calculations without forking
+the model loop. Start with the [approved plan](../docs/harness/PLAN.md) and
+[interactive guide](../docs/harness/INTERACTIVE_TRIAL.md).
+
+The [earlier verified native GLM trial](../docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
+completed both workers, both Team tasks and an immutable draft: 15 actual Flash
+requests, 180,678 tokens, 57.47% input cache hits and zero tool failures. Both workers
+executed the full 121-row BaoStock sample; the host result is inconclusive.
+That source passed 169 offline tests and GitHub checks; the current module package
+passes 271 offline tests. Quantitative audit passed; the
+separate qualitative audit flags overly categorical interpretation of the estimate.
+
+Credentials now use **Settings → Models → Z.ai Coding (China) · guarded research**.
+The native `zai-coding-cn` route works; the duplicate model settings panel is removed.
+See [native Models integration](../docs/harness/NATIVE_MODELS_2026-11-13.md).
+The original 401 keeps its full reservation, and both the failed first team and
+zero-dispatch package refusal remain in history.
+
+The owner completed the eighth fixed-scope trial. Development now follows the
+[modular work package](../docs/harness/MODULAR_DEVELOPMENT_2026-11-13.md).
+DeepSeek is disabled at the shared ledger. The owner directed an exact-task switch
+from Flash to GLM 5.3 for the 16 November case. GLM Coding Plan Pro has no previous
+18:00 cutoff, subject to bounded work packages,
+subscription exhaustion and the original 200 CNY total ceiling. The unchanged
+interactive eight-session pilot is exhausted; module tests use separate explicit
+step grants in the same ledger. This is not yet a production-ready research UI.
+
+The [unseen BaoStock case](../docs/harness/UNSEEN_CASE_2026-11-16.md) freezes three
+symbols and 177 real rows for fixed/adaptive controls. The first GLM 5.3 pair
+completed with unchanged candidates; the adaptive repeat timed out before review.
+Its full reservation remains unknown; the final control repeat was not run.
+The owner's later [maximum-effort retry](../docs/harness/MAX_EFFORT_2026-11-16.md)
+uses GLM 5.3/max for every role. A fingerprinted continuation preserves that exact
+old reservation and permits only named fresh cases; another unknown charge still
+blocks dispatch. After a 16384-token length failure, a 32768-token pair retained
+the baseline: adaptive completion failed independent prose review, and the fixed
+control stopped before review at its five-request worker bound. All 34 new calls
+settled. Balance at that checkpoint: 40.411908 CNY accounted, 14.090240 reserved and 145.497852
+unreserved. The original 200 CNY cap remains; that route had a 60 CNY local
+sublimit, 4000 conservative credits and 240 aggregate historical GLM requests.
+
+The [17 November checkpoint](../docs/harness/CHECKPOINT_2026-11-17.md) uses a new
+three-symbol, 186-row bundle. After preserving a 19-call delivery failure, the
+repaired fixed/adaptive pair completed in 18/20 calls and both adopted a substantive
+volatility-normalized candidate. The fixed candidate passes bounded descriptive
+review with caveats; adaptive final prose incorrectly equates next observed closes
+with executable signals, so its clean semantic acceptance is withheld. The post-run
+offline checker rejects this specific false pass; no live rerun follows it.
+All 57 calls used GLM 5.3/max and settled. Current balance is 55.583184 CNY accounted,
+14.090240 reserved and 130.326576 unreserved. The active route retains 295 historical
+attempts, 6000 conservative credits and an 80 CNY sublimit within the original 200.
+No route permits replay of a closed package. The old unknown charge remains reserved.
+
+The case profile exposes native `case_board`, `case_read`, `case_task`, `inspect_case_factor`,
+`submit_case_findings`, `revise_case_factor`, `review_case_factor` and `finalize_case`.
+The supervisor assigns native child tasks; the host restricts executable factor
+specifications, checks source citations and records exact versions/decisions.
+Python tools import each server's frozen source snapshot. Raw/normalized scores
+and timing are independently recomputed with Decimal; semantic acceptance remains
+separate. No evaluator, official publication or arbitrary code execution is exposed.
+Two worker role types may create more than two child activations.
+
+Bounded-v2 keeps tool replies within 24000 UTF-8 JSON bytes and exposes complete
+immutable sources/events as 2500-character pages. Workers receive up to 65536 bytes
+of compact scope JSON with full current evidence when it fits. Six worker work
+requests and twelve supervisor work requests each have one separate terminal
+acknowledgement; all phases debit the same 36-request case ceiling and original cash
+ledger. A submitted artifact never substitutes for successful native completion.
+Exact count fields and limited prose counterexamples supplement independent review;
+they do not certify arbitrary model text. The research workspace has its own Git root
+without moving old native sessions. Startup preserves old package serialization.
+
+`prepare_unseen_case.py` separates the bounded data preparation from model dispatch;
+`prepare_case_rerun.py` freezes the owner-directed same-task model amendment.
+`prepare_case_delivery_rerun.py` records the one named delivery-repair pair; it is
+not a generic quota-reset or automatic retry command.
+`start_research_ui.py --case-package PATH --private .qfh-private --install-plugin`
+uses the existing Models editor and Agent Teams. Existing run IDs refuse paid replay.
+`export_case_run.py` audits wire/accounting and independent factor arithmetic;
+`--allow-unresolved` explicitly exports a failed attempt with missing usage, preserving
+its blocking reservation. It never resumes inference or reconciles a charge.
+`case_runtime_smoke.py` is scripted and offline; `--effort max --output-cap 32768`
+exercises the current settings without a provider. The named operator continuation
+does not release or reconcile the old timeout or authorize unrelated cases.
+The exporter checks native DSH compressed session events as well as wire receipts,
+so model-visible tool truncation cannot silently erase task-completion evidence.
+Missing, mismatched or in-progress native tasks do not pass as completed.
+
+The [completed-output review module](../docs/harness/FINAL_OUTPUT_REVIEW_2026-11-13.md)
+adds a native adaptive profile: `research_board`, initial `research_delegate`,
+review-dependent `research_followup`, `submit_final_review`, `amend_final_output`
+and `finalize_research_output`. Finalization pins the exact reviewed output.
+Explanation amendments preserve the computational definition and contribution
+identities. Explicit raw/target equalities and magnitude-direction statements in
+current prose are checked against source-derived scales, even when a model review
+misses a contradiction. Other phrasing remains outside this limited grammar and
+needs semantic review. This diagnostic profile has no market-data, evaluation or publishing
+tools. It uses the existing Models editor and native Agent Teams, with fresh bounded
+worker activations for follow-ups; it does not introduce a separate model loop.
+
+Prepare an explicitly selected prior output with
+`harness/scripts/prepare_adaptive_review.py --private .qfh-private --package-id ID
+--origin /operator/RESULT.json`, then supply its printed package path to
+`harness/scripts/start_research_ui.py --private .qfh-private --adaptive-package PATH
+--install-plugin`. Preparation sends no inference request; sending a DSH chat does.
+`adaptive_runtime_smoke.py` is explicitly offline and scripted; real sessions never
+substitute its responses. `export_adaptive_run.py` audits the completed live run
+against raw provider responses, native task results and frozen source files.
+The earlier diagnostic route requests low reasoning effort with thinking enabled;
+its 120-request aggregate cap retains all prior GLM usage. Every episode is bounded
+by 32 requests, five tasks and a 16384-token output ceiling. Increasing a local
+work-package allowance does not increase the original 200 CNY cash ceiling.
 
 ## Install and verify
 
@@ -94,9 +202,13 @@ so reservation uses provider maxima. Retries consume the same step's call allowa
 unknown outcomes keep their reservation across restart. All input is conservatively
 settled at peak cache-miss prices; cache savings are reported separately. A completed
 step is loaded without paid replay; an interrupted step requires reconciliation.
-The original 56.256735 CNY / 884 calls carry forward into the same 200 CNY total.
+The original 56.256735 CNY / 884-call estimate remains historical evidence. The
+owner's later official 20.35 CNY total supersedes covered estimates through the
+immutable billing-baseline record; newer conservative debits accumulate under
+the same 200 CNY ceiling. See the interactive guide for the current balance.
 
-Admission is DeepSeek-only, 12:00–14:00 and 18:00–24:00 Beijing; an in-flight request
+The historical diagnostic runner used DeepSeek, 12:00–14:00 and 18:00–24:00 Beijing;
+current campaign controls refuse DeepSeek dispatch. Historically, an in-flight request
 may drain after the window closes. Current concurrency is one, below the authorized
 ceiling of 500. `deepseek-flash` is the configured/observed response alias; it is
 not an independent identification of the backend model.
@@ -107,9 +219,10 @@ Raw model requests/responses, native session traces, resource samples, data wire
 and credential stores stay private on the operator's machine. Public summaries
 include hashes and measurements, not keys or vendor row dumps. The live model
 pilot, real data transport checks, synthetic model-loop smokes and offline unit
-tests are reported separately. The local UI is currently a credential setup surface;
-a budget-guarded interactive research-chat profile and the minimal supervisor/two-
-worker core remain gated work, not features established by these tests.
+tests are reported separately. The setup-only profile and the new guarded research
+profile use separate launch commands. The latter is a bounded supervisor/researcher/
+reviewer prototype; its live validation is recorded separately from these earlier
+diagnostic checks.
 
 Upstream: [DSH source pin](https://github.com/deepseek-ai/deepseek-harness/tree/e8f7b93a344964de3dca1ace9e72b6e4d6de87cb)
 (MIT), [BaoStock SDK](https://pypi.org/project/baostock/0.9.4/),
@@ -118,3 +231,36 @@ Upstream: [DSH source pin](https://github.com/deepseek-ai/deepseek-harness/tree/
 [Messages usage](https://api-docs.deepseek.com/api/create-message/).
 Project-owned code uses the standard [MIT License](LICENSE). Dependencies and
 vendor data retain their own terms; see [third-party notices](THIRD-PARTY-NOTICES.md).
+
+
+## Standalone shared-state / review module
+
+`qfh.shared_state.Board` owns a local, append-only research episode. The operator
+provides an explicit initial candidate, frozen source bundle, actor roles and
+bounds. `publish` pins a finding to a candidate and checks exact source excerpts;
+`revise` atomically checks the current parent and records a disposition for every
+finding before committing a child version. `snapshot` returns the current head
+with complete versions and unresolved conflicts. Principals come from the host.
+Nothing is executed, published to a pool or sent to an evaluator. Structural
+acceptance does not certify the scientific truth of model prose.
+
+The native DSH experiment driver uses two SDK sessions per arm and the same
+campaign ledger. `peer_review` exposes the review to the author;
+`feedback_disabled` computes but withholds it. Both have the same source bundle
+and request/output ceilings; actual tokens can differ. Fixtures are explicitly
+synthetic diagnostics and answer keys are outside the model workspace.
+
+Explicit operator command (live subscription usage; not part of ordinary tests):
+
+```sh
+PYTHONPATH=harness/src python harness/scripts/module_pilot.py \
+  --private .qfh-private --case harness/cases/module-timing.json \
+  --run-id your-unused-lowercase-id --variant peer_review
+```
+
+Use a unique lowercase run id. Existing attempts refuse paid replay, including
+failed attempts. Inspect `RESULT.json`, `AUDIT.json`, source snapshots, raw wire
+usage and semantic review separately. An interrupted or quota-rejected request
+retains its reservation and stops further dispatch. Do not replace live model
+failures with synthetic results. The current CLI module is not yet exposed as
+an open-ended DSH chat workflow; adaptive supervision is the next integration gate.

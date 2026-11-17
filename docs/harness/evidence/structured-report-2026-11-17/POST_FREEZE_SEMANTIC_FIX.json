@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-17T04:52:54.522311+00:00",
+  "authority": "Continue semantic fixes under the owner request; no new paid trial or mutation of frozen live sources.",
+  "trigger": "task-bound-fixed-01 final comparison says dispersion remains about as wide without naming an absolute or relative measure.",
+  "fix": "Reject the recognized spread/dispersion stays/remains as wide grammar unless the sentence names a maximum/minimum ratio or difference; removing the comparison permits the same factor.",
+  "validation": "Three offline regression cases: actual rationale, actual decision, and a named comparison that still requires independent checking.",
+  "limits": "Bounded language counterexample check only. It does not calculate or prove a named comparison, detect arbitrary paraphrases or establish general semantic reliability.",
+  "live_scope": "Both repaired arms had already frozen identical 142-file sources before this change. Their outputs and model reviews remain unchanged; this guard is offline-verified only.",
+  "files": {
+    "harness/src/qfh/case_report.py": "382e7b6643088d49d71522a501a15c1fcf18e3720da04f8cda22c4e01048c4bf",
+    "harness/src/qfh/case_research.py": "2cddacfae59e2025b1064cefb42518011ec600ffbe419be753694d327fadb531",
+    "harness/src/qfh/case_audit.py": "a6a47193678efe74c751db7b481b1033efd89bbc505344ebcb9fd82b856f13b1",
+    "harness/tests/test_case_report.py": "2ad448ebae7bb4d523b11b8598b28ae7319107ce32035f1a8af65a1b2f8dab1f"
+  },
+  "paid_requests_from_fix": 0,
+  "past_report_reclassified_as_pass": false,
+  "second_trigger": "task-bound-adaptive-02 supported analyst heading says units and scale are heterogeneous across the fixed universe; units actually match.",
+  "second_fix": "Reject that recognized heading in structured findings before acceptance and in final qualitative arguments; allow observed magnitude/dispersion heterogeneity.",
+  "final_tests": 294,
+  "semantic_stage_tests": 292,
+  "additional_audit_record": "AUDIT_HARDENING.json"
+}

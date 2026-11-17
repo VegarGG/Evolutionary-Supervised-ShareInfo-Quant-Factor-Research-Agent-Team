@@ -48,11 +48,13 @@ class Resources:
                     errors.append("process_tree:" + type(exc).__name__)
                 rss, cpu = 0, 0.0
                 pids = []
+                process_cpu = {}
                 for process in processes:
                     try:
                         rss += process.memory_info().rss
                         times = process.cpu_times()
                         cpu += times.user + times.system
+                        process_cpu[str(process.pid)] = times.user + times.system
                         pids.append(process.pid)
                     except (OSError, psutil.Error) as exc:
                         errors.append("process:" + type(exc).__name__)
@@ -75,6 +77,7 @@ class Resources:
                             "at": datetime.now(UTC).isoformat(),
                             "process_tree_rss_bytes": rss,
                             "process_tree_cpu_seconds": cpu,
+                            "process_cpu_seconds_by_pid": process_cpu,
                             "pids": pids,
                             **host,
                             "measurement_errors": errors,

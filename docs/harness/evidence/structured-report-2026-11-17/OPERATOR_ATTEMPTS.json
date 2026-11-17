@@ -1,0 +1,116 @@
+{
+  "authority": "Owner requested structured final-output reporting, semantic fixes and GLM 5.3 max fixed/adaptive rerun; original 200 CNY cap retained.",
+  "offline_attempts": [
+    {
+      "label": "initial lint",
+      "outcome": "failed import order, corrected",
+      "log": ".qfh-private/structured-checks-initial.log"
+    },
+    {
+      "label": "offline-checks-01",
+      "outcome": "282 tests passed before bounded citations and independent report audit were added"
+    },
+    {
+      "label": "offline-checks-02",
+      "outcome": "11 failed / 271 passed, bounded citation schema KeyError; corrected before any live request"
+    },
+    {
+      "label": "offline-checks-03",
+      "outcome": "282 passed, final runtime code verified"
+    },
+    {
+      "label": "native-smoke-01",
+      "outcome": "27 scripted requests / 5 completed tasks; report passed audit"
+    },
+    {
+      "label": "native-smoke-02",
+      "outcome": "27 scripted requests / 5 completed tasks on final runtime code; report audit and UI passed"
+    },
+    {
+      "label": "task-bound interface checks",
+      "outcome": "288 offline tests passed; exact labels, stale targets, own inspections and canonical rendering covered"
+    },
+    {
+      "label": "native-bound-01",
+      "outcome": "Server prepared but no prompt submitted; superseded by complete short-reference fixture; zero paid calls"
+    },
+    {
+      "label": "native-bound-02",
+      "outcome": "27 scripted requests, five completed tasks, repair and fresh review, independent arithmetic/report and UI checks passed; zero paid calls"
+    },
+    {
+      "label": "final-checks-sandbox",
+      "outcome": "6 synthetic loopback transport tests failed with PermissionError before binding; 285 others passed; no real provider calls"
+    },
+    {
+      "label": "dispersion-checks",
+      "outcome": "291 tests passed after loopback access was restored"
+    },
+    {
+      "label": "semantic-checks",
+      "outcome": "292 tests, formatting/lint/JS/MIT all pass after the additional intermediate-unit-heading regression; no real calls from offline checks"
+    },
+    {
+      "label": "final-checks",
+      "outcome": "294 tests plus lint/format/JS/MIT checks after independent spec-hash/changed-row audit hardening; all four immutable real artifacts re-audited without provider calls"
+    }
+  ],
+  "preparation_attempts": [
+    {
+      "log": "preparation.log",
+      "outcome": "wrong historical-provider predicate failed before any package or route write"
+    },
+    {
+      "log": "preparation-02.log",
+      "outcome": "fresh pair frozen; old debit/reservations unchanged; no provider call"
+    }
+  ],
+  "ui_probes": {
+    "initial_fixed": "Read-only disclosure/selector probes preserved as recovery logs 01-06. No inference replay. Exact live report equality passed.",
+    "render_order_discovery": "Canonical JSON reordered metric fields; all values unchanged. Exact original wire text is preserved; the repaired runtime sorts keys and has a round-trip regression.",
+    "no_replay": "Each live UI has a STARTED marker; no second Send action in an existing package."
+  },
+  "operator_feedback_injected_into_live_arms": false,
+  "no_automatic_extra_pair": true,
+  "initial_live_pair": {
+    "fixed": "22 settled requests, finalized; independent descriptive pass with limits",
+    "adaptive": "9 settled requests; three candidate-ID rejections, native analyst failed without findings; supervisor stopped",
+    "frozen_source_files_identical": 139,
+    "tokens": 923231,
+    "exposure_cny": 9.251448,
+    "explanation_correction": "Initial mention of line-break corruption was incorrect; first supplied ID was truncated to 58 characters, followed by two wrong 64-character hashes."
+  },
+  "runtime_sources": {
+    "initial_pair": "Identical 139 files; no runtime edits between those arms",
+    "specific_repair": "142-file runtime prepared only after initial pair drained; exact amendment in TASK_BOUND_AMENDMENT.json",
+    "repaired_pair": "Source equality must pass before second repaired arm dispatch"
+  },
+  "specific_operator_amendment": "Fresh task-bound pair to verify a concrete reference-interface repair under the owner request; original failed packages never replayed. No further pair scheduled.",
+  "post_freeze_semantic_fix": "Three offline counterexample cases added after both repaired arms froze their identical source snapshot. No change to either running experiment; known ambiguous comparison stays a failed independent review.",
+  "mobile_probe": {
+    "first": "timed out on transient/hidden first duplicate sidebar button, no Send action",
+    "second": "visible control after responsive transition worked; settled 390px page fits without horizontal overflow",
+    "interpretation_corrected": true
+  },
+  "repaired_live_pair": {
+    "fixed": {
+      "calls": 25,
+      "tokens": 779886,
+      "exposure_cny": 7.287588,
+      "outcome": "native finalization; independent calculations pass, comparative wording needs clarification"
+    },
+    "adaptive": {
+      "calls": 18,
+      "tokens": 499281,
+      "exposure_cny": 4.816148,
+      "outcome": "native finalization; independent descriptive pass with limits"
+    },
+    "all_usage_settled": true,
+    "fresh_unknowns": 0,
+    "frozen_source_files_identical": 142
+  },
+  "supplementary_audit_attempts": [
+    "Initial checks passed, but reused perturbation variable emitted wrong-typed count; original attempt retained",
+    "Corrected integer count output, regression assertion and all four read-only real-artifact audits pass"
+  ]
+}

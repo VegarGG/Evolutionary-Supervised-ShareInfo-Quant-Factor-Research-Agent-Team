@@ -1,0 +1,97 @@
+{
+  "status": "pass",
+  "at": "2026-11-13T02:56:39.673230+00:00",
+  "evidence_id": "e1b4e4aad323cd40f3932716fc6cca54ced00af2b2e3e66ec0bde85a93def671",
+  "source_parents": [
+    "49652fabe43ba654f11d63f3524dabe6dc0eddec0ef4e000439eb64fc9ee1884",
+    "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+    "763961449651374befc2f23b0c71dcdb2460686a7f0da542f9989ef9f7ad9f06",
+    "ebda180ef7429e3bddad1cc9e4103cbf95984cfe9698dce3db52e640b5eeb9f7",
+    "f45c74329284c13988dd1be528a0773fe88d7e2b9a70a744e75e9724309e71ba"
+  ],
+  "script_sha256": "35604f34ab8f6c19abaa97708f9bf3ea8785ea147f5e15d79ea5b29eb6fd41b1",
+  "source_calculator_sha256": "59c04ba742b8332adf1ad777bb1fa4fa4999d3e69de6e2809878c847b7591551",
+  "full_assessment_sha256": "9240927d229967887299598e45c66d1bf392a7c031df3743154810b298f963d7",
+  "specification_id": "deb9edcb360ca6a927ca3633a27a5b7938201eafbd008699ece32e5cfb843d2f",
+  "definition": {
+    "comparison": "lt",
+    "effect_margin": "0.001",
+    "expected_direction": "lower",
+    "family": "close_return_contrast",
+    "label_horizon": 1,
+    "lookback": 1,
+    "threshold": "0",
+    "tie_policy": "control"
+  },
+  "protocol": {
+    "protocol": "development-contrast-v1",
+    "decimal_precision": 28,
+    "execution_lag": 1,
+    "max_lookback": 5,
+    "max_label_horizon": 5,
+    "max_threshold_magnitude": "1",
+    "max_effect_margin": "1",
+    "minimum_bucket_size": 20,
+    "minimum_blocks": 8,
+    "method": "moving_block_percentile",
+    "confidence_level": "0.95",
+    "block_length": 5,
+    "bootstrap_replicates": 2000,
+    "seed": 20261112,
+    "maximum_observations": 10000
+  },
+  "support": {
+    "signal_candidates": 120,
+    "aligned_cases": 118,
+    "dropped_tail_cases": 2,
+    "signal_bucket": 59,
+    "control_bucket": 59,
+    "ties_assigned_to_control": 4
+  },
+  "label_geometry": {
+    "adjacent_pairs": 117,
+    "positive_overlap_pairs": 0,
+    "touching_endpoint_pairs": 117,
+    "serial_independence": "not_established"
+  },
+  "primary": {
+    "outcome": "inconclusive",
+    "reason_codes": [],
+    "effect": "0.002730988975537854942075131180",
+    "interval": {
+      "lower": "-0.001476712930544064236754710811",
+      "upper": "0.007025561298466270388000955350",
+      "unit": "return_fraction"
+    },
+    "bootstrap_replicates_run": 2000
+  },
+  "block_length_sensitivities": {
+    "10": {
+      "outcome": "inconclusive",
+      "reason_codes": [],
+      "effect": "0.002730988975537854942075131180",
+      "interval": {
+        "lower": "-0.001858361572856287662600804262",
+        "upper": "0.006813155553077852123931079331",
+        "unit": "return_fraction"
+      },
+      "bootstrap_replicates_run": 2000
+    },
+    "20": {
+      "outcome": "insufficient_data",
+      "reason_codes": [
+        "too_few_blocks"
+      ],
+      "effect": null,
+      "interval": null,
+      "bootstrap_replicates_run": 0
+    }
+  },
+  "selection_used_inference": false,
+  "limits": [
+    "Exploratory candidate and sample; not held-out or preregistered.",
+    "Nominal coverage and power are not established by counts.",
+    "Block twenty lacks the unchanged minimum block count; no relaxed floor or selected interval.",
+    "Unadjusted closes, exchange calendar, corporate actions and historical vintage unverified."
+  ]
+}

@@ -53,6 +53,8 @@ class DataAllowance(BaseModel):
     max_business_requests: int = Field(ge=0)
     max_auth_requests: int = Field(ge=0)
     max_estimated_cells: int = Field(ge=1)
+    max_calendar_days: int | None = Field(default=None, ge=1, le=61)
+    max_symbols: int | None = Field(default=None, ge=1, le=5)
 
 
 class DataPolicy(BaseModel):
@@ -93,6 +95,15 @@ class DataGuard:
                 "CREATE TABLE IF NOT EXISTS requests ("
                 "id INTEGER PRIMARY KEY, cache_key TEXT, provider TEXT, kind TEXT, "
                 "estimated_cells INTEGER, at TEXT, result_id TEXT, outcome TEXT)"
+            )
+            db.execute(
+                "CREATE TABLE IF NOT EXISTS policy_history ("
+                "sha256 TEXT PRIMARY KEY, at TEXT NOT NULL, body TEXT NOT NULL)"
+            )
+            body = policy.model_dump_json()
+            db.execute(
+                "INSERT OR IGNORE INTO policy_history VALUES (?,?,?)",
+                (hashlib.sha256(body.encode()).hexdigest(), datetime.now(UTC).isoformat(), body),
             )
 
     @contextlib.contextmanager
@@ -297,6 +308,7 @@ def dispatch(
     ifind_client=None,
     rq_client=None,
     baostock_fetch=None,
+    cache_only=False,
 ) -> dict:
     try:
         request = DataRequest.model_validate(request).model_dump(exclude_none=True)
@@ -321,7 +333,10 @@ def dispatch(
     credentials = request["credentials"]
     query = Query.model_validate(request["query"])
     days = (query.end - query.start).days + 1
-    if days > policy.max_calendar_days or len(query.symbols) > policy.max_symbols:
+    allowance = policy.provider_allowances.get(provider)
+    max_days = (allowance.max_calendar_days if allowance else None) or policy.max_calendar_days
+    max_symbols = (allowance.max_symbols if allowance else None) or policy.max_symbols
+    if days > max_days or len(query.symbols) > max_symbols:
         raise ValueError("query exceeds configured symbol/date allowance")
     if kind not in policy.allowed_kinds:
         raise ValueError("source operation is not enabled in this bounded pilot")
@@ -353,6 +368,10 @@ def dispatch(
         guard.grant(request["run_id"], cached)
         return {**result, "cache_reused": True}
     try:
+        if cache_only:
+            raise DataUnavailable(
+                "offline smoke requires preloaded evidence; provider access disabled"
+            )
         if provider in ("ifind", "baostock"):
             metadata = {}
             if provider == "ifind":

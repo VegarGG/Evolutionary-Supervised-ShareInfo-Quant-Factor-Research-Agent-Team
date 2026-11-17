@@ -1,0 +1,46 @@
+{
+  "quality": {
+    "calendar_limit": "Observed union is not an exchange calendar; absences are not proof of a market closure or suspension. No filling or corporate-action inference.",
+    "common_dates": 62,
+    "duplicate_keys": 0,
+    "first": "2026-05-06",
+    "grain": "one symbol/observed-date; close in CNY/share, unadjusted",
+    "invalid_or_null_close": 0,
+    "last": "2026-07-31",
+    "missing_from_observed_union": {
+      "300750.XSHE": [],
+      "600036.XSHG": [],
+      "601318.XSHG": []
+    },
+    "rows": 186,
+    "rows_by_symbol": {
+      "300750.XSHE": 62,
+      "600036.XSHG": 62,
+      "601318.XSHG": 62
+    },
+    "union_dates": 62
+  },
+  "source_ids": [
+    "50a83ffeeec51f75f9537d3a3edc03e1b3419f6e1e4cee9f1ad8738bb9531664",
+    "0602db8b0dd635b6e25bcb3b695d430ba3cf1e780dfea5a2c66b533a1a8b9f74",
+    "a80ccf43aefd568bd3f6722874197c1ea1dd14986d676d6e92e555901dcdbbf8",
+    "94d3afe7a469bf1c1f79c4f8ebfd3d315745eea275ba77ba917c6b30444dba70",
+    "a0b52518a9fec215e2d67c3214c5396b77b76fed7670d01c7eac28f098adb164",
+    "d51182e20c9fcc211fbe3075b81c94b533d8046c1a2bf3426e283fb232b19d9b",
+    "063280e8c91c0e303cf2952b4ae5f43d48da1114902ed775f9a52e1d28522ee9",
+    "127d6360cd45c212a4e22984307e0756943d89a4b7349e2497d3d3b42e70c44e",
+    "7d220c50be3e4d3b541009e2ad825676c1800dfb49036085ae9e6e2184afdd12"
+  ],
+  "retrieved_at": [
+    "2026-11-17T01:45:28.222753+00:00",
+    "2026-11-17T01:45:55.002103+00:00",
+    "2026-11-17T01:47:08.598373+00:00",
+    "2026-11-17T01:48:25.542014+00:00",
+    "2026-11-17T01:48:28.376631+00:00",
+    "2026-11-17T01:48:31.252688+00:00",
+    "2026-11-17T01:48:33.937553+00:00",
+    "2026-11-17T01:48:36.666671+00:00",
+    "2026-11-17T01:48:39.137945+00:00"
+  ],
+  "rows_sha256": "59e8033ec2271d70dba9d22390dd865edbb7aec08c73424b4a62b5c8054fcbf8"
+}

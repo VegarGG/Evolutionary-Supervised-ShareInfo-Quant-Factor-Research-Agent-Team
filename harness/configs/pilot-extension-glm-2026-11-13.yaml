@@ -1,0 +1,9 @@
+amendment_id: glm-native-access-repair-2026-11-13
+expected_limit: 6
+new_limit: 7
+authority: 'Owner: Please proceed with the integration and make DSH ready for me to
+  test. Owner: I propose to use GLM replace the scheduled work. Before Beijing Time
+  today 18:00, we use GLM to test and polish the QRH first.'
+reason: Retain the failed fifth trial, use the sixth for evidence-access repair verification,
+  and reserve one small owner trial. No cash ceiling, prepaid credit cap, data scope,
+  expiry or per-trial request increase.

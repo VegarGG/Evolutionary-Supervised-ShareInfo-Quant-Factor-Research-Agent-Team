@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-12T08:03:28.277692+00:00",
+  "status": "pass",
+  "browser_refusal_visible": true,
+  "provider_model_requests_added": 0,
+  "provider_data_requests_added": 0,
+  "allocated_live_trials": 0,
+  "historical_harness_calls": 24,
+  "official_cumulative_baseline_cny": 20.35,
+  "remaining_cny": 179.65,
+  "notes": [
+    "Initial HTTP 403 was misclassified by DSH as invalid API key. Fixed local policy refusals use HTTP 409; invalid local credentials use HTTP 401.",
+    "Both refusal attempts made zero provider requests."
+  ]
+}

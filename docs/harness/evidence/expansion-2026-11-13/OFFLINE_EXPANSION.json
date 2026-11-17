@@ -1,0 +1,88 @@
+{
+  "mode": "synthetic_model_and_data",
+  "trial_id": "session-4ff91731-9758-4645-82cd-bfad9483be1a",
+  "status": "pass",
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": true,
+    "both_workers_valid": true,
+    "draft_recorded": true,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": true,
+    "no_tool_failures": true,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "resource_samples_required_for_live": true,
+    "raw_data_transport_required_for_live": true
+  },
+  "offline_tests": 146,
+  "scripted_model_requests": 17,
+  "actual_model_requests": 0,
+  "actual_vendor_requests": 0,
+  "data_source_records": 5,
+  "full_calculation_artifacts": [
+    "113e3265676f89493db1c41d5547dbff2ca42994c73d309e0053057ce5fdffae",
+    "57e92e4d16613220b2fe29cf3d67ad20eb9acecc7316429a603d9bf4a02aaa4d"
+  ],
+  "frozen_files_verified": 84,
+  "support": {
+    "aligned_cases": 128,
+    "control_bucket": 64,
+    "dropped_tail_cases": 2,
+    "signal_bucket": 64,
+    "signal_candidates": 130,
+    "ties_assigned_to_control": 0
+  },
+  "inference": {
+    "bootstrap_replicates_run": 2000,
+    "effect": "-0.0199009900990099009900990099",
+    "interval": {
+      "lower": "-0.01990099009900990099009900990",
+      "unit": "return_fraction",
+      "upper": "-0.01990099009900990099009900990"
+    },
+    "outcome": "interval_below_margin",
+    "reason_codes": []
+  },
+  "timing": "next_observation_close",
+  "report_corrections": {
+    "researcher": 1,
+    "reviewer": 1
+  },
+  "browser": {
+    "status": "pass",
+    "at": "2026-11-13T02:12:53.937Z",
+    "title": "Run the bounded offline integration: \u2014 DeepSeek Harness",
+    "origin": "http://127.0.0.1:3081",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "limits": [
+    "Synthetic software fixture, no market or paid inference result.",
+    "Two workers and two native tasks visually verified; known mobile clipping remains."
+  ]
+}

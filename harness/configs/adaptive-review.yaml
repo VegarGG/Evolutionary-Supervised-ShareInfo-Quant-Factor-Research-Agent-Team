@@ -1,0 +1,26 @@
+# One package admits one native supervisor; all packages share the original ledger.
+max_tasks: 5
+supervisor_requests: 12
+worker_requests: 5
+total_requests: 32
+# Raised from 8192 after two recorded max-token failures; model remains Flash.
+max_output_tokens: 16384
+board:
+  max_events: 64
+  max_findings: 12
+  max_versions: 3
+  max_text_length: 24000
+units:
+  base_unit: CNY
+  numerator:
+    variable: profit_reported
+    base_units_per_reported_unit: 10000
+    citation:
+      evidence_id: income
+      quote: A stored value of 1 therefore represents 10000 CNY.
+  denominator:
+    variable: capitalization_reported
+    base_units_per_reported_unit: 100000000
+    citation:
+      evidence_id: capital
+      quote: A stored value of 1 therefore represents 100000000 CNY.

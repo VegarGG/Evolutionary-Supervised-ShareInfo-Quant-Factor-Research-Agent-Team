@@ -1,0 +1,51 @@
+{
+  "at": "2026-11-17T04:33:20.872623+00:00",
+  "authority": "Owner: Please proceed with structured final-output reporting, fix the remaining semantic issues, and rerun the fixed/adaptive trial using GLM 5.3 at maximum effort. Keep the original 200 CNY budget and record everything.",
+  "reason": "Complete the requested full trial after a concrete reference-handling failure, not an unchanged model retry.",
+  "preserved_first_pair": {
+    "fixed": {
+      "requests": 22,
+      "tokens": 635862,
+      "exposure_cny": 6.118936,
+      "status": "finalized; independent descriptive pass with limits"
+    },
+    "adaptive": {
+      "requests": 9,
+      "tokens": 287369,
+      "exposure_cny": 3.132512,
+      "status": "analyst failed, three ID rejections, no accepted findings"
+    }
+  },
+  "fixes": [
+    "assigned immutable task target; stale tasks rejected",
+    "case-scoped immutable short finding/review/candidate handles",
+    "actor-owned inspection handles and host-bound fact/report hashes",
+    "enumerated fact references and explicit defects-versus-caveats guidance",
+    "canonical report field ordering after JSON round trips"
+  ],
+  "budget": {
+    "original_total_cny": 200,
+    "historical_attempt_limit": 364,
+    "conservative_credit_limit": 7500,
+    "local_exposure_limit_cny": 100,
+    "accounted_before": 64.834632,
+    "reserved_before": 14.09024,
+    "unreserved_before": 121.075128
+  },
+  "offline_tests": 288,
+  "native_fixture": {
+    "requests": 27,
+    "completed_tasks": 5,
+    "arithmetic": "pass",
+    "report": "pass",
+    "real_api_calls": 0
+  },
+  "no_prior_reservations_released": true,
+  "no_initial_task_replayed": true,
+  "no_new_data": true,
+  "previous_protocol_amended_for_this_specific_fix": true,
+  "new_pair_only": [
+    "task-bound-fixed-01",
+    "task-bound-adaptive-02"
+  ]
+}

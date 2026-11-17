@@ -1,0 +1,13 @@
+{
+  "status": "pass_with_usability_limits",
+  "desktop": "Both completed native tool cards match full audited report and settled team receipt byte for byte; screenshots inspected.",
+  "reload": "Both completed sessions persist without resubmission.",
+  "mobile": "390x844 screenshot retained. With the sidebar still open after desktop resize, it covers most of the report. This is a viewport observation, not mobile readability or navigation acceptance.",
+  "console_errors": [],
+  "limitations": [
+    "The authoritative report and team usage remain inside a compact scrollable native tool card.",
+    "Root footer remains session-only; the explicit host receipt labels full team usage.",
+    "Adaptive pre-finalization model text incorrectly calls its report clean; independent review preserves the formula omission.",
+    "Read-only checks do not assert production readiness."
+  ]
+}

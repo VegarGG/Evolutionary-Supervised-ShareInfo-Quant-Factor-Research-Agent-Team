@@ -1,0 +1,42 @@
+{
+  "at": "2026-11-13T08:24:40.585503+00:00",
+  "offline_tests": 212,
+  "checks": "just harness-check harness-test",
+  "check_log_sha256": "f9c7ff7006499f5fa2e2e43085375d3f144744a2822e9a0be543a856852e93e0",
+  "native_credential_and_current_bootstrap_scan": {
+    "publishable_files": 467,
+    "matches": 0
+  },
+  "ledger_snapshot_sha256": "60ea7a0ccf5d8ad73b1f92b4280ecf4cb7e77d13954872d5d04e8bccd7167ee3",
+  "call_count": 189,
+  "new_pending_or_unknown": 0,
+  "new_paid_calls_after_final_trial": 0,
+  "budget": {
+    "cumulative_micro_cny": 25157504,
+    "unresolved_micro_cny": 5242880,
+    "remaining_unreserved_micro_cny": 169599616
+  },
+  "source_note": "Final numeric-literal/exponent hardening validated offline after live source freezes; saved accepted unit outputs rechecked unchanged.",
+  "settings_read_only_qa": {
+    "status": "pass",
+    "url": "http://127.0.0.1:3080",
+    "viewport": [
+      1440,
+      1000
+    ],
+    "browser": "Browser plugin not available; existing Playwright and Chrome used",
+    "flow": "Settings -> Models -> Research data -> cancellation, exact-version review and adaptive diagnostic status",
+    "checks": {
+      "page_identity": true,
+      "not_blank": true,
+      "no_framework_overlay": true,
+      "no_console_errors": true,
+      "interaction": true,
+      "screenshots": true
+    },
+    "no_settings_saved": true,
+    "no_model_request": true,
+    "errors": []
+  },
+  "final_chat_note": "Model chat acknowledgments are not the exact reviewed artifact."
+}

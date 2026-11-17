@@ -1,0 +1,30 @@
+{
+  "owner_instruction": "After your fix, switch model to GLM 5.3 and let it rerun the exact same task again.",
+  "contract_changes": [
+    "Citation rejection identifies index and source; requires decoded exact literal text.",
+    "Initial design resolutions must be empty; repair resolutions correspond to the cited review.",
+    "Blocking defects and ordinary limitations are distinguished in schema descriptions.",
+    "Generic guidance separates supported observations from optional hypotheses and exclusivity claims.",
+    "Case model pinned to its package; native Models stays in use.",
+    "Python worker tools import the server frozen source snapshot."
+  ],
+  "accounting_changes": {
+    "original_cny_ceiling": 200,
+    "local_package_cny": 40,
+    "local_conservative_credit_cap": 4000,
+    "max_aggregate_glm_requests": 240,
+    "cash_full_input_per_million_cny": 8,
+    "cash_output_per_million_cny": 28,
+    "input_microcredits_per_token": 690,
+    "output_microcredits_per_token": 2400,
+    "no_cache_or_offpeak_discount_in_guard": true,
+    "old_debits_and_reservations_retained": true
+  },
+  "sources": [
+    "https://docs.bigmodel.cn/cn/coding-plan/overview",
+    "https://docs.bigmodel.cn/cn/guide/start/pricing",
+    "https://docs.bigmodel.cn/cn/guide/models/text/glm-5.3"
+  ],
+  "verified_on": "2026-11-16",
+  "classification": "Operator-selected local sublimits to support the owner-authorized model switch; not an increase to the user total or an account quota reading."
+}

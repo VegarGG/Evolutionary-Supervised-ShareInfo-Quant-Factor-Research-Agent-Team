@@ -1,0 +1,9 @@
+{
+  "source_files_identical": true,
+  "source_file_count": 144,
+  "settings_and_input_identical": true,
+  "operator_reviews_injected": false,
+  "fixed_export_arithmetic": "pass",
+  "fixed_usage": "all_settled",
+  "semantic_status": "independent review kept separate; no effect on adaptive prompt"
+}

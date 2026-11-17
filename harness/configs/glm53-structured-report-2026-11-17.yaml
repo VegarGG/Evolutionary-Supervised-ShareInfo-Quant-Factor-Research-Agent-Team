@@ -1,0 +1,42 @@
+id: glm53-structured-report-2026-11-17
+provider: glm_coding
+funding: coding_plan
+platform: bigmodel-cn
+subscription_tier: Pro
+model: glm-5.3
+endpoint: https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+authority: Owner explicitly requested structured final-output reporting, semantic
+  fixes and a fresh fixed/adaptive GLM 5.3 maximum-effort rerun. Authorize one fresh
+  pair with 36 requests per arm, 333 historical GLM attempts (261 carried plus at
+  most 72 new), 7500 conservative credits, unchanged 80 CNY local exposure and original
+  200 CNY total. Preserve every old debit, reservation and failure. No provider fallback
+  or automatic extra pair.
+eligibility_authority: Owner confirmed DSH eligibility directly with Zhipu.
+starts_at: '2026-11-16T00:00:00+08:00'
+ends_at: null
+admission_mode: until_stopped
+max_requests: 333
+max_microcredits: 7500000000
+input_microcredits_per_token: 690
+output_microcredits_per_token: 2400
+maximum_input_tokens: 1048576
+maximum_output_tokens: 131072
+concurrency: 1
+pricing_source: https://docs.bigmodel.cn/cn/coding-plan/overview
+pricing_verified_on: '2026-11-16'
+reasoning_effort: max
+transport: openai-completions
+cash_package_micro_cny: 80000000
+cash_input_micro_cny_per_token: 8
+cash_output_micro_cny_per_token: 28
+reserved_connection_timeouts:
+- request_id: a56ac7e768ab433ca20f0523548d73b3
+  call_sha256: 72efe09d51ec4710e3a9aec2df5257bfb7d7185ef679d79d29cb6641f687a425
+  request_sha256: ffb88e05a6ba8b8d29c99275ea4847abbc39d22b480a515d28a3065749108eaf
+  groups:
+  - structured-report-fixed-01
+  - structured-report-adaptive-02
+  authority: Owner explicitly authorized this new fixed/adaptive rerun after the carried
+    unresolved reservation was reported. Keep the exact old timeout, fingerprints
+    and full reservation unchanged. Permit only the named fresh groups; any new unknown
+    blocks.

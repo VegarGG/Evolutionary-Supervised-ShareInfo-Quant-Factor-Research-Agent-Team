@@ -1,0 +1,15 @@
+protocol: development-contrast-v1
+decimal_precision: 28
+execution_lag: 1
+max_lookback: 5
+max_label_horizon: 5
+max_threshold_magnitude: '1'
+max_effect_margin: '1'
+minimum_bucket_size: 20
+minimum_blocks: 8
+method: moving_block_percentile
+confidence_level: '0.95'
+block_length: 5
+bootstrap_replicates: 2000
+seed: 20261112
+maximum_observations: 10000

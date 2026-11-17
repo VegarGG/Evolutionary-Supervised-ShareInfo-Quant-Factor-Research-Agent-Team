@@ -1,0 +1,17 @@
+[
+  {
+    "call_id": "5447433598aa4d878186ddf478e3b96e",
+    "actor": "reviewer-1",
+    "final_visible_text": "Findings submitted and accepted (batch `5fb492ad…`), covering the three required areas:\n\n1. **Timing (supported)** — baseline uses only closes at/before t, needs the full trailing window per `closes_required_per_signal` with only recorded warm-up exclusions, executes no earlier than the next observed close (last-row signal has none), no date filling, and next-close counts don't establish tradability.\n2. **Coverage (supported)** — unadjusted close-only convenience sample, current download (not a vintage archive), never a holdout, no volume/corporate-actions/calendar/costs/point-in-time universe, and close-only jumps cannot justify a jump or corporate-action screen.\n3. **Normalization (hypothesis)** — one unproven alternative: baseline lookback/direction plus realized-volatility normalization over the smallest permitted window (positive trailing SD required; all-zero windows ineligible), with trade-offs (added parameter, deeper warm-up, changed score scale) and required future evidence stated; baseline retention left equally acceptable.\n\nEnding here on the reserved acknowledgement."
+  },
+  {
+    "call_id": "dd3cafdd1c1b4ecab4697ef4422ae07f",
+    "actor": "author-2",
+    "final_visible_text": "Submitted and accepted (revision `cdc843cc…`).\n\n**Decision adopted** (finding:3 alternative, not baseline retention): `lookback=5, direction=+1, normalization=realized_volatility, volatility_window=5, max_absolute_daily_return=null`, grounded in the documented cross-symbol return/score-scale dispersion, with the exclusion left unset per finding:2 and timing rules carried over per finding:1.\n\nKey receipt facts (inspection:1, compared against the assigned baseline):\n- **Coverage identical**: 6 closes required per signal, 5 warm-up exclusions, 57 eligible signals, 56 with a next observed close, 0 additional exclusions per symbol — no window hit the non-positive-volatility edge.\n- **Scale changed**: all 171 score rows changed; per-symbol score SD now order-one.\n- **No improvement established**: the rendered `score_sd_max_over_min` comparison is essentially flat (1.5308 → 1.5464), so even descriptively the normalization did not reduce relative cross-symbol dispersion — the comparability benefit remains an unproven hypothesis, and the volatility-scaled score is explicitly not an annual Sharpe ratio nor a claim of alpha, superiority or tradability.\n\nAcknowledged — ending here."
+  },
+  {
+    "call_id": "5990c161a2634c62b218ff9bf3b14547",
+    "actor": "reviewer-3",
+    "final_visible_text": "Review accepted: **reviewed_with_limits**, all checks consistent, no issues. The assigned candidate's spec, timing rules, qualitative coverage/scale discussion, decision citations and limitation disclosures all hold against the frozen sources and the structured-v3 contract.\n\nReview complete."
+  }
+]

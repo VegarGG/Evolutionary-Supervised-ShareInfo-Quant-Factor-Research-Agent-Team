@@ -1,0 +1,52 @@
+{
+  "trial_id": "session-02dbd745-abe3-4dc6-8670-249e4cefccb4",
+  "mode": "live_GLM_Coding_Plan_with_BaoStock",
+  "status": "partial_or_failed",
+  "started_utc": "2026-11-13T04:05:47.219149+00:00",
+  "finished_utc": "2026-11-13T04:05:47.219629+00:00",
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": false,
+    "both_workers_valid": false,
+    "draft_recorded": false,
+    "all_model_usage_settled": false,
+    "both_workers_fetched_evidence": false,
+    "no_tool_failures": true,
+    "source_baostock_only": false,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "configured_route_matches_ledger": true,
+    "resource_samples_required_for_live": false,
+    "raw_data_transport_required_for_live": false
+  },
+  "accounting": {
+    "trial_conservative_cny": 0.0,
+    "campaign": {
+      "carry_micro_cny": 56256735,
+      "new_settled_micro_cny": 2644506,
+      "unresolved_micro_cny": 5242880,
+      "cumulative_micro_cny": 22166328,
+      "conservative_unreconciled_cumulative_micro_cny": 58901241,
+      "remaining_unreserved_micro_cny": 172590792,
+      "invoice_verified": false,
+      "billing_baseline": {
+        "id": 1,
+        "at": "2026-11-12T07:05:53.036243+00:00",
+        "actual": 20350000,
+        "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+        "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+      }
+    },
+    "basis": "Owner-reported official baseline + subsequent conservative charges. Original ceiling unchanged."
+  },
+  "pilot_allowance_at_export": {
+    "original_limit": 3,
+    "effective_limit": 7,
+    "used": 6,
+    "remaining": 1
+  },
+  "provider_requests": 0,
+  "reason": "work-package budget exhausted or reserved",
+  "native_status": "Failed",
+  "original_ledger_unchanged": true
+}

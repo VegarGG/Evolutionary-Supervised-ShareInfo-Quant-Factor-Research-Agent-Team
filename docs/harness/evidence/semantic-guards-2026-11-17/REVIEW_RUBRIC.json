@@ -1,0 +1,20 @@
+{
+  "scope": "Independent review of the two frozen live artifacts, separate from native completion and model verdict",
+  "acceptance": [
+    "All current wire requests use GLM 5.3/max with enabled thinking and the frozen output cap; usage is settled.",
+    "Identical source, question, data, baseline and limits across arms; no control output or operator review injected into adaptive inputs.",
+    "Required analyst, designer and exact-report reviewer tasks actually terminate, including native acknowledgement calls.",
+    "Scores, counts, spec digest, changed rows, provenance and complete report hash pass independent arithmetic audit.",
+    "Both raw and normalized return scores are dimensionless; no new dimensionlessness, systematic-risk removal or market-performance implication.",
+    "Available next observed closes are not trades, fills or proof of tradability; required window and warmup exclusions are distinct.",
+    "Any comparative magnitude or dispersion claim names the statistic or has an unambiguous qualified meaning supported by independent recalculation.",
+    "Source-supported observations and unproven hypotheses are distinct; no causal explanation inferred from a descriptive ranking.",
+    "Retaining the baseline is a valid outcome; changes must match inspected and reported specifications, not a desired experimental result.",
+    "Intermediate model errors and rejected submissions remain recorded even when the final adopted artifact is clean."
+  ],
+  "limits": [
+    "A bounded same-case descriptive pass is not proof of general semantic reliability, predictive value or adaptive superiority.",
+    "No official acceptance, release, pool promotion or production-readiness conclusion follows automatically.",
+    "No extra paid pair is authorized by a failed semantic result in this experiment."
+  ]
+}

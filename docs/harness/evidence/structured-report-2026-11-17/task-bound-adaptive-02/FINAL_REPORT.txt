@@ -1,0 +1,74 @@
+QRH structured research report
+Pending independent audit; no official acceptance.
+Candidate: bdce7dca10e901c4489b624fab0f6879ff4398e68038e65bb6d8b49f97229533
+Report SHA256: 1f1d4f070fbb2886700863efa6f7400066e006f8cb814f7aaf92d7c613020575
+Exact-report review: be935e61950186c68ee5c6ac1e7bc0c58ce2392c34ff73de91536322152741a2
+
+COMPUTED FACTS
+1 * (close[t]/close[t-5] - 1) / (sample_sd(last 5 one-observation simple returns) * sqrt(5))
+Unadjusted close in CNY/share; simple returns and final score dimensionless.
+Rows changed from initial: 171
+300750.XSHE.additional_exclusions: 0 [count]
+300750.XSHE.closes_required_per_signal: 6 [count]
+300750.XSHE.eligible_signals: 57 [count]
+300750.XSHE.maximum_absolute_score: 2.8474019795499386 [dimensionless]
+300750.XSHE.mean_absolute_score: 0.9075255057621842 [dimensionless]
+300750.XSHE.mean_score: -0.3889859692838746 [dimensionless]
+300750.XSHE.observed_closes: 62 [count]
+300750.XSHE.sample_sd_score: 1.125523331799228 [dimensionless]
+300750.XSHE.signals_with_next_observed_close: 56 [count]
+300750.XSHE.warmup_exclusions: 5 [count]
+600036.XSHG.additional_exclusions: 0 [count]
+600036.XSHG.closes_required_per_signal: 6 [count]
+600036.XSHG.eligible_signals: 57 [count]
+600036.XSHG.maximum_absolute_score: 5.702067932208772 [dimensionless]
+600036.XSHG.mean_absolute_score: 1.3331174811923054 [dimensionless]
+600036.XSHG.mean_score: -0.28153524939007035 [dimensionless]
+600036.XSHG.observed_closes: 62 [count]
+600036.XSHG.sample_sd_score: 1.7404777088984507 [dimensionless]
+600036.XSHG.signals_with_next_observed_close: 56 [count]
+600036.XSHG.warmup_exclusions: 5 [count]
+601318.XSHG.additional_exclusions: 0 [count]
+601318.XSHG.closes_required_per_signal: 6 [count]
+601318.XSHG.eligible_signals: 57 [count]
+601318.XSHG.maximum_absolute_score: 6.13450098317669 [dimensionless]
+601318.XSHG.mean_absolute_score: 1.0086452887733148 [dimensionless]
+601318.XSHG.mean_score: -0.40783855957329596 [dimensionless]
+601318.XSHG.observed_closes: 62 [count]
+601318.XSHG.sample_sd_score: 1.5579151612791153 [dimensionless]
+601318.XSHG.signals_with_next_observed_close: 56 [count]
+601318.XSHG.warmup_exclusions: 5 [count]
+
+EVIDENCE LIMITS
+Development sample only; this inspected data cannot become an untouched holdout.
+An available next observed close does not establish tradability, fills or transaction costs.
+Raw return and volatility-normalized return are both dimensionless; scaling changes magnitude, not units.
+No forward labels, returns after execution, alpha, causality or superiority were measured.
+Unadjusted historical closes are not vintage data or evidence of corporate actions.
+The observed-date sample is neither an exchange calendar nor a representative market universe.
+
+CALCULATION PROVENANCE
+Host inspection requested by author-2; reading this receipt is not executing a new calculation.
+
+MODEL PROPOSAL — qualitative interpretation, not an established result
+hypothesis: Exploratory hypothesis for later independent evaluation on this frozen convenience sample: dividing the trailing close return over the baseline lookback by the trailing realized daily-return standard deviation scaled by the square root of that lookback yields a short-horizon momentum score expressed relative to each symbol's own recent return dispersion. Motivation: cited profiles show material cross-symbol heterogeneity in one-observation return dispersion, so raw trailing-return magnitudes conflate symbol-specific volatility scale with signal information; a per-symbol dispersion scaling is intended to make score magnitudes interpretable on a common dimensionless scale across the fixed universe. This is a research question, not a claim: usefulness, sign persistence, tradability and any investment benefit are unproven; the normalized score is not an annual Sharpe ratio and does not remove systematic risk. Signals use only observations at or before the signal close, windows use past observed rows only with no filling, and execution can occur no earlier than the next observed close; the final signal row has no execution observation, and available next observed closes are coverage facts only, not tradability. Evidence needed next: forward performance labels in a separate future evaluation, outside this descriptive stage.
+Fact references: timing, units, scope, spec, 300750.XSHE.sample_sd_score, 600036.XSHG.sample_sd_score, 601318.XSHG.sample_sd_score
+rationale: Retained the baseline lookback and direction; changed only normalization, adding realized-volatility scaling with the volatility window at its minimum permitted value, matching the baseline lookback. The added parameter is justified by cited evidence: profiles show material cross-symbol heterogeneity in one-observation return dispersion, and unnormalized scores inherit differing sample score scales, so cross-symbol magnitudes conflate symbol-specific volatility scale with signal information. Both inspections show identical eligibility and coverage: same observed rows, required closes, warmup exclusions, no additional exclusions, and the same next-observed-close relationship, so the revision carries no coverage cost. Its score-scale consequence is that dispersions and magnitudes move onto a common per-symbol dispersion scale of comparable order across the three symbols rather than raw-return scales; this is a descriptive rescaling, not proof of improved information content or a better specification. No applicability exclusion was added: close-only jumps cannot identify corporate actions and no cited finding licenses a return bound, so that bound stays null. Retaining the baseline remained coherent and was set aside only as the weaker fit to the cross-symbol research question, not as invalid. Adoption is exploratory; descriptive differences cannot establish superiority, and the normalized score is not an annual Sharpe ratio and does not remove systematic risk.
+Fact references: spec, units, timing, scope, changed_rows_from_initial, 300750.XSHE.eligible_signals, 600036.XSHG.eligible_signals, 601318.XSHG.eligible_signals, 300750.XSHE.warmup_exclusions, 600036.XSHG.warmup_exclusions, 601318.XSHG.warmup_exclusions, 300750.XSHE.signals_with_next_observed_close
+
+FINDING DISPOSITIONS — model reasoning
+9068486b9cb22d0ce568bce3f92dc18df83b006adf63979500c1e36170ddf378: adopt — Adopt: timing, availability and execution rules are fixed by cited sources; the revision changes only normalization and leaves every timing constraint untouched.
+0ef9b7a4fdca6ca257c751c9b363af98333acf5eb9978ad1b61ae97d653e8347: adopt — Adopt: coverage is descriptive only; close-only jumps cannot identify corporate actions and no cited finding licenses a return bound, so applicability stays unrestricted.
+d5172105922468d7e773a7e42da96e7d6f1a407a8d817553b6bc10b63a98c258: adopt — Adopt: cited profiles document material cross-symbol dispersion heterogeneity that unnormalized scores inherit, motivating a volatility-normalized research variant.
+25db2041b73815454be527a9578d9acda4bc3656ef1753fa17c182580dd0a67b: adopt — Adopt: the single motivated alternative was inspected; eligibility and coverage match the baseline and scores move to a common per-symbol dispersion scale, with no superiority claim.
+
+CITED SOURCE EXCERPTS — provenance, not proof of interpretation
+source_contract: Normalization divides the trailing return by trailing daily-return SD times sqrt(lookback); this does not make an annual Sharpe ratio or remove systematic risk.
+price_profile: "sample_sd_one_observation_return": 0.02520900080828789,
+price_profile: "sample_sd_one_observation_return": 0.012242446444137979,
+research_contract: Descriptive score differences cannot establish superiority.
+source_contract: Close-only jumps cannot identify corporate actions.
+research_contract: justify any added parameter or applicability exclusion from cited evidence and state what evidence would be needed next
+
+USAGE SCOPE
+Not included: final acknowledgements have not settled. Native footer is session-only; team totals belong in the post-run audit.

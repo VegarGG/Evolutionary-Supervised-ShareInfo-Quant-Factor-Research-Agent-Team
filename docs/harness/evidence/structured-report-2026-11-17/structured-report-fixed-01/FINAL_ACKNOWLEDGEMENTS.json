@@ -1,0 +1,22 @@
+[
+  {
+    "call_id": "79bb283a69054313b61e98a4e6fbe09b",
+    "actor": "reviewer-1",
+    "final_visible_text": "Findings accepted (batch `fd092699…`). Summary of the four submitted findings on the initial candidate `3c30c5d7…`:\n\n1. **Coverage/timing (supported)** — 62 observed closes per symbol, 5 warmup exclusions → 57 eligible signals; the final date's signal has no next observed close → 56 execution observations per symbol. Counts describe coverage only, not tradability.\n2. **Units (supported)** — Unadjusted CNY/share closes from a non-vintage download; e.g., 601318.XSHG 52.76 → 49.38 (2026-06-17→18) stays in the window, and close-only jumps cannot identify corporate actions.\n3. **Normalization (supported)** — Any scaled variant must use trailing return ÷ (SD·√lookback) with n−1 SD; it is not an annual Sharpe ratio and does not remove systematic risk.\n4. **Hypothesis (unproven)** — Per-symbol one-observation return SDs differ ~2× (0.0122 vs 0.0252), motivating inspection of an RV-normalized 5-lookback variant with volatility_window 5 (no coverage loss); explicitly not evidence of superiority, pending later evaluation.\n\nAnalysis stage complete."
+  },
+  {
+    "call_id": "f12991b5b4b24b95bf46e133dc72524e",
+    "actor": "author-2",
+    "final_visible_text": "Revision accepted (artifact `389a3e4150b0055eba777f18d27865bdea3f3e27c869c07d4d8a1365b6e627e8`).\n\n**Summary of the design decision:**\n- **Adopted spec:** lookback 5, direction 1, normalization `realized_volatility`, volatility_window 5, no return-magnitude bound — a single change from the baseline, motivated by the recorded ~2× cross-name dispersion gap (sample SD 0.0122 vs 0.0252) in `price_profile`.\n- **Inspection verified** (ID `cbeba14f…`): coverage identical to baseline — same closes required per signal, same warmup exclusions, eligible signals and signals with a next observed close unchanged, no added exclusions.\n- **Score-scale change ≠ improvement:** all score rows changed by definition; no forward labels, alpha, or superiority claimed — this is an exploratory proposal for later independent evaluation with explicit costs and calendar handling.\n- All four findings disposed of as adopted constraints/hypothesis; no corporate-action interpretation or return-magnitude exclusion added, since cited evidence does not support one.\n\nEnding here per the acknowledgement-only instruction."
+  },
+  {
+    "call_id": "21f34b23d5e047c3859bb3d9f0759ace",
+    "actor": "reviewer-3",
+    "final_visible_text": "Review accepted (artifact `6b1387ad…`), binding report `2406dd79…` for candidate `389a3e41…` — verdict **reviewed_with_limits**, all four checks (evidence_support, spec_and_prose, timing, scope_and_limits) consistent. I verified exact citations, the 62−5=57 and 57−1=56 count equations per symbol, unchanged coverage under the volatility window of 5, the no-digits qualitative text, the clean prose check, and independently reproduced the recorded per-name maximum absolute scores from the frozen closes; remaining limits (unproven comparability, no forward labels, non-verifiable hash provenance, uninterpreted close jumps) are recorded as inherent limits, not revision items. Ending here."
+  },
+  {
+    "call_id": "b8f0d155c099498d82dc1f0abea3b553",
+    "actor": "supervisor",
+    "final_visible_text": "Candidate `389a3e4150b0055eba777f18d27865bdea3f3e27c869c07d4d8a1365b6e627e8` — pending independent audit."
+  }
+]

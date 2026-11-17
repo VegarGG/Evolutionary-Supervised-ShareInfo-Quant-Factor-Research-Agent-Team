@@ -1,0 +1,22 @@
+[
+  {
+    "call_id": "0256dbecebee4afe9d9f2faebbcb9392",
+    "actor": "reviewer-1",
+    "final_visible_text": "Findings accepted (batch `ec95ed93d559e33c146c25d2d5c099fb914ed94af9091ca204a489137675b49f`). Four findings submitted: three supported constraints (balanced coverage with exact 62/57/56 count equation and non-tradability of next-close counts; observed-row windows with the common 2026-06-19 gap and no-filling/no-corporate-action-inference limits; CNY/share units, dimensionless simple return, n−1 SD, no Sharpe reinterpretation) and one labeled hypothesis (volatility normalization for cross-symbol scale, explicitly unproven with superiority and eligibility caveats). Ending here."
+  },
+  {
+    "call_id": "5b54773843034870a4f84a272b192209",
+    "actor": "author-2",
+    "final_visible_text": "Accepted (revision `9e48ccf8…`). Summary of the design decision:\n\n**Choice: retain the baseline spec** — `{lookback: 5, direction: 1, normalization: none, volatility_window: null, max_absolute_daily_return: null}`, bound to `inspection:1` (0 changed rows vs. initial; 57 eligible / 56 next-close signals per symbol).\n\n**Why not the motivated alternative** (`realized_volatility`, window 10, inspected as `inspection:2` without adopting): it cut eligibility to 52 signals (51 with next close) per symbol via 10 warmup exclusions, and the cross-symbol score-SD spread **widened** rather than compressed (≈1.5× → ≈1.8×; the quiet symbol's SD grew to ~1.53 with max |score| ~4.1). Since the finding:4 motivation was cross-symbol scale comparability, the observed descriptive consequences don't justify the added parameter — a scale change, not an improvement.\n\n**Finding dispositions**: findings 1–3 (coverage, timing, units) adopted; finding 4 (normalization hypothesis) deferred — open for later evaluation with forward labels, not rejected as unproven.\n\nAll score differences remain descriptive only: no alpha, superiority, tradability, or corporate-action inference claimed. Next required evidence is an independent forward-label evaluation, out of scope here."
+  },
+  {
+    "call_id": "e2fdf89165494d8c98cbb355e1801234",
+    "actor": "reviewer-3",
+    "final_visible_text": "Review accepted (case_review `d5e884ea…`): verdict **reviewed_with_limits**, all four checks consistent, no issues — the retained baseline candidate, its executable inspection, decisions, rationale and disclosed limits all match the frozen sources, and no performance or causality claim was found. Ending here."
+  },
+  {
+    "call_id": "bea313b7c7c24bfc8a8a141a3150b47d",
+    "actor": "supervisor",
+    "final_visible_text": "Fixed-variant workflow completed (analyze → design → review → finalize, 8 of 12 work requests used).\n\nFinalized candidate: `9e48ccf8d777a666a02e645e5bd372d8ccd11d1803275b7bf29745c8854003c4` — pending independent audit."
+  }
+]

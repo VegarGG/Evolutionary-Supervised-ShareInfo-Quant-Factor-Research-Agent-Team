@@ -1,0 +1,15 @@
+{
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "machine": "arm64",
+  "python": "3.12.13",
+  "logical_cpus": 18,
+  "physical_cpus": 18,
+  "total_ram_bytes": 38654705664,
+  "packages": {
+    "deepseek-harness-runtime-bin": "0.2.2rc2",
+    "httpx": "0.28.1",
+    "baostock": "0.9.4",
+    "deepseek-harness-sdk": "0.2.2rc2"
+  },
+  "collection_note": "Initial metadata lookup used a nonexistent deepseek-harness-runtime distribution name; corrected by enumerating installed distributions. No provider calls."
+}

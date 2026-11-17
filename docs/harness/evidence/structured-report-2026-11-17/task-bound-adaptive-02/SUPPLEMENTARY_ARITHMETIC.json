@@ -1,0 +1,59 @@
+{
+  "at": "2026-11-17T05:15:26.359425+00:00",
+  "basis": "Read-only supplementary audit of unchanged real artifacts; explicit independent specification digest and changed-row counts. Supersedes wrong-typed count field in supplementary attempt 01 only; original exports unchanged.",
+  "status": "pass",
+  "method": "independent 50-digit Decimal calculation",
+  "snapshot_sha256": "59e8033ec2271d70dba9d22390dd865edbb7aec08c73424b4a62b5c8054fcbf8",
+  "baseline_rows": 186,
+  "calculations": [
+    {
+      "path": "calculation-026ca36f0498a81164b23bdedd9a0be26eeabd0482e4bcca4dab59e1632eec40.json",
+      "spec": {
+        "direction": 1,
+        "lookback": 5,
+        "max_absolute_daily_return": null,
+        "normalization": "none",
+        "volatility_window": null
+      },
+      "rows_recomputed": 186,
+      "changed_rows_from_initial": 0,
+      "status": "pass"
+    },
+    {
+      "path": "calculation-0dbb4c3ee6c5b7db30d6e8f34d3e37826b3f758bedf1ba5999966f783fc96146.json",
+      "spec": {
+        "direction": 1,
+        "lookback": 5,
+        "max_absolute_daily_return": null,
+        "normalization": "realized_volatility",
+        "volatility_window": 5
+      },
+      "rows_recomputed": 186,
+      "changed_rows_from_initial": 171,
+      "status": "pass"
+    }
+  ],
+  "structured_report": {
+    "status": "pass",
+    "report_sha256": "1f1d4f070fbb2886700863efa6f7400066e006f8cb814f7aaf92d7c613020575",
+    "changed_rows_from_initial": 171,
+    "checks": [
+      "complete artifact/review binding",
+      "exact metric copies",
+      "independent specification hash and changed-row count",
+      "independent counts",
+      "units and evidence states",
+      "inspection provenance"
+    ],
+    "limits": "Qualitative interpretation still requires independent semantic review."
+  },
+  "checks": [
+    "source CSV equals frozen rows",
+    "raw/normalized scores and eligibility",
+    "sample SD n-1",
+    "per-symbol summaries",
+    "execution timing",
+    "future perturbation of inspected specifications"
+  ],
+  "limits": "Arithmetic only. Source interpretations, rationale and claimed improvements require separate semantic review. No performance test."
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "call_id": "8cf90d7987ff4494a4396569e4deae7a",
+    "actor": "reviewer-1",
+    "final_visible_text": "Findings accepted (batch `dddf2f8d…`). Summary of what was submitted for the analyze stage on candidate `assigned`:\n\n1. **Timing (supported)** — Signals use only closes at/before t; execution no earlier than the next observed close; windows use past observed rows with no filling; the observed union is not an exchange calendar; eligible signals exceed those with a next observed close (final row has no execution observation); counts of next closes are not tradability evidence.\n2. **Coverage (supported)** — Identical per-symbol row counts, small warm-up exclusions for insufficient past observations, current download is not a vintage archive, convenience universe without point-in-time membership, and close-only jumps (e.g., the 601318.XSHG single-day drop rows) cannot identify corporate actions.\n3. **Units (supported)** — Unadjusted CNY closes; one-observation return dispersion and max absolute returns differ materially across symbols, so unnormalized baseline scores carry different per-symbol scales — a descriptive comparability consequence only.\n4. **Normalization (hypothesis)** — Exactly one alternative motivated: realized-volatility normalization with the minimum permitted trailing window matching the baseline lookback; unproven, no superiority/alpha/Sharpe claim, coverage and score-scale consequences to be inspected against the baseline, with forward labels in a separate future evaluation as the required next evidence.\n\nAnalysis stage complete."
+  },
+  {
+    "call_id": "22666379fc754372949a2f362b240ad2",
+    "actor": "author-2",
+    "final_visible_text": "Submission accepted. \n\n**Designer decision — adopted the motivated alternative** (revision `bdce7dca10e901c4489b624fab0f6879ff4398e68038e65bb6d8b49f97229533`, parent `assigned`, inspection:2):\n\n- **Spec**: lookback 5, direction 1, `realized_volatility` normalization, volatility_window 5, `max_absolute_daily_return` null (no finding licenses an exclusion).\n- **Coverage**: identical to baseline — 57 eligible signals, 5 warmup exclusions, 0 additional exclusions, 56 with a next observed close per symbol; no coverage cost (171 score rows rescaled, no eligibility change).\n- **Score scale**: dispersions moved from heterogeneous raw-return scales (0.0279–0.0428) onto a common per-symbol dispersion scale (1.13–1.74) — a descriptive rescaling addressing finding:3's documented volatility-scale conflation, explicitly not proof of superiority.\n- All four findings adopted with cited-evidence reasons; hypothesis kept exploratory (no alpha, tradability or Sharpe-ratio claims; next evidence = forward labels in a separate future evaluation)."
+  },
+  {
+    "call_id": "ec9b5ad4117b47799199dc2df5b4d903",
+    "actor": "reviewer-3",
+    "final_visible_text": "Review accepted (review:be935e61950186c68ee5c6ac1e7bc0c58ce2392c34ff73de91536322152741a2).\n\n**Verdict: reviewed_with_limits** — all four checks consistent, no issues.\n\n- The assigned revision candidate's spec, expression, and structured report were read in full and match the frozen event-12 inspection exactly (counts, scores, changed rows, score-rows hash).\n- The volatility-normalized variant is grounded in cited cross-symbol dispersion heterogeneity, with no superiority, alpha, tradability, annual-Sharpe, or corporate-action claims; timing rules and unrestricted applicability are preserved; qualitative text is digit-free and structured-v3 conformant; exploratory status and the reasoned availability of baseline retention are explicit.\n\nEnding here."
+  },
+  {
+    "call_id": "6d0ebcd0666b4d54ad210d9096dea6f5",
+    "actor": "supervisor",
+    "final_visible_text": "Case complete. Stages: analyze (reviewer-1, findings 1–4) → design (author-2, both specs inspected, candidate:2 adopted, structured report bound) → review (reviewer-3, clean `reviewed_with_limits`, zero issues) → finalize accepted. All hypotheses remain exploratory and unproven; no superiority, alpha, or tradability claims were made.\n\n- Frozen candidate: `bdce7dca10e901c4489b624fab0f6879ff4398e68038e65bb6d8b49f97229533`\n- Exact-report review: `be935e61950186c68ee5c6ac1e7bc0c58ce2392c34ff73de91536322152741a2`\n\nStatus: pending independent audit; no official acceptance."
+  }
+]

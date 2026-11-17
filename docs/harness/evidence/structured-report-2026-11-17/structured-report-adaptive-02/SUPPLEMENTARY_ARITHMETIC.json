@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-17T05:15:26.349231+00:00",
+  "basis": "Read-only supplementary audit of unchanged real artifacts; explicit independent specification digest and changed-row counts. Supersedes wrong-typed count field in supplementary attempt 01 only; original exports unchanged.",
+  "status": "pass",
+  "method": "independent 50-digit Decimal calculation",
+  "snapshot_sha256": "59e8033ec2271d70dba9d22390dd865edbb7aec08c73424b4a62b5c8054fcbf8",
+  "baseline_rows": 186,
+  "calculations": [],
+  "structured_report": {
+    "status": "not_finalized_or_legacy"
+  },
+  "checks": [
+    "source CSV equals frozen rows",
+    "raw/normalized scores and eligibility",
+    "sample SD n-1",
+    "per-symbol summaries",
+    "execution timing"
+  ],
+  "limits": "Arithmetic only. Source interpretations, rationale and claimed improvements require separate semantic review. No performance test."
+}

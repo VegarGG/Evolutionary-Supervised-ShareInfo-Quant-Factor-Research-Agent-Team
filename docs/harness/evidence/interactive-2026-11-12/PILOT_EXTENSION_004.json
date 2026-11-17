@@ -1,0 +1,41 @@
+{
+  "record": {
+    "amendment": {
+      "amendment_id": "specification-repair-2026-11-12",
+      "expected_limit": 3,
+      "new_limit": 6,
+      "authority": "Owner: Please fix the remaining statistical and specification issues, extend the pilot allowance, and rerun the full trial using DeepSeek-flash only and BaoStock. Keep the original 200 CNY budget and time windows, and record everything.",
+      "reason": "One repair-verification trial and two small owner trials; no budget, data or per-trial request increase.",
+      "budget_cumulative_micro_cny": 21253244,
+      "remaining_micro_cny": 178746756,
+      "policy_sha256": "950e63761a541b3224a7e663cec5be988496e4763e1856707887cf9e71dff032",
+      "budget_config_sha256": "36adf9109f2eea596f8256327dd859503bef68dfae2552125d4c6ff1aa90210c",
+      "data_config_sha256": "dd6b07eaac6140730c6a4ae83253dea8d7ca9e98e3eac5f46baba150bd5af32c"
+    },
+    "allowance": {
+      "original_limit": 3,
+      "effective_limit": 6,
+      "used": 3,
+      "remaining": 3
+    }
+  },
+  "checks": {
+    "budget_unchanged": true,
+    "data_unchanged": true,
+    "research_policy_unchanged": true,
+    "trial_history_unchanged": true,
+    "member_history_unchanged": true,
+    "prior_events_preserved": true,
+    "exactly_one_event_added": true
+  },
+  "before_hashes": {
+    "budget": "2562e9d4ea19fe828509cf32191ae08fb5db4d627973ab52dec1b4e59f7d722b",
+    "data": "4326d6427a5900f36c6e1dde6f383c6ba6f8df385342e86457e87d05f4ebaedb",
+    "research": "1952cc046320cf6cdce1de40c59a6473f9e63bbe6f03b31b131c753b9c237020"
+  },
+  "after_hashes": {
+    "budget": "2562e9d4ea19fe828509cf32191ae08fb5db4d627973ab52dec1b4e59f7d722b",
+    "data": "4326d6427a5900f36c6e1dde6f383c6ba6f8df385342e86457e87d05f4ebaedb",
+    "research": "d9d351d5008bb8e1bec8d05abad3edb676b959715841495277449c0ed6b2fbf5"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "scope": "Independent operator notes after analyst completion; not sent to supervisor or workers.",
+  "findings": [
+    {
+      "id": "6e1145ad807315381970e5426ce4a8e084ca602685f00004a64e168f43d81b84",
+      "text": "deepens warmup exclusions as the window lengthens",
+      "assessment": "Needs qualification: required history is max(lookback,volatility_window)+1; lengthening a volatility window below the return lookback need not change warmup. Check final inspection and decisions."
+    },
+    {
+      "id": "5cad01e3de6ce7f3ea04c32a5820f5d9dc712a44ff250b46f69c01447734d732",
+      "text": "Before any adoption, superiority or investment-benefit claim",
+      "assessment": "Ambiguous initial grouping: exploratory adoption is permitted without proven superiority. The statement later distinguishes research adoption from performance. Check whether the final proposal treats absent performance evidence as an absolute bar to exploration."
+    }
+  ]
+}

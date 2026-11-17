@@ -1,0 +1,26 @@
+id: glm-coding-flash-2026-11-13
+provider: glm_coding
+funding: coding_plan
+platform: bigmodel-cn
+subscription_tier: Pro
+model: glm-5.3-flash
+endpoint: https://open.bigmodel.cn/api/anthropic/v1/messages
+authority: >-
+  I propose to use GLM replace the scheduled work. Before Beijing Time today 18:00,
+  we use GLM to test and polish the QRH first.
+eligibility_authority: "Don't worry. I've confirmed with Zhipu official that DSH is allowed."
+starts_at: '2026-11-13T00:00:00+08:00'
+ends_at: '2026-11-13T18:00:00+08:00'
+# Start with two small probes, then at most one twenty-request team trial.
+max_requests: 24
+max_microcredits: 1500000000
+# Conservative upper bound: ignore all cache/off-peak discounts.
+input_microcredits_per_token: 230
+output_microcredits_per_token: 800
+# Use the existing conservative cash-ledger maxima; requested output remains 8192.
+maximum_input_tokens: 1048576
+maximum_output_tokens: 393216
+concurrency: 1
+pricing_source: https://docs.bigmodel.cn/cn/coding-plan/overview
+pricing_verified_on: '2026-11-13'
+reasoning_effort: high

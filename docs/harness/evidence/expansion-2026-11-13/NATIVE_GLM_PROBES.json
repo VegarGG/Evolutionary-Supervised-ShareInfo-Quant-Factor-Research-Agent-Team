@@ -1,0 +1,56 @@
+[
+  {
+    "calls": [
+      {
+        "charged": 442,
+        "detail": "{\"funding\": \"coding_plan\", \"route_id\": \"glm-coding-native-2026-11-13\", \"model\": \"glm-5.3-flash\", \"endpoint\": \"https://open.bigmodel.cn/api/coding/paas/v4/chat/completions\", \"quota_reserved_microcredits\": 241582080, \"maximum_output_tokens\": 512, \"quota_settled_upper_microcredits\": 44710, \"cache_tokens_reported\": true, \"cash_basis\": \"Existing Coding Plan subscription; no metered fallback. The shared cash ledger still debits its conservative exposure allowance, not an assertion of incremental billing or allocated subscription purchase cost.\", \"usage_semantics\": \"Chat Completions prompt includes cached input; completion includes reasoning\", \"returned_models\": [\"glm-5.3-flash\"]}",
+        "finished": "2026-11-13T03:43:53.820272+00:00",
+        "id": "09647f0ec2f14a4fa3f1232a4e857e83",
+        "reserved": 2101248,
+        "started": "2026-11-13T03:43:50.280663+00:00",
+        "state": "settled",
+        "step": "glm-probe:glm-coding-native-2026-11-13:1:repair:638915dbe4854eab8793212e440da6fc",
+        "usage": {
+          "input_cache_write": 0,
+          "input_cached": 0,
+          "input_uncached": 17,
+          "output": 51
+        }
+      }
+    ],
+    "elapsed_seconds": 4.048678916995414,
+    "model_identity": [
+      "glm-5.3-flash"
+    ],
+    "scope": "Small transport probe; no worker, factor research or data request.",
+    "stage": 1,
+    "status": "pass"
+  },
+  {
+    "calls": [
+      {
+        "charged": 744,
+        "detail": "{\"funding\": \"coding_plan\", \"route_id\": \"glm-coding-native-2026-11-13\", \"model\": \"glm-5.3-flash\", \"endpoint\": \"https://open.bigmodel.cn/api/coding/paas/v4/chat/completions\", \"quota_reserved_microcredits\": 241991680, \"maximum_output_tokens\": 1024, \"quota_settled_upper_microcredits\": 80040, \"cache_tokens_reported\": true, \"cash_basis\": \"Existing Coding Plan subscription; no metered fallback. The shared cash ledger still debits its conservative exposure allowance, not an assertion of incremental billing or allocated subscription purchase cost.\", \"usage_semantics\": \"Chat Completions prompt includes cached input; completion includes reasoning\", \"returned_models\": [\"glm-5.3-flash\"]}",
+        "finished": "2026-11-13T03:44:26.733457+00:00",
+        "id": "988a5e29886e42949775f504d361ac6c",
+        "reserved": 2105344,
+        "started": "2026-11-13T03:44:20.926668+00:00",
+        "state": "settled",
+        "step": "glm-probe:glm-coding-native-2026-11-13:2",
+        "usage": {
+          "input_cache_write": 0,
+          "input_cached": 0,
+          "input_uncached": 188,
+          "output": 46
+        }
+      }
+    ],
+    "elapsed_seconds": 6.046537750051357,
+    "model_identity": [
+      "glm-5.3-flash"
+    ],
+    "scope": "Small transport probe; no worker, factor research or data request.",
+    "stage": 2,
+    "status": "pass"
+  }
+]

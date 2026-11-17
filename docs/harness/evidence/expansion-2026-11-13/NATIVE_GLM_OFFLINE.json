@@ -1,0 +1,485 @@
+{
+  "status": "pass",
+  "mode": "synthetic_model_and_data",
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": true,
+    "both_workers_valid": true,
+    "draft_recorded": true,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": true,
+    "no_tool_failures": true,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "configured_route_matches_ledger": true,
+    "resource_samples_required_for_live": true,
+    "raw_data_transport_required_for_live": true
+  },
+  "model_usage": {
+    "provider": "glm_coding",
+    "configured_model": "glm-5.3-flash",
+    "requests": 15,
+    "requests_with_known_usage": 15,
+    "all_usage_settled": true,
+    "tokens": {
+      "input_uncached": 960,
+      "input_cached": 480,
+      "input_cache_write": 0,
+      "output": 240
+    },
+    "total_tokens": 1680,
+    "input_cache_hit_ratio": 0.3333333333333333,
+    "cache_tokens_reported_for_all_calls": true,
+    "cache_reporting_note": "Explicit provider cache counters.",
+    "peak_rolling_60s_dispatch_rpm": 15,
+    "peak_rolling_60s_completion_rpm": 15,
+    "peak_rolling_60s_dispatch_tpm": 1680,
+    "peak_rolling_60s_completion_tpm": 1680,
+    "conservative_settled_cny": 0.0048,
+    "unresolved_reserved_cny": 0.0,
+    "published_price_estimate_cny": null,
+    "unpriced_requests": 15,
+    "cost_invoice_verified": false,
+    "funding": "coding_plan",
+    "subscription_credits_settled_upper_bound": 0.5232,
+    "subscription_credits_unresolved_reserved": 0.0,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "cost_basis": "Synthetic fixture; no actual spend.",
+    "pricing": {
+      "authority": "I propose to use GLM replace the scheduled work. Before Beijing Time today 18:00, we use GLM to test and polish the QRH first. Owner identified the working native zai-coding-cn route and requested Models-page guard extensions.",
+      "concurrency": 1,
+      "eligibility_authority": "Don't worry. I've confirmed with Zhipu official that DSH is allowed.",
+      "endpoint": "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions",
+      "ends_at": "2026-11-13T18:00:00+08:00",
+      "funding": "coding_plan",
+      "id": "glm-coding-native-2026-11-13",
+      "input_microcredits_per_token": 230,
+      "max_microcredits": 1500000000,
+      "max_requests": 24,
+      "maximum_input_tokens": 1048576,
+      "maximum_output_tokens": 393216,
+      "model": "glm-5.3-flash",
+      "output_microcredits_per_token": 800,
+      "platform": "bigmodel-cn",
+      "pricing_source": "https://docs.bigmodel.cn/cn/coding-plan/overview",
+      "pricing_verified_on": "2026-11-13",
+      "provider": "glm_coding",
+      "reasoning_effort": "high",
+      "starts_at": "2026-11-13T00:00:00+08:00",
+      "subscription_tier": "Pro",
+      "transport": "openai-completions"
+    },
+    "pricing_sha256": "8896beb73ddbc1cb0ad664a5a2935b3aad6944c615fbf269ca064dd2972b6d18"
+  },
+  "resources": {
+    "activity_windows_utc": [
+      [
+        "2026-11-13T03:38:44.449447+00:00",
+        "2026-11-13T03:38:46.100985+00:00"
+      ]
+    ],
+    "activity_wall_seconds": 1.651538,
+    "samples": 0,
+    "process_tree_peak_rss_bytes": null,
+    "process_tree_peak_sampled_cpu_cores": null,
+    "process_tree_mean_sampled_cpu_cores": null,
+    "cpu_sample_coverage_seconds": 0.0,
+    "host_cpu_max_percent": null,
+    "swap_peak_bytes": null,
+    "host_total_ram_bytes": null,
+    "host_available_ram_min_bytes": null,
+    "work_volume_min_free_bytes": null,
+    "measurement_errors": [],
+    "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+    "frozen_evidence_bytes": 841426,
+    "trial_wire_bytes": 412541,
+    "native_session_archive_bytes": 64054,
+    "disk_footprint_scope": "File lengths, not allocated filesystem blocks. Frozen evidence includes shared ledger snapshots and overlapping server logs; wire and session archives are trial-specific."
+  },
+  "roles": {
+    "researcher": {
+      "report_state": "completed",
+      "provider_requests": 5,
+      "work": {
+        "model_authored_report": {
+          "summary": "Synthetic test report for the actual native DSH child session.",
+          "findings": [
+            "The fixture contains synthetic observations."
+          ],
+          "proposed_formula": null,
+          "recommended_changes": [],
+          "limitations": [
+            "Not real market evidence."
+          ],
+          "measurement_refs": [
+            {
+              "keys": [
+                "sample.observations",
+                "returns.mean",
+                "lag.5.aligned_case_count"
+              ],
+              "measurement_id": "ab17f20741acd3a270ad5dfb871c73993572d8396caf35ffd1ef6dc8f1fe9de3"
+            }
+          ],
+          "specification_id": "d50243596be0970fd1ec84e3759079c23fcf156a9c008210aeb83715a76d88e6"
+        },
+        "verified_measurements": [
+          {
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "key": "sample.observations",
+            "measurement_id": "ab17f20741acd3a270ad5dfb871c73993572d8396caf35ffd1ef6dc8f1fe9de3",
+            "unit": "count",
+            "value": "131"
+          },
+          {
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "key": "returns.mean",
+            "measurement_id": "ab17f20741acd3a270ad5dfb871c73993572d8396caf35ffd1ef6dc8f1fe9de3",
+            "unit": "return_fraction",
+            "value": "0.00004950495049504950495049505"
+          },
+          {
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "key": "lag.5.aligned_case_count",
+            "measurement_id": "ab17f20741acd3a270ad5dfb871c73993572d8396caf35ffd1ef6dc8f1fe9de3",
+            "unit": "count",
+            "value": "124"
+          }
+        ],
+        "executed_specifications": [
+          {
+            "alignment": [
+              {
+                "execution_date": "2026-05-05",
+                "label_available": true,
+                "label_end_date": "2026-05-06",
+                "signal_date": "2026-05-04"
+              },
+              {
+                "execution_date": "2026-05-06",
+                "label_available": true,
+                "label_end_date": "2026-05-07",
+                "signal_date": "2026-05-05"
+              },
+              {
+                "execution_date": "2026-10-30",
+                "label_available": false,
+                "label_end_date": null,
+                "signal_date": "2026-10-29"
+              },
+              {
+                "execution_date": null,
+                "label_available": false,
+                "label_end_date": null,
+                "signal_date": "2026-10-30"
+              }
+            ],
+            "alignment_total_rows": 130,
+            "analysis_phase": "post_observation_exploration",
+            "assessment_id": "b39ab13648b86599797e3730a8883861f5bf8461bf28ea806c89565861fc1ef2",
+            "calculation_artifact_id": "40e8c0ae191dea5b164c600960ba5f4b5e6ff6b7d5d6c50dceb2ef7a3df2a8bd",
+            "calculator_sha256": "59c04ba742b8332adf1ad777bb1fa4fa4999d3e69de6e2809878c847b7591551",
+            "canonical_formula": "r_t = close_t / close_(t-1) - 1; signal_t = 1[r_t < 0]; equality goes to control. Signal known at close_t; execution at close_(t+1); label_t = close_(t+1+1) / close_(t+1) - 1. Indices count returned observations; exchange-calendar verification is required. Effect = +1 * (mean(label | signal) - mean(label | control)); effect margin = 0.001; minimum per bucket = 20; minimum blocks = 8. Joint non-wrapping moving-block percentile interval, coverage 0.95, block length 5, replicates 2000, seed 20261112. Insufficient support: insufficient_data. Interval wholly above/below margin: interval_above_margin/interval_below_margin; otherwise inconclusive. No confirmation, disconfirmation, profitability, independence or absence-of-effect claim.",
+            "definition": {
+              "comparison": "lt",
+              "effect_margin": "0.001",
+              "expected_direction": "higher",
+              "family": "close_return_contrast",
+              "label_horizon": 1,
+              "lookback": 1,
+              "threshold": "0",
+              "tie_policy": "control"
+            },
+            "effective_block_length": 5,
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "inference": {
+              "bootstrap_replicates_run": 2000,
+              "effect": "-0.0199009900990099009900990099",
+              "interval": {
+                "lower": "-0.01990099009900990099009900990",
+                "unit": "return_fraction",
+                "upper": "-0.01990099009900990099009900990"
+              },
+              "outcome": "interval_below_margin",
+              "reason_codes": []
+            },
+            "label_geometry": {
+              "adjacent_pairs": 127,
+              "positive_overlap_pairs": 0,
+              "serial_independence": "not_established",
+              "touching_endpoint_pairs": 127
+            },
+            "limits": [
+              "Development contrast, not a strategy P&L, official evaluation or publication.",
+              "Nominal interval requires suitable stationarity/dependence assumptions; coverage is not certified.",
+              "No adjustment for post-observation selection or multiple hypotheses; not confirmatory.",
+              "Effect margin is a contrast threshold, not a transaction-cost or profitability model.",
+              "Zero threshold and explicit ties-to-control are valid choices, not automatically defective.",
+              "Unadjusted historical closes; exchange calendar and point-in-time vintage unverified."
+            ],
+            "protocol": {
+              "block_length": 5,
+              "bootstrap_replicates": 2000,
+              "confidence_level": "0.95",
+              "decimal_precision": 28,
+              "execution_lag": 1,
+              "max_effect_margin": "1",
+              "max_label_horizon": 5,
+              "max_lookback": 5,
+              "max_threshold_magnitude": "1",
+              "maximum_observations": 10000,
+              "method": "moving_block_percentile",
+              "minimum_blocks": 8,
+              "minimum_bucket_size": 20,
+              "protocol": "development-contrast-v1",
+              "seed": 20261112
+            },
+            "specification_id": "d50243596be0970fd1ec84e3759079c23fcf156a9c008210aeb83715a76d88e6",
+            "support": {
+              "aligned_cases": 128,
+              "control_bucket": 64,
+              "dropped_tail_cases": 2,
+              "signal_bucket": 64,
+              "signal_candidates": 130,
+              "ties_assigned_to_control": 0
+            },
+            "view_scope": "Summary facts and first/last alignment rows only. The full permitted "
+          }
+        ],
+        "successful_tool_operations": {
+          "data:bars": 1,
+          "metrics": 1,
+          "specification": 1,
+          "submit_report": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 0,
+        "report_submission_rejections": 0,
+        "evidence_fetches": [
+          {
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "cache_reused": true,
+            "row_count": 131
+          }
+        ],
+        "contribution_decisions": [
+          {
+            "worker": "researcher",
+            "adopted": true,
+            "reason": "Retain this synthetic fixture contribution."
+          }
+        ],
+        "draft_recorded": false
+      }
+    },
+    "reviewer": {
+      "report_state": "completed",
+      "provider_requests": 5,
+      "work": {
+        "model_authored_report": {
+          "summary": "Synthetic test report for the actual native DSH child session.",
+          "findings": [
+            "The fixture contains synthetic observations."
+          ],
+          "proposed_formula": null,
+          "recommended_changes": [],
+          "limitations": [
+            "Not real market evidence."
+          ],
+          "measurement_refs": [
+            {
+              "keys": [
+                "sample.observations",
+                "returns.mean",
+                "lag.5.aligned_case_count"
+              ],
+              "measurement_id": "ab17f20741acd3a270ad5dfb871c73993572d8396caf35ffd1ef6dc8f1fe9de3"
+            }
+          ],
+          "specification_id": "d50243596be0970fd1ec84e3759079c23fcf156a9c008210aeb83715a76d88e6"
+        },
+        "verified_measurements": [
+          {
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "key": "sample.observations",
+            "measurement_id": "ab17f20741acd3a270ad5dfb871c73993572d8396caf35ffd1ef6dc8f1fe9de3",
+            "unit": "count",
+            "value": "131"
+          },
+          {
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "key": "returns.mean",
+            "measurement_id": "ab17f20741acd3a270ad5dfb871c73993572d8396caf35ffd1ef6dc8f1fe9de3",
+            "unit": "return_fraction",
+            "value": "0.00004950495049504950495049505"
+          },
+          {
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "key": "lag.5.aligned_case_count",
+            "measurement_id": "ab17f20741acd3a270ad5dfb871c73993572d8396caf35ffd1ef6dc8f1fe9de3",
+            "unit": "count",
+            "value": "124"
+          }
+        ],
+        "executed_specifications": [
+          {
+            "alignment": [
+              {
+                "execution_date": "2026-05-05",
+                "label_available": true,
+                "label_end_date": "2026-05-06",
+                "signal_date": "2026-05-04"
+              },
+              {
+                "execution_date": "2026-05-06",
+                "label_available": true,
+                "label_end_date": "2026-05-07",
+                "signal_date": "2026-05-05"
+              },
+              {
+                "execution_date": "2026-10-30",
+                "label_available": false,
+                "label_end_date": null,
+                "signal_date": "2026-10-29"
+              },
+              {
+                "execution_date": null,
+                "label_available": false,
+                "label_end_date": null,
+                "signal_date": "2026-10-30"
+              }
+            ],
+            "alignment_total_rows": 130,
+            "analysis_phase": "post_observation_exploration",
+            "assessment_id": "b39ab13648b86599797e3730a8883861f5bf8461bf28ea806c89565861fc1ef2",
+            "calculation_artifact_id": "40e8c0ae191dea5b164c600960ba5f4b5e6ff6b7d5d6c50dceb2ef7a3df2a8bd",
+            "calculator_sha256": "59c04ba742b8332adf1ad777bb1fa4fa4999d3e69de6e2809878c847b7591551",
+            "canonical_formula": "r_t = close_t / close_(t-1) - 1; signal_t = 1[r_t < 0]; equality goes to control. Signal known at close_t; execution at close_(t+1); label_t = close_(t+1+1) / close_(t+1) - 1. Indices count returned observations; exchange-calendar verification is required. Effect = +1 * (mean(label | signal) - mean(label | control)); effect margin = 0.001; minimum per bucket = 20; minimum blocks = 8. Joint non-wrapping moving-block percentile interval, coverage 0.95, block length 5, replicates 2000, seed 20261112. Insufficient support: insufficient_data. Interval wholly above/below margin: interval_above_margin/interval_below_margin; otherwise inconclusive. No confirmation, disconfirmation, profitability, independence or absence-of-effect claim.",
+            "definition": {
+              "comparison": "lt",
+              "effect_margin": "0.001",
+              "expected_direction": "higher",
+              "family": "close_return_contrast",
+              "label_horizon": 1,
+              "lookback": 1,
+              "threshold": "0",
+              "tie_policy": "control"
+            },
+            "effective_block_length": 5,
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "inference": {
+              "bootstrap_replicates_run": 2000,
+              "effect": "-0.0199009900990099009900990099",
+              "interval": {
+                "lower": "-0.01990099009900990099009900990",
+                "unit": "return_fraction",
+                "upper": "-0.01990099009900990099009900990"
+              },
+              "outcome": "interval_below_margin",
+              "reason_codes": []
+            },
+            "label_geometry": {
+              "adjacent_pairs": 127,
+              "positive_overlap_pairs": 0,
+              "serial_independence": "not_established",
+              "touching_endpoint_pairs": 127
+            },
+            "limits": [
+              "Development contrast, not a strategy P&L, official evaluation or publication.",
+              "Nominal interval requires suitable stationarity/dependence assumptions; coverage is not certified.",
+              "No adjustment for post-observation selection or multiple hypotheses; not confirmatory.",
+              "Effect margin is a contrast threshold, not a transaction-cost or profitability model.",
+              "Zero threshold and explicit ties-to-control are valid choices, not automatically defective.",
+              "Unadjusted historical closes; exchange calendar and point-in-time vintage unverified."
+            ],
+            "protocol": {
+              "block_length": 5,
+              "bootstrap_replicates": 2000,
+              "confidence_level": "0.95",
+              "decimal_precision": 28,
+              "execution_lag": 1,
+              "max_effect_margin": "1",
+              "max_label_horizon": 5,
+              "max_lookback": 5,
+              "max_threshold_magnitude": "1",
+              "maximum_observations": 10000,
+              "method": "moving_block_percentile",
+              "minimum_blocks": 8,
+              "minimum_bucket_size": 20,
+              "protocol": "development-contrast-v1",
+              "seed": 20261112
+            },
+            "specification_id": "d50243596be0970fd1ec84e3759079c23fcf156a9c008210aeb83715a76d88e6",
+            "support": {
+              "aligned_cases": 128,
+              "control_bucket": 64,
+              "dropped_tail_cases": 2,
+              "signal_bucket": 64,
+              "signal_candidates": 130,
+              "ties_assigned_to_control": 0
+            },
+            "view_scope": "Summary facts and first/last alignment rows only. The full permitted "
+          }
+        ],
+        "successful_tool_operations": {
+          "data:bars": 1,
+          "metrics": 1,
+          "specification": 1,
+          "submit_report": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 0,
+        "report_submission_rejections": 0,
+        "evidence_fetches": [
+          {
+            "evidence_id": "cae413956376bf6350633d377efabe1fb1660b6767c88e780065deafc8408dff",
+            "cache_reused": true,
+            "row_count": 131
+          }
+        ],
+        "contribution_decisions": [
+          {
+            "worker": "reviewer",
+            "adopted": true,
+            "reason": "Retain this synthetic fixture contribution."
+          }
+        ],
+        "draft_recorded": false
+      }
+    },
+    "supervisor": {
+      "report_state": "draft_recorded",
+      "provider_requests": 5,
+      "work": {
+        "model_authored_report": null,
+        "verified_measurements": [],
+        "executed_specifications": [],
+        "successful_tool_operations": {
+          "scope": 1,
+          "begin_worker": 2,
+          "finish_worker": 2,
+          "draft": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 0,
+        "report_submission_rejections": 0,
+        "evidence_fetches": [],
+        "contribution_decisions": [
+          {
+            "worker": "researcher",
+            "adopted": true,
+            "reason": "Retain this synthetic fixture contribution."
+          },
+          {
+            "worker": "reviewer",
+            "adopted": true,
+            "reason": "Retain this synthetic fixture contribution."
+          }
+        ],
+        "draft_recorded": true
+      }
+    }
+  },
+  "scope": "Synthetic native zai-coding-cn adapter and native Agent Teams; no real GLM inference."
+}

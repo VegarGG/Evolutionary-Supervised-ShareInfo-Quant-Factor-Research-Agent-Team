@@ -1,0 +1,74 @@
+{
+  "trial_id": "session-2e6e3c32-921f-4b1c-a416-342068b93c8e",
+  "status": "bounded_workflow_pass",
+  "scientific_acceptance": "not_accepted",
+  "frozen_files_verified": 77,
+  "actual_flash_requests": 16,
+  "source_commit": "69053ae157eb27c692c1c70b2819ee502ae8bf0d",
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": true,
+    "both_workers_valid": true,
+    "draft_recorded": true,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": true,
+    "no_tool_failures": true,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "resource_samples_required_for_live": true,
+    "raw_data_transport_required_for_live": true,
+    "frozen_hashes_match": true,
+    "all_wire_models_deepseek_flash": true,
+    "all_three_calculations_match_independent_reference": true,
+    "draft_measurements_match_observed_facts": true,
+    "accepted_report_hashes_match": true,
+    "native_two_workers_and_two_tasks_completed": true,
+    "desktop_reload_persists": true
+  },
+  "independent_reference": {
+    "method": "Exact rational arithmetic over retained closes; 60-digit Decimal square root only for sample dispersion",
+    "facts_per_calculation": 44,
+    "maximum_absolute_decimal_difference": "4.2857142857142857142857142857142857E-28",
+    "tolerance": "1e-26",
+    "alignment_convention": "signal at i, execution at i+1, label end at i+2",
+    "lag_five_signals": 5,
+    "lag_five_aligned_cases": 3,
+    "adjacent_one_observation_labels_with_positive_overlap": 0
+  },
+  "draft_sha256": "eac8bfac04f573eadc391023803e1983ee8ed04ed7ee74af0b70d0a0724338de",
+  "draft_fact_references": 28,
+  "report_correction": {
+    "role": "reviewer",
+    "field": "findings",
+    "rejected_count": 9,
+    "maximum_count": 8,
+    "corrected_count": 8,
+    "same_native_worker": true,
+    "worker_restarts": 0,
+    "extra_model_call_count": 1
+  },
+  "research_quality_findings": [
+    {
+      "id": "Q1",
+      "status": "requires_revision",
+      "finding": "The reviewer and supervisor call the original one-observation forward labels overlapping. Adjacent label intervals share an endpoint but have zero positive overlap; serial dependence is a separate untested question. Overlap handling can matter for the later generic horizon greater than one."
+    },
+    {
+      "id": "Q2",
+      "status": "requires_revision",
+      "finding": "The draft calls failure to reject the null disconfirmation of the proposed effect. It needs a distinct inconclusive outcome and a pre-specified uncertainty/power or equivalence criterion, rather than treating non-significance as proof of absence.",
+      "source": "https://www.amstat.org/asa/files/pdfs/P-ValueStatement.pdf"
+    },
+    {
+      "id": "Q3",
+      "status": "not_executable_specification",
+      "finding": "The draft offers alternative thresholds and tests and leaves threshold, minimum bucket size, significance level, effect margin and horizon unresolved. It is a research sketch, not an executable factor contract."
+    }
+  ],
+  "limits": [
+    "No strategy P&L, independent evaluation, publication or alpha acceptance occurred.",
+    "All three BaoStock reads reused one real immutable sample; no new vendor request occurred.",
+    "The configured three-trial pilot allowance is exhausted. No automatic increase or fourth trial."
+  ]
+}

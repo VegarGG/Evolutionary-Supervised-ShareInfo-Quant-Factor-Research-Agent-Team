@@ -1,0 +1,48 @@
+{
+  "at": "2026-11-17T03:51:07.488101+00:00",
+  "mode": "preflight/offline evidence; real trial tracked separately",
+  "offline_tests": 282,
+  "offline_native": [
+    {
+      "name": "native-smoke-01",
+      "requests": 27,
+      "native_tasks": 5,
+      "finalized": true,
+      "arithmetic": "pass",
+      "report_audit": "pass",
+      "evidence_sha256": "7d6aaf559162cc11f555e0025a983a1acdcec9054dc34d0e1b6d2e6a738fa3f3"
+    },
+    {
+      "name": "native-smoke-02",
+      "requests": 27,
+      "native_tasks": 5,
+      "finalized": true,
+      "arithmetic": "pass",
+      "report_audit": "pass",
+      "evidence_sha256": "fc9ad25adf365c797739fa2677a9ab8551c1d0af1ef42d53a6c1ececd51321bc"
+    }
+  ],
+  "machine": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "logical_cpus": 18,
+    "physical_cpus": 18,
+    "ram_bytes": 38654705664,
+    "work_volume_free_bytes": 359219200000
+  },
+  "known_ui_limit": "Native mobile view clipped; desktop report uses existing tool detail, no separate panel.",
+  "provider_calls_in_offline_tests": 0,
+  "previous_attempts_preserved": [
+    "initial lint import-order failure",
+    "bounded ReportCitation schema KeyError: 11 failed,271 passed; corrected before dispatch",
+    "preparation precondition incorrectly inspected provider field; no package/route mutation; corrected",
+    "UI selector probes did not resubmit tasks"
+  ],
+  "current_source_files": {
+    "count": 139,
+    "manifest_sha256": "7c349887f6afced2a1c414942e4730cb7cd54f2302d3f5405b3330899e2a8cfe",
+    "route": "glm53-structured-report-2026-11-17",
+    "model": "glm-5.3",
+    "effort": "max"
+  }
+}

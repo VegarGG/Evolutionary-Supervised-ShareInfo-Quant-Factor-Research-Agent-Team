@@ -1,0 +1,10 @@
+{
+  "status": "tls_connected",
+  "seconds": 0.9708519170526415,
+  "tls": "TLSv1.3",
+  "certificate_verified": true,
+  "application_bytes_sent": 0,
+  "credentials_used": false,
+  "provider_inference_requests": 0,
+  "at": "2026-11-16T08:53:34.476358+00:00"
+}

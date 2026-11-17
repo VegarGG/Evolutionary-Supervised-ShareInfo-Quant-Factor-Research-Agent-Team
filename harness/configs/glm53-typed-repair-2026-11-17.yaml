@@ -1,0 +1,42 @@
+id: glm53-typed-repair-2026-11-17
+provider: glm_coding
+funding: coding_plan
+platform: bigmodel-cn
+subscription_tier: Pro
+model: glm-5.3
+endpoint: https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+authority: 'Owner requests diagnosis, fixes and a GLM 5.3/max fixed/adaptive trial.
+  Recorded operator repair: the first fixed arm was stopped by a reproduced false-positive
+  comparison guard; preserve its 13 settled calls and 4.074348 CNY exposure, retire
+  the unstarted adaptive arm, and run a fresh matched pair after the targeted fix.
+  This uses the ORIGINAL 443 historical request ceiling, 10000 credits and 100 CNY
+  local exposure ceiling inside the original 200 CNY. No allowance increase, fallback
+  or additional automatic pair.'
+eligibility_authority: Owner confirmed DSH eligibility directly with Zhipu.
+starts_at: '2026-11-16T00:00:00+08:00'
+ends_at: null
+admission_mode: until_stopped
+max_requests: 443
+max_microcredits: 10000000000
+input_microcredits_per_token: 690
+output_microcredits_per_token: 2400
+maximum_input_tokens: 1048576
+maximum_output_tokens: 131072
+concurrency: 1
+pricing_source: https://docs.bigmodel.cn/cn/coding-plan/overview
+pricing_verified_on: '2026-11-16'
+reasoning_effort: max
+transport: openai-completions
+cash_package_micro_cny: 100000000
+cash_input_micro_cny_per_token: 8
+cash_output_micro_cny_per_token: 28
+reserved_connection_timeouts:
+- request_id: a56ac7e768ab433ca20f0523548d73b3
+  call_sha256: 72efe09d51ec4710e3a9aec2df5257bfb7d7185ef679d79d29cb6641f687a425
+  request_sha256: ffb88e05a6ba8b8d29c99275ea4847abbc39d22b480a515d28a3065749108eaf
+  groups:
+  - typed-repair-fixed-03
+  - typed-repair-adaptive-04
+  authority: The same owner-requested work package continues after a reproduced harness
+    bug, inside unchanged global and local ceilings. Preserve old timeout bytes and
+    reservation; only this replacement pair may continue, and any new unknown blocks.

@@ -1,0 +1,19 @@
+uv run --project harness --locked ruff check harness
+All checks passed!
+uv run --project harness --locked ruff format --check harness
+86 files already formatted
+node --check harness/dsh-plugin/index.js
+node --check harness/dsh-plugin/client.js
+node --check harness/dsh-plugin/research.js
+node --check harness/dsh-plugin/native-models.js
+node --check harness/dsh-plugin/adaptive.js
+node --check harness/dsh-plugin/case.js
+uv run --project harness --locked python scripts/check_licenses.py
+MIT notices verified: 5 packages, workspace, harness and plugin
+uv run --project harness --locked pytest -c harness/pyproject.toml harness/tests -q
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 73%]
+........................................................................ [ 97%]
+......                                                                   [100%]
+294 passed in 6.15s

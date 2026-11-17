@@ -1,0 +1,111 @@
+QRH structured research report
+Pending independent audit; no official acceptance.
+Candidate: 6a4f1c6a0494fedc4418a3d25b5b56c93ce88e1d4bcfd1519e6ce9959a6b91fd
+Report SHA256: 01964c2ab1a77aaded7e8b32e1f54e13fd523743aabb62bdce1cf6898896495d
+Exact-report review: cb5985eefbfed15810ab136505c7c01e55864de8000caee4761d713420fe82eb
+
+COMPUTED FACTS
+1 * (close[t]/close[t-5] - 1)
+Unadjusted close in CNY/share; simple returns and final score dimensionless.
+Rows changed from initial: 0
+300750.XSHE.additional_exclusions: 0 [count]
+300750.XSHE.closes_required_per_signal: 6 [count]
+300750.XSHE.eligible_signals: 57 [count]
+300750.XSHE.maximum_absolute_score: 0.08892641058111728 [dimensionless]
+300750.XSHE.mean_absolute_score: 0.03768359443202748 [dimensionless]
+300750.XSHE.mean_score: -0.009083769391202009 [dimensionless]
+300750.XSHE.observed_closes: 62 [count]
+300750.XSHE.sample_sd_score: 0.042777151396309596 [dimensionless]
+300750.XSHE.signals_with_next_observed_close: 56 [count]
+300750.XSHE.warmup_exclusions: 5 [count]
+600036.XSHG.additional_exclusions: 0 [count]
+600036.XSHG.closes_required_per_signal: 6 [count]
+600036.XSHG.eligible_signals: 57 [count]
+600036.XSHG.maximum_absolute_score: 0.05774647887323936 [dimensionless]
+600036.XSHG.mean_absolute_score: 0.023137019473281104 [dimensionless]
+600036.XSHG.mean_score: 0.004298524203611326 [dimensionless]
+600036.XSHG.observed_closes: 62 [count]
+600036.XSHG.sample_sd_score: 0.027943663754569577 [dimensionless]
+600036.XSHG.signals_with_next_observed_close: 56 [count]
+600036.XSHG.warmup_exclusions: 5 [count]
+601318.XSHG.additional_exclusions: 0 [count]
+601318.XSHG.closes_required_per_signal: 6 [count]
+601318.XSHG.eligible_signals: 57 [count]
+601318.XSHG.maximum_absolute_score: 0.08668885191347753 [dimensionless]
+601318.XSHG.mean_absolute_score: 0.031055551376720645 [dimensionless]
+601318.XSHG.mean_score: -0.007262952732790848 [dimensionless]
+601318.XSHG.observed_closes: 62 [count]
+601318.XSHG.sample_sd_score: 0.0402658932201447 [dimensionless]
+601318.XSHG.signals_with_next_observed_close: 56 [count]
+601318.XSHG.warmup_exclusions: 5 [count]
+Changed-score count excludes numerical noise: relative tolerance 1e-10, absolute tolerance 1e-12; eligibility changes always count.
+
+COMPUTED COMPARISONS — host calculations
+Measure: score_sd_max_minus_min; cohort: paired_eligible_symbol_dates
+Left candidate: 647e5f930f33b5206a7eee93b532746d04f3442aaab7768c1057a0844ddaafa7; right inspection: dfee7b4fc59d5906059c48e3c13313c5a78b7fdd27c6ee0ee8d7242d2be6382f
+Left: 0.014833487641740018; right: 0.6149543770992227; direction: increased
+Identical observation keys: True
+Counts left/right: 300750.XSHE 57/57, 600036.XSHG 57/57, 601318.XSHG 57/57
+Descriptive only. Absolute SD ranges depend on score scaling. Unequal cohorts confound specification and sample changes. Neither measure establishes comparability, superiority, alpha or a change of physical units.
+Measure: score_sd_max_over_min; cohort: paired_eligible_symbol_dates
+Left candidate: 647e5f930f33b5206a7eee93b532746d04f3442aaab7768c1057a0844ddaafa7; right inspection: dfee7b4fc59d5906059c48e3c13313c5a78b7fdd27c6ee0ee8d7242d2be6382f
+Left: 1.5308354613776916; right: 1.5463719495855985; direction: increased
+Identical observation keys: True
+Counts left/right: 300750.XSHE 57/57, 600036.XSHG 57/57, 601318.XSHG 57/57
+Descriptive only. Absolute SD ranges depend on score scaling. Unequal cohorts confound specification and sample changes. Neither measure establishes comparability, superiority, alpha or a change of physical units.
+Measure: score_sd_max_minus_min; cohort: each_spec_eligible_symbol_dates
+Left candidate: 647e5f930f33b5206a7eee93b532746d04f3442aaab7768c1057a0844ddaafa7; right inspection: dfee7b4fc59d5906059c48e3c13313c5a78b7fdd27c6ee0ee8d7242d2be6382f
+Left: 0.014833487641740018; right: 0.6149543770992227; direction: increased
+Identical observation keys: True
+Counts left/right: 300750.XSHE 57/57, 600036.XSHG 57/57, 601318.XSHG 57/57
+Descriptive only. Absolute SD ranges depend on score scaling. Unequal cohorts confound specification and sample changes. Neither measure establishes comparability, superiority, alpha or a change of physical units.
+Measure: score_sd_max_over_min; cohort: each_spec_eligible_symbol_dates
+Left candidate: 647e5f930f33b5206a7eee93b532746d04f3442aaab7768c1057a0844ddaafa7; right inspection: dfee7b4fc59d5906059c48e3c13313c5a78b7fdd27c6ee0ee8d7242d2be6382f
+Left: 1.5308354613776916; right: 1.5463719495855985; direction: increased
+Identical observation keys: True
+Counts left/right: 300750.XSHE 57/57, 600036.XSHG 57/57, 601318.XSHG 57/57
+Descriptive only. Absolute SD ranges depend on score scaling. Unequal cohorts confound specification and sample changes. Neither measure establishes comparability, superiority, alpha or a change of physical units.
+
+EVIDENCE LIMITS
+Development sample only; this inspected data cannot become an untouched holdout.
+An available next observed close does not establish tradability, fills or transaction costs.
+Raw return and volatility-normalized return are both dimensionless; scaling changes magnitude, not units.
+No forward labels, returns after execution, alpha, causality or superiority were measured.
+Unadjusted historical closes are not vintage data or evidence of corporate actions.
+The observed-date sample is neither an exchange calendar nor a representative market universe.
+
+CALCULATION PROVENANCE
+Host inspection requested by author-2; reading this receipt is not executing a new calculation.
+
+MODEL PROPOSAL — qualitative interpretation, not an established result
+hypothesis: Retained exploratory hypothesis: short-horizon close momentum measured as the trailing raw close-to-close return over the starting window with a positive sign, kept as the candidate for later independent evaluation; usefulness and the winning sign remain unproven. Source-supported applicability constraints: only observed unadjusted closes at or before the signal close enter a signal; the observed union is not an exchange calendar and windows are not filled; execution is no earlier than the next observed close after the signal, and an available next observed close is coverage rather than tradability; the universe is a small fixed convenience sample and not a holdout; close-only jumps cannot identify corporate actions, so possible contamination is disclosed rather than handled by a return bound. A single motivated alternative, the source-defined realized-volatility normalization of the same trailing return, was inspected with an identical eligible cohort and is deferred rather than adopted; its observed score-scale change is not evidence of improvement.
+Fact references: spec, units, timing, scope, changed_rows_from_initial, 300750.XSHE.sample_sd_score, 600036.XSHG.sample_sd_score
+rationale: Retention reasons: the coverage, timing and units findings are adopted as binding constraints, and the normalization hypothesis is inspected but deferred. The alternative was examined before deciding: it follows the source definition exactly, its eligible cohort and warmup treatment match the baseline, and its required treatment of non-positive trailing volatility, motivated by the recorded zero single-observation return for one symbol, is defined with consequences referenced through inspection facts rather than restated. The host-rendered scale-free comparison of cross-symbol score dispersion gives no support for the motivating comparability benefit, and the contract requires added parameters to be justified from cited evidence, so adopting the extra volatility window now would force an unsupported change; the raw-return baseline stays, with its documented limitation that scores inherit each symbol's own volatility scale. No daily-return bound is added because no cited evidence supports any cutoff and close-only jumps cannot be attributed to corporate actions. Observed scale changes are descriptive only: nothing establishes alpha, superiority, tradability or removal of systematic risk, and the normalized variant must never be called an annual Sharpe ratio.
+Fact references: spec, timing, units, scope, changed_rows_from_initial, 300750.XSHE.sample_sd_score, 600036.XSHG.sample_sd_score, 601318.XSHG.sample_sd_score
+
+FINDING DISPOSITIONS — model reasoning
+6cc6d52269a4d01523646d723011441eaa1e5e8b710a55c6b286a85934889779: adopt — Accepted: eligibility is warmup-only and identical across symbols; close coverage is not tradability, and the sample is development-only, never a holdout.
+d816a64ff0fa572d11a777990901940e08a31e8f2363ea170b071f0218b02a89: adopt — Accepted: all inputs at or before the signal close, no filling of the observed union, execution no earlier than the next observed close, no corporate-action inference from jumps.
+3a5c38b0bedbca25e23bfc723e15c1e2eb01c0007a6da65bbfecbd431cc9400e: adopt — Accepted: raw scores keep each symbol's own return scale; recorded as a limitation of the retained baseline, motivating inspection of the alternative without any superiority claim.
+377452137a144c709d5c2f968c6779756f3203a7a87111caf303b7509f52204d: defer — Inspected and deferred: source-defined and coverage-equivalent, but the rendered comparison does not support the motivating comparability benefit, so adoption awaits the separate future evaluation.
+
+CITED SOURCE EXCERPTS — provenance, not proof of interpretation
+source_contract: Normalization divides the trailing return by trailing daily-return SD times sqrt(lookback); this does not make an annual Sharpe ratio or remove systematic risk.
+price_profile: "sample_sd_one_observation_return": 0.02520900080828789
+price_profile: "sample_sd_one_observation_return": 0.012242446444137979
+price_profile: "zero_return_count": 1
+research_contract: Compare coverage and score-scale consequences against the baseline; justify any added parameter or applicability exclusion from cited evidence and state what evidence would be needed next.
+source_contract: Close-only jumps cannot identify corporate actions.
+
+USAGE SCOPE
+The final host receipt includes settled team usage. Native footer is session-only.
+
+SETTLED TEAM USAGE — host ledger
+All team work and worker acknowledgements. Supervisor ends via native concludeTurn after finalization; no paid supervisor acknowledgement or summary.
+author-2: 2 work + 1 acknowledgement = 3 requests; 115539 tokens
+reviewer-1: 1 work + 1 acknowledgement = 2 requests; 57640 tokens
+reviewer-3: 2 work + 1 acknowledgement = 3 requests; 117615 tokens
+supervisor: 9 work + 0 acknowledgement = 9 requests; 201525 tokens
+Team: 17 requests; 492319 tokens; 4.858152 CNY conservative exposure
+Conservative ledger exposure and credits, not a subscription invoice or provider account quota. Native footer covers its session only.
+All requests settled. Pending independent research audit.

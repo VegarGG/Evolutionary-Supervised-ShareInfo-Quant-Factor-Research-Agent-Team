@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-13T04:24:55.509097+00:00",
+  "trial_id": "session-79066cee-20e4-4f08-9896-738576743926",
+  "status": "bounded_workflow_pass_with_qualitative_caveats",
+  "findings": [
+    {
+      "id": "Q1",
+      "severity": "quality_caveat",
+      "location": "reviewer findings[6], supervisor decision for reviewer, final recap",
+      "finding": "The model says the point estimate side carries no inferential weight because the interval includes zero. The supervisor adopts this categorical wording.",
+      "correction": "The fixed interval rule is inconclusive; it does not establish the stipulated effect. The point estimate and interval remain informative descriptions under their assumptions. Failure to clear a decision threshold does not make the estimate meaningless.",
+      "disposition": "Excluded from audited conclusions. The immutable draft is retained, with this separate correction; numeric and workflow pass does not certify all prose."
+    },
+    {
+      "id": "Q2",
+      "severity": "scope_caveat",
+      "location": "researcher/reviewer recommendations and draft next_steps",
+      "finding": "The agents recommend multi-symbol expansion and describe that breadth as owner-directed. Current activated scope authorizes only one frozen stock and window.",
+      "correction": "These are suggestions only. No broader symbol scope is activated or inferred from model prose. A new explicit scope amendment is required before data access changes.",
+      "disposition": "No out-of-scope data request occurred; all current reads stayed on the frozen sample."
+    }
+  ],
+  "scientific_acceptance": "not_assessed",
+  "numeric_result": "inconclusive",
+  "no_model_upgrade": "Integration failures and qualitative overstatement do not establish that Flash is incapable; GLM 5.3 was not enabled."
+}

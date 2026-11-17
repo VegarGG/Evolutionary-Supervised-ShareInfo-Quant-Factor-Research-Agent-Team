@@ -1,0 +1,227 @@
+{
+  "at": "2026-11-17T08:25:04.337372+00:00",
+  "runs": [
+    {
+      "package_id": "typed-evidence-fixed-01",
+      "variant": "fixed",
+      "model": "glm-5.3",
+      "effort": "max",
+      "output_cap": 32768,
+      "states": {
+        "settled": 13
+      },
+      "requests": 13,
+      "known_tokens": 388311,
+      "exposure_cny": 4.074348,
+      "reserved_cny": 0.0,
+      "cache_hit_ratio_known_input": 0.7118893380168159,
+      "peak_dispatch_rpm": 4,
+      "peak_dispatch_tpm_known": 142731,
+      "wall_seconds": 746.028857,
+      "status": "incomplete",
+      "semantic_status": "incomplete_harness_false_positive",
+      "findings": 4,
+      "changed_rows": 0,
+      "finalized": false,
+      "native_completed_tasks": 1,
+      "rejected_submissions": 5,
+      "finish_reasons": {
+        "tool_calls": 12,
+        "stop": 1
+      }
+    },
+    {
+      "package_id": "typed-repair-fixed-03",
+      "variant": "fixed",
+      "model": "glm-5.3",
+      "effort": "max",
+      "output_cap": 32768,
+      "states": {
+        "settled": 17
+      },
+      "requests": 17,
+      "known_tokens": 492319,
+      "exposure_cny": 4.858152,
+      "reserved_cny": 0.0,
+      "cache_hit_ratio_known_input": 0.6554300654883396,
+      "peak_dispatch_rpm": 5,
+      "peak_dispatch_tpm_known": 156334,
+      "wall_seconds": 787.011682,
+      "status": "finalized_research_prototype",
+      "semantic_status": "pass_with_limits",
+      "findings": 4,
+      "changed_rows": 0,
+      "finalized": true,
+      "native_completed_tasks": 3,
+      "rejected_submissions": 0,
+      "finish_reasons": {
+        "tool_calls": 14,
+        "stop": 3
+      }
+    },
+    {
+      "package_id": "typed-repair-adaptive-04",
+      "variant": "adaptive",
+      "model": "glm-5.3",
+      "effort": "max",
+      "output_cap": 32768,
+      "states": {
+        "settled": 4
+      },
+      "requests": 4,
+      "known_tokens": 62469,
+      "exposure_cny": 0.795032,
+      "reserved_cny": 0.0,
+      "cache_hit_ratio_known_input": 0.354176711036579,
+      "peak_dispatch_rpm": 3,
+      "peak_dispatch_tpm_known": 38313,
+      "wall_seconds": 221.047076,
+      "status": "incomplete",
+      "semantic_status": "incomplete_local_sublimit",
+      "findings": 4,
+      "changed_rows": 0,
+      "finalized": false,
+      "native_completed_tasks": 1,
+      "rejected_submissions": 0,
+      "finish_reasons": {
+        "tool_calls": 3,
+        "stop": 1
+      }
+    },
+    {
+      "package_id": "typed-completion-adaptive-05",
+      "variant": "adaptive",
+      "model": "glm-5.3",
+      "effort": "max",
+      "output_cap": 32768,
+      "states": {
+        "settled": 18
+      },
+      "requests": 18,
+      "known_tokens": 516551,
+      "exposure_cny": 4.905468,
+      "reserved_cny": 0.0,
+      "cache_hit_ratio_known_input": 0.693436674771604,
+      "peak_dispatch_rpm": 5,
+      "peak_dispatch_tpm_known": 169756,
+      "wall_seconds": 635.717556,
+      "status": "finalized_research_prototype",
+      "semantic_status": "needs_definition_clarification",
+      "findings": 3,
+      "changed_rows": 171,
+      "finalized": true,
+      "native_completed_tasks": 3,
+      "rejected_submissions": 0,
+      "finish_reasons": {
+        "tool_calls": 15,
+        "stop": 3
+      }
+    }
+  ],
+  "requests": 52,
+  "known_usage": {
+    "requests": 52,
+    "requests_with_known_usage": 52,
+    "all_usage_settled": true,
+    "tokens": {
+      "input_uncached": 429044,
+      "input_cached": 882816,
+      "input_cache_write": 0,
+      "output": 147790
+    },
+    "total_tokens": 1459650,
+    "input_cache_hit_ratio": 0.6729498574543016,
+    "cache_tokens_reported_for_all_calls": true,
+    "cache_reporting_note": "Explicit provider cache counters.",
+    "peak_rolling_60s_dispatch_rpm": 5,
+    "peak_rolling_60s_completion_rpm": 5,
+    "peak_rolling_60s_dispatch_tpm": 169756,
+    "peak_rolling_60s_completion_tpm": 171179,
+    "conservative_settled_cny": 14.633,
+    "unresolved_reserved_cny": 0.0,
+    "published_price_estimate_cny": null,
+    "unpriced_requests": 52,
+    "cost_invoice_verified": false,
+    "funding": "coding_plan",
+    "subscription_credits_settled_upper_bound": 1259.8794,
+    "subscription_credits_unresolved_reserved": 0.0,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice."
+  },
+  "budget_after": {
+    "carry_micro_cny": 56256735,
+    "new_settled_micro_cny": 81663346,
+    "unresolved_micro_cny": 14090240,
+    "cumulative_micro_cny": 101185168,
+    "conservative_unreconciled_cumulative_micro_cny": 137920081,
+    "remaining_unreserved_micro_cny": 84724592,
+    "invoice_verified": false,
+    "provider_admission": {
+      "revision": 2,
+      "kind": "provider_admission",
+      "providers": [
+        "glm_coding"
+      ],
+      "authority": "Owner: Cancel the scheduled DeepSeek run. Continue development using GLM until usage is empty or I tell you to switch.",
+      "at": "2026-11-13T05:40:10.576685+00:00"
+    },
+    "billing_baseline": {
+      "id": 1,
+      "at": "2026-11-12T07:05:53.036243+00:00",
+      "actual": 20350000,
+      "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+      "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+    }
+  },
+  "full_ledger_states": {
+    "settled": 499,
+    "rejected_reserved": 1,
+    "unknown": 1
+  },
+  "glm_historical_states": {
+    "rejected_reserved": 1,
+    "settled": 421,
+    "unknown": 1
+  },
+  "conservative_historical_credits_including_reservations": 8266.28252,
+  "pair_integrity": {
+    "typed-completed-control-and-adaptive": {
+      "source_files_identical": true,
+      "source_file_count": 151,
+      "runtime_model_effort_per_arm_limits_identical": true,
+      "research_input_identical": true,
+      "local_historical_cash_sublimits_cny": [
+        100,
+        120
+      ],
+      "exact_route_identity": false,
+      "packages": [
+        "typed-repair-fixed-03",
+        "typed-completion-adaptive-05"
+      ]
+    }
+  },
+  "all_current_requests_glm53_max": true,
+  "frozen_data_sha256": "59e8033ec2271d70dba9d22390dd865edbb7aec08c73424b4a62b5c8054fcbf8",
+  "not_run": {
+    "typed-evidence-adaptive-02": "Retired before any request after the reproduced first-arm harness bug."
+  },
+  "comparison_limits": [
+    "One previously seen frozen case reused after engineering repairs; fixed then adaptive, no counterbalanced repeat.",
+    "Actual inference compute can differ despite equal aggregate ceilings.",
+    "One same-case pair cannot establish causal superiority or general discovery capability.",
+    "Completed fixed control used100CNY historical sublimit; final adaptive uses120CNY after a recorded pre-dispatch stop. Original200CNY and per-arm limits unchanged."
+  ],
+  "checkpoint": {
+    "native_completion": "pass_both",
+    "independent_arithmetic": "pass_both",
+    "semantics": {
+      "fixed": "pass_with_limits",
+      "adaptive": "needs_definition_clarification"
+    },
+    "visible_usage": "host_settled_team_receipt",
+    "official_acceptance": false,
+    "production_ready": false,
+    "further_paid_pair_scheduled": false
+  }
+}

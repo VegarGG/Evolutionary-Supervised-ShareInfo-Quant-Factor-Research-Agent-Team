@@ -1,0 +1,21 @@
+{
+  "id": "module-units",
+  "category": "diagnostic",
+  "synthetic_evidence": true,
+  "question": "Review and revise this daily China A-share research specification using only these synthetic records. Preserve the economic question. Distinguish a supported correction from an untested investment hypothesis.",
+  "sources": {
+    "income": "Synthetic accounting dictionary: profit_reported is net profit in units of ten thousand CNY. A stored value of 1 therefore represents 10000 CNY. The field is available only after the recorded publication timestamp.",
+    "capital": "Synthetic daily dictionary: capitalization_reported is equity market capitalization in units of one hundred million CNY. A stored value of 1 therefore represents 100000000 CNY. Capitalization is measured at the signal close.",
+    "protocol": "The intended factor is dimensionless net profit in CNY divided by equity market capitalization in CNY, not its reciprocal. Use the latest published profit available by the signal close. Execute at the next trading close. No future return or transaction-cost observations are supplied."
+  },
+  "initial": {
+    "name": "Profit relative to capitalization",
+    "expression": "profit_reported / capitalization_reported",
+    "input_units": "Both stored fields are already in CNY; no conversion is needed.",
+    "availability_rule": "Use only profit published by the signal close.",
+    "signal_rule": "Form a signal at the daily close using the latest available published profit and same-close capitalization.",
+    "execution_rule": "Execute at the next trading-session close after the signal.",
+    "universe": "Synthetic issuer TEST-B only",
+    "hypothesis": "Profit relative to capitalization might inform future returns; no direction or profitability is established."
+  }
+}

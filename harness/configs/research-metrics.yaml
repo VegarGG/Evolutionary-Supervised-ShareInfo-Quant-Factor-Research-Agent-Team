@@ -1,0 +1,4 @@
+protocol: development-close-observations-v2
+decimal_precision: 28
+execution_lag: 1
+label_horizon: 1

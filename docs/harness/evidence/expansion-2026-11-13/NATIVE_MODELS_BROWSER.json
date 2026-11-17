@@ -1,0 +1,57 @@
+{
+  "status": "pass",
+  "at": "2026-11-13T03:40:20.593Z",
+  "browser": "Installed Chrome via Playwright; Browser plugin not available",
+  "viewports": [
+    [
+      1440,
+      1000
+    ],
+    [
+      390,
+      844
+    ]
+  ],
+  "checks": [
+    "native Models credential save",
+    "masked value survives reload",
+    "no separate model tab",
+    "guard refuses endpoint edit",
+    "light/dark option list foreground/background (size=2 inspection)",
+    "selection works without hover",
+    "no external browser requests",
+    "no console errors"
+  ],
+  "colors": [
+    [
+      {
+        "text": "Refresh token",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "Access token",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)"
+      }
+    ],
+    [
+      {
+        "text": "Refresh token",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(18, 18, 18)"
+      },
+      {
+        "text": "Access token",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(18, 18, 18)"
+      }
+    ]
+  ],
+  "errors": [],
+  "external": [],
+  "limitations": [
+    "Native DSH mobile settings remain clipped",
+    "OS-native popup is not captured by headless Chrome; expanded option list and computed colors inspected"
+  ]
+}

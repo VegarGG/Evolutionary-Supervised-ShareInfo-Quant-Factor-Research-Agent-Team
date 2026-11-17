@@ -1,0 +1,182 @@
+{
+  "at": "2026-11-16T08:15:10.662063+00:00",
+  "runs": [
+    {
+      "package_id": "unseen-fixed-01",
+      "variant": "fixed",
+      "model": "glm-5.3-flash",
+      "states": {
+        "settled": 18
+      },
+      "requests": 18,
+      "known_tokens": 284855,
+      "settled_exposure_cny": 0.667276,
+      "reserved_cny": 0.0,
+      "known_input_cache_hit_ratio": 0.5411289902231621,
+      "peak_dispatch_rpm": 5,
+      "peak_dispatch_tpm_known": 97629,
+      "wall_seconds_including_reconciliation": 400.97551,
+      "status": "incomplete",
+      "semantic_status": "requires_revision",
+      "changed_rows": 162,
+      "finalized": false,
+      "rejections": 5,
+      "native_completed_tasks": 3
+    },
+    {
+      "package_id": "unseen-glm53-fixed-01",
+      "variant": "fixed",
+      "model": "glm-5.3",
+      "states": {
+        "settled": 14
+      },
+      "requests": 14,
+      "known_tokens": 214295,
+      "settled_exposure_cny": 1.80028,
+      "reserved_cny": 0.0,
+      "known_input_cache_hit_ratio": 0.6561555055024072,
+      "peak_dispatch_rpm": 7,
+      "peak_dispatch_tpm_known": 112589,
+      "wall_seconds_including_reconciliation": 163.058214,
+      "status": "finalized_research_prototype",
+      "semantic_status": "acceptable_retained_candidate_with_limits",
+      "changed_rows": 0,
+      "finalized": true,
+      "rejections": 0,
+      "native_completed_tasks": 3
+    },
+    {
+      "package_id": "unseen-glm53-adaptive-02",
+      "variant": "adaptive",
+      "model": "glm-5.3",
+      "states": {
+        "settled": 17
+      },
+      "requests": 17,
+      "known_tokens": 294021,
+      "settled_exposure_cny": 2.519708,
+      "reserved_cny": 0.0,
+      "known_input_cache_hit_ratio": 0.7169763761885424,
+      "peak_dispatch_rpm": 6,
+      "peak_dispatch_tpm_known": 154843,
+      "wall_seconds_including_reconciliation": 209.457291,
+      "status": "finalized_research_prototype",
+      "semantic_status": "acceptable_retained_candidate_with_limits",
+      "changed_rows": 0,
+      "finalized": true,
+      "rejections": 2,
+      "native_completed_tasks": 3
+    },
+    {
+      "package_id": "unseen-glm53-adaptive-03",
+      "variant": "adaptive",
+      "model": "glm-5.3",
+      "states": {
+        "settled": 9,
+        "unknown": 1
+      },
+      "requests": 10,
+      "known_tokens": 105005,
+      "settled_exposure_cny": 0.90364,
+      "reserved_cny": 8.84736,
+      "known_input_cache_hit_ratio": 0.5826466977657746,
+      "peak_dispatch_rpm": 5,
+      "peak_dispatch_tpm_known": 74535,
+      "wall_seconds_including_reconciliation": 1037.817233,
+      "status": "incomplete",
+      "semantic_status": "unfinished_with_semantic_caveat",
+      "changed_rows": 0,
+      "finalized": false,
+      "rejections": 0,
+      "native_completed_tasks": 2
+    }
+  ],
+  "data_snapshot_sha256": "125e11f539975266b71285da7094eec359c396caffa80d6fe18a6d11a86a0f74",
+  "live_glm53_inputs_and_code_identical": true,
+  "source_file_count": 120,
+  "glm53_known_usage": {
+    "requests": 40,
+    "requests_with_known_usage": 40,
+    "all_usage_settled": true,
+    "tokens": {
+      "input_uncached": 195548,
+      "input_cached": 401920,
+      "input_cache_write": 0,
+      "output": 15853
+    },
+    "total_tokens": 613321,
+    "input_cache_hit_ratio": 0.6727054838083378,
+    "cache_tokens_reported_for_all_calls": true,
+    "cache_reporting_note": "Explicit provider cache counters.",
+    "peak_rolling_60s_dispatch_rpm": 7,
+    "peak_rolling_60s_completion_rpm": 6,
+    "peak_rolling_60s_dispatch_tpm": 154843,
+    "peak_rolling_60s_completion_tpm": 154843,
+    "conservative_settled_cny": 5.223628,
+    "unresolved_reserved_cny": 0.0,
+    "published_price_estimate_cny": null,
+    "unpriced_requests": 40,
+    "cost_invoice_verified": false,
+    "funding": "coding_plan",
+    "subscription_credits_settled_upper_bound": 450.30012,
+    "subscription_credits_unresolved_reserved": 0.0,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice."
+  },
+  "glm53_requests": 41,
+  "glm53_unresolved_requests": 1,
+  "all_attempts": 59,
+  "all_known_tokens": 898176,
+  "new_settled_exposure_cny": 5.890904,
+  "budget_after": {
+    "carry_micro_cny": 56256735,
+    "new_settled_micro_cny": 11526586,
+    "unresolved_micro_cny": 14090240,
+    "cumulative_micro_cny": 31048408,
+    "conservative_unreconciled_cumulative_micro_cny": 67783321,
+    "remaining_unreserved_micro_cny": 154861352,
+    "invoice_verified": false,
+    "provider_admission": {
+      "revision": 2,
+      "kind": "provider_admission",
+      "providers": [
+        "glm_coding"
+      ],
+      "authority": "Owner: Cancel the scheduled DeepSeek run. Continue development using GLM until usage is empty or I tell you to switch.",
+      "at": "2026-11-13T05:40:10.576685+00:00"
+    },
+    "billing_baseline": {
+      "id": 1,
+      "at": "2026-11-12T07:05:53.036243+00:00",
+      "actual": 20350000,
+      "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+      "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+    }
+  },
+  "glm_historical_states": {
+    "rejected_reserved": 1,
+    "settled": 168,
+    "unknown": 1
+  },
+  "full_ledger_call_count": 248,
+  "full_ledger_states": {
+    "settled": 246,
+    "rejected_reserved": 1,
+    "unknown": 1
+  },
+  "not_run": {
+    "unseen-adaptive-02": "owner model switch",
+    "unseen-adaptive-03": "owner model switch",
+    "unseen-fixed-04": "owner model switch",
+    "unseen-glm53-fixed-04": "stop on unresolved connection timeout charge"
+  },
+  "acceptance": {
+    "unseen_case_executed": true,
+    "substantive_adaptive_revision_demonstrated": false,
+    "minimal_core_gate_complete": false,
+    "production_ready": false
+  },
+  "post_live_changes": "Explicit partial-usage failure export and regression test; no new model or data calls.",
+  "glm_total_settled_credits_upper": 908.59341,
+  "glm_total_reserved_credits_upper": 1318.58432
+}

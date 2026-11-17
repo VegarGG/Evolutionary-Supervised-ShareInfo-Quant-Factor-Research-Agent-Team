@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "source_files": 151,
+  "identical_sources": true,
+  "identical_data_prompt_model_effort_limits": true,
+  "packages": [
+    "typed-repair-adaptive-04",
+    "typed-repair-fixed-03"
+  ],
+  "operator_outcomes_injected": false,
+  "original_total_micro_cny": 200000000,
+  "historical_request_ceiling": 443,
+  "allowance_expanded_after_failure": false
+}

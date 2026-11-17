@@ -21,7 +21,9 @@ as BaoStock after bounded comparisons; only one provider is used per session.
    session uploads, package inventory uploads and general shell/file tools.
 3. Enforce the original cumulative 200 CNY allowance at the actual provider wire,
    including retries, helper requests and unknown outcomes. Prior conservative
-   spending is 56.256735 CNY across 884 calls; it is not reset for this project.
+   spending was estimated at 56.256735 CNY across 884 calls. Retain that history;
+   the owner's later official 20.35 CNY observation is the recorded baseline for
+   subsequent conservative charges, not a renewed allowance.
 4. Build bounded read-only iFind, RQData and BaoStock adapters. RQData also
    provides the initial report/disclosure/news discovery seams. No credentials or licensed rows are committed. Credential/entitlement
    failures are recorded as unavailable, never replaced by synthetic real data.
@@ -56,7 +58,7 @@ The answer key never enters the runtime workspace, prompts, MCP tools or provide
 wire. Diagnostic and open-ended results are separate. Diagnostic fixtures are not
 production factors and are never imported into a pool.
 
-Live admission remains DeepSeek-only, sequential initially, within the original
+The original DeepSeek diagnostic admission is sequential within the original
 schedule: 12:00–14:00 and 18:00–24:00 Beijing. At a closed window, stop admitting
 new work and let an already dispatched request finish; checkpoint unfinished work.
 500 is the authorized concurrency ceiling, not an experimental target. A smaller
@@ -82,6 +84,86 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
+Latest 17 November update: [typed comparisons, count facts and settled usage](TYPED_EVIDENCE_2026-11-17.md)
+complete in the 17/18-call fixed/adaptive arms. Both use the same 151 runtime files,
+186 BaoStock rows, prompt, model/effort and per-arm bounds. Fixed retains; adaptive
+normalizes 171 scores and corrects its analyst's warmup mistake. Named comparisons,
+independent arithmetic, report hashes, actual native completion and exact final
+team receipts pass. No paid supervisor acknowledgement follows finalization.
+
+Independent adaptive review still flags an omitted `sqrt(lookback)` in model prose;
+the model reviewer falsely approves it. A post-run offline guard catches this exact
+omission, bringing checks to 323 passing tests, but needs live verification. The
+clean-report/core gate stays provisional. Next bind complete prose definitions to
+the host specification and verify supervisor assignment/schema consistency before
+parent-child evolution and released-report matching. No official acceptance follows.
+
+Four recorded attempts total 52 settled GLM 5.3/max calls, 1459650 tokens, 67.29%
+input cache and 14.633000 CNY conservative exposure. Preserve the first guard false
+positive and the four-call local-sublimit stop. The final adaptive arm uses an
+explicit 120 CNY local historical sublimit; completed fixed used 100 CNY. Original
+200 CNY, request ceiling 443 and credit ceiling 10000 are unchanged. The comparison
+is not an exact-route causal experiment. Accounting is 101.185168 accounted,
+14.090240 reserved and 84.724592 unreserved; all prior rows and reservations match.
+Historical GLM use is 423 attempts and 8266.282520 used/reserved credits. No further
+paid trial is scheduled. [Prior semantic-guard evidence](SEMANTIC_GUARDS_2026-11-17.md)
+remains unchanged.
+
+Earlier 17 November update: [bounded completion and the new BaoStock case](CHECKPOINT_2026-11-17.md)
+are recorded. Compact/paged evidence, complete bounded worker scopes, readable
+inspection receipts, terminal acknowledgement grants, exact counts and isolated Git
+attribution are implemented. The first live control's 19-call delivery failure is
+preserved; its adaptive counterpart was withheld. The repaired fixed/adaptive pair
+used the same 135 frozen runtime files and 186 rows, completed in 18/20 calls and
+adopted the same volatility-scaled factor (171 changed scores). Independent arithmetic
+passes. Fixed descriptive review passes with caveats; adaptive claims next-close
+observations are executable signals, and its reviewer repeated the overstatement.
+Thus substantive adaptive computation is demonstrated, but clean final-artifact
+acceptance and the minimal-core gate remain open. The new narrow guard blocks that
+counterexample offline; no additional live retry was made. Final checks pass 271 tests.
+Across all three attempts: 57 settled calls, 1523122 tokens, 15.171276 CNY exposure.
+Accounting at that checkpoint was 55.583184 CNY accounted, 14.090240 reserved and 130.326576
+unreserved. GLM 5.3/max only; no new unknown or DeepSeek request. Historical limits
+are 295 attempts, 6000 conservative credits and 80 CNY within the original 200.
+
+16 November maximum-effort update: [the same-case GLM 5.3/max stages](MAX_EFFORT_2026-11-16.md)
+are recorded. A 16384-token response-limit failure led to a fresh 32768-token
+adaptive/fixed pair with the same 125 source files and frozen data. The adaptive
+arm retained the factor and received a false prose pass; the control explored
+normalization but retained the baseline and exhausted its five-request worker
+allowance before review. No substantive accepted revision. All 34 new calls settled,
+adding 880655 tokens and 9.363500 CNY exposure. Current accounting is 40.411908 CNY,
+14.090240 reserved and 145.497852 unreserved. The old timeout remains exactly unknown
+and fully reserved under narrow named retry authority. 249 offline tests pass,
+including native-log export after tool-result truncation. Next repair bounded tool
+responses, terminal acknowledgement accounting, count/prose validation and research
+criteria that distinguish exploratory hypotheses from proven investment benefit.
+
+16 November update: [the unseen BaoStock case](UNSEEN_CASE_2026-11-16.md) and
+[workflow capability cards](WORKFLOW_CAPABILITY_CARDS.md) are recorded. The owner
+directed a GLM 5.3 rerun after fixes. Its first fixed/adaptive pair completed with
+retained candidates; the repeat adaptive attempt failed before review with unknown
+usage. The frozen stop rule withheld the last control repeat and the ledger blocks
+further dispatch at that checkpoint. No substantive adaptive factor revision or minimal-core acceptance
+is claimed. The current package passes 232 offline tests. Accounting is 31.048408 CNY,
+14.090240 reserved and 154.861352 unreserved within the original 200 CNY ceiling.
+
+13 November development update: the owner completed the eighth UI pilot and
+confirmed this is far from production ready. The scheduled DeepSeek run is canceled.
+Continue on GLM Coding Plan Pro / GLM 5.3 Flash until quota exhaustion or an owner
+switch, preserving the original budget and history. The shared-state/review package
+is tracked in [modular development](MODULAR_DEVELOPMENT_2026-11-13.md) and
+[completed-output review](FINAL_OUTPUT_REVIEW_2026-11-13.md).
+Native Models and Agent Teams remain the host; a fixed-definition trial does not
+establish adaptive coordination or general discovery capability. Mixed role models
+and bounded market/news context remain staged in the design below.
+
+Owner update, 12 November: proceed with guarded chat and one real supervisor/two-
+worker BaoStock trial. This authorizes the bounded prototype now; a universal
+collaboration advantage is not a prerequisite to implementing this trial. Earlier
+single-case comparisons retain their limitations. See [the interactive trial](INTERACTIVE_TRIAL.md)
+and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
+
 - [x] Same repository and current main baseline, separate worktree/branch.
 - [x] Superseded open PRs closed; source branches preserved.
 - [x] Pinned DSH boot and exact request routing verified locally.
@@ -92,9 +174,65 @@ cannot expand tool privileges or select a credential/host/path.
 - [ ] Live report/news entitlement and full-content extraction checks.
 - [x] One-case equal-evidence diagnostic live comparison completed (24 real calls).
 - [ ] Repeats, other mechanisms and open-ended cases completed.
+- [x] One unseen BaoStock case with frozen same-evidence fixed/adaptive controls,
+  recorded retentions, failed review and failed repeat; no capability pass inferred.
+- [x] Workflow-specific capability cards with evidence, limits and next experiments.
+- [x] Bounded evidence delivery and actual terminal acknowledgement demonstrated
+  in offline native fixtures and the repaired live fixed/adaptive comparison.
+- [x] Host-rendered typed facts/units/timing, whole-report review hashes, canonical
+  rendering and task-bound references verified in real native DSH runs.
+- [x] Independent binding/content, arithmetic, report-delivery and cumulative-budget
+  audits, including failed attempts and model false passes.
+- [ ] Clean final narratives in both arms after the newest comparison/units-heading
+  counterexample guards; those additional guards are currently offline-verified.
 - [ ] Capability card supports progression to the minimal core.
+- [x] Native DSH Agent Teams source and model-selection interfaces reviewed.
+- [x] Bounded chat/worker integration implemented and exercised with synthetic inference.
+- [x] One real Flash/BaoStock browser attempt with full trace/resources recorded:
+  [failed before the reviewer and draft](LIVE_TRIAL_2026-11-12.md).
+- [x] Fenced-report boundary and duplicate-settlement fixes pass offline/native fixtures.
+- [x] Complete real three-role workflow after arithmetic/submission fixes:
+  [sixteen Flash calls, two workers and one draft](LIVE_RERUN_2026-11-12.md).
+- [x] Extend the exhausted pilot allowance explicitly from three to six sessions;
+  retain the existing ledger and original spending/data bounds.
+- [x] Implement the [statistical/specification repairs](STATISTICAL_SPECIFICATION.md):
+  geometry, explicit uncertainty states and one host-executed concrete definition.
+- [x] Fresh real three-role verification of those repairs: [fifteen Flash calls,
+  two workers and a host-executed contrast](LIVE_SPECIFICATION_TRIAL_2026-11-12.md).
+  Insufficient data is correctly recorded; no research-quality acceptance claimed.
+- [x] Standalone versioned shared-state/review module with exact citations, parentage,
+  explicit decisions, conflict preservation and concurrency/replay checks.
+- [x] Two paired real GLM diagnostic cases with feedback-disabled controls, including
+  every failed attempt: eleven calls, 69,923 tokens, 0.463528 CNY exposure.
+- [x] Completed-output review, explanation-only amendments and targeted repair of both
+  preserved unit counterexamples. Explicit prose unit checks block the recorded false pass.
+- [x] Native board tools and adaptive supervisor follow-up that changes the attributed
+  output version; a clean control skips the author. Computational definitions are preserved.
+- [ ] General semantic reliability across broader research cases. One model-only
+  final review falsely passed contradictory prose; the current host grammar is deliberately limited.
+- [x] Adaptive assignment based on observed peer findings that changes the
+  computational definition on a frozen case; independent arithmetic passes.
+  The latest adaptive final report passes descriptive review with limits; its fixed
+  control still needs comparative wording clarification. No official acceptance.
+- [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
+- [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 
 Current evidence and gate assessment: [first pilot](FIRST_PILOT.md),
 [data-source record](DATA_SOURCES.md), [legacy deployment archive](LEGACY_EXPERIMENTS.md).
-The minimal-core gate remains open: no measured collaboration advantage has yet
-been demonstrated. Repeats are complete only for single/blackboard on the first case.
+No measured collaboration advantage has yet been demonstrated. Single/blackboard
+diagnostic repeats and targeted unit repairs are recorded. The unseen case's first
+fixed/adaptive pair completed, but a reverse-order repeat stopped on unknown usage.
+Integration, retention and research traceability do not establish general discovery
+or collaboration superiority. The later maximum-effort stages do not change that
+conclusion. The earlier 17 November pair revised both arms and falsely passed an
+execution-feasibility claim. The latest pair adopts normalization only in adaptive;
+its descriptive final report passes, while the fixed retention rationale needs a
+defined comparison measure. Fewer adaptive calls in this one order do not establish
+workflow superiority. The timeout still needs reconciliation; its bounded reserved continuation
+does not establish general recovery. Keep the observed cap, prose, tool-truncation
+and workspace-attribution failures in the next module acceptance tests. Before
+attaching evolution, retain the now-implemented pinned metric/unit/execution fields,
+verify named comparative claims and independently clean final narratives after the
+newest guards. Chat completion and model approval remain separate from independent
+review. Then isolate parent-child evolution
+and released-report version matching before Hybrid v1 integration.

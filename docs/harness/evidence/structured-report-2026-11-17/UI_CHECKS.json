@@ -1,0 +1,222 @@
+{
+  "offline-ui": {
+    "status": "pass",
+    "at": "2026-11-17T03:39:36.741Z",
+    "title": "Exercise the offline structured reportin — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3081",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "offline-ui-02": {
+    "status": "pass",
+    "at": "2026-11-17T03:46:35.660Z",
+    "title": "Exercise the offline structured reportin — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3082",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "bound-ui": {
+    "status": "pass",
+    "at": "2026-11-17T04:31:35.492Z",
+    "title": "Exercise the offline structured reportin — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3084",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "fixed/ui": {
+    "status": "pass",
+    "at": "2026-11-17T04:12:58.839Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "native completed session reopened without resubmission",
+      "full rendered report equals host text exactly",
+      "reload persisted",
+      "desktop/mobile screenshots"
+    ],
+    "limitations": [
+      "Native 390px layout remains clipped; mobile not accepted."
+    ],
+    "recovery": "Initial UI probe collapsed an already open final tool; corrected read-only visibility check. No inference replay."
+  },
+  "adaptive/ui": {
+    "status": "pass",
+    "at": "2026-11-17T04:16:50.987Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "bound-fixed/ui": {
+    "status": "pass",
+    "at": "2026-11-17T04:48:47.127Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "native completed session reopened without resubmission",
+      "full rendered report equals host text exactly",
+      "reload persisted",
+      "desktop/mobile screenshots"
+    ],
+    "limitations": [
+      "Native 390px layout remains clipped; mobile not accepted."
+    ],
+    "recovery": "Read-only rendered-report verification; no inference resubmission. Earlier failed UI probes remain separately recorded where present."
+  },
+  "bound-adaptive/ui": {
+    "status": "pass",
+    "at": "2026-11-17T05:01:03.876Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "native completed session reopened without resubmission",
+      "full rendered report equals host text exactly",
+      "reload persisted",
+      "desktop/mobile screenshots"
+    ],
+    "limitations": [
+      "Native 390px layout remains clipped; mobile not accepted."
+    ],
+    "recovery": "Read-only rendered-report verification; no inference resubmission. Earlier failed UI probes remain separately recorded where present."
+  }
+}

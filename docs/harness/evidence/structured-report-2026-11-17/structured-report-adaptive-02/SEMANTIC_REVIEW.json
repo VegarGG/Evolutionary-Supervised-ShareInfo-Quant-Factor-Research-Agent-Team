@@ -1,0 +1,11 @@
+{
+  "status": "incomplete_no_candidate",
+  "scope": "Native analyst failed after three candidate-ID rejections and six work requests; no accepted findings, designer, final reviewer or final report.",
+  "issues": [
+    "Truncated candidate ID followed by confusion between event/source/episode hashes. Generic mismatch error did not identify the assigned target."
+  ],
+  "arithmetic_scope": "Frozen baseline only; no worker inspection was performed.",
+  "semantic_acceptance": false,
+  "official_acceptance": false,
+  "all_new_usage_settled": true
+}

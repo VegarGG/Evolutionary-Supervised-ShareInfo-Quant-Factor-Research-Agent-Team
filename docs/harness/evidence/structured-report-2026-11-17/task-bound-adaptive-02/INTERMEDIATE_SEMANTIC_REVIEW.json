@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-17T04:57:59.758961+00:00",
+  "scope": "independent read-only review of intermediate analyst reasoning; not injected into live tasks",
+  "finding_id": "d5172105922468d7e773a7e42da96e7d6f1a407a8d817553b6bc10b63a98c258",
+  "issues": [
+    {
+      "text": "Units and scale are heterogeneous across the fixed universe",
+      "assessment": "The heading overstates unit heterogeneity. All closes use CNY/share and all return scores are dimensionless; only observed magnitudes/dispersion differ. The following body correctly identifies those units. The final candidate and host report are reviewed separately."
+    },
+    {
+      "text": "cross-symbol magnitude comparisons conflate symbol-specific volatility scale with signal information",
+      "assessment": "A theoretical motivation for an exploratory normalization hypothesis, not a measured decomposition of volatility and signal information from this sample."
+    }
+  ],
+  "official_acceptance": false
+}

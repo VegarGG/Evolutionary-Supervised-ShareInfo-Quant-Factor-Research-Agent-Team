@@ -1,0 +1,1556 @@
+{
+  "actors": {
+    "author-2": {
+      "model": {
+        "all_usage_settled": true,
+        "cache_reporting_note": "Explicit provider cache counters.",
+        "cache_tokens_reported_for_all_calls": true,
+        "conservative_settled_cny": 0.192222,
+        "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice.",
+        "cost_invoice_verified": false,
+        "funding": "coding_plan",
+        "input_cache_hit_ratio": 0.5895367031770868,
+        "peak_rolling_60s_completion_rpm": 3,
+        "peak_rolling_60s_completion_tpm": 53526,
+        "peak_rolling_60s_dispatch_rpm": 3,
+        "peak_rolling_60s_dispatch_tpm": 53526,
+        "published_price_estimate_cny": null,
+        "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+        "requests": 5,
+        "requests_with_known_usage": 5,
+        "subscription_credits_settled_upper_bound": 21.42705,
+        "subscription_credits_unresolved_reserved": 0.0,
+        "tokens": {
+          "input_cache_write": 0,
+          "input_cached": 43328,
+          "input_uncached": 30167,
+          "output": 5654
+        },
+        "total_tokens": 79149,
+        "unpriced_requests": 5,
+        "unresolved_reserved_cny": 0.0
+      },
+      "native_tasks": [
+        {
+          "actor": "supervisor",
+          "at": "2026-11-16T07:31:24.222451+00:00",
+          "body": {
+            "actor": "author-2",
+            "assignment": "Use the recorded findings and the same full evidence to propose one defensible executable factor revision, or explicitly retain the factor if no change is supported. Inspect the chosen specification, cite exact evidence, dispose of every current finding and distinguish an observed score change from unproven improvement.",
+            "basis_ids": [],
+            "child_id": "qfh-case-a421ec01-82e4-4e9a-bad7-3f65e9702006",
+            "output_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+            "role": "author",
+            "stage": "design"
+          },
+          "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+          "id": "f24bac41e0eaf5eda88029d6fe8d492e11ad9ce1e1dc02c8b72d106b04d7d819",
+          "kind": "task_started",
+          "previous": "49a5688177aa4192522d26305b6bf057a6449d776180d499c7edf404c5132d4c",
+          "sequence": 11
+        },
+        {
+          "actor": "supervisor",
+          "at": "2026-11-16T07:33:09.614400+00:00",
+          "body": {
+            "accepted_ids": [
+              "ab554ab11681862bd816613d473bbbf86aa7e6976a8ed6016aaab38f1cbc5f62"
+            ],
+            "actor": "author-2",
+            "child_id": "qfh-case-a421ec01-82e4-4e9a-bad7-3f65e9702006",
+            "result_sha256": "42df92618eeff283cbee36d445d3a94667d22afcc04fc3531dd6ab6549d0ac1c",
+            "status": "completed",
+            "stop_reason": "completed"
+          },
+          "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+          "id": "9c3d12b7301d2cef4f8de5b8c557391ae9be49107e3c7cf780dd9fe87de6e845",
+          "kind": "task_finished",
+          "previous": "ab554ab11681862bd816613d473bbbf86aa7e6976a8ed6016aaab38f1cbc5f62",
+          "sequence": 16
+        }
+      ],
+      "resources": {
+        "activity_wall_seconds": 105.391949,
+        "activity_windows_utc": [
+          [
+            "2026-11-16T07:31:24.222451+00:00",
+            "2026-11-16T07:33:09.614400+00:00"
+          ]
+        ],
+        "cpu_sample_coverage_seconds": 102.87947499999999,
+        "host_available_ram_min_bytes": 11189829632,
+        "host_cpu_max_percent": 10.0,
+        "host_total_ram_bytes": 38654705664,
+        "measurement_errors": [],
+        "process_tree_mean_sampled_cpu_cores": 0.03497316785490983,
+        "process_tree_peak_rss_bytes": 635322368,
+        "process_tree_peak_sampled_cpu_cores": 0.08924637919528113,
+        "samples": 52,
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+        "swap_peak_bytes": 0,
+        "work_volume_min_free_bytes": 361172697088
+      }
+    },
+    "reviewer-1": {
+      "model": {
+        "all_usage_settled": true,
+        "cache_reporting_note": "Explicit provider cache counters.",
+        "cache_tokens_reported_for_all_calls": true,
+        "conservative_settled_cny": 0.116658,
+        "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice.",
+        "cost_invoice_verified": false,
+        "funding": "coding_plan",
+        "input_cache_hit_ratio": 0.5080200089241681,
+        "peak_rolling_60s_completion_rpm": 3,
+        "peak_rolling_60s_completion_tpm": 36603,
+        "peak_rolling_60s_dispatch_rpm": 3,
+        "peak_rolling_60s_dispatch_tpm": 36603,
+        "published_price_estimate_cny": null,
+        "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+        "requests": 4,
+        "requests_with_known_usage": 4,
+        "subscription_credits_settled_upper_bound": 12.94323,
+        "subscription_credits_unresolved_reserved": 0.0,
+        "tokens": {
+          "input_cache_write": 0,
+          "input_cached": 21632,
+          "input_uncached": 20949,
+          "output": 3937
+        },
+        "total_tokens": 46518,
+        "unpriced_requests": 4,
+        "unresolved_reserved_cny": 0.0
+      },
+      "native_tasks": [
+        {
+          "actor": "supervisor",
+          "at": "2026-11-16T07:29:33.779745+00:00",
+          "body": {
+            "actor": "reviewer-1",
+            "assignment": "Inspect all frozen sources and the initial/current factor. Identify concrete source-supported constraints and separately label hypotheses. Submit up to four findings. No prescribed correction; do not invent missing data, trading results or corporate actions.",
+            "basis_ids": [],
+            "child_id": "qfh-case-70490018-7acc-4e2c-9db0-2e9eaa402383",
+            "output_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+            "role": "reviewer",
+            "stage": "analyze"
+          },
+          "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+          "id": "9049ee4a8a45ed041b444968667383f37f24a45d86c32ac821133682d6fd6c44",
+          "kind": "task_started",
+          "previous": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+          "sequence": 2
+        },
+        {
+          "actor": "supervisor",
+          "at": "2026-11-16T07:31:13.683621+00:00",
+          "body": {
+            "accepted_ids": [
+              "4fff9fcd3c126d2281ce00a5aa5f82796d71e903b4e8da6f1e0de5cac4bed7de"
+            ],
+            "actor": "reviewer-1",
+            "child_id": "qfh-case-70490018-7acc-4e2c-9db0-2e9eaa402383",
+            "result_sha256": "df8cf27b4fd04543337a93719dceb74933eb3cca979d5fead590294a4d6cd857",
+            "status": "completed",
+            "stop_reason": "completed"
+          },
+          "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+          "id": "49a5688177aa4192522d26305b6bf057a6449d776180d499c7edf404c5132d4c",
+          "kind": "task_finished",
+          "previous": "4fff9fcd3c126d2281ce00a5aa5f82796d71e903b4e8da6f1e0de5cac4bed7de",
+          "sequence": 10
+        }
+      ],
+      "resources": {
+        "activity_wall_seconds": 99.903876,
+        "activity_windows_utc": [
+          [
+            "2026-11-16T07:29:33.779745+00:00",
+            "2026-11-16T07:31:13.683621+00:00"
+          ]
+        ],
+        "cpu_sample_coverage_seconds": 98.943928,
+        "host_available_ram_min_bytes": 11096047616,
+        "host_cpu_max_percent": 10.1,
+        "host_total_ram_bytes": 38654705664,
+        "measurement_errors": [],
+        "process_tree_mean_sampled_cpu_cores": 0.03296971626192159,
+        "process_tree_peak_rss_bytes": 640729088,
+        "process_tree_peak_sampled_cpu_cores": 0.07264989412275778,
+        "samples": 50,
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+        "swap_peak_bytes": 0,
+        "work_volume_min_free_bytes": 361175584768
+      }
+    },
+    "reviewer-3": {
+      "model": {
+        "all_usage_settled": true,
+        "cache_reporting_note": "Explicit provider cache counters.",
+        "cache_tokens_reported_for_all_calls": true,
+        "conservative_settled_cny": 0.19776,
+        "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice.",
+        "cost_invoice_verified": false,
+        "funding": "coding_plan",
+        "input_cache_hit_ratio": 0.4913074786544594,
+        "peak_rolling_60s_completion_rpm": 4,
+        "peak_rolling_60s_completion_tpm": 83046,
+        "peak_rolling_60s_dispatch_rpm": 3,
+        "peak_rolling_60s_dispatch_tpm": 64721,
+        "published_price_estimate_cny": null,
+        "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+        "requests": 4,
+        "requests_with_known_usage": 4,
+        "subscription_credits_settled_upper_bound": 22.10904,
+        "subscription_credits_unresolved_reserved": 0.0,
+        "tokens": {
+          "input_cache_write": 0,
+          "input_cached": 38208,
+          "input_uncached": 39560,
+          "output": 5278
+        },
+        "total_tokens": 83046,
+        "unpriced_requests": 4,
+        "unresolved_reserved_cny": 0.0
+      },
+      "native_tasks": [
+        {
+          "actor": "supervisor",
+          "at": "2026-11-16T07:33:20.380820+00:00",
+          "body": {
+            "actor": "reviewer-3",
+            "assignment": "Review the exact current complete artifact, its executable inspection, claims, rationale, decisions and limits against the frozen sources. Report remaining issues. No performance or causality claim follows from descriptive score differences.",
+            "basis_ids": [],
+            "child_id": "qfh-case-e1b5a840-a3c3-410c-bfb6-5d08772cc2c9",
+            "output_id": "ab554ab11681862bd816613d473bbbf86aa7e6976a8ed6016aaab38f1cbc5f62",
+            "role": "reviewer",
+            "stage": "review"
+          },
+          "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+          "id": "b8eb87836ab0cfcf7c37cdb8680b62ac3f2da9073e37769fd6a3de6b28dd7a2f",
+          "kind": "task_started",
+          "previous": "9c3d12b7301d2cef4f8de5b8c557391ae9be49107e3c7cf780dd9fe87de6e845",
+          "sequence": 17
+        },
+        {
+          "actor": "supervisor",
+          "at": "2026-11-16T07:35:45.606300+00:00",
+          "body": {
+            "accepted_ids": [
+              "f3b67d568c936f56acb9bdef8664abddff43586b3a86526f72f9f7ff8fccdd7f"
+            ],
+            "actor": "reviewer-3",
+            "child_id": "qfh-case-e1b5a840-a3c3-410c-bfb6-5d08772cc2c9",
+            "result_sha256": "cff7ec7237b88c39b0e945b155b4a406a20e1d3c27dae02810cd8cfc6c95ec11",
+            "status": "completed",
+            "stop_reason": "completed"
+          },
+          "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+          "id": "873d0c27455a16676ea12bc850b23534ea90b25c6cfd43a59ac4007e9ac35d8b",
+          "kind": "task_finished",
+          "previous": "f3b67d568c936f56acb9bdef8664abddff43586b3a86526f72f9f7ff8fccdd7f",
+          "sequence": 20
+        }
+      ],
+      "resources": {
+        "activity_wall_seconds": 145.22548,
+        "activity_windows_utc": [
+          [
+            "2026-11-16T07:33:20.380820+00:00",
+            "2026-11-16T07:35:45.606300+00:00"
+          ]
+        ],
+        "cpu_sample_coverage_seconds": 143.215791,
+        "host_available_ram_min_bytes": 11074338816,
+        "host_cpu_max_percent": 9.8,
+        "host_total_ram_bytes": 38654705664,
+        "measurement_errors": [],
+        "process_tree_mean_sampled_cpu_cores": 0.025750691137124675,
+        "process_tree_peak_rss_bytes": 597966848,
+        "process_tree_peak_sampled_cpu_cores": 0.06565519624053713,
+        "samples": 72,
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+        "swap_peak_bytes": 0,
+        "work_volume_min_free_bytes": 361170014208
+      }
+    },
+    "supervisor": {
+      "model": {
+        "all_usage_settled": true,
+        "cache_reporting_note": "Explicit provider cache counters.",
+        "cache_tokens_reported_for_all_calls": true,
+        "conservative_settled_cny": 0.160636,
+        "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice.",
+        "cost_invoice_verified": false,
+        "funding": "coding_plan",
+        "input_cache_hit_ratio": 0.5642274247491639,
+        "peak_rolling_60s_completion_rpm": 2,
+        "peak_rolling_60s_completion_tpm": 32908,
+        "peak_rolling_60s_dispatch_rpm": 2,
+        "peak_rolling_60s_dispatch_tpm": 32908,
+        "published_price_estimate_cny": null,
+        "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+        "requests": 5,
+        "requests_with_known_usage": 5,
+        "subscription_credits_settled_upper_bound": 18.3061,
+        "subscription_credits_unresolved_reserved": 0.0,
+        "tokens": {
+          "input_cache_write": 0,
+          "input_cached": 42176,
+          "input_uncached": 32574,
+          "output": 1392
+        },
+        "total_tokens": 76142,
+        "unpriced_requests": 5,
+        "unresolved_reserved_cny": 0.0
+      },
+      "native_tasks": [],
+      "resources": {
+        "activity_wall_seconds": 50.454205,
+        "activity_windows_utc": [
+          [
+            "2026-11-16T07:29:19.450076+00:00",
+            "2026-11-16T07:29:33.779745+00:00"
+          ],
+          [
+            "2026-11-16T07:31:13.683621+00:00",
+            "2026-11-16T07:31:24.222451+00:00"
+          ],
+          [
+            "2026-11-16T07:33:09.614400+00:00",
+            "2026-11-16T07:33:20.380820+00:00"
+          ],
+          [
+            "2026-11-16T07:35:45.606300+00:00",
+            "2026-11-16T07:36:00.425586+00:00"
+          ]
+        ],
+        "cpu_sample_coverage_seconds": 42.37724300000001,
+        "host_available_ram_min_bytes": 11204329472,
+        "host_cpu_max_percent": 9.6,
+        "host_total_ram_bytes": 38654705664,
+        "measurement_errors": [],
+        "process_tree_mean_sampled_cpu_cores": 0.027684622333737002,
+        "process_tree_peak_rss_bytes": 637730816,
+        "process_tree_peak_sampled_cpu_cores": 0.06472225054198741,
+        "samples": 25,
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+        "swap_peak_bytes": 0,
+        "work_volume_min_free_bytes": 361169637376
+      }
+    }
+  },
+  "audit": {
+    "checks": [
+      "immutable source snapshot",
+      "frozen research snapshot retained",
+      "frozen native glm-5.3-flash endpoint and no fallback",
+      "wire usage, quota and cash",
+      "all role rates",
+      "native task attribution",
+      "current version and final review",
+      "artifact hashes"
+    ],
+    "semantic_limit": "Prose interpretation requires a separate source-based review.",
+    "status": "pass"
+  },
+  "board": {
+    "current_spec": {
+      "direction": 1,
+      "lookback": 5,
+      "max_absolute_daily_return": null,
+      "normalization": "realized_volatility",
+      "volatility_window": 5
+    },
+    "episode_id": "unseen-fixed-01",
+    "finalized": null,
+    "findings": [
+      {
+        "actor": "reviewer-1",
+        "at": "2026-11-16T07:30:46.504695+00:00",
+        "body": {
+          "candidate_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+          "citations": [
+            {
+              "evidence_id": "data_quality",
+              "quote": "Observed union is not an exchange calendar; absences are not proof of a market closure or suspension."
+            },
+            {
+              "evidence_id": "data_quality",
+              "quote": "2026-08-03"
+            }
+          ],
+          "contradicts": [],
+          "statement": "Coverage is balanced and clean: 177 rows, 59 observed dates per symbol with 59 common dates equal to the union, no duplicate keys, no invalid or null closes, and no dates missing from the observed union, so per-symbol comparison across dates is well aligned within this fixed convenience sample spanning 2026-08-03 to 2026-10-30.",
+          "status": "supported",
+          "topic": "coverage"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "b65bfae81a51eddbf38f8cf45569411638bf13c9e4a8fd2529b74e806ba34490",
+        "kind": "finding",
+        "previous": "e1c6f6b1f5b23740ec7f9568721088f43fc279a759a1c9e829748389cb1f31d8",
+        "sequence": 5
+      },
+      {
+        "actor": "reviewer-1",
+        "at": "2026-11-16T07:30:46.505303+00:00",
+        "body": {
+          "candidate_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+          "citations": [
+            {
+              "evidence_id": "price_profile",
+              "quote": "1235.58"
+            },
+            {
+              "evidence_id": "price_profile",
+              "quote": "8.97"
+            }
+          ],
+          "contradicts": [],
+          "statement": "Raw close levels differ by orders of magnitude across symbols (600519.XSHG close range 1235.58 to 1392.05 vs 600000.XSHG 8.97 to 10.02 CNY/share), so cross-sectional use must rely on scale-free quantities like returns; the current expression close[t]/close[t-5] - 1 is dimensionless and level-invariant, which is coherent, but score comparability remains only descriptive.",
+          "status": "supported",
+          "topic": "units"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "2fb47b138f386203976107fc9d0df28bc774d72eb2cd0bbe9f27fb6f5e86ae36",
+        "kind": "finding",
+        "previous": "b65bfae81a51eddbf38f8cf45569411638bf13c9e4a8fd2529b74e806ba34490",
+        "sequence": 6
+      },
+      {
+        "actor": "reviewer-1",
+        "at": "2026-11-16T07:30:46.505844+00:00",
+        "body": {
+          "candidate_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+          "citations": [
+            {
+              "evidence_id": "initial_inspection",
+              "quote": "0.031358036156655944"
+            },
+            {
+              "evidence_id": "source_contract",
+              "quote": "this does not make an annual Sharpe ratio or remove systematic risk"
+            }
+          ],
+          "contradicts": [],
+          "statement": "With normalization none, per-symbol score dispersion differs materially: sample SD of the 5-day score is 0.031358036156655944 (000651.XSHE), 0.02601465514066781 (600000.XSHG) and 0.025036106969249714 (600519.XSHG), so unnormalized scores are not dispersion-comparable across symbols; volatility normalization is a hypothesis to reduce this, not a proven improvement and does not remove systematic risk.",
+          "status": "supported",
+          "topic": "normalization"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "779fe01f31e7733c93a46afc7d76b22f1a6f13cf6b7767ecaeef75430d7424a8",
+        "kind": "finding",
+        "previous": "2fb47b138f386203976107fc9d0df28bc774d72eb2cd0bbe9f27fb6f5e86ae36",
+        "sequence": 7
+      },
+      {
+        "actor": "reviewer-1",
+        "at": "2026-11-16T07:30:46.506324+00:00",
+        "body": {
+          "candidate_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+          "citations": [
+            {
+              "evidence_id": "initial_inspection",
+              "quote": "Descriptive scores only. No forward labels, PnL, alpha, formal evaluation or proof that a revision is better."
+            },
+            {
+              "evidence_id": "data_quality",
+              "quote": "No filling or corporate-action inference."
+            },
+            {
+              "evidence_id": "source_contract",
+              "quote": "Close-only jumps cannot identify corporate actions."
+            }
+          ],
+          "contradicts": [],
+          "statement": "Hypothesis: the momentum sign (direction=1) and any predictive usefulness of the 5-day return are unproven; the descriptive means across only 54 eligible signals per symbol with wide score dispersion carry no forward-return evidence and no alpha claim, and no inference about closures, suspensions or corporate actions may be drawn from observed-date gaps or close-only jumps.",
+          "status": "hypothesis",
+          "topic": "interpretation"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "ca70e25ffa9e716bffdbd703359bd8f03f1424e361c4711d66359eb4b0499161",
+        "kind": "finding",
+        "previous": "779fe01f31e7733c93a46afc7d76b22f1a6f13cf6b7767ecaeef75430d7424a8",
+        "sequence": 8
+      }
+    ],
+    "head": {
+      "actor": "author-2",
+      "at": "2026-11-16T07:33:00.913755+00:00",
+      "body": {
+        "basis_review_id": null,
+        "change_kind": "factor",
+        "changed_rows_from_parent": 162,
+        "citations": [
+          {
+            "evidence_id": "initial_inspection",
+            "quote": "0.031358036156655944"
+          },
+          {
+            "evidence_id": "initial_inspection",
+            "quote": "0.02601465514066781"
+          },
+          {
+            "evidence_id": "initial_inspection",
+            "quote": "0.025036106969249714"
+          },
+          {
+            "evidence_id": "source_contract",
+            "quote": "Normalization divides the trailing return by trailing daily-return SD times sqrt(lookback); this does not make an annual Sharpe ratio or remove systematic risk."
+          },
+          {
+            "evidence_id": "source_contract",
+            "quote": "Sample SD divides by n-1."
+          },
+          {
+            "evidence_id": "price_profile",
+            "quote": "0.01369940691247741"
+          },
+          {
+            "evidence_id": "price_profile",
+            "quote": "0.012486459027152721"
+          },
+          {
+            "evidence_id": "price_profile",
+            "quote": "0.01289591113463477"
+          },
+          {
+            "evidence_id": "data_quality",
+            "quote": "common_dates"
+          },
+          {
+            "evidence_id": "initial_inspection",
+            "quote": "Descriptive scores only. No forward labels, PnL, alpha, formal evaluation or proof that a revision is better."
+          }
+        ],
+        "decisions": [
+          {
+            "disposition": "adopt",
+            "finding_id": "b65bfae81a51eddbf38f8cf45569411638bf13c9e4a8fd2529b74e806ba34490",
+            "reason": "Coverage is confirmed clean and balanced (177 rows, 59 per symbol, common dates equal union), so per-symbol computation over observed dates needs no change; the revision keeps the same coverage assumptions."
+          },
+          {
+            "disposition": "adopt",
+            "finding_id": "2fb47b138f386203976107fc9d0df28bc774d72eb2cd0bbe9f27fb6f5e86ae36",
+            "reason": "Cross-sectional use must rely on scale-free quantities; the revision stays level-invariant and adds volatility scaling per the source contract's stated normalization definition, preserving dimensionlessness."
+          },
+          {
+            "disposition": "adopt",
+            "finding_id": "779fe01f31e7733c93a46afc7d76b22f1a6f13cf6b7767ecaeef75430d7424a8",
+            "reason": "This finding directly motivates the sole change: moving normalization from none to realized_volatility with volatility_window 5 to reduce cross-symbol dispersion mismatch. It is explicitly a hypothesis to reduce the mismatch, not a proven improvement and not removal of systematic risk."
+          },
+          {
+            "disposition": "adopt",
+            "finding_id": "ca70e25ffa9e716bffdbd703359bd8f03f1424e361c4711d66359eb4b0499161",
+            "reason": "Accepted as stated: direction=1 and predictive usefulness remain unproven hypotheses; the revision makes no alpha, tradability, suspension or corporate-action claims, and retains the availability/execution rules unchanged."
+          }
+        ],
+        "definition": {
+          "availability_rule": "Use only observed closes at or before signal close t. Current historical download is not a vintage archive.",
+          "execution_rule": "No earlier than next observed close after t; last-row signal has no execution observation. No tradability or performance claim.",
+          "expression": "1 * (close[t]/close[t-5] - 1) / (sample_sd(last 5 one-observation simple returns) * sqrt(5))",
+          "hypothesis": "A 5-day trailing close return, divided by trailing daily-return SD times sqrt(lookback) per the source contract, produces per-symbol scores with comparable dispersion, making the momentum candidate dimensionally coherent for cross-sectional use; predictive usefulness and the positive sign remain unproven.",
+          "input_units": "Unadjusted close in CNY/share; simple returns and final score dimensionless.",
+          "name": "Trailing close-return research candidate",
+          "signal_rule": "Signal after close t; require 6 trailing observations, positive volatility when normalized. No extra return-magnitude eligibility exclusion.",
+          "universe": "600000.XSHG, 600519.XSHG, 000651.XSHE; fixed convenience sample, not a point-in-time universe."
+        },
+        "hypothesis": "A 5-day trailing close return, divided by trailing daily-return SD times sqrt(lookback) per the source contract, produces per-symbol scores with comparable dispersion, making the momentum candidate dimensionally coherent for cross-sectional use; predictive usefulness and the positive sign remain unproven.",
+        "inspection": {
+          "by_symbol": {
+            "000651.XSHE": {
+              "eligible_signals": 54,
+              "exclusions": {
+                "insufficient_past_observations": 5
+              },
+              "maximum_absolute_score": 3.0670436492829465,
+              "mean_absolute_score": 0.798543773612632,
+              "mean_score": -0.12011100990580088,
+              "sample_sd_score": 1.0471100353804828,
+              "signals_with_next_observed_close": 53
+            },
+            "600000.XSHG": {
+              "eligible_signals": 54,
+              "exclusions": {
+                "insufficient_past_observations": 5
+              },
+              "maximum_absolute_score": 3.021728679888376,
+              "mean_absolute_score": 0.8851802951856431,
+              "mean_score": 0.03174155954640895,
+              "sample_sd_score": 1.1640696702142734,
+              "signals_with_next_observed_close": 53
+            },
+            "600519.XSHG": {
+              "eligible_signals": 54,
+              "exclusions": {
+                "insufficient_past_observations": 5
+              },
+              "maximum_absolute_score": 4.62815154508591,
+              "mean_absolute_score": 0.9168193136414104,
+              "mean_score": -0.05705204140656323,
+              "sample_sd_score": 1.2156434506827052,
+              "signals_with_next_observed_close": 53
+            }
+          },
+          "changed_score_or_eligibility_rows_from_initial": 162,
+          "limits": "Descriptive scores only. No forward labels, PnL, alpha, formal evaluation or proof that a revision is better. Sample SD uses n-1; windows use past observed rows, with no filling. Historical price jumps cannot identify corporate actions.",
+          "score_rows_sha256": "d86204ed69e1ff8d5e7edb288e4dd9aeac6fa454801135c014b8bb3b21778b7d"
+        },
+        "issue_resolutions": [],
+        "limitations": [
+          "Descriptive research on a frozen, non-vintage BaoStock download; no new data fetch, backtest, alpha or superiority claim.",
+          "The realized-volatility scaling produces an observed score-scale change (162 of 162 score rows changed, score_rows_sha256 d86204ed69e1ff8d5e7edb288e4dd9aeac6fa454801135c014b8bb3b21778b7d) but does not prove better predictive performance.",
+          "Direction (positive momentum) and the 5-day lookback remain untested hypotheses; no forward-return labels exist in the sources.",
+          "Observed union is not an exchange calendar; absences and close-only jumps cannot identify closures, suspensions or corporate actions, and no filling is performed.",
+          "Small fixed convenience sample of three symbols over 2026-08-03 to 2026-10-30; not a point-in-time universe; the revision does not remove systematic risk or create an annual Sharpe ratio.",
+          "Last-row signals have no execution observation; no tradability or performance claim is made."
+        ],
+        "parent_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+        "peer_finding_ids": [
+          "b65bfae81a51eddbf38f8cf45569411638bf13c9e4a8fd2529b74e806ba34490",
+          "2fb47b138f386203976107fc9d0df28bc774d72eb2cd0bbe9f27fb6f5e86ae36",
+          "779fe01f31e7733c93a46afc7d76b22f1a6f13cf6b7767ecaeef75430d7424a8"
+        ],
+        "rationale": "Reviewer finding 779fe01f31e7733c93a46afc7d76b22f1a6f13cf6b7767ecaeef75430d7424a8 (supported) showed the unnormalized 5-day scores are not dispersion-comparable across symbols (sample SD 0.031358036156655944 for 000651.XSHE vs 0.02601465514066781 for 600000.XSHG vs 0.025036106969249714 for 600519.XSHG). The only substantive, source-supported revision within the allowed schema is realized-volatility normalization; lookback, sign and eligibility are left unchanged because no evidence justifies altering them. The inspection of this exact spec (6cc214fddb2aea82452f4dfc1fff1df36f48e343ce2c3a87c9f73bd36ba008fb) shows the same eligibility structure (54 eligible signals per symbol, 53 with a next observed close, 5 insufficient-past exclusions) while changing all 162 score rows: sample SD of the normalized score becomes 1.0471100353804828 (000651.XSHE), 1.1640696702142734 (600000.XSHG) and 1.2156434506827052 (600519.XSHG). This is an observed score-scale change only; it does not demonstrate alpha, superiority, risk removal or corporate-action handling.",
+        "semantic_status": "pending independent audit; source citations alone do not prove interpretation",
+        "spec": {
+          "direction": 1,
+          "lookback": 5,
+          "max_absolute_daily_return": null,
+          "normalization": "realized_volatility",
+          "volatility_window": 5
+        }
+      },
+      "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+      "id": "ab554ab11681862bd816613d473bbbf86aa7e6976a8ed6016aaab38f1cbc5f62",
+      "kind": "revision",
+      "previous": "931084e3f3af777695be5f122920460b16557148033b4d500100ff463f837e45",
+      "sequence": 15
+    },
+    "inspection": {
+      "by_symbol": {
+        "000651.XSHE": {
+          "eligible_signals": 54,
+          "exclusions": {
+            "insufficient_past_observations": 5
+          },
+          "maximum_absolute_score": 3.0670436492829465,
+          "mean_absolute_score": 0.798543773612632,
+          "mean_score": -0.12011100990580088,
+          "sample_sd_score": 1.0471100353804828,
+          "signals_with_next_observed_close": 53
+        },
+        "600000.XSHG": {
+          "eligible_signals": 54,
+          "exclusions": {
+            "insufficient_past_observations": 5
+          },
+          "maximum_absolute_score": 3.021728679888376,
+          "mean_absolute_score": 0.8851802951856431,
+          "mean_score": 0.03174155954640895,
+          "sample_sd_score": 1.1640696702142734,
+          "signals_with_next_observed_close": 53
+        },
+        "600519.XSHG": {
+          "eligible_signals": 54,
+          "exclusions": {
+            "insufficient_past_observations": 5
+          },
+          "maximum_absolute_score": 4.62815154508591,
+          "mean_absolute_score": 0.9168193136414104,
+          "mean_score": -0.05705204140656323,
+          "sample_sd_score": 1.2156434506827052,
+          "signals_with_next_observed_close": 53
+        }
+      },
+      "changed_score_or_eligibility_rows_from_initial": 162,
+      "limits": "Descriptive scores only. No forward labels, PnL, alpha, formal evaluation or proof that a revision is better. Sample SD uses n-1; windows use past observed rows, with no filling. Historical price jumps cannot identify corporate actions.",
+      "score_rows_sha256": "d86204ed69e1ff8d5e7edb288e4dd9aeac6fa454801135c014b8bb3b21778b7d"
+    },
+    "reviews": [
+      {
+        "actor": "reviewer-3",
+        "at": "2026-11-16T07:35:33.567740+00:00",
+        "body": {
+          "candidate_id": "ab554ab11681862bd816613d473bbbf86aa7e6976a8ed6016aaab38f1cbc5f62",
+          "checks": {
+            "evidence_support": "Cited figures verify against frozen sources: initial per-symbol score SDs 0.031358036156655944 (000651.XSHE), 0.02601465514066781 (600000.XSHG), 0.025036106969249714 (600519.XSHG) match initial_inspection; per-observation return SDs 0.01369940691247741, 0.012486459027152721, 0.01289591113463477 match price_profile; 177 rows, 59 per symbol, common_dates=59=union_dates match data_quality. The normalization formula matches the source contract: \"Normalization divides the trailing return by trailing daily-return SD times sqrt(lookback)\" and \"Sample SD divides by n-1.\"",
+            "scope_and_limits": "Limits are otherwise correctly stated: descriptive only; the observed score-scale change (162 of 162 score rows, score_rows_sha256 d86204ed69e1ff8d5e7edb288e4dd9aeac6fa454801135c014b8bb3b21778b7d) is not evidence of alpha, superiority, risk removal or corporate-action handling; the observed union is not an exchange calendar; small fixed convenience sample 2026-08-03 to 2026-10-30; no annual Sharpe ratio claimed. One phrasing overstatement remains (see issues), which motivates the needs_revision verdict rather than any evidence or computation error.",
+            "spec_and_prose": "Spec {lookback:5, direction:1, normalization:realized_volatility, volatility_window:5, max_absolute_daily_return:null} is within the allowed schema. The expression (close[t]/close[t-5]-1)/(sample_sd(last 5 one-observation returns)*sqrt(5)) requires 6 trailing closes, consistent with signal_rule and with 5 insufficient-past exclusions per symbol (59-54=5) and 54 eligible signals per symbol, 53 with a next observed close. Eligibility, availability, execution and universe rules are unchanged from the initial candidate. All four peer findings are explicitly disposed of, with the change motivated by the supported normalization finding and labeled a hypothesis, not a proven improvement.",
+            "timing": "Availability (only closes at or before t) and execution (no earlier than next observed close; last-row signal unobserved) rules are retained verbatim; windows use past observed rows with no filling, per inspection limits. No lookahead introduced by the volatility denominator, which uses the same trailing window."
+          },
+          "citations": [
+            {
+              "evidence_id": "initial_inspection",
+              "quote": "0.031358036156655944"
+            },
+            {
+              "evidence_id": "initial_inspection",
+              "quote": "0.02601465514066781"
+            },
+            {
+              "evidence_id": "initial_inspection",
+              "quote": "0.025036106969249714"
+            },
+            {
+              "evidence_id": "source_contract",
+              "quote": "Normalization divides the trailing return by trailing daily-return SD times sqrt(lookback); this does not make an annual Sharpe ratio or remove systematic risk."
+            },
+            {
+              "evidence_id": "source_contract",
+              "quote": "Sample SD divides by n-1."
+            },
+            {
+              "evidence_id": "source_contract",
+              "quote": "Close-only jumps cannot identify corporate actions."
+            },
+            {
+              "evidence_id": "price_profile",
+              "quote": "0.01369940691247741"
+            },
+            {
+              "evidence_id": "price_profile",
+              "quote": "0.012486459027152721"
+            },
+            {
+              "evidence_id": "price_profile",
+              "quote": "0.01289591113463477"
+            },
+            {
+              "evidence_id": "data_quality",
+              "quote": "\"common_dates\": 59"
+            },
+            {
+              "evidence_id": "data_quality",
+              "quote": "Observed union is not an exchange calendar; absences are not proof of a market closure or suspension. No filling or corporate-action inference."
+            }
+          ],
+          "issues": [
+            "The hypothesis asserts the normalized scores have 'comparable dispersion', but the revision's own inspection shows residual cross-symbol dispersion differences remain (sample SD 1.0471100353804828 vs 1.1640696702142734 vs 1.2156434506827052, a ~16% spread); comparability is descriptive and unproven, not established by the scale change. This phrasing overstates the observed evidence and should be softened to a hypothesis of reduced mismatch.",
+            "A volatility_window of 5 one-observation returns is a very small sample (n-1 = 4 denominator), making the per-signal volatility denominator noisy; this is a descriptive caveat, not evidence of harm.",
+            "The rationale's claim that realized-volatility normalization is 'the only substantive, source-supported revision within the allowed schema' is a judgment, not a source fact; other schema-permitted changes (e.g., lookback, direction) are equally untested hypotheses and were defensibly left unchanged.",
+            "Direction=1 (positive momentum) and predictive usefulness remain unproven; no forward-return labels exist in the sources, and no performance or causality claim follows from the descriptive score differences.",
+            "Observed-date absences and close-only jumps cannot identify closures, suspensions or corporate actions; unadjusted closes mean any split/dividend effects, if present, would contaminate returns in an unidentifiable way."
+          ],
+          "limitations": [
+            "This review is descriptive only; no backtest, forward-return labels, alpha, superiority, tradability or performance claim is made or implied.",
+            "Residual cross-symbol dispersion differences persist after normalization (sample SD 1.0471100353804828, 1.1640696702142734, 1.2156434506827052); dispersion comparability is a hypothesis, not an observed outcome.",
+            "The 5-observation volatility window yields a noisy denominator (n-1 = 4); no conclusion about predictive effect is drawn.",
+            "The frozen download is not a vintage archive and the observed union is not an exchange calendar; closures, suspensions and corporate actions cannot be identified, and no filling is performed.",
+            "Three-symbol fixed convenience sample over 2026-08-03 to 2026-10-30; the revision does not remove systematic risk or create an annual Sharpe ratio.",
+            "Last-row signals have no execution observation; availability and execution rules are retained unchanged but remain unvalidated."
+          ],
+          "verdict": "needs_revision"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "f3b67d568c936f56acb9bdef8664abddff43586b3a86526f72f9f7ff8fccdd7f",
+        "kind": "case_review",
+        "previous": "4619c96d7a40640adad4a3cccc6c9fe68dcc8a6638c78287c0c647ec5d1a64ff",
+        "sequence": 19
+      }
+    ],
+    "tasks": [
+      {
+        "actor": "supervisor",
+        "at": "2026-11-16T07:29:33.779745+00:00",
+        "body": {
+          "actor": "reviewer-1",
+          "assignment": "Inspect all frozen sources and the initial/current factor. Identify concrete source-supported constraints and separately label hypotheses. Submit up to four findings. No prescribed correction; do not invent missing data, trading results or corporate actions.",
+          "basis_ids": [],
+          "child_id": "qfh-case-70490018-7acc-4e2c-9db0-2e9eaa402383",
+          "output_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+          "role": "reviewer",
+          "stage": "analyze"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "9049ee4a8a45ed041b444968667383f37f24a45d86c32ac821133682d6fd6c44",
+        "kind": "task_started",
+        "previous": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+        "sequence": 2
+      },
+      {
+        "actor": "supervisor",
+        "at": "2026-11-16T07:31:13.683621+00:00",
+        "body": {
+          "accepted_ids": [
+            "4fff9fcd3c126d2281ce00a5aa5f82796d71e903b4e8da6f1e0de5cac4bed7de"
+          ],
+          "actor": "reviewer-1",
+          "child_id": "qfh-case-70490018-7acc-4e2c-9db0-2e9eaa402383",
+          "result_sha256": "df8cf27b4fd04543337a93719dceb74933eb3cca979d5fead590294a4d6cd857",
+          "status": "completed",
+          "stop_reason": "completed"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "49a5688177aa4192522d26305b6bf057a6449d776180d499c7edf404c5132d4c",
+        "kind": "task_finished",
+        "previous": "4fff9fcd3c126d2281ce00a5aa5f82796d71e903b4e8da6f1e0de5cac4bed7de",
+        "sequence": 10
+      },
+      {
+        "actor": "supervisor",
+        "at": "2026-11-16T07:31:24.222451+00:00",
+        "body": {
+          "actor": "author-2",
+          "assignment": "Use the recorded findings and the same full evidence to propose one defensible executable factor revision, or explicitly retain the factor if no change is supported. Inspect the chosen specification, cite exact evidence, dispose of every current finding and distinguish an observed score change from unproven improvement.",
+          "basis_ids": [],
+          "child_id": "qfh-case-a421ec01-82e4-4e9a-bad7-3f65e9702006",
+          "output_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+          "role": "author",
+          "stage": "design"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "f24bac41e0eaf5eda88029d6fe8d492e11ad9ce1e1dc02c8b72d106b04d7d819",
+        "kind": "task_started",
+        "previous": "49a5688177aa4192522d26305b6bf057a6449d776180d499c7edf404c5132d4c",
+        "sequence": 11
+      },
+      {
+        "actor": "supervisor",
+        "at": "2026-11-16T07:33:09.614400+00:00",
+        "body": {
+          "accepted_ids": [
+            "ab554ab11681862bd816613d473bbbf86aa7e6976a8ed6016aaab38f1cbc5f62"
+          ],
+          "actor": "author-2",
+          "child_id": "qfh-case-a421ec01-82e4-4e9a-bad7-3f65e9702006",
+          "result_sha256": "42df92618eeff283cbee36d445d3a94667d22afcc04fc3531dd6ab6549d0ac1c",
+          "status": "completed",
+          "stop_reason": "completed"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "9c3d12b7301d2cef4f8de5b8c557391ae9be49107e3c7cf780dd9fe87de6e845",
+        "kind": "task_finished",
+        "previous": "ab554ab11681862bd816613d473bbbf86aa7e6976a8ed6016aaab38f1cbc5f62",
+        "sequence": 16
+      },
+      {
+        "actor": "supervisor",
+        "at": "2026-11-16T07:33:20.380820+00:00",
+        "body": {
+          "actor": "reviewer-3",
+          "assignment": "Review the exact current complete artifact, its executable inspection, claims, rationale, decisions and limits against the frozen sources. Report remaining issues. No performance or causality claim follows from descriptive score differences.",
+          "basis_ids": [],
+          "child_id": "qfh-case-e1b5a840-a3c3-410c-bfb6-5d08772cc2c9",
+          "output_id": "ab554ab11681862bd816613d473bbbf86aa7e6976a8ed6016aaab38f1cbc5f62",
+          "role": "reviewer",
+          "stage": "review"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "b8eb87836ab0cfcf7c37cdb8680b62ac3f2da9073e37769fd6a3de6b28dd7a2f",
+        "kind": "task_started",
+        "previous": "9c3d12b7301d2cef4f8de5b8c557391ae9be49107e3c7cf780dd9fe87de6e845",
+        "sequence": 17
+      },
+      {
+        "actor": "supervisor",
+        "at": "2026-11-16T07:35:45.606300+00:00",
+        "body": {
+          "accepted_ids": [
+            "f3b67d568c936f56acb9bdef8664abddff43586b3a86526f72f9f7ff8fccdd7f"
+          ],
+          "actor": "reviewer-3",
+          "child_id": "qfh-case-e1b5a840-a3c3-410c-bfb6-5d08772cc2c9",
+          "result_sha256": "cff7ec7237b88c39b0e945b155b4a406a20e1d3c27dae02810cd8cfc6c95ec11",
+          "status": "completed",
+          "stop_reason": "completed"
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "873d0c27455a16676ea12bc850b23534ea90b25c6cfd43a59ac4007e9ac35d8b",
+        "kind": "task_finished",
+        "previous": "f3b67d568c936f56acb9bdef8664abddff43586b3a86526f72f9f7ff8fccdd7f",
+        "sequence": 20
+      }
+    ],
+    "versions": [
+      {
+        "actor": "operator",
+        "at": "2026-11-16T07:29:01.042526+00:00",
+        "body": {
+          "decisions": [],
+          "definition": {
+            "availability_rule": "Use only observed closes at or before signal close t. Current historical download is not a vintage archive.",
+            "execution_rule": "No earlier than next observed close after t; last-row signal has no execution observation. No tradability or performance claim.",
+            "expression": "1 * (close[t]/close[t-5] - 1)",
+            "hypothesis": "A short-horizon momentum hypothesis; usefulness and direction are unproven.",
+            "input_units": "Unadjusted close in CNY/share; simple returns and final score dimensionless.",
+            "name": "Trailing close-return research candidate",
+            "signal_rule": "Signal after close t; require 6 trailing observations, positive volatility when normalized. No extra return-magnitude eligibility exclusion.",
+            "universe": "600000.XSHG, 600519.XSHG, 000651.XSHE; fixed convenience sample, not a point-in-time universe."
+          },
+          "parent_id": null,
+          "rationale": "Operator-supplied research starting point."
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+        "kind": "initial_candidate",
+        "previous": null,
+        "sequence": 1
+      },
+      {
+        "actor": "author-2",
+        "at": "2026-11-16T07:33:00.913755+00:00",
+        "body": {
+          "basis_review_id": null,
+          "change_kind": "factor",
+          "changed_rows_from_parent": 162,
+          "citations": [
+            {
+              "evidence_id": "initial_inspection",
+              "quote": "0.031358036156655944"
+            },
+            {
+              "evidence_id": "initial_inspection",
+              "quote": "0.02601465514066781"
+            },
+            {
+              "evidence_id": "initial_inspection",
+              "quote": "0.025036106969249714"
+            },
+            {
+              "evidence_id": "source_contract",
+              "quote": "Normalization divides the trailing return by trailing daily-return SD times sqrt(lookback); this does not make an annual Sharpe ratio or remove systematic risk."
+            },
+            {
+              "evidence_id": "source_contract",
+              "quote": "Sample SD divides by n-1."
+            },
+            {
+              "evidence_id": "price_profile",
+              "quote": "0.01369940691247741"
+            },
+            {
+              "evidence_id": "price_profile",
+              "quote": "0.012486459027152721"
+            },
+            {
+              "evidence_id": "price_profile",
+              "quote": "0.01289591113463477"
+            },
+            {
+              "evidence_id": "data_quality",
+              "quote": "common_dates"
+            },
+            {
+              "evidence_id": "initial_inspection",
+              "quote": "Descriptive scores only. No forward labels, PnL, alpha, formal evaluation or proof that a revision is better."
+            }
+          ],
+          "decisions": [
+            {
+              "disposition": "adopt",
+              "finding_id": "b65bfae81a51eddbf38f8cf45569411638bf13c9e4a8fd2529b74e806ba34490",
+              "reason": "Coverage is confirmed clean and balanced (177 rows, 59 per symbol, common dates equal union), so per-symbol computation over observed dates needs no change; the revision keeps the same coverage assumptions."
+            },
+            {
+              "disposition": "adopt",
+              "finding_id": "2fb47b138f386203976107fc9d0df28bc774d72eb2cd0bbe9f27fb6f5e86ae36",
+              "reason": "Cross-sectional use must rely on scale-free quantities; the revision stays level-invariant and adds volatility scaling per the source contract's stated normalization definition, preserving dimensionlessness."
+            },
+            {
+              "disposition": "adopt",
+              "finding_id": "779fe01f31e7733c93a46afc7d76b22f1a6f13cf6b7767ecaeef75430d7424a8",
+              "reason": "This finding directly motivates the sole change: moving normalization from none to realized_volatility with volatility_window 5 to reduce cross-symbol dispersion mismatch. It is explicitly a hypothesis to reduce the mismatch, not a proven improvement and not removal of systematic risk."
+            },
+            {
+              "disposition": "adopt",
+              "finding_id": "ca70e25ffa9e716bffdbd703359bd8f03f1424e361c4711d66359eb4b0499161",
+              "reason": "Accepted as stated: direction=1 and predictive usefulness remain unproven hypotheses; the revision makes no alpha, tradability, suspension or corporate-action claims, and retains the availability/execution rules unchanged."
+            }
+          ],
+          "definition": {
+            "availability_rule": "Use only observed closes at or before signal close t. Current historical download is not a vintage archive.",
+            "execution_rule": "No earlier than next observed close after t; last-row signal has no execution observation. No tradability or performance claim.",
+            "expression": "1 * (close[t]/close[t-5] - 1) / (sample_sd(last 5 one-observation simple returns) * sqrt(5))",
+            "hypothesis": "A 5-day trailing close return, divided by trailing daily-return SD times sqrt(lookback) per the source contract, produces per-symbol scores with comparable dispersion, making the momentum candidate dimensionally coherent for cross-sectional use; predictive usefulness and the positive sign remain unproven.",
+            "input_units": "Unadjusted close in CNY/share; simple returns and final score dimensionless.",
+            "name": "Trailing close-return research candidate",
+            "signal_rule": "Signal after close t; require 6 trailing observations, positive volatility when normalized. No extra return-magnitude eligibility exclusion.",
+            "universe": "600000.XSHG, 600519.XSHG, 000651.XSHE; fixed convenience sample, not a point-in-time universe."
+          },
+          "hypothesis": "A 5-day trailing close return, divided by trailing daily-return SD times sqrt(lookback) per the source contract, produces per-symbol scores with comparable dispersion, making the momentum candidate dimensionally coherent for cross-sectional use; predictive usefulness and the positive sign remain unproven.",
+          "inspection": {
+            "by_symbol": {
+              "000651.XSHE": {
+                "eligible_signals": 54,
+                "exclusions": {
+                  "insufficient_past_observations": 5
+                },
+                "maximum_absolute_score": 3.0670436492829465,
+                "mean_absolute_score": 0.798543773612632,
+                "mean_score": -0.12011100990580088,
+                "sample_sd_score": 1.0471100353804828,
+                "signals_with_next_observed_close": 53
+              },
+              "600000.XSHG": {
+                "eligible_signals": 54,
+                "exclusions": {
+                  "insufficient_past_observations": 5
+                },
+                "maximum_absolute_score": 3.021728679888376,
+                "mean_absolute_score": 0.8851802951856431,
+                "mean_score": 0.03174155954640895,
+                "sample_sd_score": 1.1640696702142734,
+                "signals_with_next_observed_close": 53
+              },
+              "600519.XSHG": {
+                "eligible_signals": 54,
+                "exclusions": {
+                  "insufficient_past_observations": 5
+                },
+                "maximum_absolute_score": 4.62815154508591,
+                "mean_absolute_score": 0.9168193136414104,
+                "mean_score": -0.05705204140656323,
+                "sample_sd_score": 1.2156434506827052,
+                "signals_with_next_observed_close": 53
+              }
+            },
+            "changed_score_or_eligibility_rows_from_initial": 162,
+            "limits": "Descriptive scores only. No forward labels, PnL, alpha, formal evaluation or proof that a revision is better. Sample SD uses n-1; windows use past observed rows, with no filling. Historical price jumps cannot identify corporate actions.",
+            "score_rows_sha256": "d86204ed69e1ff8d5e7edb288e4dd9aeac6fa454801135c014b8bb3b21778b7d"
+          },
+          "issue_resolutions": [],
+          "limitations": [
+            "Descriptive research on a frozen, non-vintage BaoStock download; no new data fetch, backtest, alpha or superiority claim.",
+            "The realized-volatility scaling produces an observed score-scale change (162 of 162 score rows changed, score_rows_sha256 d86204ed69e1ff8d5e7edb288e4dd9aeac6fa454801135c014b8bb3b21778b7d) but does not prove better predictive performance.",
+            "Direction (positive momentum) and the 5-day lookback remain untested hypotheses; no forward-return labels exist in the sources.",
+            "Observed union is not an exchange calendar; absences and close-only jumps cannot identify closures, suspensions or corporate actions, and no filling is performed.",
+            "Small fixed convenience sample of three symbols over 2026-08-03 to 2026-10-30; not a point-in-time universe; the revision does not remove systematic risk or create an annual Sharpe ratio.",
+            "Last-row signals have no execution observation; no tradability or performance claim is made."
+          ],
+          "parent_id": "79ec1407cb60b6e7a0c5f4034675784a654afb0c84662d1f23507db7e57aaec9",
+          "peer_finding_ids": [
+            "b65bfae81a51eddbf38f8cf45569411638bf13c9e4a8fd2529b74e806ba34490",
+            "2fb47b138f386203976107fc9d0df28bc774d72eb2cd0bbe9f27fb6f5e86ae36",
+            "779fe01f31e7733c93a46afc7d76b22f1a6f13cf6b7767ecaeef75430d7424a8"
+          ],
+          "rationale": "Reviewer finding 779fe01f31e7733c93a46afc7d76b22f1a6f13cf6b7767ecaeef75430d7424a8 (supported) showed the unnormalized 5-day scores are not dispersion-comparable across symbols (sample SD 0.031358036156655944 for 000651.XSHE vs 0.02601465514066781 for 600000.XSHG vs 0.025036106969249714 for 600519.XSHG). The only substantive, source-supported revision within the allowed schema is realized-volatility normalization; lookback, sign and eligibility are left unchanged because no evidence justifies altering them. The inspection of this exact spec (6cc214fddb2aea82452f4dfc1fff1df36f48e343ce2c3a87c9f73bd36ba008fb) shows the same eligibility structure (54 eligible signals per symbol, 53 with a next observed close, 5 insufficient-past exclusions) while changing all 162 score rows: sample SD of the normalized score becomes 1.0471100353804828 (000651.XSHE), 1.1640696702142734 (600000.XSHG) and 1.2156434506827052 (600519.XSHG). This is an observed score-scale change only; it does not demonstrate alpha, superiority, risk removal or corporate-action handling.",
+          "semantic_status": "pending independent audit; source citations alone do not prove interpretation",
+          "spec": {
+            "direction": 1,
+            "lookback": 5,
+            "max_absolute_daily_return": null,
+            "normalization": "realized_volatility",
+            "volatility_window": 5
+          }
+        },
+        "episode_sha256": "0ed03d2425aed07c02d29ef18e1f1a770fcf71b6c33cfc908b80364dd88142e8",
+        "id": "ab554ab11681862bd816613d473bbbf86aa7e6976a8ed6016aaab38f1cbc5f62",
+        "kind": "revision",
+        "previous": "931084e3f3af777695be5f122920460b16557148033b4d500100ff463f837e45",
+        "sequence": 15
+      }
+    ]
+  },
+  "budget_after": {
+    "billing_baseline": {
+      "actual": 20350000,
+      "at": "2026-11-12T07:05:53.036243+00:00",
+      "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35.",
+      "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+      "id": 1
+    },
+    "carry_micro_cny": 56256735,
+    "conservative_unreconciled_cumulative_micro_cny": 62559693,
+    "cumulative_micro_cny": 25824780,
+    "invoice_verified": false,
+    "new_settled_micro_cny": 6302958,
+    "provider_admission": {
+      "at": "2026-11-13T05:40:10.576685+00:00",
+      "authority": "Owner: Cancel the scheduled DeepSeek run. Continue development using GLM until usage is empty or I tell you to switch.",
+      "kind": "provider_admission",
+      "providers": [
+        "glm_coding"
+      ],
+      "revision": 2
+    },
+    "remaining_unreserved_micro_cny": 168932340,
+    "unresolved_micro_cny": 5242880
+  },
+  "budget_before": {
+    "billing_baseline": {
+      "actual": 20350000,
+      "at": "2026-11-12T07:05:53.036243+00:00",
+      "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35.",
+      "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+      "id": 1
+    },
+    "carry_micro_cny": 56256735,
+    "conservative_unreconciled_cumulative_micro_cny": 61892417,
+    "cumulative_micro_cny": 25157504,
+    "invoice_verified": false,
+    "new_settled_micro_cny": 5635682,
+    "provider_admission": {
+      "at": "2026-11-13T05:40:10.576685+00:00",
+      "authority": "Owner: Cancel the scheduled DeepSeek run. Continue development using GLM until usage is empty or I tell you to switch.",
+      "kind": "provider_admission",
+      "providers": [
+        "glm_coding"
+      ],
+      "revision": 2
+    },
+    "remaining_unreserved_micro_cny": 169599616,
+    "unresolved_micro_cny": 5242880
+  },
+  "budget_snapshot_note": "Global campaign snapshots at server launch and export; new requests from other episodes may appear in a later re-export snapshot.",
+  "exported_at": "2026-11-16T07:36:42.076637+00:00",
+  "mode": "live",
+  "model": {
+    "all_usage_settled": true,
+    "cache_reporting_note": "Explicit provider cache counters.",
+    "cache_tokens_reported_for_all_calls": true,
+    "conservative_settled_cny": 0.667276,
+    "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice.",
+    "cost_invoice_verified": false,
+    "funding": "coding_plan",
+    "input_cache_hit_ratio": 0.5411289902231621,
+    "peak_rolling_60s_completion_rpm": 4,
+    "peak_rolling_60s_completion_tpm": 97629,
+    "peak_rolling_60s_dispatch_rpm": 5,
+    "peak_rolling_60s_dispatch_tpm": 97629,
+    "published_price_estimate_cny": null,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "requests": 18,
+    "requests_with_known_usage": 18,
+    "subscription_credits_settled_upper_bound": 74.78542,
+    "subscription_credits_unresolved_reserved": 0.0,
+    "tokens": {
+      "input_cache_write": 0,
+      "input_cached": 145344,
+      "input_uncached": 123250,
+      "output": 16261
+    },
+    "total_tokens": 284855,
+    "unpriced_requests": 18,
+    "unresolved_reserved_cny": 0.0
+  },
+  "native_team_tasks": [
+    {
+      "blockedBy": [],
+      "description": "Inspect all frozen sources and the initial/current factor. Identify concrete source-supported constraints and separately label hypotheses. Submit up to four findings. No prescribed correction; do not invent missing data, trading results or corporate actions.",
+      "id": "task-1",
+      "ownerId": "qfh-case-70490018-7acc-4e2c-9db0-2e9eaa402383",
+      "ownerName": "reviewer-1",
+      "ready": false,
+      "revision": 3,
+      "status": "completed",
+      "subject": "reviewer-1: analyze",
+      "writeScopeWarnings": [],
+      "writeScopes": []
+    },
+    {
+      "blockedBy": [],
+      "description": "Use the recorded findings and the same full evidence to propose one defensible executable factor revision, or explicitly retain the factor if no change is supported. Inspect the chosen specification, cite exact evidence, dispose of every current finding and distinguish an observed score change from unproven improvement.",
+      "id": "task-2",
+      "ownerId": "qfh-case-a421ec01-82e4-4e9a-bad7-3f65e9702006",
+      "ownerName": "author-2",
+      "ready": false,
+      "revision": 3,
+      "status": "completed",
+      "subject": "author-2: design",
+      "writeScopeWarnings": [],
+      "writeScopes": []
+    },
+    {
+      "blockedBy": [],
+      "description": "Review the exact current complete artifact, its executable inspection, claims, rationale, decisions and limits against the frozen sources. Report remaining issues. No performance or causality claim follows from descriptive score differences.",
+      "id": "task-3",
+      "ownerId": "qfh-case-e1b5a840-a3c3-410c-bfb6-5d08772cc2c9",
+      "ownerName": "reviewer-3",
+      "ready": false,
+      "revision": 3,
+      "status": "completed",
+      "subject": "reviewer-3: review",
+      "writeScopeWarnings": [],
+      "writeScopes": []
+    }
+  ],
+  "package_id": "unseen-fixed-01",
+  "recorded_artifact_bytes": 7083279,
+  "resources": {
+    "activity_wall_seconds": 400.97551,
+    "activity_windows_utc": [
+      [
+        "2026-11-16T07:29:19.450076+00:00",
+        "2026-11-16T07:36:00.425586+00:00"
+      ]
+    ],
+    "cpu_sample_coverage_seconds": 399.5263769999999,
+    "host_available_ram_min_bytes": 11074338816,
+    "host_cpu_max_percent": 10.1,
+    "host_total_ram_bytes": 38654705664,
+    "measurement_errors": [],
+    "process_tree_mean_sampled_cpu_cores": 0.03082735615225727,
+    "process_tree_peak_rss_bytes": 640729088,
+    "process_tree_peak_sampled_cpu_cores": 0.08924637919528113,
+    "samples": 199,
+    "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+    "swap_peak_bytes": 0,
+    "work_volume_min_free_bytes": 361169637376
+  },
+  "source_files_verified": 118,
+  "status": "incomplete",
+  "tools_called": [
+    {
+      "actor": "supervisor",
+      "call_id": "43f663f9a9ee4e11bbf4397929c65f12",
+      "tool": "case_board"
+    },
+    {
+      "actor": "supervisor",
+      "call_id": "86284a729623415da58f480c284fe3dc",
+      "tool": "case_task"
+    },
+    {
+      "actor": "reviewer-1",
+      "call_id": "5fdc05c04cff4fa19a1d99fe09a76627",
+      "tool": "submit_case_findings"
+    },
+    {
+      "actor": "reviewer-1",
+      "call_id": "ba869f46541f47baada2d7618e7a3dc9",
+      "tool": "submit_case_findings"
+    },
+    {
+      "actor": "reviewer-1",
+      "call_id": "d640bba9af8f4cba9c2b9694de82e3e4",
+      "tool": "submit_case_findings"
+    },
+    {
+      "actor": "supervisor",
+      "call_id": "506bd48325ae49719c303e219cdb1d7f",
+      "tool": "case_task"
+    },
+    {
+      "actor": "author-2",
+      "call_id": "d4b3b3fb15544dd38101cb272a1045e0",
+      "tool": "inspect_case_factor"
+    },
+    {
+      "actor": "author-2",
+      "call_id": "9b11ffddb3a74a12b7445e9d86362aeb",
+      "tool": "revise_case_factor"
+    },
+    {
+      "actor": "author-2",
+      "call_id": "04b0501ed0e8434486b52e0f10a9c7bc",
+      "tool": "revise_case_factor"
+    },
+    {
+      "actor": "author-2",
+      "call_id": "09cf838c3fff473aaa5d867caa66ccd7",
+      "tool": "revise_case_factor"
+    },
+    {
+      "actor": "supervisor",
+      "call_id": "afe9eb7d36784598989b61579769794f",
+      "tool": "case_task"
+    },
+    {
+      "actor": "reviewer-3",
+      "call_id": "7e2be3bf78cd4284a42220bc3c185d3a",
+      "tool": "submit_case_findings"
+    },
+    {
+      "actor": "reviewer-3",
+      "call_id": "c69346a4587b4b3eb7fe2abb4346e994",
+      "tool": "review_case_factor"
+    },
+    {
+      "actor": "reviewer-3",
+      "call_id": "b7a1bc86f8944d80a343f28078a21012",
+      "tool": "review_case_factor"
+    }
+  ],
+  "wire_calls": [
+    {
+      "actor": "supervisor",
+      "charged": 3070,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:29:25.092821+00:00",
+      "id": "43f663f9a9ee4e11bbf4397929c65f12",
+      "started": "2026-11-16T07:29:19.450076+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 0,
+        "input_uncached": 1511,
+        "output": 6
+      }
+    },
+    {
+      "actor": "supervisor",
+      "charged": 17454,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:29:33.662182+00:00",
+      "id": "86284a729623415da58f480c284fe3dc",
+      "started": "2026-11-16T07:29:25.254897+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 1472,
+        "input_uncached": 6387,
+        "output": 217
+      }
+    },
+    {
+      "actor": "reviewer-1",
+      "charged": 26934,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:29:55.657421+00:00",
+      "id": "5fdc05c04cff4fa19a1d99fe09a76627",
+      "started": "2026-11-16T07:29:33.823222+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 0,
+        "input_uncached": 8731,
+        "output": 1184
+      }
+    },
+    {
+      "actor": "reviewer-1",
+      "charged": 28910,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:30:18.401087+00:00",
+      "id": "ba869f46541f47baada2d7618e7a3dc9",
+      "started": "2026-11-16T07:29:55.805407+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 640,
+        "input_uncached": 9295,
+        "output": 1130
+      }
+    },
+    {
+      "actor": "reviewer-1",
+      "charged": 33194,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:30:46.372872+00:00",
+      "id": "d640bba9af8f4cba9c2b9694de82e3e4",
+      "started": "2026-11-16T07:30:18.547779+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 9920,
+        "input_uncached": 1165,
+        "output": 1378
+      }
+    },
+    {
+      "actor": "reviewer-1",
+      "charged": 27620,
+      "finish_reason": "stop",
+      "finished": "2026-11-16T07:31:13.560600+00:00",
+      "id": "83142f3c6f32484d8cd98a3b8aed9c04",
+      "started": "2026-11-16T07:30:46.528410+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 11072,
+        "input_uncached": 1758,
+        "output": 245
+      }
+    },
+    {
+      "actor": "supervisor",
+      "charged": 26702,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:31:24.110079+00:00",
+      "id": "506bd48325ae49719c303e219cdb1d7f",
+      "started": "2026-11-16T07:31:13.709520+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 7808,
+        "input_uncached": 4087,
+        "output": 364
+      }
+    },
+    {
+      "actor": "author-2",
+      "charged": 23744,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:31:29.088936+00:00",
+      "id": "d4b3b3fb15544dd38101cb272a1045e0",
+      "started": "2026-11-16T07:31:24.275993+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 0,
+        "input_uncached": 11516,
+        "output": 89
+      }
+    },
+    {
+      "actor": "author-2",
+      "charged": 39250,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:32:07.634732+00:00",
+      "id": "9b11ffddb3a74a12b7445e9d86362aeb",
+      "started": "2026-11-16T07:31:29.242224+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 1280,
+        "input_uncached": 10869,
+        "output": 1869
+      }
+    },
+    {
+      "actor": "author-2",
+      "charged": 43132,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:32:37.658660+00:00",
+      "id": "04b0501ed0e8434486b52e0f10a9c7bc",
+      "started": "2026-11-16T07:32:07.790802+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 12096,
+        "input_uncached": 1942,
+        "output": 1882
+      }
+    },
+    {
+      "actor": "author-2",
+      "charged": 44358,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:33:00.780738+00:00",
+      "id": "09cf838c3fff473aaa5d867caa66ccd7",
+      "started": "2026-11-16T07:32:37.821891+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 14016,
+        "input_uncached": 1923,
+        "output": 1560
+      }
+    },
+    {
+      "actor": "author-2",
+      "charged": 41738,
+      "finish_reason": "stop",
+      "finished": "2026-11-16T07:33:09.491838+00:00",
+      "id": "6bc0d30994714e16b7c0ccafe7eec69c",
+      "started": "2026-11-16T07:33:00.936579+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 15936,
+        "input_uncached": 3917,
+        "output": 254
+      }
+    },
+    {
+      "actor": "supervisor",
+      "charged": 44624,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:33:20.259818+00:00",
+      "id": "afe9eb7d36784598989b61579769794f",
+      "started": "2026-11-16T07:33:09.645798+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 11840,
+        "input_uncached": 9232,
+        "output": 310
+      }
+    },
+    {
+      "actor": "reviewer-3",
+      "charged": 47846,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:34:47.663816+00:00",
+      "id": "7e2be3bf78cd4284a42220bc3c185d3a",
+      "started": "2026-11-16T07:33:20.431287+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 0,
+        "input_uncached": 16459,
+        "output": 1866
+      }
+    },
+    {
+      "actor": "reviewer-3",
+      "charged": 48592,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:35:09.530935+00:00",
+      "id": "c69346a4587b4b3eb7fe2abb4346e994",
+      "started": "2026-11-16T07:34:47.815637+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 0,
+        "input_uncached": 18340,
+        "output": 1489
+      }
+    },
+    {
+      "actor": "reviewer-3",
+      "charged": 52330,
+      "finish_reason": "tool_calls",
+      "finished": "2026-11-16T07:35:33.437414+00:00",
+      "id": "b7a1bc86f8944d80a343f28078a21012",
+      "started": "2026-11-16T07:35:09.675525+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 18304,
+        "input_uncached": 1601,
+        "output": 1565
+      }
+    },
+    {
+      "actor": "reviewer-3",
+      "charged": 48992,
+      "finish_reason": "stop",
+      "finished": "2026-11-16T07:35:45.478885+00:00",
+      "id": "5ee66a12c4784791972ec9618d3b9b4f",
+      "started": "2026-11-16T07:35:33.590247+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 19904,
+        "input_uncached": 3160,
+        "output": 358
+      }
+    },
+    {
+      "actor": "supervisor",
+      "charged": 68786,
+      "finish_reason": "stop",
+      "finished": "2026-11-16T07:36:00.425586+00:00",
+      "id": "84d4be12ac2c49788a86ad5b29e35d81",
+      "started": "2026-11-16T07:35:45.637139+00:00",
+      "tokens": {
+        "input_cache_write": 0,
+        "input_cached": 21056,
+        "input_uncached": 11357,
+        "output": 495
+      }
+    }
+  ],
+  "provenance": {
+    "original_export_sha256": "5570d132762dd790d4850cf3073fc1263e97b5625b5eeb0f92089d68a1c5f614",
+    "manifest_sha256": "02e37813a014bab8233741b4c44d7b5ac25ca78576dc5b573e21291e2eeca7c3",
+    "model": "glm-5.3-flash",
+    "route_id": "glm-coding-unseen-2026-11-16",
+    "public_projection_notes": [
+      "Public projection corrects an old generic Flash audit-label string; original private export and its hash are retained. Wire assertions checked the actual package model."
+    ]
+  },
+  "known_usage_only": {
+    "requests": 18,
+    "requests_with_known_usage": 18,
+    "all_usage_settled": true,
+    "tokens": {
+      "input_uncached": 123250,
+      "input_cached": 145344,
+      "input_cache_write": 0,
+      "output": 16261
+    },
+    "total_tokens": 284855,
+    "input_cache_hit_ratio": 0.5411289902231621,
+    "cache_tokens_reported_for_all_calls": true,
+    "cache_reporting_note": "Explicit provider cache counters.",
+    "peak_rolling_60s_dispatch_rpm": 5,
+    "peak_rolling_60s_completion_rpm": 4,
+    "peak_rolling_60s_dispatch_tpm": 97629,
+    "peak_rolling_60s_completion_tpm": 97629,
+    "conservative_settled_cny": 0.667276,
+    "unresolved_reserved_cny": 0.0,
+    "published_price_estimate_cny": null,
+    "unpriced_requests": 18,
+    "cost_invoice_verified": false,
+    "funding": "coding_plan",
+    "subscription_credits_settled_upper_bound": 74.78542,
+    "subscription_credits_unresolved_reserved": 0.0,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice."
+  }
+}

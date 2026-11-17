@@ -1,0 +1,1011 @@
+{
+  "trial_id": "session-2e6e3c32-921f-4b1c-a416-342068b93c8e",
+  "mode": "live_DeepSeek_with_BaoStock",
+  "status": "pass",
+  "checks": {
+    "execution_mode_matches_manifests": true,
+    "exactly_three_roles": true,
+    "both_workers_valid": true,
+    "draft_recorded": true,
+    "all_model_usage_settled": true,
+    "both_workers_fetched_evidence": true,
+    "no_tool_failures": true,
+    "source_baostock_only": true,
+    "within_original_budget": true,
+    "authorized_dispatch_windows": true,
+    "resource_samples_required_for_live": true,
+    "raw_data_transport_required_for_live": true
+  },
+  "started_utc": "2026-11-12T13:29:22.001346+00:00",
+  "finished_utc": "2026-11-12T13:31:49.518067+00:00",
+  "wall_seconds": 147.516721,
+  "model_usage": {
+    "provider": "deepseek",
+    "configured_model": "deepseek-flash",
+    "requests": 16,
+    "requests_with_known_usage": 16,
+    "all_usage_settled": true,
+    "tokens": {
+      "input_uncached": 32217,
+      "input_cached": 105216,
+      "input_cache_write": 0,
+      "output": 19116
+    },
+    "total_tokens": 156549,
+    "input_cache_hit_ratio": 0.765580319137325,
+    "peak_rolling_60s_dispatch_rpm": 11,
+    "peak_rolling_60s_completion_rpm": 10,
+    "peak_rolling_60s_dispatch_tpm": 76963,
+    "peak_rolling_60s_completion_tpm": 90347,
+    "conservative_settled_cny": 0.427794,
+    "unresolved_reserved_cny": 0.0,
+    "published_price_estimate_cny": 0.11078532,
+    "unpriced_requests": 0,
+    "cost_invoice_verified": false,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "cost_basis": "Actual provider token counts at published off-peak rates; estimate, not invoice. The separate conservative amount remains the budget debit.",
+    "pricing": {
+      "id": "deepseek-flash-cn-offpeak-2026-11-12",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "documented_alias_target": "DeepSeek-V4.1-Flash-1017",
+      "source_url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+      "verified_on_utc": "2026-11-12",
+      "currency": "CNY",
+      "tokens_per_price_unit": 1000000,
+      "offpeak_per_million": {
+        "input_uncached": "1",
+        "input_cached": "0.02",
+        "output": "4"
+      },
+      "timezone": "Asia/Shanghai",
+      "possible_peak_hours": [
+        [
+          9,
+          12
+        ],
+        [
+          14,
+          18
+        ]
+      ],
+      "billing_observation": {
+        "endpoint": "https://api.deepseek.com/user/balance",
+        "documentation": "https://api-docs.deepseek.com/zh-cn/api/get-user-balance/",
+        "timeout_seconds": 15,
+        "max_response_bytes": 65536
+      },
+      "limitations": [
+        "Computed from measured token counts and published rates, not a provider invoice.",
+        "Alias documentation is not independent verification of the served model version.",
+        "Nonzero cache-creation tokens or incomplete usage leave the call unpriced.",
+        "An interval crossing possible peak hours is unpriced instead of guessing tariff timing."
+      ]
+    },
+    "pricing_sha256": "464cfc0c359d9cdf523faa706a90ca53ead7c402e025dc42e06a238f8cd278fa"
+  },
+  "accounting": {
+    "trial_conservative_cny": 0.427794,
+    "campaign": {
+      "carry_micro_cny": 56256735,
+      "new_settled_micro_cny": 1731422,
+      "unresolved_micro_cny": 0,
+      "cumulative_micro_cny": 21253244,
+      "conservative_unreconciled_cumulative_micro_cny": 57988157,
+      "remaining_unreserved_micro_cny": 178746756,
+      "invoice_verified": false,
+      "billing_baseline": {
+        "id": 1,
+        "at": "2026-11-12T07:05:53.036243+00:00",
+        "actual": 20350000,
+        "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+        "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+      }
+    },
+    "basis": "Owner-reported official baseline + subsequent conservative charges. Original ceiling unchanged.",
+    "balance_observations": {
+      "read_requests": 2,
+      "statuses": [
+        "success",
+        "success"
+      ],
+      "inference_requests": 0,
+      "account_balance_decrease_by_currency": {
+        "CNY": "0.01",
+        "USD": "0.00"
+      },
+      "scope": "Account-level observation across the trial, not an invoice or per-agent charge. Other account activity, credits or delayed billing can affect it. Absolute balances remain in private snapshots; the ledger is unchanged."
+    }
+  },
+  "resources": {
+    "activity_windows_utc": [
+      [
+        "2026-11-12T13:29:22.001346+00:00",
+        "2026-11-12T13:31:49.518067+00:00"
+      ]
+    ],
+    "activity_wall_seconds": 147.516721,
+    "samples": 73,
+    "process_tree_peak_rss_bytes": 626802688,
+    "process_tree_peak_sampled_cpu_cores": 0.1491489073928289,
+    "process_tree_mean_sampled_cpu_cores": 0.061038493158336295,
+    "cpu_sample_coverage_seconds": 145.69950199999997,
+    "host_cpu_max_percent": 9.7,
+    "swap_peak_bytes": 0,
+    "host_total_ram_bytes": 38654705664,
+    "host_available_ram_min_bytes": 12248809472,
+    "work_volume_min_free_bytes": 361491402752,
+    "measurement_errors": [],
+    "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured.",
+    "frozen_evidence_bytes": 6657105,
+    "trial_wire_bytes": 5694126,
+    "native_session_archive_bytes": 160887,
+    "disk_footprint_scope": "File lengths, not allocated filesystem blocks. Frozen evidence includes shared ledger snapshots and overlapping server logs; wire and session archives are trial-specific."
+  },
+  "data": {
+    "query": {
+      "symbols": [
+        "000001.XSHE"
+      ],
+      "start": "2026-10-19",
+      "end": "2026-10-30"
+    },
+    "requests_during_trial": [],
+    "tool_fetches": 3,
+    "exact_cache_hits": 3,
+    "evidence_ids": [
+      "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108"
+    ]
+  },
+  "roles": {
+    "researcher": {
+      "session_id": "qfh-3a21090c1d43417381c19cef645c8265",
+      "report_state": "completed",
+      "admission_state": "completed",
+      "provider_requests": 4,
+      "conservative_cny": 0.07958,
+      "requests": 4,
+      "requests_with_known_usage": 4,
+      "all_usage_settled": true,
+      "tokens": {
+        "input_uncached": 6414,
+        "input_cached": 17024,
+        "input_cache_write": 0,
+        "output": 4088
+      },
+      "total_tokens": 27526,
+      "input_cache_hit_ratio": 0.7263418380407884,
+      "peak_rolling_60s_dispatch_rpm": 4,
+      "peak_rolling_60s_completion_rpm": 4,
+      "peak_rolling_60s_dispatch_tpm": 27526,
+      "peak_rolling_60s_completion_tpm": 27526,
+      "conservative_settled_cny": 0.07958,
+      "unresolved_reserved_cny": 0.0,
+      "published_price_estimate_cny": 0.02310648,
+      "unpriced_requests": 0,
+      "cost_invoice_verified": false,
+      "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+      "cost_basis": "Actual provider token counts at published off-peak rates; estimate, not invoice. The separate conservative amount remains the budget debit.",
+      "work": {
+        "model_authored_report": {
+          "summary": "This is a bounded, post-observation look at the permitted sample: unadjusted daily closes for a single China A-share symbol over a short calendar window, fetched exactly once with no widening or re-fetch. The rows came back as a complete, gap-free run of trading sessions, and all arithmetic below is the host's deterministic measurement over those closes rather than anything I computed by hand. The observation layer shows a mild downward drift across the window, a slight excess of down days over up days, and daily dispersion noticeably wider than either central moment; the sample-level net return is a small negative fraction. Critically, the host reports fewer fully labelled cases than raw signals at the shortest execution lag, and fewer still at the longer lookback lag, so the usable paired observations for any conditional claim are very thin. I therefore propose a simple, falsifiable short-horizon mean-reversion idea stated purely in closes: a recent adverse close-to-close move is followed by a higher-than-baseline return over the following execution-to-label span. The formula is symbolic only, with parameters left free; no observed values are embedded in it. The idea was formulated after I saw these rows, so it is not preregistered, not an evaluation, not alpha, and not a strategy backtest; the measurement layer computes no profit or loss. The evidence hash cited here is the same hash that will be shared with the reviewer, who can read the identical rows and the identical measurement. Any apparent fit inside this window should be treated as in-sample noise until confirmed on a long out-of-sample span and a broad cross-section.",
+          "findings": [
+            "The single permitted fetch returned a complete, uninterrupted block of daily bars for a single symbol across the whole assigned window, so no session in the returned rows is missing and no imputation was needed.",
+            "Over the full window the host-reported net return is a small negative fraction, and the reported closes drift from a higher early level to a lower minimum before partially recovering near the sample end.",
+            "Realised daily returns are nearly balanced by sign, with a slight excess of down days over up days; the mean and median daily return are both marginally negative while the sample standard deviation is far wider than either central moment.",
+            "At the shortest execution lag the host aligns fewer fully labelled cases than the number of signals it reports, so a meaningful share of candidate signals cannot be matched to a subsequent realised return.",
+            "At the longer lookback lag the count of usable labelled cases shrinks further, so any conditional comparison at that horizon rests on only a handful of paired observations.",
+            "The evidence hash from my fetch is the same hash that will be shared with the reviewer, so the reviewer can re-read the identical rows and reference the identical measurement identifier.",
+            "The measurement layer reports only observation arithmetic: it computes no strategy profit or loss, no evaluation statistic and no gate result, and none is claimed here.",
+            "Separation of concerns: the downward drift and sign imbalance above are observations about this window only; the reversal hypothesis below is a hypothesis that this window cannot support or refute on its own."
+          ],
+          "proposed_formula": "signal_t = 1[ close_t / close_{t-k} - 1 < -theta ]; label_t = close_{t+1+h} / close_{t+1} - 1; hypothesis: mean(label_t | signal_t = 1) - mean(label_t | signal_t = 0) > delta, with parameters k=1, h=1, theta=0, delta=0; disconfirmed if the conditional difference is less than or equal to delta on out-of-sample data",
+          "recommended_changes": [
+            "Re-test the identical formula, with parameters frozen in advance, on a long out-of-sample span and a broad cross-section of symbols before drawing any conclusion.",
+            "Add a no-signal baseline and a label-shuffling control so that any conditional difference can be compared against what chance alone produces at this sample size.",
+            "Move to adjusted closes, or explicitly flag corporate actions, when the window is widened so that close-to-close differences are not contaminated.",
+            "Report the count of aligned labelled cases next to every conditional mean, so that thin support is visible rather than hidden behind a point estimate.",
+            "Fix the lag and lookback parameters before the confirmatory run and record them, so the out-of-sample test is genuinely confirmatory rather than exploratory.",
+            "Where availability timing could matter, prefer an explicitly point-in-time data source over a current download of historical daily bars.",
+            "State the falsification threshold and the sample boundaries in advance of the next run, so a failed test cannot be reinterpreted after the fact."
+          ],
+          "limitations": [
+            "The sample is a single symbol over a short window, so there is no cross-sectional variation and nothing here can distinguish symbol-specific behaviour from generic behaviour.",
+            "There are very few usable return observations; conditional means computed from so few cases are dominated by in-sample noise and carry no meaningful precision.",
+            "Alignment at the shortest lag leaves only a handful of fully labelled cases, and at the longer lookback lag fewer still, so paired comparisons are extremely thin.",
+            "The series is unadjusted, so any corporate action falling inside the window would distort close-to-close differences even though none was flagged for these rows.",
+            "The data are a current download of historical daily closes rather than a vintage archive, so the rows reflect what the provider serves now, not necessarily what was knowable in real time, and no universe or survivorship checks were possible.",
+            "Exchange-calendar completeness is unverified by the host; the alignment counts returned observations only and does not confirm that every scheduled session is present.",
+            "No volume, intraday, news or fundamental data are in scope, so any mechanism behind an apparent pattern cannot be tested or distinguished here.",
+            "The proposal was formulated after inspecting these rows, so it is not preregistered and its apparent fit inside this window is not evidence in its favour."
+          ],
+          "measurement_refs": [
+            {
+              "keys": [
+                "sample.observations",
+                "sample.first_date",
+                "sample.last_date",
+                "sample.net_return",
+                "sample.minimum_close",
+                "sample.maximum_close",
+                "returns.count",
+                "returns.mean",
+                "returns.median",
+                "returns.positive_count",
+                "returns.negative_count",
+                "returns.sample_stdev",
+                "lag.1.signal_count",
+                "lag.1.aligned_case_count",
+                "lag.1.first_signal_date",
+                "lag.5.signal_count",
+                "lag.5.aligned_case_count"
+              ],
+              "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf"
+            }
+          ]
+        },
+        "verified_measurements": [
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.observations",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "10"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.first_date",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "date",
+            "value": "2026-10-19"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.last_date",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "date",
+            "value": "2026-10-30"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.net_return",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "-0.0008583690987124463519313305"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.minimum_close",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "price",
+            "value": "11.2"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.maximum_close",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "price",
+            "value": "11.65"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "9"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.mean",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "-0.00001260769661609466952994255556"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.median",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "-0.0026223776223776223776223776"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.positive_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "4"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.negative_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "5"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.sample_stdev",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "0.01365805220955669229204526674"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.1.signal_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "9"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.1.aligned_case_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "7"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.1.first_signal_date",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "date",
+            "value": "2026-10-20"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.5.signal_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "5"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.5.aligned_case_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "3"
+          }
+        ],
+        "successful_tool_operations": {
+          "data:bars": 1,
+          "metrics": 1,
+          "submit_report": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 0,
+        "report_submission_rejections": 0,
+        "evidence_fetches": [
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "cache_reused": true,
+            "row_count": 10
+          }
+        ],
+        "contribution_decisions": [
+          {
+            "worker": "researcher",
+            "adopted": false,
+            "reason": "Partially adopted and partly superseded. Its structural core is sound and is kept verbatim in spirit: the signal is a function of closes only and computable at the signal close, execution is the next close, and the label ends strictly later, so no label uses information available at or before the signal close. Its provenance is also clean - the worker fetched the fixed sample once, called research_metrics, and cited the same evidence hash I verified against my own read of the permitted bars. The proposal itself is not adopted as stated, for reasons the reviewer independently reproduced. A zero threshold with a strict inequality is not tie-invariant: flat days fall into the baseline bucket, which does not bite in this window only because no daily return was exactly flat, so the split would silently shrink in a window containing one. At the proposed parameters the signal reduces to the sign of the trailing close-to-close move, which turns a conditional contrast into an exhaustive down-day versus up-day comparison over very few, unbalanced, time-overlapping cases, and the fully labelled count is smaller than the signal count at both examined lags. The stated disconfirmation rule - a bare conditional difference against a zero margin, with no test statistic, no pre-specified level, no minimum bucket size and no treatment of overlapping labels - is falsifiable only in a bookkeeping sense and cannot separate the hypothesis from noise at this sample size. The worker was appropriately candid about single-symbol breadth, in-sample formulation, unadjusted closes, thin alignment and the absence of any backtest or evaluation, so those parts of its framing carry forward."
+          }
+        ],
+        "draft_recorded": false
+      },
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-12T13:29:36.469194+00:00",
+            "2026-11-12T13:30:09.343831+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 32.874637,
+        "samples": 16,
+        "process_tree_peak_rss_bytes": 595918848,
+        "process_tree_peak_sampled_cpu_cores": 0.08679426501782708,
+        "process_tree_mean_sampled_cpu_cores": 0.06386178947113483,
+        "cpu_sample_coverage_seconds": 30.347905000000004,
+        "host_cpu_max_percent": 9.2,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 12353519616,
+        "work_volume_min_free_bytes": 361496068096,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 1186055,
+      "native_session_archive_bytes": 31477
+    },
+    "reviewer": {
+      "session_id": "qfh-c1db43a3eb22474d9fecc95cb5e77748",
+      "report_state": "completed",
+      "admission_state": "completed",
+      "provider_requests": 5,
+      "conservative_cny": 0.16307,
+      "requests": 5,
+      "requests_with_known_usage": 5,
+      "all_usage_settled": true,
+      "tokens": {
+        "input_uncached": 5407,
+        "input_cached": 38272,
+        "input_cache_write": 0,
+        "output": 9464
+      },
+      "total_tokens": 53143,
+      "input_cache_hit_ratio": 0.8762105359554935,
+      "peak_rolling_60s_dispatch_rpm": 4,
+      "peak_rolling_60s_completion_rpm": 4,
+      "peak_rolling_60s_dispatch_tpm": 49474,
+      "peak_rolling_60s_completion_tpm": 45044,
+      "conservative_settled_cny": 0.16307,
+      "unresolved_reserved_cny": 0.0,
+      "published_price_estimate_cny": 0.04402844,
+      "unpriced_requests": 0,
+      "cost_invoice_verified": false,
+      "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+      "cost_basis": "Actual provider token counts at published off-peak rates; estimate, not invoice. The separate conservative amount remains the budget debit.",
+      "work": {
+        "model_authored_report": {
+          "summary": "Independent reviewer pass on the proposed short-horizon mean-reversion contrast. I re-fetched the fixed sample myself with a single call and obtained an evidence hash identical to the one supplied by the researcher, then ran research_metrics on my own returned evidence and reproduced the researcher's measurement id exactly. The arithmetic layer is therefore reproducible and the disagreement below is about specification, not provenance. Structurally the proposal is sound where it matters most: the signal is a function of closes only and computable at the signal close, and the label is measured from the following close, which is the execution point, to a later close, so no label value uses information available at or before the signal close. The measured alignment supports this, since every fully labelled case has both execution and label dates strictly after its own signal date, and it simultaneously shows the most recent candidate signals carry no execution date or no label date, so fully labelled cases are strictly fewer than signal candidates at both examined lags and remain very few in absolute terms. That is where the proposal breaks down. At the proposed parameters the signal is nothing more than the sign of the trailing close-to-close move, so the conditional split exhausts the labelable window into two small, unbalanced buckets whose labels overlap in time; the conditional-mean difference is arithmetically defined but carries almost no independent information, and the host facts for this round supply lookback returns and alignment rather than the forward label returns themselves, so the conditional means cannot be cited from measured evidence at all. The zero threshold with a strict inequality is also not tie-invariant: exactly flat days are routed into the baseline bucket, which happens not to bite in this window because no daily return was exactly flat, but would silently shrink the signal bucket in a window that contained one. The disconfirmation rule is only nominally falsifiable: a point-estimate comparison against a zero margin, with no test statistic, no pre-specified level and no minimum bucket size, cannot separate the hypothesis from sampling noise on a sample this small. Feasibility is otherwise acceptable, since unadjusted closes alone are sufficient, but corporate-action ex-dates are not flagged in the payload and exchange-calendar completeness is unverified, so the assumed next-trading-day alignment is an assumption rather than a measured fact. Finally the framing needs correction: the retrieval happened after the window closed, so this is post-observation exploration and cannot be presented as preregistered, and the observed sign imbalance and small negative drift are descriptions of a single symbol over a short window that cannot support a general mean-reversion claim. Verdict: do not keep the formula as proposed. Keep the closes-only signal, the next-close execution and the strictly-later label, and replace the threshold, the estimator and the decision rule before any out-of-sample attempt.",
+          "findings": [
+            "Independent reproduction: my own fetch of the fixed scope returned an evidence hash identical to the researcher's, and research_metrics on that evidence returned the same measurement id, so the numbers under discussion are the same measured object rather than two independent computations.",
+            "Arithmetic structure is correct on the point that matters: the signal is a function of closes only and computable at the signal close, and the label is defined from the following close as the execution point to a later close, so no label uses information available at or before the signal close.",
+            "Measured alignment confirms the intended sequencing for every fully labelled case: execution date and label end date both fall strictly after the corresponding signal date, and the lookback start date falls before it, so formation and outcome windows do not overlap at the signal close.",
+            "Measured alignment also documents label attrition: the most recent candidate signals have no execution date or no label end date, so the aligned-case count is strictly below the signal-candidate count at both examined lags, leaving only very few fully labelled cases in this window.",
+            "Degenerate threshold: with a zero threshold and a strict inequality, exactly flat days are assigned to the non-signal bucket. The zero-return count is nil in this window so nothing was silently dropped here, but the rule is not tie-invariant and would silently shrink the signal bucket in a window containing a flat day.",
+            "Undefined and near-empty bucket risk: the conditional mean difference requires both buckets to be non-empty, which holds here only nominally, because a zero threshold makes the split an exhaustive down-day versus up-day contrast over a handful of unbalanced, overlapping cases rather than a tail-based signal.",
+            "The disconfirmation rule is not well posed: a conditional difference compared against a zero margin, with no test statistic, no pre-specified significance level, no minimum bucket size and no accommodation of overlapping labels, is falsifiable only in a bookkeeping sense and cannot distinguish the hypothesis from noise at this sample size.",
+            "Framing and scope: the proposal is post-observation, since retrieval occurred after the window closed, and its motivating observations are a sign imbalance and a small negative drift for a single symbol over a short window that cannot carry a general mean-reversion hypothesis. Feasibility is otherwise fine, because unadjusted closes alone suffice, but dividend and split ex-dates are unflagged in the payload and exchange-calendar completeness is unverified, so lags count returned rows rather than confirmed trading days."
+          ],
+          "proposed_formula": "signal_t = 1[ r_t^(k) < T_t ], with r_t^(k) = close_t / close_{t-k} - 1 (closes only, known at close_t) and T_t a pre-specified threshold: either a rolling quantile of past r^(k) computed from data up to and including close_t, or a fixed economically motivated move (k = 1, theta > 0, or theta = 0 only if flat days r_t^(k) = 0 are explicitly assigned to the non-signal bucket and that count is reported). Label unchanged: label_t = close_{t+1+h} / close_{t+1} - 1 with h >= 1, so execution at the next close and the label window strictly later; candidates lacking a label end date are dropped. Statistic D = mean(label_t | signal_t = 1) - mean(label_t | signal_t = 0), tested with a pre-specified permutation or Welch-type test at level alpha, requiring each bucket count >= n_min, and with overlapping labels handled by disjoint windows or block resampling. Hypothesis: D > delta with delta set strictly above round-trip transaction cost; disconfirmed if the pre-specified test fails to reject D <= delta on data never inspected during formation, on a pre-registered symbol set and window.",
+          "recommended_changes": [
+            "Do not keep the formula as proposed. Retain only its structural core, namely a closes-only signal evaluated at the signal close, execution at the next close, and a label ending strictly later, and replace the threshold, the estimator and the decision rule.",
+            "Replace the zero, strict-inequality threshold with a pre-specified threshold that is either a rolling quantile estimated only from data up to the signal close or a fixed economically motivated move, and state explicitly how flat days are assigned so the split is invariant to a moved inequality.",
+            "Replace the bare conditional-mean difference with a stated test statistic, such as a permutation or Welch-type test, at a pre-specified level, together with pre-set minimum bucket sizes, and handle overlapping labels by using disjoint label windows or block resampling.",
+            "Set the effect margin strictly above round-trip transaction cost under a stated per-case cost model, because a zero margin cannot separate an economically meaningful effect from either noise or cost drag.",
+            "Make label attrition an explicit part of the rule: drop trailing signal candidates that lack an execution date or a label end date, report how many fully labelled cases survive, and refuse to compute the statistic when either bucket falls below the pre-set minimum.",
+            "Use corporate-action-adjusted closes, or verify and exclude ex-dates, before relying on close-to-close returns, and verify exchange-calendar alignment rather than inferring trading days from counted rows.",
+            "For a valid out-of-sample test: pre-register parameters, symbol set, window and decision rule, treat the current window as formation-only, and evaluate on different symbols and a different, longer window that was never inspected during formation.",
+            "Label the idea explicitly as post-observation, hypothesis-generating exploration and withdraw any reversion or drift framing that rest on this single symbol's observed sign imbalance."
+          ],
+          "limitations": [
+            "Single symbol and a single short window: there is no cross-sectional breadth and no second window, so nothing here generalises beyond the observed rows.",
+            "The provider is a current download of historical data and not a vintage archive, so no revision history exists and the closes are not guaranteed to match what was observable in real time.",
+            "Exchange-calendar completeness is unverified and reported lags count returned observations, so a holiday or trading suspension inside the window would break the assumed next-trading-day alignment.",
+            "Only unadjusted closes are supplied, with no dividend or split flags in the payload, so corporate-action contamination of close-to-close returns cannot be excluded.",
+            "The host facts for this round carry lookback returns, sign counts and alignment metadata but not the forward label returns themselves, so the researcher's conditional means and its conditional difference cannot be cited from measured facts at all.",
+            "No transaction costs, liquidity, slippage or capacity modelling was performed, and no strategy evaluation, backtest or gate result is claimed here.",
+            "Overlapping consecutive labels make conventional dispersion-based standard errors invalid, so even a correctly computed contrast would need resampling to state uncertainty.",
+            "This review runs once within a bounded round and is itself post-hoc, so no further independent replication of my check was budgeted."
+          ],
+          "measurement_refs": [
+            {
+              "keys": [
+                "sample.observations",
+                "returns.count",
+                "returns.negative_count",
+                "returns.positive_count",
+                "returns.zero_count",
+                "returns.mean",
+                "returns.sample_stdev",
+                "lag.1.signal_count",
+                "lag.1.aligned_case_count",
+                "lag.5.signal_count",
+                "lag.5.aligned_case_count"
+              ],
+              "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf"
+            }
+          ]
+        },
+        "verified_measurements": [
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "sample.observations",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "10"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "9"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.negative_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "5"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.positive_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "4"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.zero_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "0"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.mean",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "-0.00001260769661609466952994255556"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "returns.sample_stdev",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "return_fraction",
+            "value": "0.01365805220955669229204526674"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.1.signal_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "9"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.1.aligned_case_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "7"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.5.signal_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "5"
+          },
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "key": "lag.5.aligned_case_count",
+            "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+            "unit": "count",
+            "value": "3"
+          }
+        ],
+        "successful_tool_operations": {
+          "data:bars": 1,
+          "metrics": 1,
+          "submit_report": 2
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 0,
+        "report_submission_rejections": 1,
+        "evidence_fetches": [
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "cache_reused": true,
+            "row_count": 10
+          }
+        ],
+        "contribution_decisions": [
+          {
+            "worker": "reviewer",
+            "adopted": true,
+            "reason": "Adopted for the formula's specification, the falsifiability rule and the measurement discipline. The reviewer independently fetched the same scope, obtained the identical evidence hash, ran research_metrics on its own returned evidence, and reproduced the researcher's measurement identifier, so its verdict rests on the same measured object rather than a hand recomputation; it then cited specific alignment and count facts for every structural claim and correctly noted that the forward label returns themselves are not among the host-measured facts, which is why the conditional means were never claimed as measured. Its corrections are the ones incorporated above: replace the degenerate zero threshold with a pre-specified fixed or rolling-quantile threshold and state flat-day assignment explicitly, require minimum bucket sizes so the contrast is never computed on an undefined or single-case bucket, name a test statistic and level, handle overlapping labels by disjoint windows or block resampling, set the effect margin above round-trip cost, and refuse to compute the statistic when attrition leaves too few fully labelled cases. Its out-of-sample requirement - frozen parameters, a pre-registered symbol set and an uninspected window, with this window treated as formation-only - is accepted as the only route to a real test, and its caution about unflagged corporate actions and unverified exchange-calendar completeness is retained as a stated limitation rather than waved off. Where the two workers agree - correct sequencing, thin labelled support, nil zero-return handling in this window, post-observation status, closes-only feasibility - I record agreement rather than a conflict; the only substantive disagreement is whether the researcher's threshold and decision rule can stand, and the reviewer's position prevails because the tie-invariance and underpowering arguments follow directly from the measured counts."
+          }
+        ],
+        "draft_recorded": false
+      },
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-12T13:30:19.397402+00:00",
+            "2026-11-12T13:31:25.318557+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 65.921155,
+        "samples": 33,
+        "process_tree_peak_rss_bytes": 612089856,
+        "process_tree_peak_sampled_cpu_cores": 0.10917333500122353,
+        "process_tree_mean_sampled_cpu_cores": 0.060935378641599036,
+        "cpu_sample_coverage_seconds": 64.79179800000001,
+        "host_cpu_max_percent": 9.7,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 12248809472,
+        "work_volume_min_free_bytes": 361492533248,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 2741280,
+      "native_session_archive_bytes": 56614
+    },
+    "supervisor": {
+      "session_id": "session-2e6e3c32-921f-4b1c-a416-342068b93c8e",
+      "report_state": "draft_recorded",
+      "admission_state": "active",
+      "provider_requests": 7,
+      "conservative_cny": 0.185144,
+      "requests": 7,
+      "requests_with_known_usage": 7,
+      "all_usage_settled": true,
+      "tokens": {
+        "input_uncached": 20396,
+        "input_cached": 49920,
+        "input_cache_write": 0,
+        "output": 5564
+      },
+      "total_tokens": 75880,
+      "input_cache_hit_ratio": 0.7099379941976222,
+      "peak_rolling_60s_dispatch_rpm": 5,
+      "peak_rolling_60s_completion_rpm": 5,
+      "peak_rolling_60s_dispatch_tpm": 45303,
+      "peak_rolling_60s_completion_tpm": 45303,
+      "conservative_settled_cny": 0.185144,
+      "unresolved_reserved_cny": 0.0,
+      "published_price_estimate_cny": 0.0436504,
+      "unpriced_requests": 0,
+      "cost_invoice_verified": false,
+      "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+      "cost_basis": "Actual provider token counts at published off-peak rates; estimate, not invoice. The separate conservative amount remains the budget debit.",
+      "work": {
+        "model_authored_report": null,
+        "verified_measurements": [],
+        "successful_tool_operations": {
+          "scope": 1,
+          "data:bars": 1,
+          "metrics": 1,
+          "begin_worker": 2,
+          "finish_worker": 2,
+          "draft": 1
+        },
+        "operation_count_scope": "Backend operations include host-side lifecycle bookkeeping.",
+        "failed_tool_operations": 0,
+        "report_submission_rejections": 0,
+        "evidence_fetches": [
+          {
+            "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+            "cache_reused": true,
+            "row_count": 10
+          }
+        ],
+        "contribution_decisions": [
+          {
+            "worker": "researcher",
+            "adopted": false,
+            "reason": "Partially adopted and partly superseded. Its structural core is sound and is kept verbatim in spirit: the signal is a function of closes only and computable at the signal close, execution is the next close, and the label ends strictly later, so no label uses information available at or before the signal close. Its provenance is also clean - the worker fetched the fixed sample once, called research_metrics, and cited the same evidence hash I verified against my own read of the permitted bars. The proposal itself is not adopted as stated, for reasons the reviewer independently reproduced. A zero threshold with a strict inequality is not tie-invariant: flat days fall into the baseline bucket, which does not bite in this window only because no daily return was exactly flat, so the split would silently shrink in a window containing one. At the proposed parameters the signal reduces to the sign of the trailing close-to-close move, which turns a conditional contrast into an exhaustive down-day versus up-day comparison over very few, unbalanced, time-overlapping cases, and the fully labelled count is smaller than the signal count at both examined lags. The stated disconfirmation rule - a bare conditional difference against a zero margin, with no test statistic, no pre-specified level, no minimum bucket size and no treatment of overlapping labels - is falsifiable only in a bookkeeping sense and cannot separate the hypothesis from noise at this sample size. The worker was appropriately candid about single-symbol breadth, in-sample formulation, unadjusted closes, thin alignment and the absence of any backtest or evaluation, so those parts of its framing carry forward."
+          },
+          {
+            "worker": "reviewer",
+            "adopted": true,
+            "reason": "Adopted for the formula's specification, the falsifiability rule and the measurement discipline. The reviewer independently fetched the same scope, obtained the identical evidence hash, ran research_metrics on its own returned evidence, and reproduced the researcher's measurement identifier, so its verdict rests on the same measured object rather than a hand recomputation; it then cited specific alignment and count facts for every structural claim and correctly noted that the forward label returns themselves are not among the host-measured facts, which is why the conditional means were never claimed as measured. Its corrections are the ones incorporated above: replace the degenerate zero threshold with a pre-specified fixed or rolling-quantile threshold and state flat-day assignment explicitly, require minimum bucket sizes so the contrast is never computed on an undefined or single-case bucket, name a test statistic and level, handle overlapping labels by disjoint windows or block resampling, set the effect margin above round-trip cost, and refuse to compute the statistic when attrition leaves too few fully labelled cases. Its out-of-sample requirement - frozen parameters, a pre-registered symbol set and an uninspected window, with this window treated as formation-only - is accepted as the only route to a real test, and its caution about unflagged corporate actions and unverified exchange-calendar completeness is retained as a stated limitation rather than waved off. Where the two workers agree - correct sequencing, thin labelled support, nil zero-return handling in this window, post-observation status, closes-only feasibility - I record agreement rather than a conflict; the only substantive disagreement is whether the researcher's threshold and decision rule can stand, and the reviewer's position prevails because the tie-invariance and underpowering arguments follow directly from the measured counts."
+          }
+        ],
+        "draft_recorded": true
+      },
+      "shared_resources_during_activity": {
+        "activity_windows_utc": [
+          [
+            "2026-11-12T13:29:22.001346+00:00",
+            "2026-11-12T13:29:36.469194+00:00"
+          ],
+          [
+            "2026-11-12T13:30:09.343831+00:00",
+            "2026-11-12T13:30:19.397402+00:00"
+          ],
+          [
+            "2026-11-12T13:31:25.318557+00:00",
+            "2026-11-12T13:31:49.518067+00:00"
+          ]
+        ],
+        "activity_wall_seconds": 48.720929,
+        "samples": 24,
+        "process_tree_peak_rss_bytes": 626802688,
+        "process_tree_peak_sampled_cpu_cores": 0.1491489073928289,
+        "process_tree_mean_sampled_cpu_cores": 0.05966721483529793,
+        "cpu_sample_coverage_seconds": 42.452265000000004,
+        "host_cpu_max_percent": 9.6,
+        "swap_peak_bytes": 0,
+        "host_total_ram_bytes": 38654705664,
+        "host_available_ram_min_bytes": 12410208256,
+        "work_volume_min_free_bytes": 361491402752,
+        "measurement_errors": [],
+        "scope": "Shared guard/DSH/data process tree during activity windows, not isolated per-agent allocation. Host readings include other work. CPU intervals crossing activity boundaries and short-lived children may be missed. Null means unmeasured."
+      },
+      "wire_bytes": 1766791,
+      "native_session_archive_bytes": 72796
+    }
+  },
+  "draft": {
+    "title": "Post-observation short-horizon close-reversal contrast on a single A-share symbol",
+    "formula": "r_t^(k) = close_t / close_{t-k} - 1 (closes only, computable at close_t); signal_t = 1[ r_t^(k) < T_t ] where T_t is EITHER a pre-specified fixed adverse move (theta > 0, or theta = 0 with flat days r_t^(k) = 0 explicitly assigned to the non-signal bucket and their count reported) OR a rolling quantile of past r^(k) estimated from data up to and including close_t; label_t = close_{t+1+h} / close_{t+1} - 1 with k = 1, h >= 1, so execution is the next close and the label window is strictly later; candidates lacking an execution date or a label end date are dropped and the surviving fully-labelled count is reported; statistic D = mean(label_t | signal_t = 1) - mean(label_t | signal_t = 0), requiring each bucket count >= n_min, evaluated with a pre-specified permutation or Welch-type test at level alpha and with overlapping labels handled by disjoint windows or block resampling; hypothesis D > delta with delta set strictly above round-trip transaction cost under a stated per-case cost model; confirmed only if the pre-specified test rejects D <= delta on a pre-registered symbol set and window never inspected during formation; otherwise disconfirmed",
+    "signal_time": "close_t",
+    "execution_time": "next_trading_day_close",
+    "evidence_ids": [
+      "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108"
+    ],
+    "decisions": [
+      {
+        "worker": "researcher",
+        "adopted": false,
+        "reason": "Partially adopted and partly superseded. Its structural core is sound and is kept verbatim in spirit: the signal is a function of closes only and computable at the signal close, execution is the next close, and the label ends strictly later, so no label uses information available at or before the signal close. Its provenance is also clean - the worker fetched the fixed sample once, called research_metrics, and cited the same evidence hash I verified against my own read of the permitted bars. The proposal itself is not adopted as stated, for reasons the reviewer independently reproduced. A zero threshold with a strict inequality is not tie-invariant: flat days fall into the baseline bucket, which does not bite in this window only because no daily return was exactly flat, so the split would silently shrink in a window containing one. At the proposed parameters the signal reduces to the sign of the trailing close-to-close move, which turns a conditional contrast into an exhaustive down-day versus up-day comparison over very few, unbalanced, time-overlapping cases, and the fully labelled count is smaller than the signal count at both examined lags. The stated disconfirmation rule - a bare conditional difference against a zero margin, with no test statistic, no pre-specified level, no minimum bucket size and no treatment of overlapping labels - is falsifiable only in a bookkeeping sense and cannot separate the hypothesis from noise at this sample size. The worker was appropriately candid about single-symbol breadth, in-sample formulation, unadjusted closes, thin alignment and the absence of any backtest or evaluation, so those parts of its framing carry forward."
+      },
+      {
+        "worker": "reviewer",
+        "adopted": true,
+        "reason": "Adopted for the formula's specification, the falsifiability rule and the measurement discipline. The reviewer independently fetched the same scope, obtained the identical evidence hash, ran research_metrics on its own returned evidence, and reproduced the researcher's measurement identifier, so its verdict rests on the same measured object rather than a hand recomputation; it then cited specific alignment and count facts for every structural claim and correctly noted that the forward label returns themselves are not among the host-measured facts, which is why the conditional means were never claimed as measured. Its corrections are the ones incorporated above: replace the degenerate zero threshold with a pre-specified fixed or rolling-quantile threshold and state flat-day assignment explicitly, require minimum bucket sizes so the contrast is never computed on an undefined or single-case bucket, name a test statistic and level, handle overlapping labels by disjoint windows or block resampling, set the effect margin above round-trip cost, and refuse to compute the statistic when attrition leaves too few fully labelled cases. Its out-of-sample requirement - frozen parameters, a pre-registered symbol set and an uninspected window, with this window treated as formation-only - is accepted as the only route to a real test, and its caution about unflagged corporate actions and unverified exchange-calendar completeness is retained as a stated limitation rather than waved off. Where the two workers agree - correct sequencing, thin labelled support, nil zero-return handling in this window, post-observation status, closes-only feasibility - I record agreement rather than a conflict; the only substantive disagreement is whether the researcher's threshold and decision rule can stand, and the reviewer's position prevails because the tie-invariance and underpowering arguments follow directly from the measured counts."
+      }
+    ],
+    "limitations": [
+      "Single symbol over a single short window with no cross-sectional breadth and no second window, so nothing here supports a general reversal or drift claim; the proposal is formation-only and was written after the rows were seen.",
+      "Alignment leaves only very few fully labelled cases, fewer than the number of signal candidates at both examined lags, so even a correctly specified conditional contrast would rest on a handful of overlapping observations.",
+      "The forward label returns are not among the host-measured facts in this round, which supply lookback returns, sign counts, dispersion and alignment only; consequently no conditional mean or conditional difference is claimed as a measured result here.",
+      "Host facts also report sample-level return statistics that describe one series over one window; they are not a strategy profit, loss or evaluation statistic and are not evidence for the hypothesis.",
+      "Closes are unadjusted and corporate-action ex-dates are not flagged in the payload, so close-to-close and forward returns could be contaminated by dividends or splits inside a wider window.",
+      "The data are a current download of historical daily closes rather than a vintage archive, so revision history and real-time knowability are unverified.",
+      "Exchange-calendar completeness is unverified; reported lags count returned observations, so the assumed next-trading-day alignment is an assumption rather than a measured fact.",
+      "No volume, intraday, news or fundamental fields are in scope, so any mechanism behind an apparent pattern is untestable in this trial.",
+      "No backtest, strategy evaluation, gate, promotion or publication was run or is implied; only observation-layer arithmetic and two cited worker reports exist.",
+      "Both worker reports and this draft were produced inside one bounded round with a single pass each, so no independent replication of the review was budgeted."
+    ],
+    "next_steps": [
+      "Freeze the parameters, the threshold rule, the flat-day assignment, the minimum bucket size, the test statistic, the level and the cost margin in advance of any confirmatory run, and record them before touching the evaluation data.",
+      "Evaluate on a broad symbol cross-section and a substantially longer window that was never inspected during formation, treating the current window as formation-only and not as a result.",
+      "Add a no-signal baseline together with a label-shuffling or block-bootstrap control so a conditional difference can be compared against chance at the realised bucket sizes.",
+      "Report the surviving fully-labelled count alongside every conditional mean, and suppress the statistic outright when either bucket falls below the pre-set minimum.",
+      "Move to corporate-action-adjusted closes, or verify and exclude ex-dates, and verify exchange-calendar alignment rather than inferring trading days from counted rows.",
+      "Prefer an explicitly point-in-time source where availability timing could matter, so the next round does not silently use revised history.",
+      "Keep the published wording of any future result tied to the host-measured facts and the pre-specified decision rule, so a failed confirmatory test cannot be reinterpreted as exploratory success after the fact."
+    ],
+    "measured_facts": [
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "sample.observations",
+        "unit": "count",
+        "value": "10",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "sample.first_date",
+        "unit": "date",
+        "value": "2026-10-19",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "sample.last_date",
+        "unit": "date",
+        "value": "2026-10-30",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "sample.net_return",
+        "unit": "return_fraction",
+        "value": "-0.0008583690987124463519313305",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "sample.minimum_close",
+        "unit": "price",
+        "value": "11.2",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "sample.maximum_close",
+        "unit": "price",
+        "value": "11.65",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.count",
+        "unit": "count",
+        "value": "9",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.mean",
+        "unit": "return_fraction",
+        "value": "-0.00001260769661609466952994255556",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.median",
+        "unit": "return_fraction",
+        "value": "-0.0026223776223776223776223776",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.positive_count",
+        "unit": "count",
+        "value": "4",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.negative_count",
+        "unit": "count",
+        "value": "5",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.sample_stdev",
+        "unit": "return_fraction",
+        "value": "0.01365805220955669229204526674",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "lag.1.signal_count",
+        "unit": "count",
+        "value": "9",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "lag.1.aligned_case_count",
+        "unit": "count",
+        "value": "7",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "lag.1.first_signal_date",
+        "unit": "date",
+        "value": "2026-10-20",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "lag.5.signal_count",
+        "unit": "count",
+        "value": "5",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "lag.5.aligned_case_count",
+        "unit": "count",
+        "value": "3",
+        "worker": "researcher"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "sample.observations",
+        "unit": "count",
+        "value": "10",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.count",
+        "unit": "count",
+        "value": "9",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.negative_count",
+        "unit": "count",
+        "value": "5",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.positive_count",
+        "unit": "count",
+        "value": "4",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.zero_count",
+        "unit": "count",
+        "value": "0",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.mean",
+        "unit": "return_fraction",
+        "value": "-0.00001260769661609466952994255556",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "returns.sample_stdev",
+        "unit": "return_fraction",
+        "value": "0.01365805220955669229204526674",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "lag.1.signal_count",
+        "unit": "count",
+        "value": "9",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "lag.1.aligned_case_count",
+        "unit": "count",
+        "value": "7",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "lag.5.signal_count",
+        "unit": "count",
+        "value": "5",
+        "worker": "reviewer"
+      },
+      {
+        "measurement_id": "1e767e2b83f5428d749793915dfb6de508490b04e500647cfda089582d2b62cf",
+        "evidence_id": "58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108",
+        "key": "lag.5.aligned_case_count",
+        "unit": "count",
+        "value": "3",
+        "worker": "reviewer"
+      }
+    ],
+    "proposal_phase": "post_observation_exploration"
+  },
+  "status_scope": "Bounded workflow integration only; schema/provenance, not scientific or evaluator acceptance.",
+  "scientific_acceptance": "not_accepted; see LIVE_RERUN_003_AUDIT.json",
+  "live_source_commit": "69053ae157eb27c692c1c70b2819ee502ae8bf0d",
+  "host": {
+    "logical_cpus": 18,
+    "machine": "arm64",
+    "platform": "macOS-27.2-arm64-arm-64bit"
+  },
+  "runtime": {
+    "baostock": "0.9.4",
+    "deepseek-harness-runtime-bin": "0.2.2rc2",
+    "deepseek-harness-sdk": "0.2.2rc2",
+    "psutil": "7.2.2"
+  },
+  "native_turn_completed": true,
+  "native_tasks": {
+    "completed": 2
+  },
+  "draft_recorded": true,
+  "frozen_evidence_files": 77,
+  "raw_manifest_sha256": "d6e77d978eebd60d769315c38d7f9a02a1d7b52461f0dec10d44996b69923176",
+  "readiness": "Desktop bounded workflow passed; three-session pilot cap is exhausted. Broader trials and research-quality acceptance remain gated."
+}

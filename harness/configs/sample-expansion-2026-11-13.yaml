@@ -1,0 +1,23 @@
+id: baostock-support-2026-11-13
+authority: >-
+  Owner: Please gradually expand the BaoStock sample and rerun the supervisor plus
+  two-worker trial with enough data for statistical inference. Keep DeepSeek-flash
+  only, the original 200 CNY budget and time windows, and record everything.
+data_config: data-expansion-2026-11-13.yaml
+base_evidence_id: 58ff3df0eba5ef29122a7846347bb0128f15ccce5e10053b87175e5f59042108
+reference_trial_id: session-915990c7-dc82-4bb5-b152-87ad882bb558
+reference_specification_id: 7e17282889186a991f6e04470173f50cd9d6977b7769634a0c3d246a8304e5ec
+# Add older, adjacent segments; retain the existing end/cutoff and same stock.
+# Stop solely on data quality and support, before computing any inference result.
+steps:
+  - {symbols: [000001.XSHE], start: '2026-09-30', end: '2026-10-18'}
+  - {symbols: [000001.XSHE], start: '2026-08-31', end: '2026-09-29'}
+  - {symbols: [000001.XSHE], start: '2026-07-01', end: '2026-08-30'}
+  - {symbols: [000001.XSHE], start: '2026-05-01', end: '2026-06-30'}
+  - {symbols: [000001.XSHE], start: '2026-03-01', end: '2026-04-30'}
+minimum_aligned_cases: 100
+minimum_bucket_cases: 40
+minimum_blocks: 20
+absolute_return_warning: '0.15'
+preview_rows: 20
+alignment_preview_rows: 2

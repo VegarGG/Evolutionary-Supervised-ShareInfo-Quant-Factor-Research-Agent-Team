@@ -1,0 +1,174 @@
+{
+  "at": "2026-11-17T02:54:10.594065+00:00",
+  "runs": [
+    {
+      "package_id": "checkpoint-glm53-max-fixed-01",
+      "variant": "fixed",
+      "model": "glm-5.3",
+      "effort": "max",
+      "output_cap": 32768,
+      "states": {
+        "settled": 19
+      },
+      "requests": 19,
+      "known_tokens": 402493,
+      "exposure_cny": 4.031364,
+      "reserved_cny": 0.0,
+      "cache_hit_ratio_known_input": 0.687529357154304,
+      "peak_dispatch_rpm": 7,
+      "peak_dispatch_tpm_known": 148866,
+      "wall_seconds": 677.864242,
+      "status": "incomplete",
+      "semantic_status": "incomplete_native_review",
+      "findings": 4,
+      "changed_rows": 171,
+      "finalized": false,
+      "native_completed_tasks": 2,
+      "rejected_submissions": 0,
+      "finish_reasons": {
+        "tool_calls": 16,
+        "stop": 3
+      }
+    },
+    {
+      "package_id": "checkpoint-delivery-fixed-01",
+      "variant": "fixed",
+      "model": "glm-5.3",
+      "effort": "max",
+      "output_cap": 32768,
+      "states": {
+        "settled": 18
+      },
+      "requests": 18,
+      "known_tokens": 512704,
+      "exposure_cny": 5.165432,
+      "reserved_cny": 0.0,
+      "cache_hit_ratio_known_input": 0.6976414211536537,
+      "peak_dispatch_rpm": 5,
+      "peak_dispatch_tpm_known": 173799,
+      "wall_seconds": 862.282474,
+      "status": "finalized_research_prototype",
+      "semantic_status": "exploratory_candidate_pass_with_limits",
+      "findings": 4,
+      "changed_rows": 171,
+      "finalized": true,
+      "native_completed_tasks": 3,
+      "rejected_submissions": 0,
+      "finish_reasons": {
+        "tool_calls": 14,
+        "stop": 4
+      }
+    },
+    {
+      "package_id": "checkpoint-delivery-adaptive-02",
+      "variant": "adaptive",
+      "model": "glm-5.3",
+      "effort": "max",
+      "output_cap": 32768,
+      "states": {
+        "settled": 20
+      },
+      "requests": 20,
+      "known_tokens": 607925,
+      "exposure_cny": 5.97448,
+      "reserved_cny": 0.0,
+      "cache_hit_ratio_known_input": 0.7298283219068343,
+      "peak_dispatch_rpm": 4,
+      "peak_dispatch_tpm_known": 185722,
+      "wall_seconds": 884.031517,
+      "status": "finalized_research_prototype",
+      "semantic_status": "needs_wording_revision",
+      "findings": 4,
+      "changed_rows": 171,
+      "finalized": true,
+      "native_completed_tasks": 3,
+      "rejected_submissions": 0,
+      "finish_reasons": {
+        "tool_calls": 16,
+        "stop": 4
+      }
+    }
+  ],
+  "requests": 57,
+  "known_usage": {
+    "requests": 57,
+    "requests_with_known_usage": 57,
+    "all_usage_settled": true,
+    "tokens": {
+      "input_uncached": 401263,
+      "input_cached": 972544,
+      "input_cache_write": 0,
+      "output": 149315
+    },
+    "total_tokens": 1523122,
+    "input_cache_hit_ratio": 0.7079189434906068,
+    "cache_tokens_reported_for_all_calls": true,
+    "cache_reporting_note": "Explicit provider cache counters.",
+    "peak_rolling_60s_dispatch_rpm": 7,
+    "peak_rolling_60s_completion_rpm": 7,
+    "peak_rolling_60s_dispatch_tpm": 185722,
+    "peak_rolling_60s_completion_tpm": 228022,
+    "conservative_settled_cny": 15.171276,
+    "unresolved_reserved_cny": 0.0,
+    "published_price_estimate_cny": null,
+    "unpriced_requests": 57,
+    "cost_invoice_verified": false,
+    "funding": "coding_plan",
+    "subscription_credits_settled_upper_bound": 1306.28283,
+    "subscription_credits_unresolved_reserved": 0.0,
+    "rate_definition": "Call totals attributed to dispatch/completion, not per-token arrival. Unknown usage is excluded from TPM, counted in RPM and retains its budget reservation.",
+    "cost_basis": "Existing GLM Coding Plan Pro. The shared cash ledger retains a conservative exposure debit, not an incremental cash invoice; subscription purchase cost is not allocated. Credits are a conservative upper estimate ignoring cache and off-peak discounts, not an account invoice."
+  },
+  "budget_after": {
+    "carry_micro_cny": 56256735,
+    "new_settled_micro_cny": 36061362,
+    "unresolved_micro_cny": 14090240,
+    "cumulative_micro_cny": 55583184,
+    "conservative_unreconciled_cumulative_micro_cny": 92318097,
+    "remaining_unreserved_micro_cny": 130326576,
+    "invoice_verified": false,
+    "provider_admission": {
+      "revision": 2,
+      "kind": "provider_admission",
+      "providers": [
+        "glm_coding"
+      ],
+      "authority": "Owner: Cancel the scheduled DeepSeek run. Continue development using GLM until usage is empty or I tell you to switch.",
+      "at": "2026-11-13T05:40:10.576685+00:00"
+    },
+    "billing_baseline": {
+      "id": 1,
+      "at": "2026-11-12T07:05:53.036243+00:00",
+      "actual": 20350000,
+      "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+      "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+    }
+  },
+  "full_ledger_states": {
+    "settled": 337,
+    "rejected_reserved": 1,
+    "unknown": 1
+  },
+  "glm_historical_states": {
+    "rejected_reserved": 1,
+    "settled": 259,
+    "unknown": 1
+  },
+  "pair_integrity": {
+    "available": true,
+    "source_files_identical": true,
+    "source_file_count": 135,
+    "route_and_settings_identical": true,
+    "research_input_and_limits_identical": true
+  },
+  "all_current_requests_glm53_max": true,
+  "frozen_data_sha256": "59e8033ec2271d70dba9d22390dd865edbb7aec08c73424b4a62b5c8054fcbf8",
+  "not_run": {
+    "checkpoint-glm53-max-adaptive-02": "withheld after first control exposed evidence-delivery defects"
+  },
+  "comparison_limits": [
+    "One new frozen case, fixed then adaptive; no counterbalanced repeat.",
+    "Actual inference compute can differ despite equal aggregate ceilings.",
+    "One same-case pair cannot establish causal superiority or general discovery capability."
+  ]
+}

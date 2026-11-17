@@ -1,0 +1,128 @@
+{
+  "fixed-repair/ui": {
+    "status": "pass",
+    "at": "2026-11-17T07:51:54.181Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Full mobile workflow is not accepted; viewport and screenshots are observations only."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "fixed-repair/readonly-ui": {
+    "status": "pass",
+    "at": "2026-11-17T07:54:24.982Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "native completed session reopened without resubmission",
+      "full rendered report equals host text exactly",
+      "reload persisted",
+      "desktop/mobile screenshots"
+    ],
+    "limitations": [
+      "Report remains inside a compact native tool card; full mobile navigation is not accepted."
+    ],
+    "recovery": "Read-only rendered-report verification; no inference resubmission. Earlier failed UI probes remain separately recorded where present."
+  },
+  "adaptive-completion/ui": {
+    "status": "pass",
+    "at": "2026-11-17T08:18:36.553Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Full mobile workflow is not accepted; viewport and screenshots are observations only."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "adaptive-completion/readonly-ui": {
+    "status": "pass",
+    "at": "2026-11-17T08:21:33.501Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "native completed session reopened without resubmission",
+      "full rendered report equals host text exactly",
+      "reload persisted",
+      "desktop/mobile screenshots"
+    ],
+    "limitations": [
+      "Report remains inside a compact native tool card; full mobile navigation is not accepted."
+    ],
+    "recovery": "Read-only rendered-report verification; no inference resubmission. Earlier failed UI probes remain separately recorded where present."
+  }
+}

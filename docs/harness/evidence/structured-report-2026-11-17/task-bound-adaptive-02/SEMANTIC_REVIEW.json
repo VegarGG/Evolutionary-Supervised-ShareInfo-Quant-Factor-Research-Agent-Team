@@ -1,0 +1,29 @@
+{
+  "status": "pass_with_limits",
+  "reviewed_at": "2026-11-17T05:01:55.213460+00:00",
+  "reviewer": "Codex independent artifact review; no added model call or operator feedback to trial",
+  "candidate_id": "bdce7dca10e901c4489b624fab0f6879ff4398e68038e65bb6d8b49f97229533",
+  "report_sha256": "1f1d4f070fbb2886700863efa6f7400066e006f8cb814f7aaf92d7c613020575",
+  "model_review_id": "be935e61950186c68ee5c6ac1e7bc0c58ce2392c34ff73de91536322152741a2",
+  "scope": "Complete candidate, structured report, accepted review, all frozen sources, baseline/alternative inspections, native tasks and independent arithmetic",
+  "checks": {
+    "units": "Raw and normalized scores explicitly remain dimensionless; common per-symbol scale refers to the specified trailing-dispersion denominator, not newly acquiring dimensionless units or equalizing final sample SDs.",
+    "counts": "Host-derived counts separate 62 closes, 6 required, 5 warmup, 57 eligible and 56 next observed closes per name; no added exclusions.",
+    "timing": "No execution-feasibility, fill, cost or alpha claim; future labels start from execution close.",
+    "provenance": "author-2 actually requested baseline and alternative calculations, then chose its normalized receipt. Final score changes are 171, not merely an unadopted inspection.",
+    "hypothesis": "Dispersion heterogeneity motivates exploratory normalization; the final proposal expressly leaves usefulness and investment benefit unproven. Scaling by each symbol own trailing SD is descriptive, not evidence of superior comparability or risk removal.",
+    "review": "Exact current candidate and complete report hash, all consistent checks, no model-listed defects.",
+    "native_work": "Three completed native tasks and distinct settled terminal acknowledgements; adaptive assignments reference observed findings."
+  },
+  "intermediate_reasoning": "Unit-heterogeneity heading and unmeasured signal/volatility decomposition are separately recorded in INTERMEDIATE_SEMANTIC_REVIEW.json. Final adopted disposition describes dispersion heterogeneity, not different physical units.",
+  "remaining_limits": [
+    "One previously seen convenience sample and sequential pair; no causal adaptive superiority or general discovery proof.",
+    "The phrase common dimensionless scale is an intended interpretation of own-dispersion scaling, not a new unit, equal sample dispersion or a proven comparability benefit.",
+    "General qualitative claims still need independent review. The new intermediate-unit-heading and vague-width guards were added after both live source snapshots; they are offline-verified only.",
+    "No additional adaptive repair loop occurred in this case: the actual topology is analyze/design/review. Native repair-loop mechanics were separately tested with synthetic inference."
+  ],
+  "failed_submissions_retained": 1,
+  "independent_clean_descriptive_output": true,
+  "official_acceptance": false,
+  "evaluation_or_publication": false
+}

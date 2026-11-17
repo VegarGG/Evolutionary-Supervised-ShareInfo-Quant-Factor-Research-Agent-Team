@@ -1,0 +1,59 @@
+id: checkpoint-baostock-20261117
+package_prefix: checkpoint-glm53-max
+authority: >-
+  Owner: go ahead, moving to next checkpoint. Continue the approved modular plan,
+  with the current GLM 5.3 maximum-effort selection and original 200 CNY total.
+question: >-
+  Develop an executable short-horizon close-momentum hypothesis for later independent
+  evaluation on this new frozen A-share sample. Start from the five-observation raw
+  return. Identify source-supported applicability constraints and motivate at most
+  one alternative specification using the observed price/return profiles. Inspect
+  the baseline and any motivated alternative, then explicitly choose a candidate
+  for exploratory research or retain the baseline with reasons. No winning sign,
+  lookback, normalization or return bound is prescribed. Lack of proven alpha is
+  a limitation for later evaluation, not by itself grounds to reject exploration.
+research_contract: >-
+  This is exploratory hypothesis development, with no forward performance labels.
+  Distinguish three decisions: inspect a motivated hypothesis; adopt or retain a
+  research candidate with explicit assumptions; and demonstrate investment benefit
+  in a separate future evaluation. Only the first two are in scope. Descriptive
+  score differences cannot establish superiority. Compare coverage and score-scale
+  consequences against the baseline; justify any added parameter or applicability
+  exclusion from cited evidence and state what evidence would be needed next.
+  A coherent retention or inconclusive proposal is allowed. Never manufacture a
+  correction to satisfy a checkpoint, infer corporate actions from close-only jumps,
+  or describe a volatility-scaled score as an annual Sharpe ratio.
+symbols: [601318.XSHG, 600036.XSHG, 300750.XSHE]
+ranges:
+  - {start: '2026-05-06', end: '2026-05-08'}
+  - {start: '2026-05-09', end: '2026-06-30'}
+  - {start: '2026-07-01', end: '2026-07-31'}
+minimum_rows_per_symbol: 40
+minimum_common_dates: 40
+initial_spec:
+  lookback: 5
+  direction: 1
+  normalization: none
+  volatility_window: null
+  max_absolute_daily_return: null
+max_tasks: 6
+supervisor_requests: 12
+worker_requests: 6
+total_requests: 36
+max_output_tokens: 32768
+max_inspections: 6
+max_tool_bytes: 24000
+page_chars: 2500
+protocol: bounded-v2
+board: {max_events: 100, max_findings: 12, max_versions: 4, max_text_length: 24000}
+planned_order: [fixed, adaptive]
+repeat_rule: >-
+  One new fixed/adaptive pair only. Each actor has one separate acknowledgement
+  request inside the 36-request aggregate. Run the next arm only after prior new
+  usage is settled and arithmetic/evidence integrity passes. Record model failure
+  or retention without forcing repair. Stop on any new unknown, quota exhaustion,
+  data failure, or unresolved arithmetic/integrity failure; no automatic replay.
+data_config: data-checkpoint-2026-11-17.yaml
+route_config: glm53-checkpoint-2026-11-17.yaml
+previous_route_id: glm53-max-32k-unseen-2026-11-16
+protocol_file: CHECKPOINT_2026-11-17.md

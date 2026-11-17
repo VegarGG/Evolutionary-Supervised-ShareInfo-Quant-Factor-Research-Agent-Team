@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-17T05:04:06.283505+00:00",
+  "browser": "installed Chrome via Playwright; Browser plugin unavailable",
+  "desktop": "All completed live reports verified against exact delivered host text; new task-bound pair byte-identical to canonical rendering; reload persisted with no console errors.",
+  "report_access": "Completed > Called tools > finalize_case. Native tool text is scrollable and compact; not a first-class owner report view.",
+  "usage_footer": "Session-only. Fixed root footer rounds to 247K versus 779886 whole-team tokens; adaptive root footer rounds to 210K versus 499281 whole-team tokens. Full team accounting includes every worker/supervisor acknowledgement.",
+  "chat_authority": "Intermediate chat and extra final summary text are model-generated, not independent audit. The prompt requests ID/status-only completion but does not enforce every chat word. Host report remains pending independent audit; post-run independent result may differ from native review.",
+  "mobile": {
+    "initial_observation": "Immediate 390px resize captures were clipped during sidebar/layout transition; initial helper limitations recorded that appearance.",
+    "verification": "After stabilizing and using the visible sidebar control, opening and closing the sidebar yields innerWidth=documentWidth=bodyWidth=390, with readable completed chat.",
+    "earlier_interpretation_corrected": "The first images do not establish permanent mobile clipping. No native layout code was changed.",
+    "limits": "Whole mobile workflow, report navigation and accessibility have not passed acceptance. An initial read-only attempt selected a transient/hidden duplicate button and timed out; second attempt used the visible control.",
+    "evidence": "MOBILE_TOGGLE.json and bound-fixed/ui/mobile-sidebar-closed.png"
+  },
+  "source_render_order": "Initial fixed wire text uses insertion order; canonical JSON round trip changed only metric order. All metric lines and all other text match. Repaired pair uses sorted metrics and exact-text checks.",
+  "no_inference_replay": true,
+  "production_ready": false
+}

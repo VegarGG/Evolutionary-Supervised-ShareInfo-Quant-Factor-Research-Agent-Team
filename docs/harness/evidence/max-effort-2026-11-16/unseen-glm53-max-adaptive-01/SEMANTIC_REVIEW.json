@@ -1,0 +1,17 @@
+{
+  "reviewer": "Codex independent observable-outcome audit",
+  "status": "incomplete_output_token_cap",
+  "acceptance": false,
+  "factor_revision_demonstrated": false,
+  "adaptive_revision_demonstrated": false,
+  "findings": [
+    "Analyst completion reached exactly 16384 output tokens and finish_reason length.",
+    "No finding or designer/reviewer artifact was submitted.",
+    "Supervisor observed the failed child; host refused further substantive tasks.",
+    "All six wire requests used GLM 5.3/max and all usage settled."
+  ],
+  "limits": [
+    "Root UI Completed means the chat returned, not a completed research episode.",
+    "No conclusion about factor optimizability follows from this failed attempt."
+  ]
+}
