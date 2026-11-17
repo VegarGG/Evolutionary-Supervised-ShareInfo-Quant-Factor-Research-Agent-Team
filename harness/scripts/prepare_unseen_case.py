@@ -11,7 +11,7 @@ import yaml
 
 from qfh.case_factor import FactorSpec, definition, inspect_factor, panel_quality, price_profile
 from qfh.case_research import CaseEpisode, CasePolicy
-from qfh.coding_plan import CodingPolicy
+from qfh.coding_plan import CodingLedger, CodingPolicy
 from qfh.data_gateway import DataPolicy, dispatch
 from qfh.evidence import EvidenceStore, Query
 from qfh.research import Research
@@ -23,15 +23,25 @@ def prepare(config, private, action, index=None):
     study = yaml.safe_load(config.read_text())
     folder = private / "case-studies" / study["id"]
     folder.mkdir(parents=True, exist_ok=True)
-    data_config = root / "configs/data-unseen-2026-11-16.yaml"
+    data_config = root / "configs" / study.get("data_config", "data-unseen-2026-11-16.yaml")
     policy = DataPolicy.model_validate(yaml.safe_load(data_config.read_text()))
     research = Research(root / "configs/research-trial.yaml", private)
+    route = CodingPolicy.model_validate(
+        yaml.safe_load(
+            (
+                root / "configs" / study.get("route_config", "glm-coding-unseen-2026-11-16.yaml")
+            ).read_text()
+        )
+    )
     queries = [Query(symbols=[s], **r) for s in study["symbols"] for r in study["ranges"]]
     baseline = FactorSpec.model_validate(study["initial_spec"])
     if action == "initialize":
         before = research.ledger.snapshot()
-        if any(c["state"] not in ("settled", "rejected_reserved") for c in before["calls"]):
-            raise ValueError("unsettled usage requires inspection")
+        for call in before["calls"]:
+            if call["state"] == "unknown":
+                CodingLedger(research.ledger, route).verify_reserved_timeout(call)
+            elif call["state"] not in ("settled", "rejected_reserved"):
+                raise ValueError("unsettled usage requires inspection")
         with research.data.db() as db:
             used = db.execute(
                 "SELECT provider,kind,COUNT(*),SUM(estimated_cells) FROM requests "
@@ -45,14 +55,24 @@ def prepare(config, private, action, index=None):
                 "study_sha256": digest(study),
                 "data_policy": policy.model_dump(mode="json"),
                 "data_policy_sha256": digest(policy.model_dump(mode="json")),
+                "route": route.model_dump(mode="json"),
                 "queries": [q.model_dump(mode="json") for q in queries],
                 "data_usage_before": used,
                 "budget_before": {k: v for k, v in before.items() if k != "calls"},
                 "covered_call_ids_sha256": digest(sorted(c["id"] for c in before["calls"])),
                 "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip(),
                 "protocol_file_sha256": hashlib.sha256(
-                    (root.parent / "docs/harness/UNSEEN_CASE_2026-11-16.md").read_bytes()
+                    (
+                        root.parent
+                        / "docs/harness"
+                        / study.get("protocol_file", "UNSEEN_CASE_2026-11-16.md")
+                    ).read_bytes()
                 ).hexdigest(),
+                "protocol_text": (
+                    root.parent
+                    / "docs/harness"
+                    / study.get("protocol_file", "UNSEEN_CASE_2026-11-16.md")
+                ).read_text(),
                 "source_sha256": {
                     str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
                     for p in [
@@ -162,6 +182,8 @@ def prepare(config, private, action, index=None):
             inspect_factor(rows, baseline, baseline)["summary"], ensure_ascii=False, indent=2
         ),
     }
+    if study.get("research_contract"):
+        sources["research_contract"] = study["research_contract"]
     for symbol in study["symbols"]:
         sources["prices_" + symbol.replace(".", "_")] = (
             "symbol,date,unadjusted_close_CNY_per_share\n"
@@ -179,14 +201,16 @@ def prepare(config, private, action, index=None):
         "retrieved_at": [e["retrieved_at"] for e in evidence],
     }
     atomic_new(folder / "BUNDLE.json", bundle)
-    route = CodingPolicy.model_validate(
-        yaml.safe_load((root / "configs/glm-coding-unseen-2026-11-16.yaml").read_text())
+    if frozen.get("route") != route.model_dump(mode="json"):
+        raise ValueError("frozen model authority changed")
+    research.activate_model_route(
+        route,
+        expected_previous_id=study.get("previous_route_id", "glm-coding-review-low-2026-11-13"),
     )
-    research.activate_model_route(route, expected_previous_id="glm-coding-review-low-2026-11-13")
     packages = private / "case-packages"
     packages.mkdir(exist_ok=True)
     for n, variant in enumerate(study["planned_order"], 1):
-        ident = f"unseen-{variant}-{n:02}"
+        ident = f"{study.get('package_prefix', 'unseen')}-{variant}-{n:02}"
         episode = CaseEpisode(
             episode_id=ident,
             actors={
@@ -218,7 +242,11 @@ def prepare(config, private, action, index=None):
             authority=study["authority"],
             question=study["question"],
             route_id=route.id,
+            model=route.model,
             episode=episode,
+            protocol=study.get("protocol", "legacy"),
+            max_tool_bytes=study.get("max_tool_bytes", 24000),
+            page_chars=study.get("page_chars", 2500),
             **{
                 k: study[k]
                 for k in (

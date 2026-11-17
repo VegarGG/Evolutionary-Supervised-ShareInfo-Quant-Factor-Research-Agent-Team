@@ -15,7 +15,7 @@ from qfh.shared_state import atomic_new, digest
 ROOT = Path(__file__).parents[1]
 
 
-def host(tmp_path, variant="adaptive"):
+def host(tmp_path, variant="adaptive", **overrides):
     (tmp_path / "OFFLINE_ONLY").write_text("Synthetic fixture; no provider requests.")
     research = Research(ROOT / "configs/research-trial.yaml", tmp_path)
     research.ledger.set_provider_admission(
@@ -57,6 +57,7 @@ def host(tmp_path, variant="adaptive"):
         max_output_tokens=16384,
         max_inspections=6,
     )
+    policy = CasePolicy.model_validate({**policy.model_dump(), **overrides})
     path = tmp_path / "package.json"
     atomic_new(path, policy.model_dump())
     result = CaseResearch(ROOT / "configs/research-trial.yaml", tmp_path, path)

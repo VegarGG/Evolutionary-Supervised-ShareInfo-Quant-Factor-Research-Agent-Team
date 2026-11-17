@@ -18,6 +18,10 @@ from qfh.shared_state import digest
 from qfh.trial_metrics import model_metrics, resource_metrics, role_windows
 
 
+def call_actor(call):
+    return call["step"].removesuffix(":ack").split(":")[-1]
+
+
 def export(private, package_id, output=None, *, case=False, allow_unresolved=False):
     profile = "case" if case else "adaptive"
     directory = private / ("cases" if case else "adaptive") / package_id
@@ -84,7 +88,11 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
         )
         assert request["thinking"] == {"type": "enabled", "clear_thinking": False}
         assert request["reasoning_effort"] == route.reasoning_effort
-        assert {t["function"]["name"] for t in request["tools"]} == (CASE_TOOLS if case else TOOLS)
+        actual_tools = {t["function"]["name"] for t in request["tools"]}
+        if case and policy.protocol == "legacy":
+            assert actual_tools in (CASE_TOOLS, CASE_TOOLS - {"case_read"})
+        else:
+            assert actual_tools == (CASE_TOOLS if case else TOOLS)
         files.extend(folder.glob("*"))
         if call["state"] != "settled":
             # Missing provider usage is not a free call or a completed response.
@@ -101,7 +109,7 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
             rows.append(
                 {
                     "id": call["id"],
-                    "actor": call["step"].split(":")[-1],
+                    "actor": call_actor(call),
                     "tokens": None,
                     "finish_reason": None,
                     "started": call["started"],
@@ -166,14 +174,15 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
                         tool_calls.append(
                             {
                                 "call_id": call["id"],
-                                "actor": call["step"].split(":")[-1],
+                                "actor": call_actor(call),
                                 "tool": tool["function"]["name"],
                             }
                         )
         rows.append(
             {
                 "id": call["id"],
-                "actor": call["step"].split(":")[-1],
+                "actor": call_actor(call),
+                "phase": "acknowledgement" if call["step"].endswith(":ack") else "work",
                 "tokens": tokens,
                 "finish_reason": stops[-1],
                 "started": call["started"],
@@ -208,7 +217,7 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
     reports = {
         a: {
             "model": model_metrics(
-                [c for c in calls if c["step"].endswith(":" + a)],
+                [c for c in calls if call_actor(c) == a],
                 route.model_dump(),
                 synthetic=synthetic,
             ),
@@ -223,7 +232,9 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
         own = [r for r in rows if actor is None or r["actor"] == actor]
         assert metrics["total_tokens"] == sum(sum((r["tokens"] or {}).values()) for r in own)
         if actor:
-            assert len(own) <= (
+            acknowledgement = [r for r in own if r.get("phase") == "acknowledgement"]
+            assert len(acknowledgement) <= (1 if case and policy.protocol == "bounded-v2" else 0)
+            assert len(own) - len(acknowledgement) <= (
                 policy.supervisor_requests if actor == "supervisor" else policy.worker_requests
             )
         for time_field, label in (("started", "dispatch"), ("finished", "completion")):
@@ -254,6 +265,9 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
         if not case:
             assert scope["unit_proof"]["formula_ok"] and scope["unit_proof"]["structured_claims_ok"]
             assert scope["unit_proof"]["recognized_prose_ok"]
+        elif policy.protocol == "bounded-v2":
+            assert scope["prose_proof"]["recognized_prose_ok"]
+            assert scope["head"]["body"]["count_claims"] == scope["count_facts"]
         assert_completed_tasks(members, native_tasks)
     write_new(output / "resource-samples.json", selected)
     write_new(output / "FINAL_BOARD.json", scope)

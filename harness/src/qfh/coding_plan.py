@@ -184,8 +184,9 @@ def parse_coding_usage(events):
 class CodingLedger(Ledger):
     """Same cash ledger/tables/history; subscription quota is retained in call detail."""
 
-    def __init__(self, cash_ledger, coding):
+    def __init__(self, cash_ledger, coding, *, admission_check=None):
         self.path, self.policy, self.coding = cash_ledger.path, cash_ledger.policy, coding
+        self.admission_check = admission_check
         if (
             coding.maximum_input_tokens > self.policy.provider_context_tokens
             or coding.maximum_output_tokens > self.policy.provider_max_output_tokens
@@ -278,6 +279,8 @@ class CodingLedger(Ledger):
         }
 
         def check(db):
+            if self.admission_check is not None:
+                self.admission_check(db, step)
             rows = db.execute("SELECT detail,state FROM calls").fetchall()
             own = [(coding_detail({"detail": d}), state) for d, state in rows]
             # Protocol repairs must not reset the original subscription allowance.

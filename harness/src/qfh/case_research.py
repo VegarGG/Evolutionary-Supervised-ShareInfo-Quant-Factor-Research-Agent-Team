@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import sys
 import uuid
@@ -12,6 +13,8 @@ from typing import Literal
 from pydantic import Field, model_validator
 
 from qfh.adaptive_research import AdaptiveResearch
+from qfh.budget import BudgetRefused
+from qfh.case_contract import count_facts, encoded, page, prose_checks, reference, revision_texts
 from qfh.case_factor import FactorSpec, definition, inspect_factor, panel_quality
 from qfh.coding_plan import CodingPolicy
 from qfh.module_experiment import output_schema
@@ -20,6 +23,7 @@ from qfh.shared_state import Board, Citation, Decision, Episode, Finding, Record
 
 TOOLS = {
     "case_board",
+    "case_read",
     "case_task",
     "inspect_case_factor",
     "submit_case_findings",
@@ -30,11 +34,16 @@ TOOLS = {
 STAGES = {
     "analyze": "Inspect all frozen sources and the initial/current factor. Identify concrete "
     "source-supported constraints and separately label hypotheses. Submit up to four findings. "
-    "No prescribed correction; do not invent missing data, trading results or corporate actions.",
+    "A cited observation can motivate an unproven testable hypothesis. Absence of proven alpha "
+    "does not disqualify exploration. No prescribed correction; do not invent missing data, "
+    "trading results or corporate actions.",
     "design": "Use the recorded findings and the same full evidence to propose one defensible "
     "executable factor revision, or explicitly retain the factor if no change is supported. "
     "Inspect the chosen specification, cite exact evidence, dispose of every current finding "
-    "and distinguish an observed score change from unproven improvement.",
+    "and distinguish an observed score change from unproven improvement. An exploratory "
+    "candidate is a proposal for later evaluation, not deployment or proof of alpha. "
+    "Explain why its applicability or research question follows from cited evidence. "
+    "You may inspect a motivated alternative without adopting it; never force a change.",
     "review": "Review the exact current complete artifact, its executable inspection, claims, "
     "rationale, decisions and limits against the frozen sources. Report remaining issues. "
     "No performance or causality claim follows from descriptive score differences.",
@@ -74,6 +83,10 @@ class CasePolicy(Record):
     total_requests: int = Field(ge=1, le=36)
     max_output_tokens: int = Field(ge=128, le=32768)
     max_inspections: int = Field(ge=1, le=6)
+    protocol: Literal["legacy", "bounded-v2"] = "legacy"
+    max_tool_bytes: int = Field(default=24000, ge=12000, le=24000)
+    page_chars: int = Field(default=2500, ge=100, le=2500)
+    worker_prompt_bytes: int = Field(default=65536, ge=24000, le=65536)
 
 
 class FindingBatch(Record):
@@ -88,6 +101,12 @@ class CaseRevision(Record):
     decisions: list[Decision]
     citations: list[Citation] = Field(min_length=1)
     limitations: list[str] = Field(min_length=1)
+    count_claims: dict[str, dict[str, int]] | None = Field(
+        default=None,
+        description="For bounded-v2 copy count_facts from the exact chosen inspection. "
+        "These are observed closes, required closes, warmup/additional exclusions, eligible "
+        "signals and signals with a next close. Required window size is not warmup count.",
+    )
     basis_review_id: str | None = Field(
         default=None,
         description="Null for the initial design. "
@@ -130,6 +149,11 @@ class CaseBoard(Board):
         self.directory = directory
         self.episode = CaseEpisode.model_validate_json((directory / "episode.json").read_bytes())
 
+    @property
+    def bounded(self):
+        package = self.directory.parent / "package.json"
+        return package.exists() and json.loads(package.read_bytes()).get("protocol") == "bounded-v2"
+
     @staticmethod
     def _open(events):
         if any(e["kind"] == "finalized" for e in events):
@@ -155,18 +179,29 @@ class CaseBoard(Board):
     def calculation(self, spec):
         return inspect_factor(self.episode.rows, spec, self.episode.initial_spec)
 
+    def counts(self, spec):
+        calc = self.calculation(spec)
+        return count_facts(self.episode.rows, spec, calc["rows"])
+
+    def prose_proof(self, head):
+        return prose_checks(revision_texts(head["body"]), self.counts(self.spec_of(head)))
+
     def snapshot(self, actor):
         snapshot = super().snapshot(actor)
         head = snapshot["head"]
         snapshot["current_spec"] = self.spec_of(head).model_dump()
         snapshot["inspection"] = self.calculation(self.spec_of(head))["summary"]
         snapshot["reviews"] = [e for e in snapshot["events"] if e["kind"] == "case_review"]
+        snapshot["inspections"] = [e for e in snapshot["events"] if e["kind"] == "inspection"]
         snapshot["tasks"] = [
             e for e in snapshot["events"] if e["kind"] in ("task_started", "task_finished")
         ]
         snapshot["finalized"] = next(
             (e for e in snapshot["events"] if e["kind"] == "finalized"), None
         )
+        if self.bounded:
+            snapshot["count_facts"] = self.counts(self.spec_of(head))
+            snapshot["prose_proof"] = self.prose_proof(head)
         # Task traces remain in the immutable board, not duplicated in every prompt.
         del snapshot["events"]
         return snapshot
@@ -179,6 +214,21 @@ class CaseBoard(Board):
             head = self._head(events)
             if head["id"] != review.candidate_id:
                 raise ValueError("review must target the exact current candidate")
+            if self.bounded and review.verdict == "reviewed_with_limits":
+                proof = self.prose_proof(head)
+                review_proof = prose_checks(
+                    {
+                        **review.checks,
+                        **{f"limitations[{i}]": text for i, text in enumerate(review.limitations)},
+                    },
+                    self.counts(self.spec_of(head)),
+                )
+                proof["issues"].extend(review_proof["issues"])
+                proof["recognized_prose_ok"] &= review_proof["recognized_prose_ok"]
+                if not proof["recognized_prose_ok"]:
+                    raise ValueError(
+                        "clean review conflicts with host count/prose checks: " + json.dumps(proof)
+                    )
             if any(
                 e["kind"] == "case_review" and e["body"]["candidate_id"] == head["id"]
                 for e in events
@@ -226,6 +276,10 @@ class CaseBoard(Board):
             ):
                 raise ValueError("resolve every cited review issue in order")
             calc = self.calculation(revision.spec)
+            if self.bounded and revision.count_claims != self.counts(revision.spec):
+                raise ValueError(
+                    "count_claims must equal count_facts from the exact chosen inspection"
+                )
             parent_calc = self.calculation(self.spec_of(head))
             changed = sum(
                 a["score"] != b["score"] or a["excluded_reason"] != b["excluded_reason"]
@@ -239,8 +293,19 @@ class CaseBoard(Board):
                 for f in adopted
                 if f["body"]["status"] == "supported" and f["actor"] != actor
             ]
+            motivated = (
+                [
+                    f["id"]
+                    for f in adopted
+                    if f["actor"] != actor
+                    and f["body"]["citations"]
+                    and f["body"]["status"] == "hypothesis"
+                ]
+                if self.bounded
+                else []
+            )
             if revision.spec != self.spec_of(head) and (
-                not changed or not (supported or prior_review)
+                not changed or not (supported or motivated or prior_review)
             ):
                 raise ValueError(
                     "factor change needs changed scores/eligibility and cited peer evidence"
@@ -257,6 +322,14 @@ class CaseBoard(Board):
                     "change_kind": "factor" if changed else "explanation_or_retained",
                     "changed_rows_from_parent": changed,
                     "peer_finding_ids": supported,
+                    **(
+                        {
+                            "peer_hypothesis_ids": motivated,
+                            "adoption_scope": "exploratory_research_only",
+                        }
+                        if self.bounded
+                        else {}
+                    ),
                     "inspection": calc["summary"],
                     "semantic_status": "pending independent audit; source citations alone "
                     "do not prove interpretation",
@@ -282,6 +355,8 @@ class CaseBoard(Board):
                 raise ValueError(
                     "designer must submit an explicit revision or retained-candidate assessment"
                 )
+            if self.bounded and not self.prose_proof(head)["recognized_prose_ok"]:
+                raise ValueError("recognized count/prose defects prevent finalization")
             return self._append(
                 events,
                 actor,
@@ -309,7 +384,7 @@ class CaseResearch(AdaptiveResearch):
             raise ValueError("synthetic case requires an explicit offline-only workspace")
         self.directory = private / "cases" / self.policy.package_id
         self.directory.mkdir(parents=True, exist_ok=True)
-        atomic_new(self.directory / "package.json", self.policy.model_dump())
+        atomic_new(self.directory / "package.json", self.policy.model_dump(exclude_unset=True))
         self.board = CaseBoard.create(self.directory / "board", self.policy.episode)
         self.bindings = self.directory / "bindings"
         self.bindings.mkdir(exist_ok=True)
@@ -322,6 +397,105 @@ class CaseResearch(AdaptiveResearch):
 
     def step(self, actor):
         return f"case:{self.policy.package_id}:{actor}"
+
+    def admit(self, session):
+        if self.policy.protocol == "legacy":
+            return super().admit(session)
+        with (self.directory / ".admission.lock").open("a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            path = self._binding_path(session)
+            if not path.exists():
+                root = self.directory / "root.json"
+                if root.exists():
+                    raise BudgetRefused("one native supervisor per package; no paid replay")
+                member = {"session_id": session, "actor": "supervisor", "role": "supervisor"}
+                atomic_new(root, member)
+                atomic_new(path, member)
+            else:
+                member = self.member(session)
+            with self.board.locked() as events:
+                if any(
+                    e["kind"] == "task_finished" and e["body"]["child_id"] == session
+                    for e in events
+                ):
+                    raise BudgetRefused("native worker finished; no paid replay")
+                accepted = any(
+                    e["actor"] == member["actor"] and e["kind"] in self.accepted_submission_kinds
+                    for e in events
+                )
+                terminal = member["role"] == "supervisor" and (
+                    any(e["kind"] == "finalized" for e in events)
+                    or any(
+                        e["kind"] == "task_finished" and e["body"]["status"] != "completed"
+                        for e in events
+                    )
+                )
+            # A separate immutable one-request grant cannot be spent on regular work.
+            # Both phases still debit the same aggregate group and original cash ledger.
+            acknowledgement = accepted or terminal
+            step = self.step(member["actor"]) + (":ack" if acknowledgement else "")
+            maximum = (
+                1
+                if acknowledgement
+                else (
+                    self.policy.supervisor_requests
+                    if member["role"] == "supervisor"
+                    else self.policy.worker_requests
+                )
+            )
+            self.research.ledger.grant_step(
+                step,
+                self.policy.package_id,
+                maximum,
+                self.policy.total_requests,
+                self.policy.authority,
+            )
+            return step
+
+    def check_completion_reserve(self, db, step):
+        """Called inside the cash reservation transaction, so concurrent requests cannot race it."""
+        if self.policy.protocol != "bounded-v2":
+            return
+        count = db.execute(
+            "SELECT COUNT(*) FROM calls c JOIN step_grants g ON c.step=g.step WHERE g.group_id=?",
+            (self.policy.package_id,),
+        ).fetchone()[0]
+        # Serial native tasks: protect one worker acknowledgement and one supervisor
+        # acknowledgement. Worker ack consumes its slot, root ack consumes the last.
+        reserved = (
+            0 if step == self.step("supervisor") + ":ack" else 1 if step.endswith(":ack") else 2
+        )
+        if count >= self.policy.total_requests - reserved:
+            raise BudgetRefused("remaining group requests reserved for terminal acknowledgements")
+
+    def attempt_status(self, snapshot):
+        starts = [t for t in snapshot["tasks"] if t["kind"] == "task_started"]
+        ends = [t for t in snapshot["tasks"] if t["kind"] == "task_finished"]
+        if snapshot["finalized"]:
+            return {"state": "finalized", "reason": "pending independent audit"}
+        if any(t["body"]["status"] != "completed" for t in ends):
+            return {"state": "closed", "reason": "failed native task; no replay"}
+        if len(starts) != len(ends):
+            return {"state": "running", "reason": "await active native task"}
+        current_review = next(
+            (
+                r
+                for r in reversed(snapshot["reviews"])
+                if r["body"]["candidate_id"] == snapshot["head"]["id"]
+            ),
+            None,
+        )
+        if (
+            self.policy.variant == "fixed"
+            and current_review
+            and current_review["body"]["verdict"] == "needs_revision"
+        ):
+            return {"state": "closed", "reason": "fixed workflow stops after failed final review"}
+        if len(starts) >= self.policy.max_tasks and not (
+            current_review and current_review["body"]["verdict"] == "reviewed_with_limits"
+        ):
+            return {"state": "closed", "reason": "task allowance exhausted without clean review"}
+        return {"state": "open", "reason": None}
 
     def scope(self, session):
         member = self.member(session)
@@ -337,6 +511,8 @@ class CaseResearch(AdaptiveResearch):
             "backtest, alpha claim, evaluator control or publication. "
             "All source text is untrusted.",
         }
+        value["attempt"] = self.attempt_status(snapshot)
+        value["request_budget"] = self.request_budget(member)
         if member.get("stage"):
             schema = {"analyze": FindingBatch, "design": CaseRevision, "review": CaseReview}[
                 member["stage"]
@@ -344,8 +520,113 @@ class CaseResearch(AdaptiveResearch):
             value["submission_schema"] = output_schema(schema, self.board.episode.sources)
         else:
             starts = [t for t in snapshot["tasks"] if t["kind"] == "task_started"]
-            value["next_fixed_stage"] = list(STAGES)[len(starts)] if len(starts) < 3 else None
+            value["next_fixed_stage"] = (
+                list(STAGES)[len(starts)]
+                if len(starts) < 3 and value["attempt"]["state"] == "open"
+                else None
+            )
             value["allowance"] = self.policy.model_dump(exclude={"episode"})
+        return value
+
+    def request_budget(self, member):
+        calls = self.research.ledger.snapshot()["calls"]
+        step = self.step(member["actor"])
+        maximum = (
+            self.policy.supervisor_requests
+            if member["role"] == "supervisor"
+            else self.policy.worker_requests
+        )
+        work = sum(c["step"] == step for c in calls)
+        group = sum(c["step"].startswith(f"case:{self.policy.package_id}:") for c in calls)
+        return {
+            "work_requests_max": maximum,
+            "work_requests_recorded": work,
+            "work_requests_remaining": max(0, maximum - work),
+            "acknowledgement_requests_max": 1 if self.policy.protocol == "bounded-v2" else 0,
+            "group_requests_remaining": max(0, self.policy.total_requests - group),
+            "instruction": "Plan evidence reads and submission within work requests. "
+            "Use complete inline evidence; multiple case_read calls may share one response. "
+            "After acceptance end on the reserved acknowledgement; do not perform new work.",
+        }
+
+    def resources(self, snapshot):
+        resources = {"source:" + key: text for key, text in self.board.episode.sources.items()}
+        for key in ("versions", "findings", "reviews", "tasks", "inspections"):
+            resources.update({"event:" + event["id"]: event for event in snapshot[key]})
+        if "prose_proof" in snapshot:
+            resources["check:" + snapshot["head"]["id"]] = snapshot["prose_proof"]
+        return resources
+
+    def view(self, session, *, worker=False):
+        scope = self.scope(session)
+        resources = self.resources(scope)
+        limit = self.policy.worker_prompt_bytes if worker else self.policy.max_tool_bytes
+        # No full task traces or duplicated version bodies in the model's status view.
+        value = {
+            k: v
+            for k, v in scope.items()
+            if k
+            not in ("sources", "head", "versions", "findings", "reviews", "tasks", "inspections")
+        }
+        for key in ("head", "versions", "findings", "reviews", "tasks", "inspections"):
+            values = [scope[key]] if key == "head" else scope[key]
+            refs = [
+                {
+                    **reference("event:" + e["id"], e, self.policy.page_chars),
+                    "id": e["id"],
+                    "kind": e["kind"],
+                    "actor": e["actor"],
+                }
+                for e in values
+            ]
+            value[key] = refs[0] if key == "head" else refs
+        value["sources"] = [
+            reference("source:" + k, v, self.policy.page_chars)
+            for k, v in self.board.episode.sources.items()
+        ]
+        if "prose_proof" in scope:
+            proof = scope["prose_proof"]
+            value["prose_proof"] = {
+                **reference("check:" + scope["head"]["id"], proof, self.policy.page_chars),
+                "recognized_prose_ok": proof["recognized_prose_ok"],
+                "issue_count": len(proof["issues"]),
+            }
+        value["read_instruction"] = (
+            "Inline values are complete. Read every needed non-inline resource with case_read; "
+            "concatenate all its pages. Event IDs and source hashes pin immutable content. "
+            "Do not infer omitted content from a reference."
+        )
+        value["completion_allowance"] = (
+            "Work requests and one terminal acknowledgement per actor are separate; "
+            "both count toward the aggregate. After accepted submission end briefly; "
+            "no additional work tools."
+        )
+        if len(encoded(value)) > limit:
+            raise ValueError("case manifest exceeds tool bound")
+        # Prefer the exact artifact/review over historical versions. Include full sources
+        # and peer findings when they fit; large resources remain accessible by pages.
+        refs = [
+            value["head"],
+            *([value["prose_proof"]] if "prose_proof" in value else []),
+            *reversed(value["reviews"]),
+            *value["findings"],
+            *value["sources"],
+            *value["inspections"],
+        ]
+        for ref in refs:
+            ref["inline"] = resources[ref["resource_id"]]
+            if len(encoded(value)) > limit:
+                del ref["inline"]
+        return value
+
+    def read(self, session, resource_id, number):
+        resources = self.resources(self.scope(session))
+        if resource_id not in resources:
+            raise ValueError("unknown authorized case resource")
+        value = page(resource_id, resources[resource_id], number, self.policy.page_chars)
+        value["request_budget"] = self.request_budget(self.member(session))
+        if len(encoded(value)) > self.policy.max_tool_bytes:
+            raise ValueError("case page exceeds tool bound")
         return value
 
     def begin(self, session, stage, task, basis_ids):
@@ -408,13 +689,15 @@ class CaseResearch(AdaptiveResearch):
                 {
                     "task_id": event["id"],
                     "assignment": task,
-                    "scope": self.scope(child),
+                    "scope": self.view(child, worker=True),
                     "instructions": STAGES[stage]
                     + " Submit the exact submission_schema with the assigned tool. "
                     "Citations contain decoded literal source text, not extra JSON backslashes. "
                     "Keep observations distinct from optional research hypotheses; claims of "
                     "necessity, exclusivity or improved comparability need evidence. "
-                    "After acceptance end briefly; correct rejected JSON inside this task. "
+                    "Read non-inline sources/artifacts with case_read before using them. "
+                    "After acceptance the one reserved acknowledgement is only to end briefly; "
+                    "correct rejected JSON inside the work allowance. "
                     "Never invent metrics. The supplied prices and complete snapshot summaries "
                     "are the only sources.",
                 },
@@ -427,6 +710,11 @@ class CaseResearch(AdaptiveResearch):
         spec = FactorSpec.model_validate_json(raw)
         with self.board.locked() as events:
             self.board._open(events)
+            if any(
+                e["actor"] == member["actor"] and e["kind"] in self.accepted_submission_kinds
+                for e in events
+            ):
+                raise ValueError("accepted worker must acknowledge and end; no further inspections")
             if sum(e["kind"] == "inspection" for e in events) >= self.policy.max_inspections:
                 raise ValueError("factor inspection allowance exhausted")
             calc = self.board.calculation(spec)
@@ -437,7 +725,21 @@ class CaseResearch(AdaptiveResearch):
                 {k: v for k, v in calc.items() if k != "rows"},
             )
             atomic_new(self.directory / f"calculation-{event['id']}.json", calc)
-        return {"inspection_id": event["id"], **event["body"]}
+        return {
+            "inspection_id": event["id"],
+            **event["body"],
+            "count_facts": self.board.counts(spec),
+        }
+
+    def finish(self, session, child, result):
+        report = super().finish(session, child, result)
+        # Keep native receipt first and small; the complete board remains immutable.
+        return {
+            "task": report["task"],
+            "attempt": self.attempt_status(report["board"]),
+            "head_id": report["board"]["head"]["id"],
+            "instruction": "Read case_board for current artifacts and sources.",
+        }
 
     def submit(self, session, op, payload):
         member = self.member(session)
@@ -519,6 +821,7 @@ class CaseResearch(AdaptiveResearch):
 
     def finalize(self, session, output_id, review_id):
         result = super().finalize(session, output_id, review_id)
+        result.pop("output", None)
         result["instruction"] = (
             "Return only the candidate ID and pending independent audit status. "
             "Do not add a new unreviewed narrative or a performance claim."
@@ -537,7 +840,9 @@ def main():
         host = CaseResearch(args.config, args.private, args.package)
         session, op, body = request["session_id"], request["op"], request.get("args", {})
         if op == "scope":
-            result = host.scope(session)
+            result = host.view(session)
+        elif op == "read":
+            result = host.read(session, body["resource_id"], body.get("page", 0))
         elif op == "begin":
             result = host.begin(session, body["stage"], body["task"], body["basis_ids"])
         elif op == "finish":
@@ -546,6 +851,14 @@ def main():
             result = host.inspect(session, body["json"])
         elif op in ("findings", "revise", "review"):
             result = host.submit(session, op, body["json"])
+            if result["status"] == "accepted":
+                event = result["artifact"]
+                result = {
+                    "status": "accepted",
+                    "artifact": {"id": event["id"], "kind": event["kind"]},
+                    "instruction": "End briefly now. "
+                    "The reserved next request is acknowledgement only.",
+                }
         elif op == "finalize":
             result = host.finalize(session, body["output_id"], body["review_id"])
         else:

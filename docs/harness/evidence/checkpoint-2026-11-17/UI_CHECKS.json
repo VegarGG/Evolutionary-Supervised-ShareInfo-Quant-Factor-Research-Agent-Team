@@ -1,0 +1,157 @@
+{
+  "offline-02-ui": {
+    "status": "pass",
+    "at": "2026-11-17T01:45:14.193Z",
+    "title": "Run the frozen offline native — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3087",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "offline-03-ui": {
+    "status": "pass",
+    "at": "2026-11-17T02:13:30.588Z",
+    "title": "Run the frozen offline native — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3087",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "live-fixed-01/ui": {
+    "status": "pass",
+    "at": "2026-11-17T02:03:50.352Z",
+    "title": "Develop an executable short-horizon clos — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "live-delivery-fixed-01/ui": {
+    "status": "pass",
+    "at": "2026-11-17T02:30:52.052Z",
+    "title": "Develop an executable short-horizon clos — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "live-delivery-adaptive-02/ui": {
+    "status": "pass",
+    "at": "2026-11-17T02:47:09.925Z",
+    "title": "Develop an executable short-horizon clos — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Native DSH 390px layout is visually clipped; screenshot captured, mobile not accepted."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  }
+}

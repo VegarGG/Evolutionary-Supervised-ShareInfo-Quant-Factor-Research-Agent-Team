@@ -23,6 +23,7 @@ from qfh.coding_plan import CodingLedger, CodingPolicy
 from qfh.experiment import Resources, write_new
 from qfh.proxy import GuardProxy
 from qfh.research import Research
+from qfh.workspace import isolated_workspace
 
 TOOLS = {
     "market_daily_bars",
@@ -85,8 +86,7 @@ def serve(
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     evidence = private / "research/servers" / stamp
     evidence.mkdir(parents=True)
-    workspace = private / "research-workspace"
-    workspace.mkdir(exist_ok=True)
+    workspace = isolated_workspace(private)
     home = private / "research-ui-home"
     home.mkdir(exist_ok=True)
     # Preserve credentials already entered in the earlier setup UI. Later
@@ -164,13 +164,22 @@ def serve(
             "adaptive_package": adaptive.policy.model_dump(exclude_unset=True)
             if adaptive and not case_package
             else None,
-            "case_package": adaptive.policy.model_dump() if case_package else None,
+            "case_package": adaptive.policy.model_dump(exclude_unset=True)
+            if case_package
+            else None,
             "effective_output_cap": output_cap,
+            "isolated_workspace": str(workspace),
             "budget_before": research.ledger.snapshot(),
         },
     )
     with GuardProxy(
-        CodingLedger(research.ledger, coding) if coding else research.ledger,
+        CodingLedger(
+            research.ledger,
+            coding,
+            admission_check=adaptive.check_completion_reserve if case_package else None,
+        )
+        if coding
+        else research.ledger,
         private / "campaign/wire",
         credential,
         model,

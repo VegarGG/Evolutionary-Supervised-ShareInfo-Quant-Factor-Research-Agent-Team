@@ -141,8 +141,8 @@ def audit(directory):
             "sample SD n-1",
             "per-symbol summaries",
             "execution timing",
-            "future perturbation",
-        ],
+        ]
+        + (["future perturbation of inspected specifications"] if calculations else []),
         "limits": "Arithmetic only. Source interpretations, rationale and claimed improvements "
         "require separate semantic review. No performance test.",
     }

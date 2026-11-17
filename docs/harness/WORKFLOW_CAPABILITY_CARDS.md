@@ -1,6 +1,6 @@
 # Workflow capability cards
 
-Evidence reviewed on 16 November 2026. These cards describe observed mechanisms,
+Evidence reviewed on 17 November 2026. These cards describe observed mechanisms,
 not investment performance. The first six variants used one synthetic diagnostic
 with a withheld answer key. Equal evidence and output ceilings did not make actual
 compute equal. The native BaoStock case used real observations, a correct initial
@@ -81,6 +81,10 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
 - Demonstrated: native DSH child tasks produce cited findings, an executable
   candidate or explicit retention, and a review pinned to that version. The host
   stops rather than bypassing a failed final review.
+  The [new bounded-completion control](CHECKPOINT_2026-11-17.md) completes analysis,
+  design and review in 18 calls and adopts an inspected volatility-scaled candidate
+  (171 changed scores). Independent arithmetic and descriptive review pass with
+  wording caveats. The preceding 19-call evidence-delivery failure is preserved.
 - Limits: the first Flash run changed scores but its explanation failed review.
   The GLM 5.3 runs and failures are recorded separately. A fixed sequence cannot
   request a repair after its final review within this control's protocol.
@@ -89,8 +93,8 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   five-request allowance; the accepted retention lacked a native terminal
   acknowledgement and never reached review. Inspection is not adoption.
 - Suitable use: equal-evidence control for adaptive assignments.
-- Next experiment: retain the fixed stage assignments while changing the research
-  case under a new predeclared protocol; do not tune the control after seeing results.
+- Next experiment: retain fixed stage assignments and equal inputs in the next
+  final-output contract verification; do not tune the control after seeing results.
 
 ## Adaptive supervisor with two worker roles
 
@@ -100,7 +104,7 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   attributes decisions and obtains review of the current candidate. Two worker
   role types are reused through fresh native child activations; this is not a
   claim of exactly two persistent child sessions.
-- Limits: the unseen GLM 5.3 case has not demonstrated a substantive adaptive factor
+- Limits: the 16 November unseen GLM 5.3 case did not demonstrate a substantive adaptive factor
   revision. The correct starting formula and close-only evidence may be weak
   stimuli for evolution. Contract repairs and a transport timeout remain recorded.
   A defensible retention decision does not establish general discovery capability.
@@ -110,10 +114,21 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   observed failure mechanisms, not a controlled proof that effort or supervision
   generally reduces quality. Tool-result truncation also exposed an export gap;
   native session-event auditing now verifies actual task states independently.
+- New evidence: the [17 November case](CHECKPOINT_2026-11-17.md) uses source-specific
+  assignments citing observed finding IDs. The author adopts an exploratory
+  volatility-scaling hypothesis and changes 171 scores; independent arithmetic
+  passes. Three native tasks complete in 20 calls with a terminal acknowledgement
+  for each worker and the supervisor. One invalid basis-ID delegation is corrected.
+  The final reviewer repeats an unsupported inference from next observed prices to
+  executable signals, so independent semantic acceptance is withheld. A post-run
+  offline guard catches that exact counterexample without revising the live artifact.
+  The fixed control reaches the same specification with two fewer calls; adaptive
+  uses 18.6% more tokens. The observed topology remains analyze/design/review; this
+  run demonstrates targeted assignments, not a successful additional repair loop.
 - Suitable use: provisional research core for bounded, auditable development.
-- Next experiment: a new frozen case with an evidence-supported applicability
-  constraint or competing testable specifications. Permit justified exploratory
-  hypotheses without requiring profitable alpha; do not prescribe a correction.
+- Next experiment: typed, version-pinned final summaries with exact metric/unit
+  fields and explicit evidence for execution claims; replay the false clean passes,
+  then a separately frozen small live verification. Do not prescribe a winning factor.
 
 ## Core decision and module contracts
 
@@ -122,6 +137,9 @@ Keep the native DSH supervisor with author and reviewer role types as the
 are inspectable. Do not declare the minimal-core capability gate complete until a
 source-supported substantive adaptive revision survives independent review and a
 same-evidence fixed control. No measured universal collaboration advantage is claimed.
+The new pair now satisfies the substantive-computation part, but its adaptive
+artifact still needs a wording repair before that complete criterion can pass.
+Official acceptance and pool operations remain outside these prototype experiments.
 
 The first module contracts are already exercised separately: shared state accepts
 a current parent plus cited findings and records every disposition; completed-output
@@ -136,7 +154,8 @@ need their own module fixtures and failure records before Hybrid v2. Timeout
 reconciliation, operational recovery and broader source/semantic tests remain
 production work, separate from the early research-capability gate.
 
-Before another open-ended comparison, repair compact/paged board delivery and
-terminal acknowledgement accounting, add the count/prose counterexamples, separate
-exploration from adoption criteria, and isolate the research workspace from unrelated
-Git edits. Keep the original 200 CNY ledger and unresolved reservations intact.
+Compact/paged delivery, terminal acknowledgements, count checks, exploration/adoption
+criteria and the isolated Git workspace are now implemented and exercised live.
+Final checks pass 271 offline tests. Before another live comparison, close the typed
+output contract; the narrow prose grammar alone is insufficient. Keep the original
+200 CNY ledger and unresolved reservations intact.

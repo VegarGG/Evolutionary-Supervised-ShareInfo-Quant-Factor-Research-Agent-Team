@@ -11,6 +11,9 @@ export function registerCaseResearch(ctx, config) {
   const register = tool => ctx.effect(() => ctx.tools.register(defineTool({ output, ...tool })))
   register({ name: 'case_board', description: 'Read the frozen case, exact candidate, sources, tasks, findings, reviews and role submission schema. Supervisor calls first.',
     parameters: {}, execute: (_args, exec) => operation('scope', {}, exec) })
+  register({ name: 'case_read', description: 'Read one page of an immutable source or event named by case_board. Concatenate all text pages before interpreting a non-inline artifact; page numbering starts at zero.',
+    parameters: { resource_id: { type: 'string', required: true }, page: { type: 'integer', required: true } },
+    execute: (args, exec) => operation('read', args, exec) })
   register({ name: 'inspect_case_factor', description: 'Compute descriptive scores/coverage on frozen BaoStock rows. Designer must inspect its chosen spec before submission. No backtest or provider request.',
     parameters: { spec_json: { type: 'string', required: true } }, isConcurrencySafe: () => false,
     execute: (args, exec) => operation('inspect', { json: args.spec_json }, exec) })

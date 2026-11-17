@@ -1,0 +1,17 @@
+# Explicit next-checkpoint allowance: nine sequential new chunks, same historical ledger.
+max_business_requests: 1
+max_auth_requests: 1
+max_calendar_days: 3
+max_symbols: 1
+max_estimated_cells: 3
+max_response_bytes: 1048576
+timeout_seconds: 30
+allowed_kinds: [bars]
+research_cutoff: '2026-10-30T23:59:59.999999+08:00'
+provider_allowances:
+  baostock:
+    max_business_requests: 23
+    max_auth_requests: 23
+    max_estimated_cells: 720
+    max_calendar_days: 61
+    max_symbols: 1

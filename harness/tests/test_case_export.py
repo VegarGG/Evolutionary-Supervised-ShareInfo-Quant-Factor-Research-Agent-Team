@@ -6,9 +6,49 @@ from pathlib import Path
 import pytest
 from test_case_research import host
 
-from qfh.budget import BudgetRefused
+from qfh.budget import BudgetRefused, ProviderAdmission
 from qfh.case_research import TOOLS
 from qfh.coding_plan import CodingLedger
+from qfh.research import Research
+
+
+def test_startup_manifest_preserves_legacy_package_without_new_defaults(tmp_path, monkeypatch):
+    seed = tmp_path / "seed"
+    seed.mkdir()
+    fixture = host(seed)
+    legacy = fixture.policy.model_dump()
+    for key in ("protocol", "max_tool_bytes", "page_chars", "worker_prompt_bytes"):
+        del legacy[key]
+    private = tmp_path / "legacy"
+    private.mkdir()
+    (private / "OFFLINE_ONLY").write_text("No network or provider dispatch.")
+    package = private / "package.json"
+    package.write_text(json.dumps(legacy))
+    root = Path(__file__).parents[1]
+    config = root / "configs/research-trial.yaml"
+    research = Research(config, private)
+    research.ledger.set_provider_admission(
+        ProviderAdmission(providers=["glm_coding"], authority="Offline startup regression.")
+    )
+    research.activate_model_route(fixture.route)
+    spec = importlib.util.spec_from_file_location(
+        "case_startup_test", root / "scripts/start_research_ui.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    def stop_before_transport(*args, **kwargs):
+        raise RuntimeError("offline stop before transport")
+
+    monkeypatch.setattr(module, "GuardProxy", stop_before_transport)
+    with pytest.raises(RuntimeError, match="offline stop before transport"):
+        module.serve(config, private, None, 3080, False, case_package=package)
+    manifests = list((private / "research/servers").glob("*/manifest.json"))
+    assert len(manifests) == 1
+    manifest = json.loads(manifests[0].read_bytes())
+    persisted = json.loads((private / "cases/offline-case/package.json").read_bytes())
+    assert manifest["case_package"] == persisted == legacy
+    assert research.ledger.snapshot()["calls"] == []
 
 
 def test_timeout_export_preserves_unknown_charge_and_blocks_replay(tmp_path):

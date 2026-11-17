@@ -6,13 +6,32 @@ DSH owns sessions, model/tool loops, the Models editor and native Agent Teams.
 QRH adds bounded data access, evidence, accounting and deterministic research
 calculations. The independent evaluator remains separate.
 
+The latest [17 November checkpoint](docs/harness/CHECKPOINT_2026-11-17.md) adds
+bounded evidence delivery, real terminal-acknowledgement allowances, source-derived
+count checks and an isolated DSH Git workspace. **271 offline tests pass.** On a
+new 186-row BaoStock case, repaired fixed and adaptive workflows both completed and
+adopted a volatility-scaled factor, changing 171 scores. Independent arithmetic
+passes; the fixed candidate passes descriptive review with caveats, while the
+adaptive final prose overstates tradability and still needs revision. A post-run
+offline guard catches that counterexample; no extra paid retry or official acceptance
+is claimed. The earlier 19-call delivery failure is preserved.
+
+All **57 real calls** in this package used **GLM 5.3 / maximum reasoning effort**:
+1,523,122 tokens, 70.79% input cache hits and 15.171276 CNY conservative exposure.
+Current accounting is **55.583184 CNY accounted**, **14.090240 reserved** and
+**130.326576 unreserved**, inside the original 200 CNY ceiling. These are conservative
+Coding Plan estimates, not an incremental subscription invoice. The core's clean
+final-artifact gate remains open; next make metric/unit/execution claims come from
+pinned typed records before adding the evolution module. See
+[per-agent work, TPM/RPM, cache and machine measurements](docs/harness/evidence/checkpoint-2026-11-17/METRICS.md).
+
 The [earlier verified GLM Flash/BaoStock trial](docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
 passed at **12:12–12:20 Beijing on 13 November**: one supervisor, two workers,
 15 actual settled calls, 180,678 tokens and an immutable draft. Both workers
 independently executed the frozen specification on all 121 real observations.
 The result is **inconclusive**, with model-prose caveats recorded separately.
 Input cache hit rate was 57.47%; its independent arithmetic audit passed.
-The current unseen-case package passes 249 offline tests.
+The earlier maximum-effort package passed 249 offline tests.
 
 The [16 November unseen-case comparison](docs/harness/UNSEEN_CASE_2026-11-16.md)
 reused 177 BaoStock rows in fixed and adaptive workflows. After submission fixes,
@@ -34,7 +53,7 @@ The adaptive arm completed but retained the factor and failed independent prose
 review. The fixed control inspected normalization, retained the baseline, then
 exhausted its worker request allowance before final review. All 34 new calls settled:
 880655 tokens and 9.363500 CNY exposure. The native-log exporter now survives
-truncated tool receipts. Current accounting is **40.411908 CNY accounted**,
+truncated tool receipts. Accounting at that checkpoint was **40.411908 CNY accounted**,
 **14.090240 reserved**, and **145.497852 unreserved** under the original 200 CNY cap.
 
 Use **Settings → Models → Z.ai Coding (China) · guarded research** for the
@@ -113,13 +132,16 @@ That diagnostic route used low reasoning effort and a 120-request aggregate boun
 Accounting before the maximum-effort retry was **31.048408 CNY** baseline
 plus conservative debits, **14.090240 CNY reserved**, and **154.861352 CNY unreserved**.
 The reservations include the earlier 401 and the new unresolved connection timeout.
-The maximum-effort 32768-token route retains 240 aggregate historical requests and
+The earlier maximum-effort 32768-token route retained 240 aggregate historical requests and
 4000 conservative credits, with a 60 CNY local sublimit inside the unchanged 200 CNY
 total. These are local bounds, not provider quota readings or subscription invoices.
 The old unknown charge is still fully reserved under the named retry authority;
 it has not been reconciled or treated as free. Model-only prose review remains
 insufficient for general acceptance; [capability cards](docs/harness/WORKFLOW_CAPABILITY_CARDS.md)
-keep the minimal core provisional.
+keep the minimal core provisional. The latest bounded delivery route allows 295
+aggregate historical GLM attempts, 6000 conservative credits and 80 CNY local
+exposure. It has used 261 attempts; neither these caps nor the remaining budget
+authorize replay of a closed experiment.
 
 ## Local setup and checks
 

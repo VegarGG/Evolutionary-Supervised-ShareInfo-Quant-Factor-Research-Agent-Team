@@ -65,7 +65,16 @@ class Scripted:
                 },
             )
         stage = member["stage"]
-        if index >= (2 if stage == "design" else 1):
+        if stage == "analyze" and index < 5:
+            return Response(
+                tool="case_read", arguments={"resource_id": "source:long_evidence", "page": index}
+            )
+        if stage == "review" and index == 0:
+            return Response(
+                tool="case_read",
+                arguments={"resource_id": "event:" + scope["inspections"][-1]["id"], "page": 0},
+            )
+        if index >= (6 if stage == "analyze" else 2):
             return Response(text="Accepted synthetic artifact submitted.")
         citation = {"evidence_id": "prices", "quote": "Observed prices vary."}
         if stage == "analyze":
@@ -111,6 +120,7 @@ class Scripted:
                 ],
                 "citations": [citation],
                 "limitations": ["Scripted fixture only."],
+                "count_claims": self.host.board.counts(FactorSpec.model_validate(spec)),
                 "basis_review_id": review["id"] if review else None,
                 "issue_resolutions": ["Clarified synthetic hypothesis."] if review else [],
             }
@@ -196,7 +206,10 @@ if __name__ == "__main__":
             "supervisor": "supervisor",
             **{f"{r}-{i}": r for i in range(1, 7) for r in ("author", "reviewer")},
         },
-        sources={"prices": "Observed prices vary. No future outcome evidence."},
+        sources={
+            "prices": "Observed prices vary. No future outcome evidence.",
+            "long_evidence": "合成分页fixture\n" * 1500,
+        },
         initial=definition(spec, ["600000.XSHG"], "Synthetic unproven hypothesis."),
         initial_spec=spec,
         symbols=["600000.XSHG"],
@@ -217,10 +230,11 @@ if __name__ == "__main__":
         episode=episode,
         max_tasks=6,
         supervisor_requests=12,
-        worker_requests=5,
-        total_requests=32,
+        worker_requests=6,
+        total_requests=36,
         max_output_tokens=args.output_cap,
         max_inspections=6,
+        protocol="bounded-v2",
     )
     package = private / "package.json"
     atomic_new(package, policy.model_dump())

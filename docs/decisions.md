@@ -895,3 +895,67 @@ validation and exploratory hypothesis criteria. DSH's Git-diff cards attributed
 concurrent Codex edits to these research sessions; isolate the research workspace
 and use audited tool events for agent-work claims. MAX_EFFORT_2026-11-16.md contains
 all stage/actor/resource measurements. Core, Hybrid v1 and production gates stay open.
+
+## 2026-11-17: bounded completion and a new frozen research comparison
+
+The owner directed progression to the next checkpoint. Keep GLM 5.3/max, native
+DSH Models/Agent Teams, BaoStock only and the original 200 CNY ledger. Freeze a
+new three-symbol question and sequential small-to-larger source requests before
+dispatch: nine business queries and anonymous logins produce 186 rows/62 common
+dates. Historical BaoStock bounds become 23/23/720 calendar-symbol cells. No paid
+data or DeepSeek is used. A testable source-motivated hypothesis may be adopted for
+exploration without proving alpha; adoption never establishes investment benefit.
+
+Bound tool views to 24000 UTF-8 JSON bytes with immutable 2500-character pages and
+compact native receipts. Give every actor one actual acknowledgement request after
+accepted submission, separate from work but within the same atomic aggregate/cash
+ledger. The bounded case has six worker work calls, twelve supervisor work calls,
+36 aggregate calls, six tasks and six inspections. A failed native task remains a
+failure. Exact count fields and limited prose checks supplement independent review.
+Keep old native sessions in place while creating a separate Git boundary for their
+workspace, preventing unrelated repository edits from appearing as agent work.
+
+The first control failed after 19 settled calls: its reviewer spent its allowance
+paging through inputs and could not read an inspection event by ID. Preserve that
+attempt and withhold the unstarted adaptive arm. Record one repair amendment:
+preload full ordinary-sized evidence into up to 65536 bytes of compact worker scope,
+expose inspection receipts and show work/acknowledgement budgets. Freeze a fresh
+fixed/adaptive pair, keeping data/question/model and per-arm bounds unchanged.
+Historical caps become 295 GLM attempts, 6000 conservative credits and 80 CNY local
+exposure within the original 200. The old fingerprinted timeout remains unknown and
+fully reserved; its exception covers only the named fresh groups. No further
+automatic retry is allowed. The updated scripted native fixture passes with
+27 synthetic requests/five tasks, separately from real inference.
+
+The repaired pair uses identical 135-file runtime snapshots and finishes in 18/20
+calls. Both designers adopt the same inspected volatility-scaled specification,
+changing 171 scores with unchanged coverage. Independent Decimal arithmetic passes.
+The fixed descriptive artifact passes with caveats. The adaptive supervisor targets
+assignments with observed finding IDs and corrects one rejected basis-ID assignment,
+but its final reviewer repeats an unsupported claim that 56 next-price observations
+are executable signals. Preserve native finalization and withhold independent clean
+semantic acceptance. Both raw and normalized scores are dimensionless; unreviewed
+root progress also used misleading unit wording. No adaptive superiority is shown.
+
+After the pair, an offline counterexample replay blocks that recognized execution
+overstatement in both candidate and review. Do not rewrite either immutable live
+artifact or describe the post-run fix as a live pass. Fix a separate startup/export
+compatibility defect: manifests must serialize old packages exactly, without adding
+new defaults. A regression reproduces the mismatch before transport and passes after
+the fix. Final formatting/lint, JS syntax, MIT checks and 271 offline tests pass.
+
+All three real attempts total 57 settled requests, 1523122 tokens, 70.79% input cache
+hits, 15.171276 CNY exposure and 1306.28283 conservative prepaid credits. Accounting
+is now 55.583184 CNY plus 14.090240 reserved, leaving 130.326576 unreserved. These are
+conservative exposure/credit estimates, not an incremental invoice or account quota.
+The original official 20.35 CNY baseline and prior reservations remain unchanged.
+
+The checkpoint completes the bounded-delivery/completion engineering and records a
+real adaptive computational revision. The minimal core's clean final-artifact gate
+remains open. Next render metrics/units from typed pinned fields, distinguish observed
+execution prices from actual tradability, and separate intermediate chat from audited
+artifacts. Only then attach parent-child evolution and released-report matching.
+Desktop/reload pass; mobile clipping, root-only footer metrics, general semantics,
+timeout recovery, broader cases and production operations remain gaps. All attempts,
+per-role work, resource measurements, limits and evidence are in
+CHECKPOINT_2026-11-17.md. Keep PR 22 draft and unmerged.

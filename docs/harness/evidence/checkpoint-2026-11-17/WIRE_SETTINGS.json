@@ -1,0 +1,743 @@
+[
+  {
+    "id": "c3d871be605c4704a0db53ec6dec36c6",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "90ba90b4176842cd8ea6d2bf18c3d000",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "22f4fc363de844dc86f53f8d6d962cfa",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "134d06628db4452a9e24a6141dbc5b1c",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "1cf0ccfa6d064a929003b7a11431775e",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "6409dc1912284e27a3c15b59e0bdc642",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "1f150306525944a58c30b6e56bcdf684",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "f3e7fee3caf846e9a0f92ada48e78ef9",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "5a24706a75e7446a860d9fa952b30311",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "16da81210afc40e583c5ab64b1b1c000",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "e946bdd1d85d4047b090a3523874fbcf",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "6c6b063a4a8540a7bfa7d2935ba7b801",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "b2f7fba78fd645e18fe8f603c7f736ed",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "d24e6ee63565445083d88d75f6cffe0b",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "d476a8d35f2a48f1ae459b155b30d77f",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "469066f7e0cc43779ed4f291ca12d833",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a33f8f9f568a4245ae2151b3163eb18d",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "31054a20a550453fafda7bc5a18ddb47",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "5f4f8da4afc5468d80c17294971950b6",
+    "package_id": "checkpoint-glm53-max-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "9462a53bec8142689aa57a1b6b9ce958",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "c779a3aa61fb46929d3ceaf896c4f429",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "c25bb5a13426429b9bcbf9522b62168e",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a549da43462a42c6888b74eb91bfff47",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "fa341f91c8a44832807a41944b7a8f0f",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "6b5182ced937461baade77c566bab860",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "bbc78a51b8fd4c7dabc9df88e66ff5e4",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "e6399c30305d4550aa18fd6f155ef3ab",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "7b5f4b99794c40fcb0f331ef2f00253c",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "0caa51092c984230b4e51c60f70fca92",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "9c8baf363b6344ebaae54a6da4e33d76",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "8250468395a944aca0ae9a663fb94c41",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "d8fb3cbf3f354d30ae13dbab11cbaf46",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a1918638411041c59d81ca956de6c72a",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "8955dbff60744e00b7c2a4796a4572df",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "b52fff1c1ae24ac2b3dbc02e9a5a70d8",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "4af2f6c327a64d409abc74b97ecf209f",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "5945d729c1fc4fe6ab2a43576be4ced1",
+    "package_id": "checkpoint-delivery-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "232e0f6af0e442eb9f0127e3ca3cf956",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "8e1a35cd46b24e8e87ebd91208f114f7",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "ad5162a2570541bc81d75e922d40f487",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a3069c892025466a9c8204e8af2e714b",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "3cd4ddf582b5456ca50cf79b99408e34",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "87763c1bca6442579b78581ef8ab6ebf",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "86ea0948b9d74941bc0a009cf1cf6a46",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "bafae68d212e43409c1e1b7e7999d190",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "92998c50d17c4b8c80be459852620e8b",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "df4719c1341a4492bdab1dc135ebd05a",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "b1d641e5aaf64375a646d5e98537df22",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "dfe4d191a28249e4a0ce03b13d44de6f",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a26a80db049a491bbc1530ed34dd7c77",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "423b69b715154c91ae1e0fb70306ac9a",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "05420f04d17f4795b217ae9c57d3b662",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "818e29e1e4bb485e8b42caaca8910e8a",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "93997631b60e451c97a4e3973e3ab8b2",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "c3272a9a7477496ea04e19cb0c1e3a98",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "6f757eb6dbbd4cd0adf7f88c9becca38",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "bd5f97c01b1c4ac89b06ecdfd2ba532a",
+    "package_id": "checkpoint-delivery-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  }
+]

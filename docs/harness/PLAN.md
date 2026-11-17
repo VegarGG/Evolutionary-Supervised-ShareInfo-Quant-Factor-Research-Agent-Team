@@ -84,6 +84,23 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
+17 November update: [bounded completion and the new BaoStock case](CHECKPOINT_2026-11-17.md)
+are recorded. Compact/paged evidence, complete bounded worker scopes, readable
+inspection receipts, terminal acknowledgement grants, exact counts and isolated Git
+attribution are implemented. The first live control's 19-call delivery failure is
+preserved; its adaptive counterpart was withheld. The repaired fixed/adaptive pair
+used the same 135 frozen runtime files and 186 rows, completed in 18/20 calls and
+adopted the same volatility-scaled factor (171 changed scores). Independent arithmetic
+passes. Fixed descriptive review passes with caveats; adaptive claims next-close
+observations are executable signals, and its reviewer repeated the overstatement.
+Thus substantive adaptive computation is demonstrated, but clean final-artifact
+acceptance and the minimal-core gate remain open. The new narrow guard blocks that
+counterexample offline; no additional live retry was made. Final checks pass 271 tests.
+Across all three attempts: 57 settled calls, 1523122 tokens, 15.171276 CNY exposure.
+Current accounting is 55.583184 CNY accounted, 14.090240 reserved and 130.326576
+unreserved. GLM 5.3/max only; no new unknown or DeepSeek request. Historical limits
+are 295 attempts, 6000 conservative credits and 80 CNY within the original 200.
+
 16 November maximum-effort update: [the same-case GLM 5.3/max stages](MAX_EFFORT_2026-11-16.md)
 are recorded. A 16384-token response-limit failure led to a fresh 32768-token
 adaptive/fixed pair with the same 125 source files and frozen data. The adaptive
@@ -135,6 +152,8 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
 - [x] One unseen BaoStock case with frozen same-evidence fixed/adaptive controls,
   recorded retentions, failed review and failed repeat; no capability pass inferred.
 - [x] Workflow-specific capability cards with evidence, limits and next experiments.
+- [x] Bounded evidence delivery and actual terminal acknowledgement demonstrated
+  in offline native fixtures and the repaired live fixed/adaptive comparison.
 - [ ] Capability card supports progression to the minimal core.
 - [x] Native DSH Agent Teams source and model-selection interfaces reviewed.
 - [x] Bounded chat/worker integration implemented and exercised with synthetic inference.
@@ -160,7 +179,9 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
   output version; a clean control skips the author. Computational definitions are preserved.
 - [ ] General semantic reliability across broader research cases. One model-only
   final review falsely passed contradictory prose; the current host grammar is deliberately limited.
-- [ ] Adaptive follow-up that revises the research idea or computational definition on new evidence.
+- [x] Adaptive assignment based on observed peer findings that changes the
+  computational definition on a new frozen case; independent arithmetic passes.
+  Clean semantic acceptance remains open because the final prose overstates tradability.
 - [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
 - [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 
@@ -171,6 +192,12 @@ diagnostic repeats and targeted unit repairs are recorded. The unseen case's fir
 fixed/adaptive pair completed, but a reverse-order repeat stopped on unknown usage.
 Integration, retention and research traceability do not establish general discovery
 or collaboration superiority. The later maximum-effort stages do not change that
-conclusion. The timeout still needs reconciliation; its bounded reserved continuation
+conclusion. The 17 November pair demonstrates a computational revision in both
+arms, without an adaptive advantage; one final model review still falsely passed
+unsupported prose. The timeout still needs reconciliation; its bounded reserved continuation
 does not establish general recovery. Keep the observed cap, prose, tool-truncation
-and workspace-attribution failures in the next module acceptance tests.
+and workspace-attribution failures in the next module acceptance tests. Before
+attaching evolution, render metric/unit/execution claims from pinned typed records,
+distinguish chat completion from independent review, replay all retained false passes
+and run a separately frozen small verification. Then isolate parent-child evolution
+and released-report version matching before Hybrid v1 integration.

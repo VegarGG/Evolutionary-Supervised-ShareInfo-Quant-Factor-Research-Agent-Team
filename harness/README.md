@@ -10,7 +10,7 @@ completed both workers, both Team tasks and an immutable draft: 15 actual Flash
 requests, 180,678 tokens, 57.47% input cache hits and zero tool failures. Both workers
 executed the full 121-row BaoStock sample; the host result is inconclusive.
 That source passed 169 offline tests and GitHub checks; the current module package
-passes 249 offline tests. Quantitative audit passed; the
+passes 271 offline tests. Quantitative audit passed; the
 separate qualitative audit flags overly categorical interpretation of the estimate.
 
 Credentials now use **Settings → Models → Z.ai Coding (China) · guarded research**.
@@ -38,11 +38,23 @@ old reservation and permits only named fresh cases; another unknown charge still
 blocks dispatch. After a 16384-token length failure, a 32768-token pair retained
 the baseline: adaptive completion failed independent prose review, and the fixed
 control stopped before review at its five-request worker bound. All 34 new calls
-settled. Current balance: 40.411908 CNY accounted, 14.090240 reserved and 145.497852
-unreserved. The original 200 CNY cap remains; the current route has a 60 CNY local
+settled. Balance at that checkpoint: 40.411908 CNY accounted, 14.090240 reserved and 145.497852
+unreserved. The original 200 CNY cap remains; that route had a 60 CNY local
 sublimit, 4000 conservative credits and 240 aggregate historical GLM requests.
 
-The case profile exposes native `case_board`, `case_task`, `inspect_case_factor`,
+The [17 November checkpoint](../docs/harness/CHECKPOINT_2026-11-17.md) uses a new
+three-symbol, 186-row bundle. After preserving a 19-call delivery failure, the
+repaired fixed/adaptive pair completed in 18/20 calls and both adopted a substantive
+volatility-normalized candidate. The fixed candidate passes bounded descriptive
+review with caveats; adaptive final prose incorrectly equates next observed closes
+with executable signals, so its clean semantic acceptance is withheld. The post-run
+offline checker rejects this specific false pass; no live rerun follows it.
+All 57 calls used GLM 5.3/max and settled. Current balance is 55.583184 CNY accounted,
+14.090240 reserved and 130.326576 unreserved. The active route retains 295 historical
+attempts, 6000 conservative credits and an 80 CNY sublimit within the original 200.
+No route permits replay of a closed package. The old unknown charge remains reserved.
+
+The case profile exposes native `case_board`, `case_read`, `case_task`, `inspect_case_factor`,
 `submit_case_findings`, `revise_case_factor`, `review_case_factor` and `finalize_case`.
 The supervisor assigns native child tasks; the host restricts executable factor
 specifications, checks source citations and records exact versions/decisions.
@@ -51,8 +63,20 @@ and timing are independently recomputed with Decimal; semantic acceptance remain
 separate. No evaluator, official publication or arbitrary code execution is exposed.
 Two worker role types may create more than two child activations.
 
+Bounded-v2 keeps tool replies within 24000 UTF-8 JSON bytes and exposes complete
+immutable sources/events as 2500-character pages. Workers receive up to 65536 bytes
+of compact scope JSON with full current evidence when it fits. Six worker work
+requests and twelve supervisor work requests each have one separate terminal
+acknowledgement; all phases debit the same 36-request case ceiling and original cash
+ledger. A submitted artifact never substitutes for successful native completion.
+Exact count fields and limited prose counterexamples supplement independent review;
+they do not certify arbitrary model text. The research workspace has its own Git root
+without moving old native sessions. Startup preserves old package serialization.
+
 `prepare_unseen_case.py` separates the bounded data preparation from model dispatch;
 `prepare_case_rerun.py` freezes the owner-directed same-task model amendment.
+`prepare_case_delivery_rerun.py` records the one named delivery-repair pair; it is
+not a generic quota-reset or automatic retry command.
 `start_research_ui.py --case-package PATH --private .qfh-private --install-plugin`
 uses the existing Models editor and Agent Teams. Existing run IDs refuse paid replay.
 `export_case_run.py` audits wire/accounting and independent factor arithmetic;

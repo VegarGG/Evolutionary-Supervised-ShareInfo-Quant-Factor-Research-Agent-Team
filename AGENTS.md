@@ -32,7 +32,41 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   Anthropic probe and both reservations. Details: `NATIVE_MODELS_2026-11-13.md`.
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
-- Latest owner direction, 16 November: retry the same task with GLM 5.3 at maximum
+- On 17 November the owner authorized the next checkpoint. The new frozen
+  `glm53-checkpoint-2026-11-17` route keeps GLM 5.3/max and permits only
+  `checkpoint-glm53-max-fixed-01` and `checkpoint-glm53-max-adaptive-02` under the
+  same fingerprinted old-timeout reservation. Historical limits are now 276 GLM
+  attempts, 6000 conservative credits and 80 CNY local exposure, still inside the
+  original 200 CNY. Each fresh arm has 36 aggregate requests, six work requests
+  per worker, twelve supervisor work requests and one separate acknowledgement
+  per actor. Atomic group admission reserves terminal slots. No replay/fallback.
+  Compact/paged evidence, exact count claims, limited prose counterexamples and
+  an isolated Git boundary are covered by 265 offline tests. The scripted native
+  fixture completes five tasks in 25 synthetic requests; these are not real
+  inference or campaign spending. See `CHECKPOINT_2026-11-17.md` for the frozen
+  three-symbol/186-row real case and its separately recorded live results.
+  The first control then failed before review: paging consumed six work requests,
+  and the reader omitted inspection events. Preserve its 19 settled calls and
+  4.031364 CNY exposure; its adaptive counterpart was not started. The recorded
+  delivery amendment preloads bounded 65536-byte worker contexts, retains 24000-byte
+  tool views, exposes inspection receipts and remaining request counts. The fresh
+  `glm53-delivery-2026-11-17` route permits only `checkpoint-delivery-fixed-01` and
+  `checkpoint-delivery-adaptive-02`, with 295 historical attempts and unchanged
+  credit/cash ceilings and old reservations. No further automatic retry. All 266
+  offline tests and the updated 27-request synthetic native fixture pass.
+  Both repaired arms completed: fixed 18 calls/512704 tokens, adaptive 20/607925.
+  Both adopted volatility normalization (171 changed scores). Independent arithmetic
+  passes; fixed descriptive review passes with caveats, while adaptive incorrectly
+  calls 56 next-close observations executable signals. Its model reviewer repeated
+  the claim, so clean semantic acceptance remains open. Preserve that false pass.
+  A post-run offline counterexample guard now blocks it; historical outputs are
+  unchanged and no further paid retry occurred. Startup also preserves legacy
+  package fields exactly. Final checks pass 271 tests. All three live attempts total
+  57 settled calls, 1523122 tokens and 15.171276 CNY exposure. Current accounting:
+  55.583184 CNY accounted, 14.090240 reserved, 130.326576 unreserved. Historical GLM
+  attempts are 261/295. Next close typed final-output/metric/execution semantics
+  before attaching parent-child evolution. No official acceptance or production claim.
+- Owner direction, 16 November: retry the same task with GLM 5.3 at maximum
   reasoning effort. `glm53-max-unseen-2026-11-16` pins max on every native role and
   wire request. The exact old pre-HTTP ConnectTimeout remains unknown and fully
   reserved. A fingerprinted operator continuation permits only the two named fresh
@@ -48,7 +82,7 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   9.363500 CNY exposure. The 32k adaptive arm retained the factor and failed independent
   prose review; the fixed arm inspected an alternative but retained the baseline,
   then exhausted its five-request worker bound after submission, before review.
-  Never relabel that native error as completion. Current accounting is 40.411908 CNY,
+  Never relabel that native error as completion. Accounting then was 40.411908 CNY,
   14.090240 reserved and 145.497852 unreserved. 249 offline tests pass. Export uses
   native session events when model-visible tool JSON is truncated; the two live
   arms used the same 125-file source freeze. No minimal-core acceptance is claimed.
@@ -71,7 +105,7 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   requires a review of the exact current version plus source-derived unit checks,
   including recognized explicit prose relationships. This limited grammar does
   not establish general semantic correctness; retain false model passes separately.
-- Unseen case packages use the same frozen BaoStock evidence, initial executable
+- The original unseen case packages use the same frozen BaoStock evidence, initial executable
   definition and question in fixed/adaptive controls. At most six native tasks,
   32 requests and six factor inspections are allowed. Native DSH retains its model
   loop; Python tools import the server's frozen source snapshot. Retention and
