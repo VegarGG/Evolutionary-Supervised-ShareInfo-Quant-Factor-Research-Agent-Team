@@ -1,0 +1,29 @@
+{
+  "attempts": [
+    {
+      "action": "Initial prelive checks",
+      "result": "Ruff format check rejected the new preparation script; no test or live call was started",
+      "evidence": "prelive-checks-01.log"
+    },
+    {
+      "action": "Format and rerun prelive checks",
+      "result": "294 offline tests, lint, format, JavaScript syntax and MIT notice checks pass",
+      "evidence": "prelive-checks-02.log"
+    },
+    {
+      "action": "Read prior first request to preserve the exact root prompt",
+      "result": "Found a native session system-reminder as a second user-role message; retain only the actual first user prompt and validate the reminder separately. Preparation completed once with zero provider requests",
+      "evidence": "preparation.json"
+    },
+    {
+      "action": "Immediate second-server manifest preflight",
+      "result": "Checked before asynchronous startup produced the second manifest; no prompt or call submitted. Subsequent read verifies both identical 144-file snapshots.",
+      "evidence": "PAIR_PREFLIGHT.json"
+    },
+    {
+      "action": "Read-only fixed report inspection after server switch",
+      "result": "Native session selection is not encoded by the stored root URL; locator for Completed timed out on a fresh empty page. No prompt submitted. Select the existing session in sidebar and verify candidate ID before reading.",
+      "evidence": "fixed/report-ui.log"
+    }
+  ]
+}

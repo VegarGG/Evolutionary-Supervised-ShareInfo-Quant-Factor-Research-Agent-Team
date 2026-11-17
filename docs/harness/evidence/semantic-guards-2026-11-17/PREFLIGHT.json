@@ -1,0 +1,36 @@
+{
+  "model": "glm-5.3",
+  "effort": "max",
+  "output_cap": 32768,
+  "source_files": 144,
+  "semantic_guard_sha256": "382e7b6643088d49d71522a501a15c1fcf18e3720da04f8cda22c4e01048c4bf",
+  "credentials_configured": true,
+  "source_path": ".qfh-private/research/servers/20261117T060539.282232Z",
+  "budget_before": {
+    "carry_micro_cny": 56256735,
+    "new_settled_micro_cny": 57416546,
+    "unresolved_micro_cny": 14090240,
+    "cumulative_micro_cny": 76938368,
+    "conservative_unreconciled_cumulative_micro_cny": 113673281,
+    "remaining_unreserved_micro_cny": 108971392,
+    "invoice_verified": false,
+    "provider_admission": {
+      "revision": 2,
+      "kind": "provider_admission",
+      "providers": [
+        "glm_coding"
+      ],
+      "authority": "Owner: Cancel the scheduled DeepSeek run. Continue development using GLM until usage is empty or I tell you to switch.",
+      "at": "2026-11-13T05:40:10.576685+00:00"
+    },
+    "billing_baseline": {
+      "id": 1,
+      "at": "2026-11-12T07:05:53.036243+00:00",
+      "actual": 20350000,
+      "calls_sha256": "5a0a9dcb7868cb4af79add77198f026b243038dd7be152f98effad81586a5fce",
+      "authority": "Owner: Let me clarify the actual deepseek cost, the data is from the official api usage record, CNY 20.35."
+    }
+  },
+  "browser_plugin": "unavailable; installed Chrome/Playwright",
+  "time_basis": "UTC in evidence; user dates America/New_York"
+}

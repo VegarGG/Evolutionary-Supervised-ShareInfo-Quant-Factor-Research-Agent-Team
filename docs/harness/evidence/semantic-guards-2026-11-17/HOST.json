@@ -1,0 +1,7 @@
+{
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "machine": "arm64",
+  "logical_cpus": 18,
+  "ram_bytes": 38654705664,
+  "work_free_bytes": 359219200000
+}

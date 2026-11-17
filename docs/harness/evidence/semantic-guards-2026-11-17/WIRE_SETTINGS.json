@@ -1,0 +1,470 @@
+[
+  {
+    "id": "f11bc1d952f845a7b184d18884a652b5",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "36e15e3b24e14d438e04bd1565bd8643",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "a0331df1d478494fbd0b47e624d8e6c8",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "0256dbecebee4afe9d9f2faebbcb9392",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "4b31684a3df946c8906307c37f7e21b5",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "5de88c7861224f31b9320c8c0ac52a0a",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "267a64bcd0c946e6994788c511eb2b89",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "b7c6490ebfee4f9d854e6416db33a5cd",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "5b54773843034870a4f84a272b192209",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "c68ba609c40f4c83af58635e3202e1d0",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "fdd97f7fa75b4fc9942125b37c623425",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "c31aa15150db44d8b0cd0244c106b462",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "03732299c472476d946d042638f57dd3",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "e2fdf89165494d8c98cbb355e1801234",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "7c798b97a6ee4e0fa8aa44bbec946d2e",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "254205bcf7cf422eb2cbb8daf60bb6be",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "bea313b7c7c24bfc8a8a141a3150b47d",
+    "package_id": "semantic-guards-fixed-01",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "fe134b82e6ad45668a60f65707d1b34e",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "db8f7d668a8446e68edf438d1fa8fea6",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "6bb8619b8a4947e0a4108496fa119e97",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "9349d4ad05a84551b52d09c3fd09faef",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "reviewer-1",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "2552bcc2746b45c0b721f5bd50a95202",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "db2071a6b24e4e3ba7ba15227f8389fe",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "307120be5ba44de593d22f735a909b28",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "c11e0f37bd7e41349cd162dcbe6d69ce",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "1b49f033eeb442109ca09e14c8b27b42",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "author-2",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "503350fd02b44e79baf798fbf5679b41",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "d9908acb1db2433e884004542085072e",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "b3cbcd30c4ea44d294d45d57739d9b7c",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "00c148332294413ebd472492fa2a6772",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "2beaf742c09c4f63ab332e9bc0e1ac64",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "fd07810be31c44daa485c019c69c17bf",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "30377142a2e543f8b6c11b63635f92de",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "reviewer-3",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "2ab45567c32f44a9a8709346f7226f9d",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "504a5c5603294b8386916aed59ddf7bb",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  },
+  {
+    "id": "082e0ba9a9e74020b56148775d43c9a2",
+    "package_id": "semantic-guards-adaptive-02",
+    "actor": "supervisor",
+    "state": "settled",
+    "model": "glm-5.3",
+    "reasoning_effort": "max",
+    "max_tokens": 32768,
+    "thinking": {
+      "type": "enabled",
+      "clear_thinking": false
+    }
+  }
+]

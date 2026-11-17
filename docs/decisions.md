@@ -1028,3 +1028,50 @@ gate stays provisional. Verify unambiguous comparison claims before attaching
 parent-child evolution and released-report matching. All attempts, actor/resource
 measurements, guards and limitations are in STRUCTURED_REPORT_2026-11-17.md. Keep
 PR 22 draft and unmerged; no official acceptance or production claim.
+
+
+## 2026-11-17: Updated semantic guards tested in a fresh GLM maximum-effort pair
+
+The owner explicitly requests the next fixed/adaptive checkpoint under the updated
+guards. Freeze the same root prompt, previously seen 186 BaoStock rows, baseline,
+model and limits. The new route admits only `semantic-guards-fixed-01` and
+`semantic-guards-adaptive-02`, with 407 historical requests (335 plus 72), 9000
+conservative credits and the unchanged 100 CNY local exposure cap inside the
+original 200 CNY total. Preserve the exact old timeout fingerprints/reservation and
+401 reserve. No fallback, new data, old-turn replay or further automatic pair.
+
+Both arms freeze identical 144-file runtime snapshots, including the latest semantic
+guards and independent audit hardening. They complete 17/19 real GLM 5.3/max calls,
+with 440875/561935 tokens. The fixed designer inspects baseline and ten-observation
+volatility normalization, then retains the baseline; adaptive executes the
+five-observation normalization and changes 171 non-null scores. Its designer corrects
+the analyst's wrong expectation that matching windows add warmup. Both independent
+arithmetic/report audits pass; adaptive final descriptive review passes with limits.
+Fixed still does not name its dispersion comparison measure, although both the SD
+range and ratio support its directional claim. An incorrect analyst subtraction is
+adopted without an explicit correction; host final counts remain correct. No guard
+rejection occurs, demonstrating the bounded scope of the known-counterexample checks.
+
+Both final chat summaries repeat eight work requests from the last case_board
+snapshot, before finalize_case consumes a ninth work request. Each supervisor actually
+uses nine work requests plus one acknowledgement. Budget enforcement and exports
+are correct; final model summaries are not a reliable settled-usage surface. Native
+root footers also exclude worker tokens. Exact reports are verified byte for byte
+in the UI, but remain compact tool cards and full mobile navigation is unaccepted.
+
+All 36 new requests settle: 1002810 tokens, 69.99% input cache, 9.613800 CNY conservative
+exposure and 827.996760 conservative credits. Current accounting becomes 86.552168
+accounted, 14.090240 reserved and 99.357592 unreserved. Historical GLM use is 371
+attempts and 7006.403120 used/reserved credits. The official 20.35 CNY baseline and
+both old reservations remain. All 294 offline tests, lint/format, JS parsing and MIT
+notice checks pass. Failures in formatting, an early manifest read and a read-only
+UI selector are preserved; none caused a paid resubmission.
+
+The clean-pair/core checkpoint remains provisional. Next bind comparison measures
+and observation cohorts to typed inspection references, use host count facts in
+findings and render final team usage after settlement. Then verify clean final
+narratives before parent-child evolution/released-report matching. Do not keep
+adding superficial phrase guards or force a factor change to obtain a pass. No
+causal workflow advantage, official acceptance or production readiness is claimed.
+See SEMANTIC_GUARDS_2026-11-17.md and its complete per-agent/evidence directory.
+Keep PR 22 draft and unmerged.

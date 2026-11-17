@@ -93,15 +93,22 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   five-request allowance; the accepted retention lacked a native terminal
   acknowledgement and never reached review. Inspection is not adoption.
 - Suitable use: equal-evidence control for adaptive assignments.
-- Latest evidence: [structured-output trials](STRUCTURED_REPORT_2026-11-17.md).
+- Prior evidence: [structured-output trials](STRUCTURED_REPORT_2026-11-17.md).
   The first fixed arm adopts normalization in 22 calls and passes descriptive review
   with limits. The repaired task-bound control uses 25 calls, inspects both specs
   and retains the baseline. Its exact computed report passes, but independent review
   flags an undefined absolute-versus-relative dispersion comparison. Two exact-source
   quotation rejections are retained; reference binding itself succeeds.
-- Next experiment: verify a named comparison measure or omit the ambiguous claim;
-  retention remains allowed. The recorded wording now fails a bounded offline guard.
-  Preserve the same question, data and fixed assignments in any new paired verification.
+- Latest evidence: [updated semantic guards](SEMANTIC_GUARDS_2026-11-17.md).
+  The fixed arm completes in 17 calls, inspects baseline and a ten-observation
+  volatility-window alternative, then retains the baseline. Arithmetic/report
+  identity pass. Its directional spread claim is supported by both the SD range
+  and max/min ratio, but neither measure is named. The explicit-definition criterion
+  remains unmet. An analyst's incorrect subtraction survives as an adopted finding;
+  the final host counts themselves are correct.
+- Next experiment: bind a comparison to named measures, inspection IDs and observation
+  cohorts; reference host count facts in findings. Keep retention valid and preserve
+  both arithmetic/provenance errors separately from computed final facts.
 
 ## Adaptive supervisor with two worker roles
 
@@ -133,7 +140,7 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   uses 18.6% more tokens. The observed topology remains analyze/design/review; this
   run demonstrates targeted assignments, not a successful additional repair loop.
 - Suitable use: provisional research core for bounded, auditable development.
-- Latest evidence: [structured-output trials](STRUCTURED_REPORT_2026-11-17.md).
+- Prior evidence: [structured-output trials](STRUCTURED_REPORT_2026-11-17.md).
   The first adaptive analyst fails on three malformed/wrong target IDs and produces
   no accepted findings. A host binding repair maps immutable task labels to full
   references without rewriting research content. The fresh adaptive arm completes
@@ -147,9 +154,19 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   spends more calls on quote repair and adopts a different outcome. One sequential
   pair does not identify a causal workflow advantage. No additional repair stage
   occurs in the real pair; synthetic native fixtures exercise the repair loop separately.
-- Next experiment: final comparison claims with named measures and independent
-  clean narratives in both arms after the new guards; do not prescribe a winning
-  factor or treat repeated exposure to this case as unseen evidence.
+- Latest evidence: [updated semantic guards](SEMANTIC_GUARDS_2026-11-17.md).
+  The adaptive arm completes in 19 calls and adopts normalization, changing 171
+  non-null scores. Its designer executes one new calculation and uses the existing
+  baseline receipt. The analyst wrongly predicts that matching five-observation
+  windows will add warmup; the designer's inspection and final decision correct
+  that expectation. Final descriptive review passes with limits. The real workflow
+  remains analyze/design/review, without an additional failed-review repair stage.
+  Adaptive uses 27.5% more tokens than fixed in this pair. Different inspected
+  alternatives, outcomes and evidence reads confound an efficiency comparison.
+- Next experiment: named comparison records, count references and host-generated
+  final accounting. Both models repeat a stale eight-work-request snapshot in chat;
+  settled usage is nine work requests plus one acknowledgement per supervisor.
+  Model-written summaries remain outside the exact research-report guarantee.
 
 ## Core decision and module contracts
 
@@ -172,8 +189,9 @@ version; amendments retain the original and require a new review. The restricted
 factor-specification module adds deterministic score/eligibility calculations and
 independent arithmetic, but does not expose an evaluator or publish results.
 
-Next isolate parent-to-child factor evolution and released-report matching, then
-integrate one accepted loop. Parallel research, frozen-pool curation and composition
+First close typed comparison/count and settled-summary reporting gaps. Then isolate
+parent-to-child factor evolution and released-report matching before integrating
+one accepted loop. Parallel research, frozen-pool curation and composition
 need their own module fixtures and failure records before Hybrid v2. Timeout
 reconciliation, operational recovery and broader source/semantic tests remain
 production work, separate from the early research-capability gate.
@@ -181,8 +199,9 @@ production work, separate from the early research-capability gate.
 Compact/paged delivery, terminal acknowledgements, count checks, exploration/adoption
 criteria and the isolated Git workspace are implemented and exercised live. Typed
 host reports, complete-report hashes and task-bound references now also have real
-trace audits. Final checks pass 294 offline tests; the latest vague-comparison and
-intermediate-unit-heading guards were added after the identical live snapshots.
-They are not a general semantic proof or a retroactive revalidation. Current budget
-accounting is 76.938368 CNY plus 14.090240 reserved, leaving 108.971392 unreserved
-under the original 200 CNY. Keep every failed attempt and reservation intact.
+trace audits. Final checks pass 294 offline tests. Both new live runtimes contain the
+updated guards, but neither triggers a semantic rejection: a different comparison
+phrase and free-text arithmetic still escape them. These are bounded checks, not a
+general semantic proof. Current budget accounting is 86.552168 CNY plus 14.090240
+reserved, leaving 99.357592 unreserved under the original 200 CNY. Preserve all
+failures and reservations. No extra paid pair or official acceptance follows.

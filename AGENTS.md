@@ -32,7 +32,26 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   Anthropic probe and both reservations. Details: `NATIVE_MODELS_2026-11-13.md`.
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
-- Latest owner work package, 17 November: structured final-output reporting,
+- The owner now requests one fresh fixed/adaptive pair under the updated semantic
+  guards, GLM 5.3/max. `glm53-semantic-guards-2026-11-17` permits only
+  `semantic-guards-fixed-01` and `semantic-guards-adaptive-02`, preserving the old
+  timeout fingerprints and reservation. Historical bounds: 407 requests (335 plus
+  72), 9000 conservative credits and the unchanged 100 CNY local exposure ceiling,
+  inside the original 200 CNY. Same frozen 186 rows and root prompt, no new data.
+  See `docs/harness/SEMANTIC_GUARDS_2026-11-17.md`. Verify both final narratives
+  independently; known grammar guards do not prove general semantics. No automatic
+  extra pair or official acceptance.
+  The pair is now complete in 17/19 settled calls: fixed retains, adaptive normalizes
+  171 scores and corrects its analyst's coverage expectation. Both arithmetic/report
+  audits pass; adaptive descriptive review passes with limits, fixed still needs a
+  named comparison measure. Both final chat summaries reuse a stale eight-request
+  count; actual supervisor use is nine work plus one acknowledgement. Preserve these
+  errors, the clean-pair gate stays provisional. All 294 offline tests pass. New usage
+  is 36 calls/1002810 tokens/9.613800 CNY conservative exposure. Current ledger:
+  86.552168 accounted, 14.090240 reserved, 99.357592 unreserved. Historical GLM use
+  is 371 attempts and 7006.403120 used/reserved credits. No further paid pair. Next
+  typed comparison/cohort records, finding count references and settled team summaries.
+- Preceding owner work package, 17 November: structured final-output reporting,
   semantic fixes and a GLM 5.3/max fixed/adaptive rerun. See
   `docs/harness/STRUCTURED_REPORT_2026-11-17.md`. `structured-v3` renders host facts,
   units/timing/provenance and binds reviews to the complete report. Preserve all

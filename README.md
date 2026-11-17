@@ -6,27 +6,30 @@ DSH owns sessions, model/tool loops, the Models editor and native Agent Teams.
 QRH adds bounded data access, evidence, accounting and deterministic research
 calculations. The independent evaluator remains separate.
 
-The latest [structured-report checkpoint](docs/harness/STRUCTURED_REPORT_2026-11-17.md)
-renders calculated facts, units, timing limits and provenance directly from pinned
-records. Native task references replace manual hash copying; reviews bind the exact
-candidate and complete report. **294 offline tests pass.** The repaired GLM 5.3/max
-fixed/adaptive pair completes on the same 186 BaoStock rows. Fixed retains the baseline;
-adaptive adopts normalization, changing 171 scores. Independent arithmetic and report
-binding pass in both. The adaptive final report passes descriptive review with limits;
-the fixed report still needs a named dispersion-comparison measure. That counterexample
-and an intermediate units-heading error now have offline guards; their live histories
-are unchanged. The initial adaptive hash-copy failure is also preserved.
+The latest [semantic-guard rerun](docs/harness/SEMANTIC_GUARDS_2026-11-17.md)
+uses **GLM 5.3 / maximum effort** on the same frozen 186 BaoStock rows under identical
+144-file runtime snapshots. Fixed/adaptive complete in **17/19 real calls**; fixed
+retains the baseline and adaptive adopts normalization, changing 171 scores.
+Independent arithmetic, report binding and actual native task checks pass. The
+adaptive final research report passes descriptive review with limits. The fixed
+comparison still omits its aggregate dispersion measure. Both model chat summaries
+also repeat an outdated request count; settled host accounting remains correct.
+The complete clean-pair/core checkpoint is **still provisional**.
 
-All **74 real calls** across the initial and repaired pairs used **GLM 5.3 / maximum
-reasoning effort**: 2,202,398 tokens, 74.71% input cache hits and **21.355184 CNY**
-conservative exposure. Current accounting is **76.938368 CNY accounted**,
-**14.090240 reserved** and **108.971392 unreserved**, inside the original 200 CNY
-ceiling. These are conservative Coding Plan estimates, not an incremental subscription
-invoice or account-quota reading. The complete clean-pair gate stays open; next verify
-unambiguous comparison claims before attaching evolution. See
-[per-agent work, TPM/RPM, cache and machine measurements](docs/harness/evidence/structured-report-2026-11-17/METRICS.md).
-The [earlier bounded-completion checkpoint](docs/harness/CHECKPOINT_2026-11-17.md),
-its 19-call delivery failure and false model semantic pass remain historical evidence.
+**294 offline tests pass.** The 36 new requests all settle: **1,002,810 tokens**,
+**69.99% input cache hits** and **9.613800 CNY** conservative exposure. Current
+accounting is **86.552168 CNY accounted**, **14.090240 reserved** and **99.357592
+unreserved**, inside the original 200 CNY ceiling. Coding Plan estimates are not
+incremental subscription invoices or account-quota readings. The old reservations
+and every earlier failure remain unchanged; no further paid pair is scheduled.
+See [per-agent work, TPM/RPM, cache and machine measurements](docs/harness/evidence/semantic-guards-2026-11-17/METRICS.md).
+
+Next bind comparison measures and observation cohorts to typed inspection records,
+reference host count facts in findings, and render settled team usage outside model
+prose. Then verify the clean-pair condition before attaching evolution. The
+[structured-report and reference work](docs/harness/STRUCTURED_REPORT_2026-11-17.md)
+and [earlier bounded-completion checkpoint](docs/harness/CHECKPOINT_2026-11-17.md)
+retain their immutable failed and successful attempts.
 
 The [earlier verified GLM Flash/BaoStock trial](docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
 passed at **12:12–12:20 Beijing on 13 November**: one supervisor, two workers,

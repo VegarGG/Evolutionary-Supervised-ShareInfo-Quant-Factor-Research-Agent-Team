@@ -84,27 +84,26 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
-Latest 17 November update: [structured reports and task-bound references](STRUCTURED_REPORT_2026-11-17.md)
-are implemented and independently audited. The initial fixed arm completed; its
-adaptive counterpart failed on candidate-ID copying. A specifically recorded
-interface repair freezes a fresh equal-input pair on identical 142-file snapshots.
-Both native workflows complete: fixed retains the baseline in 25 calls; adaptive
-adopts normalization in 18, changing 171 scores. All computed fields, exact report
-bindings and native task states pass independent checks. The adaptive final artifact
-passes descriptive review with limits; the fixed comparison needs an explicit
-relative-versus-absolute dispersion measure. Intermediate reasoning errors remain
-recorded. The complete clean-pair gate is not declared passed.
+Latest 17 November update: the [updated-semantic-guard pair](SEMANTIC_GUARDS_2026-11-17.md)
+finishes in 17/19 settled calls on identical 144-file snapshots and the same 186
+BaoStock rows. Fixed retains; adaptive normalizes 171 scores and corrects its analyst's
+incorrect coverage-loss expectation during design. Independent arithmetic and exact
+reports pass. Adaptive descriptive review passes with limits; fixed comparison prose
+still does not name an aggregate dispersion measure. Both chat summaries also repeat
+a pre-finalization request count (eight versus nine settled supervisor work requests,
+plus one acknowledgement). No budget enforcement failure occurs. The clean-pair/core
+gate remains provisional; do not infer semantic validity from model approval.
 
-All four attempts total 74 settled GLM 5.3/max calls, 2202398 tokens and 21.355184 CNY
-conservative exposure. Current accounting: 76.938368 accounted, 14.090240 reserved,
-108.971392 unreserved. Historical bounds are 364 attempts, 7500 conservative credits
-and 100 CNY local exposure inside the original 200 CNY total; 335 attempts and
-6178.406360 settled/reserved credits are used. No reservation was released and no
-new unknown or DeepSeek call occurred. Live snapshots passed 282/288 offline tests;
-two further bounded semantic guards and independent-audit hardening added after
-their freeze bring final checks to 294. Those guards are offline-verified, not a retroactive live pass or a general
-semantic verifier. Next verify named comparison measures and clean final narratives,
-then isolate parent-child evolution and released-report version matching.
+The 36 calls use GLM 5.3/max with 1002810 tokens, 69.99% input cache and 9.613800 CNY
+conservative exposure. Accounting is 86.552168 accounted, 14.090240 reserved and
+99.357592 unreserved under the original 200 CNY. Historical GLM use is 371/407 attempts
+and 7006.403120/9000 conservative used/reserved credits; the local cash ceiling stays
+100 CNY. Both old reservations remain unchanged. All 294 offline tests pass.
+No extra paid pair is scheduled. Next require typed comparison measures/cohorts,
+host-derived count references in findings and post-settlement team usage rendering,
+then clean paired narratives before parent-child evolution/released-report matching.
+The [preceding structured-report package](STRUCTURED_REPORT_2026-11-17.md), including
+its failed hash-copy attempt and offline guard additions, remains historical evidence.
 
 Earlier 17 November update: [bounded completion and the new BaoStock case](CHECKPOINT_2026-11-17.md)
 are recorded. Compact/paged evidence, complete bounded worker scopes, readable

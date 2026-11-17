@@ -1,0 +1,74 @@
+QRH structured research report
+Pending independent audit; no official acceptance.
+Candidate: 9e48ccf8d777a666a02e645e5bd372d8ccd11d1803275b7bf29745c8854003c4
+Report SHA256: 8e76a9021b7a1c549131e333e61aa4f6ba805cdc8c82ea85d56fa448aed165a6
+Exact-report review: d5e884ea99056618802a460d727c422ce00ccfd7a735ede8c01925ba46ed0efc
+
+COMPUTED FACTS
+1 * (close[t]/close[t-5] - 1)
+Unadjusted close in CNY/share; simple returns and final score dimensionless.
+Rows changed from initial: 0
+300750.XSHE.additional_exclusions: 0 [count]
+300750.XSHE.closes_required_per_signal: 6 [count]
+300750.XSHE.eligible_signals: 57 [count]
+300750.XSHE.maximum_absolute_score: 0.08892641058111728 [dimensionless]
+300750.XSHE.mean_absolute_score: 0.03768359443202748 [dimensionless]
+300750.XSHE.mean_score: -0.009083769391202009 [dimensionless]
+300750.XSHE.observed_closes: 62 [count]
+300750.XSHE.sample_sd_score: 0.042777151396309596 [dimensionless]
+300750.XSHE.signals_with_next_observed_close: 56 [count]
+300750.XSHE.warmup_exclusions: 5 [count]
+600036.XSHG.additional_exclusions: 0 [count]
+600036.XSHG.closes_required_per_signal: 6 [count]
+600036.XSHG.eligible_signals: 57 [count]
+600036.XSHG.maximum_absolute_score: 0.05774647887323936 [dimensionless]
+600036.XSHG.mean_absolute_score: 0.023137019473281104 [dimensionless]
+600036.XSHG.mean_score: 0.004298524203611326 [dimensionless]
+600036.XSHG.observed_closes: 62 [count]
+600036.XSHG.sample_sd_score: 0.027943663754569577 [dimensionless]
+600036.XSHG.signals_with_next_observed_close: 56 [count]
+600036.XSHG.warmup_exclusions: 5 [count]
+601318.XSHG.additional_exclusions: 0 [count]
+601318.XSHG.closes_required_per_signal: 6 [count]
+601318.XSHG.eligible_signals: 57 [count]
+601318.XSHG.maximum_absolute_score: 0.08668885191347753 [dimensionless]
+601318.XSHG.mean_absolute_score: 0.031055551376720645 [dimensionless]
+601318.XSHG.mean_score: -0.007262952732790848 [dimensionless]
+601318.XSHG.observed_closes: 62 [count]
+601318.XSHG.sample_sd_score: 0.0402658932201447 [dimensionless]
+601318.XSHG.signals_with_next_observed_close: 56 [count]
+601318.XSHG.warmup_exclusions: 5 [count]
+
+EVIDENCE LIMITS
+Development sample only; this inspected data cannot become an untouched holdout.
+An available next observed close does not establish tradability, fills or transaction costs.
+Raw return and volatility-normalized return are both dimensionless; scaling changes magnitude, not units.
+No forward labels, returns after execution, alpha, causality or superiority were measured.
+Unadjusted historical closes are not vintage data or evidence of corporate actions.
+The observed-date sample is neither an exchange calendar nor a representative market universe.
+
+CALCULATION PROVENANCE
+Host inspection requested by author-2; reading this receipt is not executing a new calculation.
+
+MODEL PROPOSAL — qualitative interpretation, not an established result
+hypothesis: Retained hypothesis: the simple trailing five-observation close return with positive sign, computed only from unadjusted observed closes at or before the signal close, with no volatility normalization and no return-magnitude eligibility exclusion. It stays an exploratory short-horizon momentum hypothesis whose usefulness and direction are unproven; signals with an available next observed close describe data availability, not executable trades, and no forward-label, alpha, superiority or tradability claim is made.
+Fact references: spec, timing, units, scope
+rationale: The retained baseline inspection reproduces the initial rows with no changed score or eligibility rows, so retention alters no coverage or score. The single motivated alternative from the recorded normalization hypothesis was inspected and not adopted: the added volatility window raises required trailing closes and warmup exclusions, leaving fewer eligible signals and fewer with an available next observed close, while the cross-symbol spread of score standard deviations did not compress relative to baseline and maximum absolute scores grew because dividing by small trailing volatility can amplify quiet symbols. The stated motivation was cross-symbol scale comparability, and the observed descriptive consequences do not support that added parameter. Direction, lookback and the absent return bound are retained because no cited evidence supports a sign flip, a different horizon, or excluding large observed returns, which close-only jumps cannot identify as corporate actions. Observed score-scale differences are descriptive only: they cannot establish superiority, alpha, removal of systematic risk or tradability. Next needed evidence is an independent evaluation with forward labels and stated execution assumptions, out of scope here.
+Fact references: changed_rows_from_initial, spec, scope, 300750.XSHE.eligible_signals, 600036.XSHG.eligible_signals, 601318.XSHG.eligible_signals, 300750.XSHE.sample_sd_score, 600036.XSHG.sample_sd_score, 601318.XSHG.sample_sd_score
+
+FINDING DISPOSITIONS — model reasoning
+57136d166314bff8470d79ec3e7738b20cc333035f8f4eda9e50d70374966b66: adopt — Adopted: balanced per-symbol coverage and exact warmup accounting; next observed close counts are availability facts, never executable trades.
+2d95a75198f4bbccd6c78ecd6a6e67d42bec39838fe6232099131c5af8905c80: adopt — Adopted: windows count observed rows, not calendar days; signals use closes at or before the signal close; execution no earlier than the next observed close.
+10be6c5f79402d14c4dbf410762725626c1dbfe01a25e0b0ce4dceccf2f93aab: adopt — Adopted: score is a dimensionless simple return on unadjusted closes; no Sharpe, corporate-action, cost or volume claims are made.
+a3d9ed9c52b700452fba94570e1a6e51097c08596703085c43625676da4292fc: defer — Inspected the motivated normalization without adopting it: coverage fell and cross-symbol score-scale spread did not compress, so no added parameter is justified now; stays open for later evaluation.
+
+CITED SOURCE EXCERPTS — provenance, not proof of interpretation
+price_profile: "sample_sd_one_observation_return": 0.02520900080828789,
+price_profile: "sample_sd_one_observation_return": 0.012242446444137979,
+research_contract: Compare coverage and score-scale consequences against the baseline; justify any added parameter or applicability exclusion from cited evidence and state what evidence would be needed next.
+research_contract: Descriptive score differences cannot establish superiority.
+source_contract: Normalization divides the trailing return by trailing daily-return SD times sqrt(lookback); this does not make an annual Sharpe ratio or remove systematic risk.
+source_contract: All signal calculations use observations at/before t; execution no earlier than the next observed close.
+
+USAGE SCOPE
+Not included: final acknowledgements have not settled. Native footer is session-only; team totals belong in the post-run audit.
