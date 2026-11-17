@@ -1,0 +1,141 @@
+{
+  "at": "2026-11-17T05:15:26.362769+00:00",
+  "problem": "Report identity and metric checks lacked explicit independent spec-hash and changed-row checks.",
+  "fix": "Recompute spec digest and per-inspection/per-report changed-row count from independent Decimal calculations.",
+  "regression_tests": "Two consistently hashed report-builder errors rejected; output assertion also verifies integer changed-row count survives temporal perturbation check.",
+  "retained_initial_attempt": "AUDIT_HARDENING_ATTEMPT01.json and per-case SUPPLEMENTARY_ARITHMETIC_ATTEMPT01.json. Internal checks passed, but an output variable collision emitted a list instead of a count; corrected without changing any original live report.",
+  "source_sha256": "a6a47193678efe74c751db7b481b1033efd89bbc505344ebcb9fd82b856f13b1",
+  "real_artifacts_reaudited": {
+    "structured-report-fixed-01": {
+      "status": "pass",
+      "calculations": [
+        {
+          "path": "calculation-cbeba14fe2e7085e7e0fda91e14f68aaa9add4f679d32680beeaf86d42af67e4.json",
+          "spec": {
+            "direction": 1,
+            "lookback": 5,
+            "max_absolute_daily_return": null,
+            "normalization": "realized_volatility",
+            "volatility_window": 5
+          },
+          "rows_recomputed": 186,
+          "changed_rows_from_initial": 171,
+          "status": "pass"
+        }
+      ],
+      "report": {
+        "status": "pass",
+        "report_sha256": "2406dd79546be7bcb27e4c951d66591c4c45cbf00cce543e6b2e516a5f9a6866",
+        "changed_rows_from_initial": 171,
+        "checks": [
+          "complete artifact/review binding",
+          "exact metric copies",
+          "independent specification hash and changed-row count",
+          "independent counts",
+          "units and evidence states",
+          "inspection provenance"
+        ],
+        "limits": "Qualitative interpretation still requires independent semantic review."
+      }
+    },
+    "structured-report-adaptive-02": {
+      "status": "pass",
+      "calculations": [],
+      "report": {
+        "status": "not_finalized_or_legacy"
+      }
+    },
+    "task-bound-fixed-01": {
+      "status": "pass",
+      "calculations": [
+        {
+          "path": "calculation-39166186f6fcef056f6f7042c6e1867c4e6c7cdf9d2434e0a824604bb0284610.json",
+          "spec": {
+            "direction": 1,
+            "lookback": 5,
+            "max_absolute_daily_return": null,
+            "normalization": "none",
+            "volatility_window": null
+          },
+          "rows_recomputed": 186,
+          "changed_rows_from_initial": 0,
+          "status": "pass"
+        },
+        {
+          "path": "calculation-9ce0c7013055266a8e1b3215d3ad8d81d0e33f1d6c9a441dd3cb2dfa29011803.json",
+          "spec": {
+            "direction": 1,
+            "lookback": 5,
+            "max_absolute_daily_return": null,
+            "normalization": "realized_volatility",
+            "volatility_window": 5
+          },
+          "rows_recomputed": 186,
+          "changed_rows_from_initial": 171,
+          "status": "pass"
+        }
+      ],
+      "report": {
+        "status": "pass",
+        "report_sha256": "aa9a1d590582ce7e78b27d40d31e90c4fa5e9d4544d995029f70b48a6584a3d4",
+        "changed_rows_from_initial": 0,
+        "checks": [
+          "complete artifact/review binding",
+          "exact metric copies",
+          "independent specification hash and changed-row count",
+          "independent counts",
+          "units and evidence states",
+          "inspection provenance"
+        ],
+        "limits": "Qualitative interpretation still requires independent semantic review."
+      }
+    },
+    "task-bound-adaptive-02": {
+      "status": "pass",
+      "calculations": [
+        {
+          "path": "calculation-026ca36f0498a81164b23bdedd9a0be26eeabd0482e4bcca4dab59e1632eec40.json",
+          "spec": {
+            "direction": 1,
+            "lookback": 5,
+            "max_absolute_daily_return": null,
+            "normalization": "none",
+            "volatility_window": null
+          },
+          "rows_recomputed": 186,
+          "changed_rows_from_initial": 0,
+          "status": "pass"
+        },
+        {
+          "path": "calculation-0dbb4c3ee6c5b7db30d6e8f34d3e37826b3f758bedf1ba5999966f783fc96146.json",
+          "spec": {
+            "direction": 1,
+            "lookback": 5,
+            "max_absolute_daily_return": null,
+            "normalization": "realized_volatility",
+            "volatility_window": 5
+          },
+          "rows_recomputed": 186,
+          "changed_rows_from_initial": 171,
+          "status": "pass"
+        }
+      ],
+      "report": {
+        "status": "pass",
+        "report_sha256": "1f1d4f070fbb2886700863efa6f7400066e006f8cb814f7aaf92d7c613020575",
+        "changed_rows_from_initial": 171,
+        "checks": [
+          "complete artifact/review binding",
+          "exact metric copies",
+          "independent specification hash and changed-row count",
+          "independent counts",
+          "units and evidence states",
+          "inspection provenance"
+        ],
+        "limits": "Qualitative interpretation still requires independent semantic review."
+      }
+    }
+  },
+  "provider_calls": 0,
+  "ledger_unchanged": true
+}

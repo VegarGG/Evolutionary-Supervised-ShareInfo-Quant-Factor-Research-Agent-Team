@@ -7,7 +7,7 @@ export function registerCaseResearch(ctx, config) {
     if (!exec.agent) throw new Error('An owning native DSH session is required')
     return runResearch(config, { op, session_id: exec.agent.session.id, args }, signal ?? undefined)
   }
-  const output = { schema: { type: 'json' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] }
+  const output = { schema: { type: 'json' }, render: (_args, value) => [{ type: 'text', text: value?.report_text ?? JSON.stringify(value) }] }
   const register = tool => ctx.effect(() => ctx.tools.register(defineTool({ output, ...tool })))
   register({ name: 'case_board', description: 'Read the frozen case, exact candidate, sources, tasks, findings, reviews and role submission schema. Supervisor calls first.',
     parameters: {}, execute: (_args, exec) => operation('scope', {}, exec) })
@@ -22,7 +22,7 @@ export function registerCaseResearch(ctx, config) {
       parameters: { payload_json: { type: 'string', required: true } }, isConcurrencySafe: () => false,
       execute: (args, exec) => operation(op, { json: args.payload_json }, exec) })
   }
-  register({ name: 'case_task', description: 'Supervisor delegates a native stage. Fixed: locked analyze/design/review sequence and assignments. Adaptive: choose assignments from observed findings/reviews; cite their IDs in basis_ids after first task. Stop on failed worker or caps.',
+  register({ name: 'case_task', description: 'Supervisor delegates a native stage. Fixed: locked analyze/design/review sequence and assignments. Adaptive: choose assignments from observed findings/reviews; cite the finding/review references from case_board in basis_ids after first task. Stop on failed worker or caps.',
     parameters: { stage: { type: 'string', enum: ['analyze', 'design', 'review'], required: true },
       task: { type: 'string', required: true }, basis_ids: { type: 'array', items: { type: 'string' }, required: true } },
     isConcurrencySafe: () => false,
@@ -58,7 +58,7 @@ export function registerCaseResearch(ctx, config) {
         throw error
       } finally { await activation?.dispose() }
     } })
-  register({ name: 'finalize_case', description: 'Freeze exact clean-reviewed candidate after native tasks complete. Pending independent audit; no official evaluation/publication. End with ID only.',
+  register({ name: 'finalize_case', description: 'Freeze exact clean-reviewed candidate after native tasks complete. Pending independent audit; no official evaluation/publication. Use the candidate/review references from case_board; end with the resolved ID only.',
     parameters: { output_id: { type: 'string', required: true }, review_id: { type: 'string', required: true } },
     isConcurrencySafe: () => false, execute: (args, exec) => operation('finalize', args, exec) })
 }

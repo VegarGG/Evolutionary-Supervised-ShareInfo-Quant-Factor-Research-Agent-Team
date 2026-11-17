@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import fcntl
 import json
+import re
 import sys
 import uuid
 from pathlib import Path
@@ -16,6 +17,20 @@ from qfh.adaptive_research import AdaptiveResearch
 from qfh.budget import BudgetRefused
 from qfh.case_contract import count_facts, encoded, page, prose_checks, reference, revision_texts
 from qfh.case_factor import FactorSpec, definition, inspect_factor, panel_quality
+from qfh.case_report import (
+    LIMITS,
+    StructuredReview,
+    StructuredRevision,
+    TaskFindings,
+    TaskReview,
+    TaskRevision,
+    argument_issues,
+    fact_keys,
+    facts,
+    make_report,
+    render,
+    universe_unit_issue,
+)
 from qfh.coding_plan import CodingPolicy
 from qfh.module_experiment import output_schema
 from qfh.research import Research
@@ -83,10 +98,17 @@ class CasePolicy(Record):
     total_requests: int = Field(ge=1, le=36)
     max_output_tokens: int = Field(ge=128, le=32768)
     max_inspections: int = Field(ge=1, le=6)
-    protocol: Literal["legacy", "bounded-v2"] = "legacy"
+    protocol: Literal["legacy", "bounded-v2", "structured-v3"] = "legacy"
+    reference_mode: Literal["hashes", "task_bound"] = "hashes"
     max_tool_bytes: int = Field(default=24000, ge=12000, le=24000)
     page_chars: int = Field(default=2500, ge=100, le=2500)
     worker_prompt_bytes: int = Field(default=65536, ge=24000, le=65536)
+
+    @model_validator(mode="after")
+    def valid_reference_mode(self):
+        if self.reference_mode == "task_bound" and self.protocol != "structured-v3":
+            raise ValueError("task-bound references require structured-v3")
+        return self
 
 
 class FindingBatch(Record):
@@ -152,7 +174,24 @@ class CaseBoard(Board):
     @property
     def bounded(self):
         package = self.directory.parent / "package.json"
-        return package.exists() and json.loads(package.read_bytes()).get("protocol") == "bounded-v2"
+        return package.exists() and json.loads(package.read_bytes()).get("protocol") in (
+            "bounded-v2",
+            "structured-v3",
+        )
+
+    @property
+    def structured(self):
+        package = self.directory.parent / "package.json"
+        return (
+            package.exists() and json.loads(package.read_bytes()).get("protocol") == "structured-v3"
+        )
+
+    def report(self, head, events):
+        binding = head["body"]["structured_submission"]
+        inspection = next(
+            e for e in events if e["kind"] == "inspection" and e["id"] == binding["inspection_id"]
+        )
+        return make_report(self.episode, head, self.calculation(self.spec_of(head)), inspection)
 
     @staticmethod
     def _open(events):
@@ -202,11 +241,13 @@ class CaseBoard(Board):
         if self.bounded:
             snapshot["count_facts"] = self.counts(self.spec_of(head))
             snapshot["prose_proof"] = self.prose_proof(head)
+        if self.structured and head["kind"] == "revision":
+            snapshot["structured_report"] = self.report(head, snapshot["events"])
         # Task traces remain in the immutable board, not duplicated in every prompt.
         del snapshot["events"]
         return snapshot
 
-    def final_review(self, actor, review):
+    def final_review(self, actor, review, *, structured=None):
         self._actor(actor, {"reviewer"})
         self._citations(review.citations)
         with self.locked() as events:
@@ -214,6 +255,17 @@ class CaseBoard(Board):
             head = self._head(events)
             if head["id"] != review.candidate_id:
                 raise ValueError("review must target the exact current candidate")
+            if self.structured:
+                report = self.report(head, events)
+                if not structured or structured.report_sha256 != report["sha256"]:
+                    raise ValueError("review must bind the exact complete report hash")
+                if review.verdict == "reviewed_with_limits":
+                    proposal = StructuredRevision.model_validate(
+                        head["body"]["structured_submission"]
+                    )
+                    issues = argument_issues(proposal, report["body"]["facts"])
+                    if issues:
+                        raise ValueError("structured report issues: " + json.dumps(issues))
             if self.bounded and review.verdict == "reviewed_with_limits":
                 proof = self.prose_proof(head)
                 review_proof = prose_checks(
@@ -234,9 +286,17 @@ class CaseBoard(Board):
                 for e in events
             ):
                 raise ValueError("candidate already reviewed")
-            return self._append(events, actor, "case_review", review.model_dump())
+            return self._append(
+                events,
+                actor,
+                "case_review",
+                {
+                    **review.model_dump(),
+                    **({"structured_review": structured.model_dump()} if structured else {}),
+                },
+            )
 
-    def revision(self, actor, revision):
+    def revision(self, actor, revision, *, structured=None):
         self._actor(actor, {"author"})
         self._citations(revision.citations)
         with self.locked() as events:
@@ -280,6 +340,27 @@ class CaseBoard(Board):
                 raise ValueError(
                     "count_claims must equal count_facts from the exact chosen inspection"
                 )
+            if self.structured:
+                if structured is None:
+                    raise ValueError("structured submission required")
+                inspection = next(
+                    (
+                        e
+                        for e in events
+                        if e["kind"] == "inspection"
+                        and e["id"] == structured.inspection_id
+                        and e["actor"] == actor
+                    ),
+                    None,
+                )
+                pinned = facts(self.episode, calc)
+                if not inspection or inspection["body"]["spec"] != revision.spec.model_dump():
+                    raise ValueError("report must cite the designer's exact inspection")
+                if structured.facts_sha256 != digest(pinned):
+                    raise ValueError("facts hash differs from chosen inspection")
+                issues = argument_issues(structured, pinned)
+                if issues:
+                    raise ValueError("structured proposal issues: " + json.dumps(issues))
             parent_calc = self.calculation(self.spec_of(head))
             changed = sum(
                 a["score"] != b["score"] or a["excluded_reason"] != b["excluded_reason"]
@@ -316,6 +397,7 @@ class CaseBoard(Board):
                 "revision",
                 {
                     **revision.model_dump(),
+                    **({"structured_submission": structured.model_dump()} if structured else {}),
                     "definition": definition(
                         revision.spec, self.episode.symbols, revision.hypothesis
                     ).model_dump(),
@@ -357,12 +439,20 @@ class CaseBoard(Board):
                 )
             if self.bounded and not self.prose_proof(head)["recognized_prose_ok"]:
                 raise ValueError("recognized count/prose defects prevent finalization")
+            report = self.report(head, events) if self.structured else None
+            if (
+                report
+                and review["body"].get("structured_review", {}).get("report_sha256")
+                != report["sha256"]
+            ):
+                raise ValueError("finalization requires an exact structured report review")
             return self._append(
                 events,
                 actor,
                 "finalized",
                 {
                     "output_id": output_id,
+                    **({"report_sha256": report["sha256"]} if report else {}),
                     "review_id": review_id,
                     "status": "research_prototype_pending_independent_audit",
                     "substantive_change": any(
@@ -454,7 +544,7 @@ class CaseResearch(AdaptiveResearch):
 
     def check_completion_reserve(self, db, step):
         """Called inside the cash reservation transaction, so concurrent requests cannot race it."""
-        if self.policy.protocol != "bounded-v2":
+        if self.policy.protocol == "legacy":
             return
         count = db.execute(
             "SELECT COUNT(*) FROM calls c JOIN step_grants g ON c.step=g.step WHERE g.group_id=?",
@@ -467,6 +557,22 @@ class CaseResearch(AdaptiveResearch):
         )
         if count >= self.policy.total_requests - reserved:
             raise BudgetRefused("remaining group requests reserved for terminal acknowledgements")
+
+    @staticmethod
+    def referenced(events, handle, kind):
+        kinds = {
+            "candidate": {"initial_candidate", "revision"},
+            "finding": {"finding"},
+            "review": {"case_review"},
+            "inspection": {"inspection"},
+        }
+        if not isinstance(handle, str) or not re.fullmatch(kind + r":[1-9][0-9]*", handle):
+            raise ValueError(f"use an immutable {kind}:N reference from case_board")
+        entries = [e for e in events if e["kind"] in kinds[kind]]
+        number = int(handle.split(":")[1])
+        if number > len(entries):
+            raise ValueError(f"unknown {kind} reference")
+        return entries[number - 1]
 
     def attempt_status(self, snapshot):
         starts = [t for t in snapshot["tasks"] if t["kind"] == "task_started"]
@@ -514,10 +620,23 @@ class CaseResearch(AdaptiveResearch):
         value["attempt"] = self.attempt_status(snapshot)
         value["request_budget"] = self.request_budget(member)
         if member.get("stage"):
-            schema = {"analyze": FindingBatch, "design": CaseRevision, "review": CaseReview}[
-                member["stage"]
-            ]
+            schema = {
+                "analyze": FindingBatch,
+                "design": StructuredRevision if self.board.structured else CaseRevision,
+                "review": StructuredReview if self.board.structured else CaseReview,
+            }[member["stage"]]
+            if self.policy.reference_mode == "task_bound":
+                schema = {"analyze": TaskFindings, "design": TaskRevision, "review": TaskReview}[
+                    member["stage"]
+                ]
             value["submission_schema"] = output_schema(schema, self.board.episode.sources)
+            if self.board.structured and "Argument" in value["submission_schema"].get("$defs", {}):
+                pinned = facts(
+                    self.board.episode, self.board.calculation(self.board.spec_of(snapshot["head"]))
+                )
+                value["submission_schema"]["$defs"]["Argument"]["properties"]["fact_refs"]["items"][
+                    "enum"
+                ] = sorted(fact_keys(pinned))
         else:
             starts = [t for t in snapshot["tasks"] if t["kind"] == "task_started"]
             value["next_fixed_stage"] = (
@@ -542,7 +661,7 @@ class CaseResearch(AdaptiveResearch):
             "work_requests_max": maximum,
             "work_requests_recorded": work,
             "work_requests_remaining": max(0, maximum - work),
-            "acknowledgement_requests_max": 1 if self.policy.protocol == "bounded-v2" else 0,
+            "acknowledgement_requests_max": 1 if self.policy.protocol != "legacy" else 0,
             "group_requests_remaining": max(0, self.policy.total_requests - group),
             "instruction": "Plan evidence reads and submission within work requests. "
             "Use complete inline evidence; multiple case_read calls may share one response. "
@@ -553,6 +672,8 @@ class CaseResearch(AdaptiveResearch):
         resources = {"source:" + key: text for key, text in self.board.episode.sources.items()}
         for key in ("versions", "findings", "reviews", "tasks", "inspections"):
             resources.update({"event:" + event["id"]: event for event in snapshot[key]})
+        if "structured_report" in snapshot:
+            resources["report:" + snapshot["head"]["id"]] = snapshot["structured_report"]
         if "prose_proof" in snapshot:
             resources["check:" + snapshot["head"]["id"]] = snapshot["prose_proof"]
         return resources
@@ -566,7 +687,16 @@ class CaseResearch(AdaptiveResearch):
             k: v
             for k, v in scope.items()
             if k
-            not in ("sources", "head", "versions", "findings", "reviews", "tasks", "inspections")
+            not in (
+                "sources",
+                "head",
+                "versions",
+                "findings",
+                "reviews",
+                "tasks",
+                "inspections",
+                "structured_report",
+            )
         }
         for key in ("head", "versions", "findings", "reviews", "tasks", "inspections"):
             values = [scope[key]] if key == "head" else scope[key]
@@ -579,6 +709,18 @@ class CaseResearch(AdaptiveResearch):
                 }
                 for e in values
             ]
+            if self.policy.reference_mode == "task_bound":
+                for index, ref in enumerate(refs):
+                    ref["event_ref"] = f"event:{values[index]['sequence']}"
+                    if key in ("head", "versions"):
+                        number = next(
+                            i for i, e in enumerate(scope["versions"], 1) if e["id"] == ref["id"]
+                        )
+                        ref["candidate_ref"] = f"candidate:{number}"
+                    elif key in ("findings", "reviews"):
+                        ref["finding_ref" if key == "findings" else "review_ref"] = (
+                            f"finding:{index + 1}" if key == "findings" else f"review:{index + 1}"
+                        )
             value[key] = refs[0] if key == "head" else refs
         value["sources"] = [
             reference("source:" + k, v, self.policy.page_chars)
@@ -591,6 +733,47 @@ class CaseResearch(AdaptiveResearch):
                 "recognized_prose_ok": proof["recognized_prose_ok"],
                 "issue_count": len(proof["issues"]),
             }
+        if "structured_report" in scope:
+            report = scope["structured_report"]
+            value["structured_report"] = {
+                **reference("report:" + scope["head"]["id"], report, self.policy.page_chars),
+                "report_sha256": report["sha256"],
+            }
+        value["reporting_contract"] = (
+            "structured-v3: use inspection_id and facts_sha256 instead of "
+            "copying numbers/spec/counts. "
+            "Qualitative hypothesis/rationale have text plus fact_refs "
+            "(units, timing, scope, spec or metric IDs). "
+            "No digits in qualitative text/decision reasons/resolutions; "
+            "numeric source quotes are allowed. "
+            "Reviewer must read the complete structured_report and bind its report_sha256. "
+            "Checks are enums; do not restate computed values. "
+            "Host supplies all standard limitations. "
+            "Read the whole candidate, including decisions and cited source interpretation; "
+            "hashes alone "
+            "do not establish semantic validity. Any further claim in chat is unreviewed."
+            if self.board.structured
+            else "Use the supplied submission schema."
+        )
+        if self.policy.reference_mode == "task_bound":
+            value["reporting_contract"] += (
+                " Task-bound references: candidate_id/parent_id='assigned' means the immutable "
+                "candidate delivered to this task, never whichever candidate is globally latest. "
+                "Use inspection_id='inspection:N' from your own receipt "
+                "and facts_sha256='inspection'. "
+                "Review uses report_sha256='assigned', binding the complete report "
+                "delivered to you. "
+                "Host resolves these labels to exact hashes and refuses stale tasks. "
+                "Do not copy source/event/episode hashes into submission references. "
+                "Only enumerated fact_refs are valid; a review issue is a defect, "
+                "not a disclosed caveat. "
+                "Decisions use finding:N references from the finding list. For repairs use "
+                "basis_review_id='failed_assigned_review'; otherwise null. Supervisor delegates "
+                "using finding:N/review:N basis_ids and finalizes with candidate:N and review:N. "
+                "For paging, case_read accepts the event_ref or finding/review/candidate handle. "
+                "These handles name immutable entries within this case; "
+                "the ledger stores full hashes."
+            )
         value["read_instruction"] = (
             "Inline values are complete. Read every needed non-inline resource with case_read; "
             "concatenate all its pages. Event IDs and source hashes pin immutable content. "
@@ -606,6 +789,7 @@ class CaseResearch(AdaptiveResearch):
         # Prefer the exact artifact/review over historical versions. Include full sources
         # and peer findings when they fit; large resources remain accessible by pages.
         refs = [
+            *([value["structured_report"]] if "structured_report" in value else []),
             value["head"],
             *([value["prose_proof"]] if "prose_proof" in value else []),
             *reversed(value["reviews"]),
@@ -621,6 +805,16 @@ class CaseResearch(AdaptiveResearch):
 
     def read(self, session, resource_id, number):
         resources = self.resources(self.scope(session))
+        if self.policy.reference_mode == "task_bound":
+            with self.board.locked() as events:
+                if re.fullmatch(r"event:[1-9][0-9]{0,4}", resource_id):
+                    event = next((e for e in events if e["sequence"] == int(resource_id[6:])), None)
+                    if event is None:
+                        raise ValueError("unknown event reference")
+                    resource_id = "event:" + event["id"]
+                elif re.fullmatch(r"(?:candidate|finding|review):[1-9][0-9]{0,4}", resource_id):
+                    event = self.referenced(events, resource_id, resource_id.split(":")[0])
+                    resource_id = "event:" + event["id"]
         if resource_id not in resources:
             raise ValueError("unknown authorized case resource")
         value = page(resource_id, resources[resource_id], number, self.policy.page_chars)
@@ -636,6 +830,15 @@ class CaseResearch(AdaptiveResearch):
             raise ValueError("bounded nonempty assignment required")
         with self.board.locked() as events:
             self.board._open(events)
+            if self.policy.reference_mode == "task_bound":
+                if not isinstance(basis_ids, list):
+                    raise ValueError("basis_ids must be a list of finding/review references")
+                basis_ids = [
+                    self.referenced(
+                        events, ref, "finding" if str(ref).startswith("finding:") else "review"
+                    )["id"]
+                    for ref in basis_ids
+                ]
             starts = [e for e in events if e["kind"] == "task_started"]
             finishes = {e["body"]["child_id"] for e in events if e["kind"] == "task_finished"}
             if any(e["body"]["child_id"] not in finishes for e in starts):
@@ -664,6 +867,8 @@ class CaseResearch(AdaptiveResearch):
             role = "author" if stage == "design" else "reviewer"
             actor, child = f"{role}-{len(starts) + 1}", f"qfh-case-{uuid.uuid4()}"
             member = {"session_id": child, "actor": actor, "role": role, "stage": stage}
+            if self.policy.reference_mode == "task_bound":
+                member["assigned_candidate_id"] = head["id"]
             atomic_new(self._binding_path(child), member)
             event = self.board._append(
                 events,
@@ -717,6 +922,9 @@ class CaseResearch(AdaptiveResearch):
                 raise ValueError("accepted worker must acknowledge and end; no further inspections")
             if sum(e["kind"] == "inspection" for e in events) >= self.policy.max_inspections:
                 raise ValueError("factor inspection allowance exhausted")
+            own_number = (
+                sum(e["kind"] == "inspection" and e["actor"] == member["actor"] for e in events) + 1
+            )
             calc = self.board.calculation(spec)
             event = self.board._append(
                 events,
@@ -727,8 +935,21 @@ class CaseResearch(AdaptiveResearch):
             atomic_new(self.directory / f"calculation-{event['id']}.json", calc)
         return {
             "inspection_id": event["id"],
+            **(
+                {"inspection_ref": f"inspection:{own_number}"}
+                if self.policy.reference_mode == "task_bound"
+                else {}
+            ),
             **event["body"],
             "count_facts": self.board.counts(spec),
+            **(
+                {
+                    "facts": facts(self.board.episode, calc),
+                    "facts_sha256": digest(facts(self.board.episode, calc)),
+                }
+                if self.board.structured
+                else {}
+            ),
         }
 
     def finish(self, session, child, result):
@@ -740,6 +961,81 @@ class CaseResearch(AdaptiveResearch):
             "head_id": report["board"]["head"]["id"],
             "instruction": "Read case_board for current artifacts and sources.",
         }
+
+    def resolve_references(self, member, op, raw):
+        schema = {"findings": TaskFindings, "revise": TaskRevision, "review": TaskReview}[op]
+        value = schema.model_validate_json(raw).model_dump()
+        with self.board.locked() as events:
+            self.board._open(events)
+            target = member["assigned_candidate_id"]
+            head = self.board._head(events)
+            task = next(
+                e
+                for e in events
+                if e["kind"] == "task_started" and e["body"]["child_id"] == member["session_id"]
+            )
+            if head["id"] != target or task["body"]["output_id"] != target:
+                raise ValueError("assigned candidate is stale; no retargeting is allowed")
+            resolved = {"candidate_id": target}
+            if op == "findings":
+                for finding in value["findings"]:
+                    finding["candidate_id"] = target
+            elif op == "revise":
+                own = [
+                    e for e in events if e["kind"] == "inspection" and e["actor"] == member["actor"]
+                ]
+                index = int(value["inspection_id"].split(":")[1]) - 1
+                if index >= len(own):
+                    raise ValueError("inspection reference is not an inspection by this task")
+                inspected = own[index]
+                for decision in value["decisions"]:
+                    decision["finding_id"] = self.referenced(
+                        events, decision["finding_id"], "finding"
+                    )["id"]
+                if value["basis_review_id"] is not None:
+                    failed = [
+                        e
+                        for e in events
+                        if e["kind"] == "case_review"
+                        and e["body"]["candidate_id"] == target
+                        and e["body"]["verdict"] == "needs_revision"
+                    ]
+                    if len(failed) != 1:
+                        raise ValueError("assigned candidate has no unique failed review")
+                    value["basis_review_id"] = failed[0]["id"]
+                pinned = facts(
+                    self.board.episode,
+                    self.board.calculation(FactorSpec.model_validate(inspected["body"]["spec"])),
+                )
+                value.update(
+                    parent_id=target, inspection_id=inspected["id"], facts_sha256=digest(pinned)
+                )
+                resolved.update(
+                    inspection_id=value["inspection_id"],
+                    facts_sha256=value["facts_sha256"],
+                    decision_finding_ids=[d["finding_id"] for d in value["decisions"]],
+                    basis_review_id=value["basis_review_id"],
+                )
+            else:
+                value.update(
+                    candidate_id=target, report_sha256=self.board.report(head, events)["sha256"]
+                )
+                resolved["report_sha256"] = value["report_sha256"]
+            self.board._append(
+                events,
+                member["actor"],
+                "submission_bound",
+                {
+                    "op": op,
+                    "task_id": task["id"],
+                    "raw_payload_sha256": digest(json.loads(raw)),
+                    "resolved_references": resolved,
+                    "mode": "task_bound",
+                    "authority": "Host resolves declared task labels; never rewrites model "
+                    "research content or retargets stale work.",
+                },
+            )
+        return json.dumps(value)
 
     def submit(self, session, op, payload):
         member = self.member(session)
@@ -756,10 +1052,15 @@ class CaseResearch(AdaptiveResearch):
                 for e in events
             ):
                 raise ValueError("worker already submitted")
+        raw_payload = payload
         try:
+            if self.policy.reference_mode == "task_bound":
+                payload = self.resolve_references(member, op, payload)
             if op == "findings":
                 batch = FindingBatch.model_validate_json(payload)
                 for f in batch.findings:
+                    if self.board.structured and (issue := universe_unit_issue(f.statement)):
+                        raise ValueError(issue)
                     self.board._citations(f.citations)
                     if f.candidate_id != self.board.snapshot(member["actor"])["head"]["id"]:
                         raise ValueError("findings must target the current candidate")
@@ -792,7 +1093,42 @@ class CaseResearch(AdaptiveResearch):
                         {"finding_ids": [f["id"] for f in findings]},
                     )
             elif op == "revise":
-                revision = CaseRevision.model_validate_json(payload)
+                structured = (
+                    StructuredRevision.model_validate_json(payload)
+                    if self.board.structured
+                    else None
+                )
+                if structured:
+                    with self.board.locked() as events:
+                        inspected = next(
+                            (
+                                e
+                                for e in events
+                                if e["kind"] == "inspection"
+                                and e["id"] == structured.inspection_id
+                                and e["actor"] == member["actor"]
+                            ),
+                            None,
+                        )
+                    if inspected is None:
+                        raise ValueError(
+                            "designer inspection ID missing or belongs to another actor"
+                        )
+                    spec = FactorSpec.model_validate(inspected["body"]["spec"])
+                    revision = CaseRevision(
+                        parent_id=structured.parent_id,
+                        spec=spec,
+                        hypothesis=structured.hypothesis.text,
+                        rationale=structured.rationale.text,
+                        decisions=structured.decisions,
+                        citations=structured.citations,
+                        limitations=LIMITS,
+                        count_claims=self.board.counts(spec),
+                        basis_review_id=structured.basis_review_id,
+                        issue_resolutions=structured.issue_resolutions,
+                    )
+                else:
+                    revision = CaseRevision.model_validate_json(payload)
                 with self.board.locked() as events:
                     if not any(
                         e["kind"] == "inspection"
@@ -803,11 +1139,24 @@ class CaseResearch(AdaptiveResearch):
                         raise ValueError(
                             "designer must inspect the exact chosen specification first"
                         )
-                event = self.board.revision(member["actor"], revision)
+                event = self.board.revision(member["actor"], revision, structured=structured)
             else:
-                event = self.board.final_review(
-                    member["actor"], CaseReview.model_validate_json(payload)
+                structured = (
+                    StructuredReview.model_validate_json(payload) if self.board.structured else None
                 )
+                review = (
+                    CaseReview(
+                        candidate_id=structured.candidate_id,
+                        verdict=structured.verdict,
+                        checks=structured.checks,
+                        issues=structured.issues,
+                        citations=structured.citations,
+                        limitations=LIMITS,
+                    )
+                    if structured
+                    else CaseReview.model_validate_json(payload)
+                )
+                event = self.board.final_review(member["actor"], review, structured=structured)
             return {"status": "accepted", "artifact": event}
         except ValueError as error:
             with self.board.locked() as events:
@@ -815,13 +1164,26 @@ class CaseResearch(AdaptiveResearch):
                     events,
                     member["actor"],
                     "submission_rejected",
-                    {"op": op, "payload": payload, "error": str(error)[:4000]},
+                    {"op": op, "payload": raw_payload, "error": str(error)[:4000]},
                 )
             return {"status": "rejected", "error": str(error)[:4000]}
 
     def finalize(self, session, output_id, review_id):
+        if self.policy.reference_mode == "task_bound":
+            with self.board.locked() as events:
+                output_id = self.referenced(events, output_id, "candidate")["id"]
+                review_id = self.referenced(events, review_id, "review")["id"]
         result = super().finalize(session, output_id, review_id)
         result.pop("output", None)
+        if self.board.structured:
+            scope = self.board.snapshot("supervisor")
+            report = scope["structured_report"]
+            atomic_new(self.directory / "FINAL_REPORT.json", report)
+            result["report_reference"] = {
+                "sha256": report["sha256"],
+                "resource_id": "report:" + output_id,
+            }
+            result["report_text"] = render(report, review_id)
         result["instruction"] = (
             "Return only the candidate ID and pending independent audit status. "
             "Do not add a new unreviewed narrative or a performance claim."

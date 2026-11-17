@@ -1,0 +1,74 @@
+QRH structured research report
+Pending independent audit; no official acceptance.
+Candidate: 389a3e4150b0055eba777f18d27865bdea3f3e27c869c07d4d8a1365b6e627e8
+Report SHA256: 2406dd79546be7bcb27e4c951d66591c4c45cbf00cce543e6b2e516a5f9a6866
+Exact-report review: 6b1387ad135b543f9ff36ad2c6b62e99a4e70fd32a920d03efe94d830d77104c
+
+COMPUTED FACTS
+1 * (close[t]/close[t-5] - 1) / (sample_sd(last 5 one-observation simple returns) * sqrt(5))
+Unadjusted close in CNY/share; simple returns and final score dimensionless.
+Rows changed from initial: 171
+300750.XSHE.observed_closes: 62 [count]
+300750.XSHE.closes_required_per_signal: 6 [count]
+300750.XSHE.warmup_exclusions: 5 [count]
+300750.XSHE.additional_exclusions: 0 [count]
+300750.XSHE.eligible_signals: 57 [count]
+300750.XSHE.signals_with_next_observed_close: 56 [count]
+300750.XSHE.mean_score: -0.3889859692838746 [dimensionless]
+300750.XSHE.sample_sd_score: 1.125523331799228 [dimensionless]
+300750.XSHE.mean_absolute_score: 0.9075255057621842 [dimensionless]
+300750.XSHE.maximum_absolute_score: 2.8474019795499386 [dimensionless]
+600036.XSHG.observed_closes: 62 [count]
+600036.XSHG.closes_required_per_signal: 6 [count]
+600036.XSHG.warmup_exclusions: 5 [count]
+600036.XSHG.additional_exclusions: 0 [count]
+600036.XSHG.eligible_signals: 57 [count]
+600036.XSHG.signals_with_next_observed_close: 56 [count]
+600036.XSHG.mean_score: -0.28153524939007035 [dimensionless]
+600036.XSHG.sample_sd_score: 1.7404777088984507 [dimensionless]
+600036.XSHG.mean_absolute_score: 1.3331174811923054 [dimensionless]
+600036.XSHG.maximum_absolute_score: 5.702067932208772 [dimensionless]
+601318.XSHG.observed_closes: 62 [count]
+601318.XSHG.closes_required_per_signal: 6 [count]
+601318.XSHG.warmup_exclusions: 5 [count]
+601318.XSHG.additional_exclusions: 0 [count]
+601318.XSHG.eligible_signals: 57 [count]
+601318.XSHG.signals_with_next_observed_close: 56 [count]
+601318.XSHG.mean_score: -0.40783855957329596 [dimensionless]
+601318.XSHG.sample_sd_score: 1.5579151612791153 [dimensionless]
+601318.XSHG.mean_absolute_score: 1.0086452887733148 [dimensionless]
+601318.XSHG.maximum_absolute_score: 6.13450098317669 [dimensionless]
+
+EVIDENCE LIMITS
+Development sample only; this inspected data cannot become an untouched holdout.
+An available next observed close does not establish tradability, fills or transaction costs.
+Raw return and volatility-normalized return are both dimensionless; scaling changes magnitude, not units.
+No forward labels, returns after execution, alpha, causality or superiority were measured.
+Unadjusted historical closes are not vintage data or evidence of corporate actions.
+The observed-date sample is neither an exchange calendar nor a representative market universe.
+
+CALCULATION PROVENANCE
+Host inspection requested by author-2; reading this receipt is not executing a new calculation.
+
+MODEL PROPOSAL — qualitative interpretation, not an established result
+hypothesis: Exploratory cross-name scale hypothesis for later independent evaluation: observed dispersion of consecutive-close returns differs across the fixed convenience universe, so raw trailing close-return scores are not expressed on a common per-name scale; dividing the trailing close return by realized trailing volatility may place the names on a more comparable scale for testing short-horizon close momentum. Direction, usefulness and any gain in comparability remain unproven; adopting this normalization is a motivated proposal, not deployment, proof of alpha, or demonstrated improvement.
+Fact references: units, scope, timing
+rationale: Retain the lookback, direction, execution timing and unadjusted-close semantics of the baseline and change only the normalization, because the recorded evidence shows cross-name differences in observed return dispersion while the smallest permitted volatility window coincides with the lookback, so required trailing closes and warmup exclusions stay unchanged, as the recorded inspection confirms with no added exclusions. The resulting score-scale difference is a definitional change, not evidence of superiority; no forward labels exist here, so the needed next evidence is an independent forward-looking evaluation with explicit costs and calendar handling. No return-magnitude exclusion is added: close-only jumps cannot be attributed to corporate actions, and cited evidence does not justify an added applicability exclusion.
+Fact references: units, timing, scope
+
+FINDING DISPOSITIONS — model reasoning
+d07f2c7ca5a861cd448c8a06039a941d673ebaa7954066577240eb0a406d5f2b: adopt — Adopted as a coverage constraint; the chosen variant keeps the same trailing-close requirement, and its inspection shows unchanged eligible and next-close counts with no added exclusions.
+59e48fdb837d8caec17d5f6b926be397c2b1660b00ad1392d216e225a67d4661: adopt — Adopted as an input-semantics constraint; unadjusted closes are kept, no corporate-action interpretation is attached, and no return-magnitude exclusion is added without supporting evidence.
+6a169deab2a881965a3240b440881919be095df0d49609b7f90abb1da51f4e22: adopt — Adopted as the only supported scaling; the chosen variant uses the defined realized-volatility scaling and is not described as a Sharpe ratio or systematic-risk removal.
+f6f2abf2309b8c3a3ddf7d30196567709a4ff8c11f589a6326929dda12374fd4: adopt — Adopted after inspecting the motivated variant; motivation is observed cross-name dispersion, and the score-scale change is not claimed as improvement or proven comparability.
+
+CITED SOURCE EXCERPTS — provenance, not proof of interpretation
+price_profile: "sample_sd_one_observation_return": 0.012242446444137979
+price_profile: "sample_sd_one_observation_return": 0.02520900080828789
+source_contract: Normalization divides the trailing return by trailing daily-return SD times sqrt(lookback); this does not make an annual Sharpe ratio or remove systematic risk.
+source_contract: Close-only jumps cannot identify corporate actions.
+data_quality: "601318.XSHG": 62
+research_contract: Descriptive score differences cannot establish superiority.
+
+USAGE SCOPE
+Not included: final acknowledgements have not settled. Native footer is session-only; team totals belong in the post-run audit.

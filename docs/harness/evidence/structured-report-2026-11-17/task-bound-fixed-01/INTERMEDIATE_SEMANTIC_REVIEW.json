@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-17T04:45:03.937922+00:00",
+  "scope": "independent read-only review of intermediate analyst reasoning; not injected into live tasks",
+  "finding_id": "c68d89786c1d05475f52ea41e1807a60548805f50cb563aa571eb2dc969e9d33",
+  "issues": [
+    {
+      "text": "raw score magnitudes are dominated by symbol-specific volatility",
+      "assessment": "Not established by three sample dispersion summaries or matching rankings. Treat only as a motivation for an exploratory comparison, not a causal/dominance result."
+    },
+    {
+      "text": "zero returns are at most a single observation per symbol, so a five-return window still yields positive SD",
+      "assessment": "The implication is invalid: constant nonzero returns can also have zero SD. Positivity must be computed for each actual window. The host inspection, not this inference, establishes denominators on the frozen sample."
+    }
+  ],
+  "gate": "Final candidate/report and review must be assessed separately; intermediate finding status=hypothesis does not validate factual subclaims.",
+  "official_acceptance": false
+}

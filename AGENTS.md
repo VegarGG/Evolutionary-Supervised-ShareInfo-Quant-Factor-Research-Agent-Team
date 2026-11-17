@@ -32,6 +32,38 @@ QFR specifications. Preserve them and their evidence. Decision log: docs/decisio
   Anthropic probe and both reservations. Details: `NATIVE_MODELS_2026-11-13.md`.
 - Preserve the original cumulative 200 CNY cap and carry-forward evidence. Admit
   every paid wire request atomically; retain reservations for unknown charges.
+- Latest owner work package, 17 November: structured final-output reporting,
+  semantic fixes and a GLM 5.3/max fixed/adaptive rerun. See
+  `docs/harness/STRUCTURED_REPORT_2026-11-17.md`. `structured-v3` renders host facts,
+  units/timing/provenance and binds reviews to the complete report. Preserve all
+  legacy package bytes and immutable old outputs. The initial fixed run completed
+  in 22 calls; adaptive failed after nine calls on manual candidate-hash copying.
+  A specific recorded repair introduces immutable task-bound labels and short case
+  references, never guessed IDs or host-rewritten research prose. Fresh packages
+  `task-bound-fixed-01` and `task-bound-adaptive-02` use identical 142-file snapshots
+  and the same frozen 186 BaoStock rows; no new data. Both finish in 25/18 calls:
+  fixed retains the baseline, adaptive adopts normalization (171 changed scores).
+  Computed reports and independent arithmetic pass. Adaptive descriptive review
+  passes with limits; fixed prose needs a named relative-versus-absolute dispersion
+  measure. Intermediate model errors are also preserved. Do not relabel model or
+  native completion as an independently clean artifact.
+  All four attempts total 74 settled calls, 2202398 tokens and 21.355184 CNY
+  conservative exposure. Current accounting: 76.938368 accounted, 14.090240 reserved,
+  108.971392 unreserved. Latest local historical limits are 364 GLM attempts, 7500
+  conservative credits and 100 CNY exposure within the original 200; 335 attempts
+  and 6178.406360 settled/reserved credits are used. The exact old timeout remains
+  unknown with its fingerprint/reservation; the named pair is complete, with no
+  replay or further automatic pair. The earlier 401 reservation is unchanged.
+  Live snapshots passed 282/288 offline tests. Four further regressions for vague
+  comparison measures and a false intermediate units-heading bring final tests to
+  292; two independent-audit regressions bring the final total to 294. Both live
+  snapshots froze before these changes. These guards are offline-verified only and
+  do not prove arbitrary prose or change historical outcomes. Keep the complete
+  clean-pair/minimal-core gate provisional before attaching evolution. Native DSH
+  still owns Models, Agent Teams and the model loop. Root footer is session-only;
+  audited team totals include all terminal acknowledgements. Full mobile workflow
+  is unaccepted; a settled closed-sidebar view fits 390px, correcting the earlier
+  interpretation of transient clipped resize screenshots. No production claim.
 - On 17 November the owner authorized the next checkpoint. The new frozen
   `glm53-checkpoint-2026-11-17` route keeps GLM 5.3/max and permits only
   `checkpoint-glm53-max-fixed-01` and `checkpoint-glm53-max-adaptive-02` under the

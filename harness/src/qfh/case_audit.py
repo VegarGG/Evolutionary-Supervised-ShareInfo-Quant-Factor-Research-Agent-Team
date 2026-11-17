@@ -58,6 +58,13 @@ def close(a, b):
     ), (a, b)
 
 
+def changed_rows(computed, original):
+    return sum(
+        a["score"] != b["score"] or a["excluded_reason"] != b["excluded_reason"]
+        for a, b in zip(computed, original, strict=True)
+    )
+
+
 def summary_checks(summary, rows):
     for symbol, actual in summary["by_symbol"].items():
         own = [r for r in rows if r["symbol"] == symbol]
@@ -111,6 +118,8 @@ def audit(directory):
                 k: v for k, v in expected.items() if k != "score"
             }
         summary_checks(saved["summary"], computed)
+        changed_count = changed_rows(computed, baseline)
+        assert saved["summary"]["changed_score_or_eligibility_rows_from_initial"] == changed_count
         # Temporal check: changing the last close cannot change any earlier score.
         changed = [dict(r) for r in rows]
         last = max(r["date"] for r in rows)
@@ -126,15 +135,18 @@ def audit(directory):
                 "path": path.name,
                 "spec": saved["spec"],
                 "rows_recomputed": len(computed),
+                "changed_rows_from_initial": changed_count,
                 "status": "pass",
             }
         )
+    report_check = audit_report(directory, episode, events)
     return {
         "status": "pass",
         "method": "independent 50-digit Decimal calculation",
         "snapshot_sha256": episode["data_snapshot_sha256"],
         "baseline_rows": len(baseline),
         "calculations": calculations,
+        "structured_report": report_check,
         "checks": [
             "source CSV equals frozen rows",
             "raw/normalized scores and eligibility",
@@ -145,4 +157,87 @@ def audit(directory):
         + (["future perturbation of inspected specifications"] if calculations else []),
         "limits": "Arithmetic only. Source interpretations, rationale and claimed improvements "
         "require separate semantic review. No performance test.",
+    }
+
+
+def audit_report(directory, episode, events):
+    """Check the saved report independently of its builder and renderer."""
+    path = directory / "FINAL_REPORT.json"
+    if not path.exists():
+        return {"status": "not_finalized_or_legacy"}
+    report = json.loads(path.read_bytes())
+    body = report["body"]
+    assert digest(body) == report["sha256"]
+    final = next(e for e in events if e["kind"] == "finalized")["body"]
+    assert final["report_sha256"] == report["sha256"]
+    head = next(e for e in events if e["id"] == final["output_id"])
+    review = next(e for e in events if e["id"] == final["review_id"])
+    assert review["body"]["structured_review"]["report_sha256"] == report["sha256"]
+    assert body["candidate_id"] == head["id"]
+    assert body["model_proposal"] == head["body"]["structured_submission"]
+    receipt = body["calculation_provenance"]
+    inspection = next(e for e in events if e["id"] == receipt["inspection_id"])
+    assert receipt["engine"] == "deterministic_host"
+    assert receipt["requested_by"] == inspection["actor"] == head["actor"]
+    pinned = body["facts"]
+    assert digest(pinned) == body["facts_sha256"] == body["model_proposal"]["facts_sha256"]
+    assert pinned["data_snapshot_sha256"] == episode["data_snapshot_sha256"]
+    assert pinned["spec"] == inspection["body"]["spec"] == head["body"]["spec"]
+    assert pinned["spec_sha256"] == digest(pinned["spec"]) == inspection["body"]["spec_sha256"]
+    assert pinned["score_rows_sha256"] == inspection["body"]["summary"]["score_rows_sha256"]
+    assert pinned["units"] == {
+        "close": "CNY/share",
+        "raw_return": "dimensionless",
+        "normalized_return": "dimensionless",
+        "score": "dimensionless",
+    }
+    assert pinned["timing"]["tradability"] == "not_established"
+    assert pinned["timing"]["fills"] == pinned["timing"]["costs"] == "not_measured"
+    assert pinned["scope"]["data_use"] == "development_only"
+    assert body["source_sha256"] == {k: digest(v) for k, v in episode["sources"].items()}
+    expected = {}
+    computed = decimal_scores(episode["rows"], pinned["spec"])
+    original = decimal_scores(episode["rows"], episode["initial_spec"])
+    changed = changed_rows(computed, original)
+    assert pinned["changed_rows_from_initial"] == changed
+    assert (
+        inspection["body"]["summary"]["changed_score_or_eligibility_rows_from_initial"] == changed
+    )
+    for symbol in episode["symbols"]:
+        own = [r for r in computed if r["symbol"] == symbol]
+        warmup = sum(r["excluded_reason"] == "insufficient_past_observations" for r in own)
+        n = sum(r["score"] is not None for r in own)
+        counts = {
+            "observed_closes": len(own),
+            "closes_required_per_signal": max(
+                pinned["spec"]["lookback"], pinned["spec"]["volatility_window"] or 0
+            )
+            + 1,
+            "warmup_exclusions": warmup,
+            "eligible_signals": n,
+            "additional_exclusions": len(own) - warmup - n,
+            "signals_with_next_observed_close": sum(
+                r["score"] is not None and r["execution_date"] is not None for r in own
+            ),
+        }
+        for key, value in counts.items():
+            expected[f"{symbol}.{key}"] = {"value": value, "unit": "count"}
+        # Exact copy integrity in addition to the independent Decimal summary check.
+        for key, value in inspection["body"]["summary"]["by_symbol"][symbol].items():
+            if key.endswith("score"):
+                expected[f"{symbol}.{key}"] = {"value": value, "unit": "dimensionless"}
+    assert pinned["metrics"] == expected
+    return {
+        "status": "pass",
+        "report_sha256": report["sha256"],
+        "changed_rows_from_initial": changed,
+        "checks": [
+            "complete artifact/review binding",
+            "exact metric copies",
+            "independent specification hash and changed-row count",
+            "independent counts",
+            "units and evidence states",
+            "inspection provenance",
+        ],
+        "limits": "Qualitative interpretation still requires independent semantic review.",
     }

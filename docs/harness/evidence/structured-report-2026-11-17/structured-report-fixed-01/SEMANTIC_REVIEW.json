@@ -1,0 +1,27 @@
+{
+  "status": "pass_with_limits",
+  "reviewed_at": "2026-11-17T04:04:49.051228+00:00",
+  "reviewer": "Codex independent artifact review; no added model call or operator feedback to trial",
+  "candidate_id": "389a3e4150b0055eba777f18d27865bdea3f3e27c869c07d4d8a1365b6e627e8",
+  "report_sha256": "2406dd79546be7bcb27e4c951d66591c4c45cbf00cce543e6b2e516a5f9a6866",
+  "model_review_id": "6b1387ad135b543f9ff36ad2c6b62e99a4e70fd32a920d03efe94d830d77104c",
+  "scope": "Complete candidate, structured report, accepted review, frozen sources, native stages and independent arithmetic",
+  "checks": {
+    "units": "Raw and normalized returns are both dimensionless; host renders exact values.",
+    "counts": "Required closes, warmup, eligibility and next-close counts are separate host fields.",
+    "timing": "Next observed close is a price observation, not demonstrated execution or tradability; future labels start after execution.",
+    "provenance": "author-2 requested the deterministic inspection; supervisor reads that receipt.",
+    "hypothesis": "Observed return dispersion motivates exploration; usefulness and improved comparability explicitly remain unproven.",
+    "data_scope": "Inspected development-only unadjusted convenience sample; no corporate-action inference or untouched-holdout claim.",
+    "reviews": "Exact report hash and candidate; accepted review has no open issues.",
+    "native_work": "Three completed native tasks and acknowledgements; not inferred from accepted tool submissions alone."
+  },
+  "remaining_limits": [
+    "Same-case engineering verification; no predictive-performance result or causal adaptive advantage.",
+    "The phrase common per-name scale is interpreted as dispersion, not units; explicit typed unit fields and unproven-comparability statement constrain the claim.",
+    "Qualitative interpretation still needs independent review; typed fields do not prove general semantics."
+  ],
+  "failed_submissions_retained": 3,
+  "official_acceptance": false,
+  "evaluation_or_publication": false
+}

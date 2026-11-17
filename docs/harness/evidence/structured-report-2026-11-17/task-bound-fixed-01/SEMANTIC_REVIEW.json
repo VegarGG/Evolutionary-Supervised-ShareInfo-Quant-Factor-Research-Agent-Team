@@ -1,0 +1,41 @@
+{
+  "status": "needs_semantic_clarification",
+  "reviewed_at": "2026-11-17T04:49:21.458399+00:00",
+  "reviewer": "Codex independent artifact review; no added model call or operator feedback to trial",
+  "candidate_id": "4fd3bc3ed633cb6dad1ab86942e581f6ad86d38c11fc093ab9fca2088976aa0a",
+  "report_sha256": "aa9a1d590582ce7e78b27d40d31e90c4fa5e9d4544d995029f70b48a6584a3d4",
+  "model_review_id": "ed3238974a9652f9bd6b34744cfb6fb53a84c07574ae81b300c073f800417c63",
+  "scope": "Complete candidate, structured report, accepted review, frozen sources, both actual inspection receipts, native stages and independent arithmetic",
+  "computed_report": "pass",
+  "known_unit_count_timing_counterexamples": "repaired",
+  "checks": {
+    "units": "Both returns and final scores dimensionless; close is CNY/share.",
+    "counts": "62 observed closes, 6 required per signal, 5 warmup exclusions, 57 eligible, 56 next observed closes per symbol; no added exclusions.",
+    "timing": "No tradability, fill, cost or post-execution performance claim.",
+    "provenance": "author-2 requested both exact host inspections; chose its baseline receipt, so 0 final changed rows. Alternative inspection changed 171 rows; not adopted.",
+    "retention": "Permitted exploratory decision, not itself a failed outcome.",
+    "review_binding": "Native reviewer checks the exact current candidate and complete report hash; all three tasks and terminal acknowledgements completed."
+  },
+  "issues": [
+    {
+      "text": "cross-name score spread stays as wide / score dispersion across the names remains about as wide",
+      "reason": "The interpretation does not identify its comparison statistic. The max/min SD ratios are close, but the absolute SD ranges are very different. A reader should not have to infer which definition makes the statement true; the final artifact needs that qualifier or a typed comparison reference.",
+      "evidence": {
+        "baseline_sd_max_over_min": 1.5308354613776916,
+        "alternative_sd_max_over_min": 1.5463719495855985,
+        "baseline_sd_max_minus_min": 0.014833487641740018,
+        "alternative_sd_max_minus_min": 0.6149543770992227
+      },
+      "required_change": "Name relative dispersion and its definition, or remove the unqualified equality claim. No factor change is required."
+    }
+  ],
+  "intermediate_reasoning": "Two analyst inferences are separately retained in INTERMEDIATE_SEMANTIC_REVIEW.json. The designer rejected that normalization finding; these are not silently counted as final computed facts.",
+  "limits": [
+    "Same previously seen development sample; no alpha, causal workflow advantage or general semantic reliability result.",
+    "Pinned computed fields prevent numeric/unit copying errors but do not prove arbitrary comparison prose."
+  ],
+  "failed_submissions_retained": 2,
+  "independent_clean_output": false,
+  "official_acceptance": false,
+  "evaluation_or_publication": false
+}

@@ -959,3 +959,72 @@ Desktop/reload pass; mobile clipping, root-only footer metrics, general semantic
 timeout recovery, broader cases and production operations remain gaps. All attempts,
 per-role work, resource measurements, limits and evidence are in
 CHECKPOINT_2026-11-17.md. Keep PR 22 draft and unmerged.
+
+## 2026-11-17: host reports, exact task references and semantic limits
+
+The owner requests structured final-output reporting, remaining semantic fixes and
+a GLM 5.3/max fixed/adaptive rerun under the original 200 CNY. Add a versioned
+`structured-v3` report: the host supplies spec/data/score hashes, counts, metrics,
+units, timing limits and inspection provenance; the model supplies separately
+identified qualitative hypotheses and finding dispositions. Review the exact
+candidate and complete report hash. Render the host text through native DSH's tool
+card, preserving Models, Agent Teams and its model loop. Independent arithmetic,
+semantic and native-task checks remain distinct. Prompted ID/status-only chat is
+not a validator of all intermediate or final model prose.
+
+Freeze the original 186-row BaoStock case, without new data or control-output
+injection. The first fixed run completes in 22 calls, adopts normalization and passes
+descriptive review with limits. The adaptive analyst fails after nine calls on a
+truncated candidate ID and two wrong hashes; it never submits accepted findings.
+Preserve that failure, native states and every charge. The initial operator account
+of line-break corruption was wrong; the first supplied value was a truncated hash.
+
+Record a specific interface repair, not an unchanged retry: immutable `assigned`
+task targets, actor-owned inspection handles and case-local finding/review/candidate
+handles bind full hashes on the host. Record raw payload hashes and every expansion;
+do not guess malformed references, retarget stale tasks or alter research content.
+Enumerate fact references and explain review defects versus disclosed limitations.
+Sort rendered metric keys so canonical JSON round trips cannot reorder the report.
+The initial exact wire text remains alongside its canonically ordered projection.
+
+The fresh task-bound pair freezes identical 142-file snapshots and equal evidence,
+model/effort and request/inspection bounds. Both complete: fixed 25 calls/779886
+tokens retains the baseline after two actual inspections; adaptive 18/499281 adopts
+normalization and changes 171 scores. Arithmetic, typed report fields, task bindings,
+native completion and byte-exact report delivery pass. Adaptive descriptive review
+passes with limits. Fixed review needs a named comparison measure: SD max/min ratios
+are similar, but absolute SD ranges differ greatly. A model clean verdict does not
+resolve this ambiguity. Intermediate analyst errors are recorded independently.
+
+After both live snapshots freeze, add four offline counterexamples for that width
+claim and a supported analyst heading that wrongly describes units as heterogeneous
+across the universe. Shared CNY/share and dimensionless-return units do not differ
+between names. These bounded checks reject known wording without forcing a factor
+change; they do not prove a named statistic or arbitrary prose. No historical
+artifact is changed or retroactively passed. Final formatting/lint/JS/MIT checks
+and 294 offline tests pass. Two additional regressions verify independent spec-hash
+and changed-row checks even when a faulty report builder produces consistent hashes.
+The saved real artifacts pass that stronger read-only audit. An initial supplementary
+output reused the perturbation variable in its count field; its wrong-typed output
+is retained separately, corrected and covered by an output assertion. Original live
+reports and calculations are unchanged. Six transient test failures were sandbox loopback-bind
+refusals; their logs remain and the permitted offline rerun passes.
+
+All four real attempts total 74 settled calls, 2202398 tokens, 74.71% input cache,
+21.355184 CNY exposure and 1839.082620 conservative credits. Accounting becomes
+76.938368 CNY plus 14.090240 reserved, leaving 108.971392 unreserved. The original
+20.35 CNY official baseline and both old reservations remain. Latest local historical
+limits are 364 attempts, 7500 conservative credits and 100 CNY exposure inside the
+original 200; 335 attempts and 6178.406360 settled/reserved credits are used. This
+specific amendment completes the named pair, with no further automatic replay or
+paid pair. Coding Plan exposure is not an incremental invoice or account quota.
+
+The root footer is session-only; post-drain audit includes all worker/supervisor
+acknowledgements. Immediate mobile resize screenshots were clipped, but a settled
+closed-sidebar view fits 390px; correct the earlier inference of permanent clipping.
+Full mobile navigation and a first-class report/team-usage view remain unaccepted.
+The reporting/reference engineering is verified, but the complete clean-pair/core
+gate stays provisional. Verify unambiguous comparison claims before attaching
+parent-child evolution and released-report matching. All attempts, actor/resource
+measurements, guards and limitations are in STRUCTURED_REPORT_2026-11-17.md. Keep
+PR 22 draft and unmerged; no official acceptance or production claim.

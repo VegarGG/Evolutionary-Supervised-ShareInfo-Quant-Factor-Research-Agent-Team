@@ -11,6 +11,7 @@ from start_research_ui import serve
 
 from qfh.budget import ProviderAdmission
 from qfh.case_factor import FactorSpec, definition
+from qfh.case_report import facts
 from qfh.case_research import CaseEpisode, CasePolicy, CaseResearch
 from qfh.coding_plan import CodingPolicy
 from qfh.research import Research
@@ -51,11 +52,28 @@ class Scripted:
                 if review["body"]["verdict"] == "reviewed_with_limits":
                     return Response(
                         tool="finalize_case",
-                        arguments={"output_id": current["id"], "review_id": review["id"]},
+                        arguments={
+                            "output_id": f"candidate:{len(scope['versions'])}"
+                            if self.host.policy.reference_mode == "task_bound"
+                            else current["id"],
+                            "review_id": f"review:{len(scope['reviews'])}"
+                            if self.host.policy.reference_mode == "task_bound"
+                            else review["id"],
+                        },
                     )
                 stage, basis = "design", [review["id"]]
             else:
                 stage, basis = "review", [scope["findings"][0]["id"]]
+            if self.host.policy.reference_mode == "task_bound":
+                refs = {
+                    e["id"]: f"{prefix}:{i}"
+                    for prefix, entries in (
+                        ("finding", scope["findings"]),
+                        ("review", scope["reviews"]),
+                    )
+                    for i, e in enumerate(entries, 1)
+                }
+                basis = [refs[key] for key in basis]
             return Response(
                 tool="case_task",
                 arguments={
@@ -85,7 +103,9 @@ class Scripted:
                         {
                             "findings": [
                                 {
-                                    "candidate_id": current["id"],
+                                    "candidate_id": "assigned"
+                                    if self.host.policy.reference_mode == "task_bound"
+                                    else current["id"],
                                     "topic": "normalization",
                                     "statement": "Observed prices vary.",
                                     "status": "supported",
@@ -124,10 +144,68 @@ class Scripted:
                 "basis_review_id": review["id"] if review else None,
                 "issue_resolutions": ["Clarified synthetic hypothesis."] if review else [],
             }
+            if self.host.board.structured:
+                inspected = scope["inspections"][-1]
+                pinned = facts(
+                    self.host.board.episode,
+                    self.host.board.calculation(FactorSpec.model_validate(spec)),
+                )
+                value = {
+                    "parent_id": current["id"],
+                    "inspection_id": inspected["id"],
+                    "facts_sha256": digest(pinned),
+                    "hypothesis": {"text": value["hypothesis"], "fact_refs": ["spec"]},
+                    "rationale": {"text": value["rationale"], "fact_refs": ["scope"]},
+                    **{
+                        key: value[key]
+                        for key in (
+                            "decisions",
+                            "citations",
+                            "basis_review_id",
+                            "issue_resolutions",
+                        )
+                    },
+                }
+            if self.host.policy.reference_mode == "task_bound":
+                own = [e for e in scope["inspections"] if e["actor"] == member["actor"]]
+                for decision in value["decisions"]:
+                    number = next(
+                        i
+                        for i, f in enumerate(scope["findings"], 1)
+                        if f["id"] == decision["finding_id"]
+                    )
+                    decision["finding_id"] = f"finding:{number}"
+                value["basis_review_id"] = (
+                    "failed_assigned_review" if value["basis_review_id"] else None
+                )
+                value.update(
+                    parent_id="assigned",
+                    inspection_id=f"inspection:{len(own)}",
+                    facts_sha256="inspection",
+                )
             return Response(
                 tool="revise_case_factor", arguments={"payload_json": json.dumps(value)}
             )
         first_review = not scope["reviews"]
+        if self.host.board.structured:
+            value = {
+                "candidate_id": current["id"],
+                "report_sha256": scope["structured_report"]["sha256"],
+                "verdict": "needs_revision" if first_review else "reviewed_with_limits",
+                "checks": {
+                    key: "needs_revision"
+                    if first_review and key == "spec_and_prose"
+                    else "consistent"
+                    for key in ("evidence_support", "spec_and_prose", "timing", "scope_and_limits")
+                },
+                "issues": ["Clarify hypothesis."] if first_review else [],
+                "citations": [citation],
+            }
+            if self.host.policy.reference_mode == "task_bound":
+                value.update(candidate_id="assigned", report_sha256="assigned")
+            return Response(
+                tool="review_case_factor", arguments={"payload_json": json.dumps(value)}
+            )
         return Response(
             tool="review_case_factor",
             arguments={
@@ -160,6 +238,8 @@ if __name__ == "__main__":
     parser.add_argument("--model", choices=["glm-5.3-flash", "glm-5.3"], default="glm-5.3-flash")
     parser.add_argument("--effort", choices=["low", "high", "max"], default="low")
     parser.add_argument("--output-cap", type=int, choices=[16384, 32768], default=16384)
+    parser.add_argument("--protocol", choices=["bounded-v2", "structured-v3"], default="bounded-v2")
+    parser.add_argument("--reference-mode", choices=["hashes", "task_bound"], default="hashes")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     private = args.directory.resolve()
@@ -234,7 +314,8 @@ if __name__ == "__main__":
         total_requests=36,
         max_output_tokens=args.output_cap,
         max_inspections=6,
-        protocol="bounded-v2",
+        protocol=args.protocol,
+        reference_mode=args.reference_mode,
     )
     package = private / "package.json"
     atomic_new(package, policy.model_dump())

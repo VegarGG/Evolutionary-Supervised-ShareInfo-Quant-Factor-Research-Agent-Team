@@ -78,12 +78,14 @@ def parse_output(schema, text):
 
 def output_schema(schema, sources):
     value = schema.model_json_schema()
-    citation_id = value["$defs"]["Citation"]["properties"]["evidence_id"]
-    citation_id["enum"] = sorted(sources)
-    citation_id["description"] = (
-        "Use a key from sources. The initial candidate is the review target, "
-        "identified by candidate_id/parent_id, not a source evidence_id."
-    )
+    for name in ("Citation", "ReportCitation"):
+        if name in value["$defs"]:
+            citation_id = value["$defs"][name]["properties"]["evidence_id"]
+            citation_id["enum"] = sorted(sources)
+            citation_id["description"] = (
+                "Use a key from sources. The initial candidate is the review target, "
+                "identified by candidate_id/parent_id, not a source evidence_id."
+            )
     return value
 
 

@@ -233,7 +233,7 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
         assert metrics["total_tokens"] == sum(sum((r["tokens"] or {}).values()) for r in own)
         if actor:
             acknowledgement = [r for r in own if r.get("phase") == "acknowledgement"]
-            assert len(acknowledgement) <= (1 if case and policy.protocol == "bounded-v2" else 0)
+            assert len(acknowledgement) <= (1 if case and policy.protocol != "legacy" else 0)
             assert len(own) - len(acknowledgement) <= (
                 policy.supervisor_requests if actor == "supervisor" else policy.worker_requests
             )
@@ -265,9 +265,15 @@ def export(private, package_id, output=None, *, case=False, allow_unresolved=Fal
         if not case:
             assert scope["unit_proof"]["formula_ok"] and scope["unit_proof"]["structured_claims_ok"]
             assert scope["unit_proof"]["recognized_prose_ok"]
-        elif policy.protocol == "bounded-v2":
+        elif policy.protocol != "legacy":
             assert scope["prose_proof"]["recognized_prose_ok"]
             assert scope["head"]["body"]["count_claims"] == scope["count_facts"]
+        if case and policy.protocol == "structured-v3":
+            report = scope["structured_report"]
+            assert digest(report["body"]) == report["sha256"] == final["report_sha256"]
+            assert review["body"]["structured_review"]["report_sha256"] == report["sha256"]
+            assert json.loads((directory / "FINAL_REPORT.json").read_bytes()) == report
+            files.append(directory / "FINAL_REPORT.json")
         assert_completed_tasks(members, native_tasks)
     write_new(output / "resource-samples.json", selected)
     write_new(output / "FINAL_BOARD.json", scope)

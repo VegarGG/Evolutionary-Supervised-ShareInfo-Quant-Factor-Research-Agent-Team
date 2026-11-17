@@ -81,7 +81,8 @@
             assessment. A change in score scale does not establish alpha, superiority, removal
             of systematic risk or corporate-action handling. Cite sources exactly. Review the
             entire artifact and claims, not just schema/formula. Correct rejected submissions
-            inside the work allowance. Copy count_facts from the chosen inspection into count_claims;
+            inside the work allowance. Follow the exact reporting_contract and submission_schema: bounded-v2 copies count_facts,
+            structured-v3 instead references inspection/fact/report hashes and never recopies metrics;
             distinguish required closes per window from warmup exclusions. An exploratory
             hypothesis need not already demonstrate profitable alpha, but its motivation and
             limitations must be explicit. Clean review cannot ignore host prose-check failures.

@@ -93,8 +93,15 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   five-request allowance; the accepted retention lacked a native terminal
   acknowledgement and never reached review. Inspection is not adoption.
 - Suitable use: equal-evidence control for adaptive assignments.
-- Next experiment: retain fixed stage assignments and equal inputs in the next
-  final-output contract verification; do not tune the control after seeing results.
+- Latest evidence: [structured-output trials](STRUCTURED_REPORT_2026-11-17.md).
+  The first fixed arm adopts normalization in 22 calls and passes descriptive review
+  with limits. The repaired task-bound control uses 25 calls, inspects both specs
+  and retains the baseline. Its exact computed report passes, but independent review
+  flags an undefined absolute-versus-relative dispersion comparison. Two exact-source
+  quotation rejections are retained; reference binding itself succeeds.
+- Next experiment: verify a named comparison measure or omit the ambiguous claim;
+  retention remains allowed. The recorded wording now fails a bounded offline guard.
+  Preserve the same question, data and fixed assignments in any new paired verification.
 
 ## Adaptive supervisor with two worker roles
 
@@ -126,9 +133,23 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   uses 18.6% more tokens. The observed topology remains analyze/design/review; this
   run demonstrates targeted assignments, not a successful additional repair loop.
 - Suitable use: provisional research core for bounded, auditable development.
-- Next experiment: typed, version-pinned final summaries with exact metric/unit
-  fields and explicit evidence for execution claims; replay the false clean passes,
-  then a separately frozen small live verification. Do not prescribe a winning factor.
+- Latest evidence: [structured-output trials](STRUCTURED_REPORT_2026-11-17.md).
+  The first adaptive analyst fails on three malformed/wrong target IDs and produces
+  no accepted findings. A host binding repair maps immutable task labels to full
+  references without rewriting research content. The fresh adaptive arm completes
+  three native tasks in 18 calls, independently inspects both specs and adopts
+  normalization (171 changed scores). Its final host report and descriptive review
+  pass with limits. One overlong rationale is corrected inside the original limit.
+  An intermediate analyst heading wrongly says units differ across the universe;
+  the final report correctly separates shared units from varying dispersion. That
+  exact heading now has an offline rejection, and the original trace remains.
+  Adaptive uses 36.0% fewer tokens than this task-bound fixed control, but the control
+  spends more calls on quote repair and adopts a different outcome. One sequential
+  pair does not identify a causal workflow advantage. No additional repair stage
+  occurs in the real pair; synthetic native fixtures exercise the repair loop separately.
+- Next experiment: final comparison claims with named measures and independent
+  clean narratives in both arms after the new guards; do not prescribe a winning
+  factor or treat repeated exposure to this case as unseen evidence.
 
 ## Core decision and module contracts
 
@@ -137,8 +158,11 @@ Keep the native DSH supervisor with author and reviewer role types as the
 are inspectable. Do not declare the minimal-core capability gate complete until a
 source-supported substantive adaptive revision survives independent review and a
 same-evidence fixed control. No measured universal collaboration advantage is claimed.
-The new pair now satisfies the substantive-computation part, but its adaptive
-artifact still needs a wording repair before that complete criterion can pass.
+The latest adaptive artifact satisfies substantive computation and independent
+descriptive review with limits. Its same-evidence fixed control still needs a named
+comparison measure; do not declare the entire clean-pair criterion closed. The
+provisional core can be studied, but neither a model verdict nor a checked software
+test is owner acceptance.
 Official acceptance and pool operations remain outside these prototype experiments.
 
 The first module contracts are already exercised separately: shared state accepts
@@ -155,7 +179,10 @@ reconciliation, operational recovery and broader source/semantic tests remain
 production work, separate from the early research-capability gate.
 
 Compact/paged delivery, terminal acknowledgements, count checks, exploration/adoption
-criteria and the isolated Git workspace are now implemented and exercised live.
-Final checks pass 271 offline tests. Before another live comparison, close the typed
-output contract; the narrow prose grammar alone is insufficient. Keep the original
-200 CNY ledger and unresolved reservations intact.
+criteria and the isolated Git workspace are implemented and exercised live. Typed
+host reports, complete-report hashes and task-bound references now also have real
+trace audits. Final checks pass 294 offline tests; the latest vague-comparison and
+intermediate-unit-heading guards were added after the identical live snapshots.
+They are not a general semantic proof or a retroactive revalidation. Current budget
+accounting is 76.938368 CNY plus 14.090240 reserved, leaving 108.971392 unreserved
+under the original 200 CNY. Keep every failed attempt and reservation intact.

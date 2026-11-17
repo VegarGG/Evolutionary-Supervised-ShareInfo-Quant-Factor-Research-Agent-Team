@@ -84,7 +84,29 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
-17 November update: [bounded completion and the new BaoStock case](CHECKPOINT_2026-11-17.md)
+Latest 17 November update: [structured reports and task-bound references](STRUCTURED_REPORT_2026-11-17.md)
+are implemented and independently audited. The initial fixed arm completed; its
+adaptive counterpart failed on candidate-ID copying. A specifically recorded
+interface repair freezes a fresh equal-input pair on identical 142-file snapshots.
+Both native workflows complete: fixed retains the baseline in 25 calls; adaptive
+adopts normalization in 18, changing 171 scores. All computed fields, exact report
+bindings and native task states pass independent checks. The adaptive final artifact
+passes descriptive review with limits; the fixed comparison needs an explicit
+relative-versus-absolute dispersion measure. Intermediate reasoning errors remain
+recorded. The complete clean-pair gate is not declared passed.
+
+All four attempts total 74 settled GLM 5.3/max calls, 2202398 tokens and 21.355184 CNY
+conservative exposure. Current accounting: 76.938368 accounted, 14.090240 reserved,
+108.971392 unreserved. Historical bounds are 364 attempts, 7500 conservative credits
+and 100 CNY local exposure inside the original 200 CNY total; 335 attempts and
+6178.406360 settled/reserved credits are used. No reservation was released and no
+new unknown or DeepSeek call occurred. Live snapshots passed 282/288 offline tests;
+two further bounded semantic guards and independent-audit hardening added after
+their freeze bring final checks to 294. Those guards are offline-verified, not a retroactive live pass or a general
+semantic verifier. Next verify named comparison measures and clean final narratives,
+then isolate parent-child evolution and released-report version matching.
+
+Earlier 17 November update: [bounded completion and the new BaoStock case](CHECKPOINT_2026-11-17.md)
 are recorded. Compact/paged evidence, complete bounded worker scopes, readable
 inspection receipts, terminal acknowledgement grants, exact counts and isolated Git
 attribution are implemented. The first live control's 19-call delivery failure is
@@ -97,7 +119,7 @@ Thus substantive adaptive computation is demonstrated, but clean final-artifact
 acceptance and the minimal-core gate remain open. The new narrow guard blocks that
 counterexample offline; no additional live retry was made. Final checks pass 271 tests.
 Across all three attempts: 57 settled calls, 1523122 tokens, 15.171276 CNY exposure.
-Current accounting is 55.583184 CNY accounted, 14.090240 reserved and 130.326576
+Accounting at that checkpoint was 55.583184 CNY accounted, 14.090240 reserved and 130.326576
 unreserved. GLM 5.3/max only; no new unknown or DeepSeek request. Historical limits
 are 295 attempts, 6000 conservative credits and 80 CNY within the original 200.
 
@@ -154,6 +176,12 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
 - [x] Workflow-specific capability cards with evidence, limits and next experiments.
 - [x] Bounded evidence delivery and actual terminal acknowledgement demonstrated
   in offline native fixtures and the repaired live fixed/adaptive comparison.
+- [x] Host-rendered typed facts/units/timing, whole-report review hashes, canonical
+  rendering and task-bound references verified in real native DSH runs.
+- [x] Independent binding/content, arithmetic, report-delivery and cumulative-budget
+  audits, including failed attempts and model false passes.
+- [ ] Clean final narratives in both arms after the newest comparison/units-heading
+  counterexample guards; those additional guards are currently offline-verified.
 - [ ] Capability card supports progression to the minimal core.
 - [x] Native DSH Agent Teams source and model-selection interfaces reviewed.
 - [x] Bounded chat/worker integration implemented and exercised with synthetic inference.
@@ -180,8 +208,9 @@ and [role models / market context](ROLE_MODELS_AND_CONTEXT.md).
 - [ ] General semantic reliability across broader research cases. One model-only
   final review falsely passed contradictory prose; the current host grammar is deliberately limited.
 - [x] Adaptive assignment based on observed peer findings that changes the
-  computational definition on a new frozen case; independent arithmetic passes.
-  Clean semantic acceptance remains open because the final prose overstates tradability.
+  computational definition on a frozen case; independent arithmetic passes.
+  The latest adaptive final report passes descriptive review with limits; its fixed
+  control still needs comparative wording clarification. No official acceptance.
 - [ ] Mixed-provider role selection with transport-specific accounting and allowlists.
 - [ ] Frozen market-context manifests, exposure budgets and bounded news/report access.
 
@@ -192,12 +221,15 @@ diagnostic repeats and targeted unit repairs are recorded. The unseen case's fir
 fixed/adaptive pair completed, but a reverse-order repeat stopped on unknown usage.
 Integration, retention and research traceability do not establish general discovery
 or collaboration superiority. The later maximum-effort stages do not change that
-conclusion. The 17 November pair demonstrates a computational revision in both
-arms, without an adaptive advantage; one final model review still falsely passed
-unsupported prose. The timeout still needs reconciliation; its bounded reserved continuation
+conclusion. The earlier 17 November pair revised both arms and falsely passed an
+execution-feasibility claim. The latest pair adopts normalization only in adaptive;
+its descriptive final report passes, while the fixed retention rationale needs a
+defined comparison measure. Fewer adaptive calls in this one order do not establish
+workflow superiority. The timeout still needs reconciliation; its bounded reserved continuation
 does not establish general recovery. Keep the observed cap, prose, tool-truncation
 and workspace-attribution failures in the next module acceptance tests. Before
-attaching evolution, render metric/unit/execution claims from pinned typed records,
-distinguish chat completion from independent review, replay all retained false passes
-and run a separately frozen small verification. Then isolate parent-child evolution
+attaching evolution, retain the now-implemented pinned metric/unit/execution fields,
+verify named comparative claims and independently clean final narratives after the
+newest guards. Chat completion and model approval remain separate from independent
+review. Then isolate parent-child evolution
 and released-report version matching before Hybrid v1 integration.
