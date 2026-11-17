@@ -99,16 +99,22 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   and retains the baseline. Its exact computed report passes, but independent review
   flags an undefined absolute-versus-relative dispersion comparison. Two exact-source
   quotation rejections are retained; reference binding itself succeeds.
-- Latest evidence: [updated semantic guards](SEMANTIC_GUARDS_2026-11-17.md).
+- Previous evidence: [updated semantic guards](SEMANTIC_GUARDS_2026-11-17.md).
   The fixed arm completes in 17 calls, inspects baseline and a ten-observation
   volatility-window alternative, then retains the baseline. Arithmetic/report
   identity pass. Its directional spread claim is supported by both the SD range
   and max/min ratio, but neither measure is named. The explicit-definition criterion
   remains unmet. An analyst's incorrect subtraction survives as an adopted finding;
   the final host counts themselves are correct.
-- Next experiment: bind a comparison to named measures, inspection IDs and observation
-  cohorts; reference host count facts in findings. Keep retention valid and preserve
-  both arithmetic/provenance errors separately from computed final facts.
+- Latest evidence: [typed evidence and settled usage](TYPED_EVIDENCE_2026-11-17.md).
+  The completed fixed arm uses 17 calls, retains after two inspections, and passes
+  independent descriptive review with limits. Four named comparison/cohort records
+  and all final count/usage facts are host-rendered. Nine supervisor work calls,
+  zero supervisor acknowledgements and all 17 team calls appear in the exact native
+  receipt. No submission rejection occurs in this repaired arm. The initial broad
+  comparison guard's 13-call failure remains a separate failed attempt.
+- Next experiment: complete definition binding and broader source-supported cases;
+  a valid retention decision is not a discovered factor or a performance result.
 
 ## Adaptive supervisor with two worker roles
 
@@ -154,7 +160,7 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   spends more calls on quote repair and adopts a different outcome. One sequential
   pair does not identify a causal workflow advantage. No additional repair stage
   occurs in the real pair; synthetic native fixtures exercise the repair loop separately.
-- Latest evidence: [updated semantic guards](SEMANTIC_GUARDS_2026-11-17.md).
+- Previous evidence: [updated semantic guards](SEMANTIC_GUARDS_2026-11-17.md).
   The adaptive arm completes in 19 calls and adopts normalization, changing 171
   non-null scores. Its designer executes one new calculation and uses the existing
   baseline receipt. The analyst wrongly predicts that matching five-observation
@@ -163,10 +169,21 @@ factor and no prescribed final answer. An unchanged factor is not a new generati
   remains analyze/design/review, without an additional failed-review repair stage.
   Adaptive uses 27.5% more tokens than fixed in this pair. Different inspected
   alternatives, outcomes and evidence reads confound an efficiency comparison.
-- Next experiment: named comparison records, count references and host-generated
-  final accounting. Both models repeat a stale eight-work-request snapshot in chat;
-  settled usage is nine work requests plus one acknowledgement per supervisor.
-  Model-written summaries remain outside the exact research-report guarantee.
+- Latest evidence: [typed evidence and settled usage](TYPED_EVIDENCE_2026-11-17.md).
+  The completed adaptive arm uses 18 calls, produces three findings, adopts a
+  normalized factor and changes 171 scores. Its designer corrects the supervisor/
+  analyst's false warmup-loss premise. Named comparisons and exact team usage pass;
+  the supervisor uses eight work calls and no acknowledgement. However the explicit
+  hypothesis definition omits the denominator's square-root-of-lookback term, and
+  the model reviewer incorrectly approves it. The host formula is correct. A narrow
+  post-run regression catches this omission offline; live verification remains.
+  A preceding four-call adaptive attempt stopped on a correctly enforced local
+  sublimit. Final adaptive uses a recorded 120 CNY historical sublimit versus fixed's
+  100 CNY, with unchanged original 200 CNY and matching runtime/data/per-arm bounds.
+- Next experiment: complete definition references and assignment consistency;
+  preserve model mistakes and harness defects separately. No real additional repair
+  loop occurred, because the model reviewer missed the defect. Synthetic repair-loop
+  evidence remains separate. This comparison does not establish workflow superiority.
 
 ## Core decision and module contracts
 
@@ -175,11 +192,11 @@ Keep the native DSH supervisor with author and reviewer role types as the
 are inspectable. Do not declare the minimal-core capability gate complete until a
 source-supported substantive adaptive revision survives independent review and a
 same-evidence fixed control. No measured universal collaboration advantage is claimed.
-The latest adaptive artifact satisfies substantive computation and independent
-descriptive review with limits. Its same-evidence fixed control still needs a named
-comparison measure; do not declare the entire clean-pair criterion closed. The
-provisional core can be studied, but neither a model verdict nor a checked software
-test is owner acceptance.
+The newest pair closes the named-comparison, count-reference and settled-summary
+contracts. Fixed passes descriptive review; adaptive's explicit model definition
+still omits a denominator term despite correct host arithmetic. Keep the complete
+clean-report criterion provisional. A model verdict or software test is not owner
+acceptance, and the different local cash sublimits preclude an exact-route claim.
 Official acceptance and pool operations remain outside these prototype experiments.
 
 The first module contracts are already exercised separately: shared state accepts
@@ -189,19 +206,19 @@ version; amendments retain the original and require a new review. The restricted
 factor-specification module adds deterministic score/eligibility calculations and
 independent arithmetic, but does not expose an evaluator or publish results.
 
-First close typed comparison/count and settled-summary reporting gaps. Then isolate
+First verify complete definition binding and assignment consistency. Then isolate
 parent-to-child factor evolution and released-report matching before integrating
 one accepted loop. Parallel research, frozen-pool curation and composition
 need their own module fixtures and failure records before Hybrid v2. Timeout
 reconciliation, operational recovery and broader source/semantic tests remain
 production work, separate from the early research-capability gate.
 
-Compact/paged delivery, terminal acknowledgements, count checks, exploration/adoption
-criteria and the isolated Git workspace are implemented and exercised live. Typed
-host reports, complete-report hashes and task-bound references now also have real
-trace audits. Final checks pass 294 offline tests. Both new live runtimes contain the
-updated guards, but neither triggers a semantic rejection: a different comparison
-phrase and free-text arithmetic still escape them. These are bounded checks, not a
-general semantic proof. Current budget accounting is 86.552168 CNY plus 14.090240
-reserved, leaving 99.357592 unreserved under the original 200 CNY. Preserve all
-failures and reservations. No extra paid pair or official acceptance follows.
+Compact/paged delivery, worker acknowledgements, typed evidence, count facts,
+exploration/adoption criteria and isolated Git attribution are implemented and
+exercised live. Final host receipts conclude the native supervisor turn with all
+settled team usage. Final checks pass 323 offline tests; the latest missing-term
+regression was added after the 151-file live snapshots and needs live verification.
+Four attempts total 52 settled calls and 14.633000 CNY exposure. Accounting is
+101.185168 CNY plus 14.090240 reserved, leaving 84.724592 unreserved under the
+original 200 CNY. Preserve all failures and reservations. No further paid trial,
+official acceptance or production claim follows.

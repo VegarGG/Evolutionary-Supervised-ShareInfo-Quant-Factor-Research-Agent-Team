@@ -1,0 +1,64 @@
+{
+  "provider_scope": "Original attempt preserved. One replacement matched pair after reproduced harness bug; original aggregate caps unchanged.",
+  "offline_attempts": [
+    {
+      "attempt": "initial checks",
+      "outcome": "format/lint failures fixed; six localhost transport tests initially blocked by sandbox then passed with loopback access"
+    },
+    {
+      "attempt": "offline-typed-evidence-001",
+      "outcome": "native fixture reached finalization but new usage code incorrectly parsed an already-decoded snapshot; scripted repeated finalize until cap; all evidence retained; no paid calls"
+    },
+    {
+      "attempt": "offline-typed-evidence-002",
+      "outcome": "native final receipt completed with26scriptedcalls; independent audit exposed inspection metadata compatibility and floating point changed-count mismatch"
+    },
+    {
+      "attempt": "offline-typed-evidence-003",
+      "outcome": "final native fixture, independent report/comparison arithmetic and settled usage pass;26scriptedcalls including failed-review repair; no supervisor acknowledgement"
+    },
+    {
+      "attempt": "snapshot regression fixture",
+      "outcome": "initial test called Ledger.reserve with wrong signature; corrected to CodingLedger and real snapshot;309 tests pass"
+    },
+    {
+      "attempt": "operator helper commands",
+      "outcome": "system node/psutil unavailable; used bundled node and project venv. System Python compilation cache blocked; project Python compiler succeeded. No provider calls affected."
+    },
+    {
+      "attempt": "first live final-receipt audit",
+      "outcome": "Private final-receipt audit used a bounded Zstd read without read_across_frames and saw only the first append frame. Initial flush-delay hypothesis was disproved by a second read. The canonical exporter already reads all frames. Corrected private audit to read across frames with the same64MiB bound; no runtime mutation or inference resubmission. The next check correctly identified the unsequenced session metadata header; the audit now permits only that known header and validates all sequenced events. Final audit passes with exact report/usage bytes and zero subsequent model messages."
+    }
+  ],
+  "live_repair": {
+    "failed_package": "typed-evidence-fixed-01",
+    "status": "incomplete",
+    "requests": 13,
+    "conservative_exposure_cny": 4.074348,
+    "cause": "Clause-insensitive comparison guard matched window equal and unrelated dispersion evidence; error lacked offending clause and field. Four comparison rejections plus one character-limit rejection exhausted six designer calls.",
+    "retired_unstarted_package": "typed-evidence-adaptive-02",
+    "replacement_packages": [
+      "typed-repair-fixed-03",
+      "typed-repair-adaptive-04"
+    ],
+    "allowance_expanded": false,
+    "remaining_original_request_slots": 59,
+    "changes": "Separate clauses, allow explicit non-establishment caveats, identify exact offending field/clause, add nine counterexamples."
+  },
+  "local_sublimit_stop": {
+    "package": "typed-repair-adaptive-04",
+    "paid_requests": 4,
+    "failure": "Known pre-provider refusal: work-package budget exhausted or reserved",
+    "next_reservation_cny": 9.306112,
+    "historical_spent_or_reserved_cny": 90.848118,
+    "old_local_sublimit_cny": 100,
+    "new_local_sublimit_cny": 120,
+    "original_total_cny": 200,
+    "request_ceiling": 443,
+    "credit_ceiling": 10000,
+    "continuation": "One fresh adaptive package typed-completion-adaptive-05; no repeat of the completed fixed control.",
+    "comparison_limits": "Same runtime/data/prompt/model/effort/per-arm limits; historical local cash sublimit differs. No causal superiority claim.",
+    "monitoring_error": "Board-only checks missed native turn/end(error) and incorrectly described analysis as continuing after07:59:32. Inspection of native terminal events corrected the report; monitor now checks terminal state.",
+    "ledger_history_changed": false
+  }
+}

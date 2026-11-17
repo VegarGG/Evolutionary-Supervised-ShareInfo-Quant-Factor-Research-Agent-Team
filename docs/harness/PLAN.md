@@ -84,26 +84,30 @@ cannot expand tool privileges or select a credential/host/path.
 
 ## Current checklist
 
-Latest 17 November update: the [updated-semantic-guard pair](SEMANTIC_GUARDS_2026-11-17.md)
-finishes in 17/19 settled calls on identical 144-file snapshots and the same 186
-BaoStock rows. Fixed retains; adaptive normalizes 171 scores and corrects its analyst's
-incorrect coverage-loss expectation during design. Independent arithmetic and exact
-reports pass. Adaptive descriptive review passes with limits; fixed comparison prose
-still does not name an aggregate dispersion measure. Both chat summaries also repeat
-a pre-finalization request count (eight versus nine settled supervisor work requests,
-plus one acknowledgement). No budget enforcement failure occurs. The clean-pair/core
-gate remains provisional; do not infer semantic validity from model approval.
+Latest 17 November update: [typed comparisons, count facts and settled usage](TYPED_EVIDENCE_2026-11-17.md)
+complete in the 17/18-call fixed/adaptive arms. Both use the same 151 runtime files,
+186 BaoStock rows, prompt, model/effort and per-arm bounds. Fixed retains; adaptive
+normalizes 171 scores and corrects its analyst's warmup mistake. Named comparisons,
+independent arithmetic, report hashes, actual native completion and exact final
+team receipts pass. No paid supervisor acknowledgement follows finalization.
 
-The 36 calls use GLM 5.3/max with 1002810 tokens, 69.99% input cache and 9.613800 CNY
-conservative exposure. Accounting is 86.552168 accounted, 14.090240 reserved and
-99.357592 unreserved under the original 200 CNY. Historical GLM use is 371/407 attempts
-and 7006.403120/9000 conservative used/reserved credits; the local cash ceiling stays
-100 CNY. Both old reservations remain unchanged. All 294 offline tests pass.
-No extra paid pair is scheduled. Next require typed comparison measures/cohorts,
-host-derived count references in findings and post-settlement team usage rendering,
-then clean paired narratives before parent-child evolution/released-report matching.
-The [preceding structured-report package](STRUCTURED_REPORT_2026-11-17.md), including
-its failed hash-copy attempt and offline guard additions, remains historical evidence.
+Independent adaptive review still flags an omitted `sqrt(lookback)` in model prose;
+the model reviewer falsely approves it. A post-run offline guard catches this exact
+omission, bringing checks to 323 passing tests, but needs live verification. The
+clean-report/core gate stays provisional. Next bind complete prose definitions to
+the host specification and verify supervisor assignment/schema consistency before
+parent-child evolution and released-report matching. No official acceptance follows.
+
+Four recorded attempts total 52 settled GLM 5.3/max calls, 1459650 tokens, 67.29%
+input cache and 14.633000 CNY conservative exposure. Preserve the first guard false
+positive and the four-call local-sublimit stop. The final adaptive arm uses an
+explicit 120 CNY local historical sublimit; completed fixed used 100 CNY. Original
+200 CNY, request ceiling 443 and credit ceiling 10000 are unchanged. The comparison
+is not an exact-route causal experiment. Accounting is 101.185168 accounted,
+14.090240 reserved and 84.724592 unreserved; all prior rows and reservations match.
+Historical GLM use is 423 attempts and 8266.282520 used/reserved credits. No further
+paid trial is scheduled. [Prior semantic-guard evidence](SEMANTIC_GUARDS_2026-11-17.md)
+remains unchanged.
 
 Earlier 17 November update: [bounded completion and the new BaoStock case](CHECKPOINT_2026-11-17.md)
 are recorded. Compact/paged evidence, complete bounded worker scopes, readable

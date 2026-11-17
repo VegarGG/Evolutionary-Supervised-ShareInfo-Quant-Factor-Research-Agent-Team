@@ -1075,3 +1075,43 @@ adding superficial phrase guards or force a factor change to obtain a pass. No
 causal workflow advantage, official acceptance or production readiness is claimed.
 See SEMANTIC_GUARDS_2026-11-17.md and its complete per-agent/evidence directory.
 Keep PR 22 draft and unmerged.
+
+## 2026-11-17: Typed comparison/count contracts and settled native team receipts
+
+The owner requests diagnosis, comparison/warmup/usage repairs and a GLM 5.3/max
+fixed/adaptive rerun inside the original 200 CNY. Findings now reference current
+host counts; comparisons bind exact parent/inspection, named statistic and cohort.
+Finalization uses native DSH concludeTurn after settlement and renders the complete
+team receipt, avoiding a paid supervisor acknowledgement or stale model summary.
+Typed changed-row counts exclude numerical noise; legacy definitions are preserved.
+
+The first new guard is too broad: parameter equality and dispersion in different
+clauses cause false rejections. Preserve its 13-call failure. Clause separation,
+non-establishment caveats and precise error locations fix the reproduced issue.
+The repaired fixed arm completes in 17 calls and passes independent descriptive
+review while retaining the baseline. The first adaptive arm stops after four calls
+on the local 100 CNY historical sublimit; enforcement is correct, operator headroom
+planning was insufficient. A recorded amendment raises only that sublimit to 120
+inside the original 200, retaining request ceiling 443, credit ceiling 10000 and
+all historical rows/reservations. One fresh adaptive arm completes in 18 calls.
+Its runtime/data/model/effort/per-arm bounds match fixed; disclose the sublimit
+and route-authority difference instead of claiming exact-route causal comparison.
+
+Adaptive adopts normalization, changes 171 scores and corrects the warmup-loss
+premise, but its prose definition omits sqrt(lookback). Host calculations are correct;
+its model reviewer returns a false semantic pass. Preserve the immutable report and
+independent failure. A narrow post-run counterexample guard passes offline tests;
+it was not in either live snapshot. No further automatic paid trial follows.
+
+All four attempts: 52 settled calls, 1459650 tokens, 67.29% input cache,
+14.633000 CNY conservative exposure. Accounting: 101.185168 accounted, 14.090240
+reserved, 84.724592 unreserved. The official 20.35 baseline and all 449 prior rows
+are unchanged. Historical GLM use: 423/443 attempts and 8266.282520/10000 credits.
+Final verification passes 323 offline tests, lint/format, JavaScript syntax and MIT
+notices. Native/browser final receipts match all settled team usage, with zero
+post-finalization supervisor messages. Full mobile/owner-report UX remains open.
+
+The three requested reporting contracts pass; general semantics and the complete
+clean-report/core gate remain provisional. Next verify complete definition binding
+and assignment/schema consistency before independently attaching evolution and
+released-report matching. Evidence: `docs/harness/TYPED_EVIDENCE_2026-11-17.md`.

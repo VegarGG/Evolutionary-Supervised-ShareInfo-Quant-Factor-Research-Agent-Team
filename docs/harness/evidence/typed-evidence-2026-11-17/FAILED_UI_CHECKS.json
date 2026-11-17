@@ -1,0 +1,64 @@
+{
+  "fixed": {
+    "status": "failed_trial_rendered",
+    "at": "2026-11-17T07:35:28.070Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Full mobile workflow is not accepted; viewport and screenshots are observations only."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  },
+  "adaptive": {
+    "status": "failed_trial_rendered",
+    "at": "2026-11-17T07:59:32.488Z",
+    "title": "Run the frozen BaoStock research — DeepSeek Harness",
+    "origin": "http://127.0.0.1:3080",
+    "browser": "installed Chrome via Playwright",
+    "browser_plugin": "not available",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "errors": [],
+    "limitations": [
+      "Full mobile workflow is not accepted; viewport and screenshots are observations only."
+    ],
+    "checks": [
+      "page identity",
+      "nonblank",
+      "no framework overlay",
+      "submitted through native chat",
+      "result rendered",
+      "reload persisted",
+      "desktop and mobile screenshots"
+    ]
+  }
+}

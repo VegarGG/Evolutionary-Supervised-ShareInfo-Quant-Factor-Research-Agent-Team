@@ -60,5 +60,11 @@ export function registerCaseResearch(ctx, config) {
     } })
   register({ name: 'finalize_case', description: 'Freeze exact clean-reviewed candidate after native tasks complete. Pending independent audit; no official evaluation/publication. Use the candidate/review references from case_board; end with the resolved ID only.',
     parameters: { output_id: { type: 'string', required: true }, review_id: { type: 'string', required: true } },
-    isConcurrencySafe: () => false, execute: (args, exec) => operation('finalize', args, exec) })
+    isConcurrencySafe: () => false, async execute(args, exec) {
+      const result = await operation('finalize', args, exec)
+      // Native lifecycle control: the last model request is already settled by
+      // the relay. Preserve its output; show the host receipt without another LLM summary.
+      if (result.conclude_turn) exec.concludeTurn()
+      return result
+    } })
 }

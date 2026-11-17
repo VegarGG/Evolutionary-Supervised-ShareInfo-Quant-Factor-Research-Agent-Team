@@ -6,6 +6,45 @@ Current development authority: `docs/harness/PLAN.md`, approved by the owner on
 QFR specifications. Preserve them and their evidence. Decision log: docs/decisions.md.
 
 ## Approved harness work
+- Current work package completed: four recorded attempts, 52 settled GLM 5.3/max
+  calls, 1459650 tokens and 14.633000 CNY conservative exposure. Completed fixed/
+  adaptive use 17/18 calls and identical 151-file runtime snapshots. Named comparisons,
+  count references and exact settled receipts pass; no supervisor acknowledgement.
+  Adaptive corrects warmup and changes 171 scores, but its explicit prose definition
+  omits sqrt(lookback) and its model reviewer misses it. A narrow post-run offline
+  regression brings checks to 323 tests; it is not live-verified. Keep the core gate
+  provisional. Current ledger: 101.185168 accounted, 14.090240 reserved, 84.724592
+  unreserved. Historical GLM: 423/443 attempts, 8266.282520/10000 credits. Local
+  historical sublimit is now 120 CNY inside original 200. All 449 prior call rows
+  unchanged. No further automatic trial. Next complete definition/assignment
+  consistency, then parent-child evolution and released-report matching.
+- Latest recorded operator completion amendment: the repaired adaptive arm stopped
+  after four settled calls on the local historical cash sublimit before design.
+  Preserve `typed-repair-adaptive-04`; the completed fixed control is not rerun.
+  One fresh `typed-completion-adaptive-05` uses `glm53-typed-completion-2026-11-17`
+  with local historical sublimit 120 CNY instead of 100, inside the unchanged
+  original 200 CNY. Request ceiling 443 and credit ceiling 10000 stay unchanged.
+  Disclose that administrative difference; runtime/data/model/per-arm caps stay
+  identical. No further automatic trial; no old call or reservation is altered.
+- Recorded repair inside the same current work package: the first typed fixed arm
+  failed after 13 settled calls due to a reproduced false-positive comparison guard.
+  Preserve that result; retire its unstarted adaptive arm. The replacement pair is
+  `typed-repair-fixed-03` / `typed-repair-adaptive-04`, route
+  `glm53-typed-repair-2026-11-17`. ORIGINAL 443-request, 10000-credit and 100 CNY
+  local ceilings remain unchanged; the failed attempt consumes allowance. No
+  further automatic pair. This necessary bug repair follows the owner instruction
+  to diagnose, fix and rerun; it is not an expansion of paid authorization.
+- Current owner work package: diagnose and fix comparison, warm-up count and usage
+  reporting, then one fresh GLM 5.3/max fixed/adaptive pair. The owner explicitly
+  authorizes this pair after the previous package closed. Route
+  `glm53-typed-evidence-2026-11-17` permits only `typed-evidence-fixed-01` and
+  `typed-evidence-adaptive-02`, retaining the same 186 rows and original root prompt.
+  Historical bounds: 443 GLM attempts (371 + 72), 10000 conservative credits,
+  unchanged 100 CNY local exposure limit inside the original 200 CNY. Preserve both
+  old reservations and fingerprints. Typed evidence binds finding facts and named
+  comparison measures/cohorts; native finalization renders settled team usage and
+  concludes the supervisor turn without a paid prose summary. No extra pair or
+  official acceptance. See `docs/harness/TYPED_EVIDENCE_2026-11-17.md`.
 - Develop in `harness/` in this same repository. DSH owns research sessions and
   model/tool loops; do not wrap the entire old orchestration engine or fork DSH's loop.
 - First establish collaboration capabilities against equal-evidence controls.

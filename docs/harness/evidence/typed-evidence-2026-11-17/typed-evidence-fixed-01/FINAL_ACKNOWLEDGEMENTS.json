@@ -1,0 +1,12 @@
+[
+  {
+    "call_id": "172f52958d4a49f1ab55873f47e4a9b6",
+    "actor": "reviewer-1",
+    "final_visible_text": "Findings accepted (batch `4fb645d4…`): two supported constraints — identical per-symbol coverage with only warmup exclusions, and fixed signal/execution timing with no calendar inference or filling — plus two labeled hypotheses — realized-volatility normalization for cross-symbol scale comparability, and a reversal-direction alternative motivated by the negative mean scores, both explicitly unproven pending later evaluation."
+  },
+  {
+    "call_id": "c4561149a2ea49bb8abc9660357495d7",
+    "actor": "supervisor",
+    "final_visible_text": "The design worker failed (`stop_reason: error`) and the attempt has been closed: **\"failed native task; no replay.\"** Per the fixed-variant rules, a failed native worker task stops the episode — no repair or retry is permitted. Verifying the terminal state on the board once before reporting."
+  }
+]

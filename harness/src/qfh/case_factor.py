@@ -151,10 +151,22 @@ def scores(rows, spec):
     return values
 
 
-def inspect_factor(rows, spec, baseline):
+def score_changed(a, b, *, tolerant=False):
+    if a["excluded_reason"] != b["excluded_reason"]:
+        return True
+    if a["score"] is None or b["score"] is None:
+        return a["score"] != b["score"]
+    return (
+        not math.isclose(a["score"], b["score"], rel_tol=1e-10, abs_tol=1e-12)
+        if tolerant
+        else a["score"] != b["score"]
+    )
+
+
+def inspect_factor(rows, spec, baseline, *, tolerant_changes=False):
     calculated, original = scores(rows, spec), scores(rows, baseline)
     changed = sum(
-        a["score"] != b["score"] or a["excluded_reason"] != b["excluded_reason"]
+        score_changed(a, b, tolerant=tolerant_changes)
         for a, b in zip(calculated, original, strict=True)
     )
     by_symbol = {}

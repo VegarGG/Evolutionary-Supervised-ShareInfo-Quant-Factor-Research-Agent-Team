@@ -16,7 +16,18 @@ from pydantic import Field, model_validator
 from qfh.adaptive_research import AdaptiveResearch
 from qfh.budget import BudgetRefused
 from qfh.case_contract import count_facts, encoded, page, prose_checks, reference, revision_texts
-from qfh.case_factor import FactorSpec, definition, inspect_factor, panel_quality
+from qfh.case_evidence import (
+    EvidenceFindings,
+    EvidenceRevision,
+    EvidenceTaskFindings,
+    EvidenceTaskRevision,
+    bound_comparisons,
+    comparison_issues,
+    comparisons,
+    definition_issues,
+    finding_issues,
+)
+from qfh.case_factor import FactorSpec, definition, inspect_factor, panel_quality, score_changed
 from qfh.case_report import (
     LIMITS,
     StructuredReview,
@@ -100,6 +111,7 @@ class CasePolicy(Record):
     max_inspections: int = Field(ge=1, le=6)
     protocol: Literal["legacy", "bounded-v2", "structured-v3"] = "legacy"
     reference_mode: Literal["hashes", "task_bound"] = "hashes"
+    evidence_contract: Literal["legacy", "typed-v1"] = "legacy"
     max_tool_bytes: int = Field(default=24000, ge=12000, le=24000)
     page_chars: int = Field(default=2500, ge=100, le=2500)
     worker_prompt_bytes: int = Field(default=65536, ge=24000, le=65536)
@@ -108,6 +120,8 @@ class CasePolicy(Record):
     def valid_reference_mode(self):
         if self.reference_mode == "task_bound" and self.protocol != "structured-v3":
             raise ValueError("task-bound references require structured-v3")
+        if self.evidence_contract == "typed-v1" and self.reference_mode != "task_bound":
+            raise ValueError("typed evidence requires immutable task-bound references")
         return self
 
 
@@ -191,7 +205,16 @@ class CaseBoard(Board):
         inspection = next(
             e for e in events if e["kind"] == "inspection" and e["id"] == binding["inspection_id"]
         )
-        return make_report(self.episode, head, self.calculation(self.spec_of(head)), inspection)
+        report = make_report(self.episode, head, self.calculation(self.spec_of(head)), inspection)
+        if "comparison_refs" in binding:
+            report["body"]["comparisons"] = bound_comparisons(
+                binding["comparison_refs"], events, head["actor"], binding["parent_id"]
+            )
+            report["body"]["usage"] = (
+                "The final host receipt includes settled team usage. Native footer is session-only."
+            )
+            report["sha256"] = digest(report["body"])
+        return report
 
     @staticmethod
     def _open(events):
@@ -216,7 +239,14 @@ class CaseBoard(Board):
                 )
 
     def calculation(self, spec):
-        return inspect_factor(self.episode.rows, spec, self.episode.initial_spec)
+        package = self.directory.parent / "package.json"
+        typed = (
+            package.exists()
+            and json.loads(package.read_bytes()).get("evidence_contract") == "typed-v1"
+        )
+        return inspect_factor(
+            self.episode.rows, spec, self.episode.initial_spec, tolerant_changes=typed
+        )
 
     def counts(self, spec):
         calc = self.calculation(spec)
@@ -260,10 +290,14 @@ class CaseBoard(Board):
                 if not structured or structured.report_sha256 != report["sha256"]:
                     raise ValueError("review must bind the exact complete report hash")
                 if review.verdict == "reviewed_with_limits":
-                    proposal = StructuredRevision.model_validate(
-                        head["body"]["structured_submission"]
-                    )
+                    raw = head["body"]["structured_submission"]
+                    proposal = (
+                        EvidenceRevision if "comparison_refs" in raw else StructuredRevision
+                    ).model_validate(raw)
                     issues = argument_issues(proposal, report["body"]["facts"])
+                    if isinstance(proposal, EvidenceRevision):
+                        issues.extend(comparison_issues(proposal))
+                        issues.extend(definition_issues(proposal))
                     if issues:
                         raise ValueError("structured report issues: " + json.dumps(issues))
             if self.bounded and review.verdict == "reviewed_with_limits":
@@ -359,11 +393,15 @@ class CaseBoard(Board):
                 if structured.facts_sha256 != digest(pinned):
                     raise ValueError("facts hash differs from chosen inspection")
                 issues = argument_issues(structured, pinned)
+                if isinstance(structured, EvidenceRevision):
+                    bound_comparisons(structured.comparison_refs, events, actor, head["id"])
+                    issues.extend(comparison_issues(structured))
+                    issues.extend(definition_issues(structured))
                 if issues:
                     raise ValueError("structured proposal issues: " + json.dumps(issues))
             parent_calc = self.calculation(self.spec_of(head))
             changed = sum(
-                a["score"] != b["score"] or a["excluded_reason"] != b["excluded_reason"]
+                score_changed(a, b, tolerant=isinstance(structured, EvidenceRevision))
                 for a, b in zip(calc["rows"], parent_calc["rows"], strict=True)
             )
             adopted = [
@@ -520,6 +558,12 @@ class CaseResearch(AdaptiveResearch):
                         for e in events
                     )
                 )
+                if (
+                    self.policy.evidence_contract == "typed-v1"
+                    and member["role"] == "supervisor"
+                    and any(e["kind"] == "finalized" for e in events)
+                ):
+                    raise BudgetRefused("final host receipt concludes this turn; no paid summary")
             # A separate immutable one-request grant cannot be spent on regular work.
             # Both phases still debit the same aggregate group and original cash ledger.
             acknowledgement = accepted or terminal
@@ -629,6 +673,12 @@ class CaseResearch(AdaptiveResearch):
                 schema = {"analyze": TaskFindings, "design": TaskRevision, "review": TaskReview}[
                     member["stage"]
                 ]
+            if self.policy.evidence_contract == "typed-v1":
+                schema = {
+                    "analyze": EvidenceTaskFindings,
+                    "design": EvidenceTaskRevision,
+                    "review": TaskReview,
+                }[member["stage"]]
             value["submission_schema"] = output_schema(schema, self.board.episode.sources)
             if self.board.structured and "Argument" in value["submission_schema"].get("$defs", {}):
                 pinned = facts(
@@ -637,6 +687,14 @@ class CaseResearch(AdaptiveResearch):
                 value["submission_schema"]["$defs"]["Argument"]["properties"]["fact_refs"]["items"][
                     "enum"
                 ] = sorted(fact_keys(pinned))
+            if self.policy.evidence_contract == "typed-v1":
+                pinned = facts(
+                    self.board.episode, self.board.calculation(self.board.spec_of(snapshot["head"]))
+                )
+                value["current_fact_refs"] = sorted(fact_keys(pinned))
+                value["current_count_facts"] = self.board.counts(
+                    self.board.spec_of(snapshot["head"])
+                )
         else:
             starts = [t for t in snapshot["tasks"] if t["kind"] == "task_started"]
             value["next_fixed_stage"] = (
@@ -658,10 +716,14 @@ class CaseResearch(AdaptiveResearch):
         work = sum(c["step"] == step for c in calls)
         group = sum(c["step"].startswith(f"case:{self.policy.package_id}:") for c in calls)
         return {
+            "scope": "as_of_this_tool_call; not a final usage summary",
             "work_requests_max": maximum,
             "work_requests_recorded": work,
             "work_requests_remaining": max(0, maximum - work),
-            "acknowledgement_requests_max": 1 if self.policy.protocol != "legacy" else 0,
+            "acknowledgement_requests_max": 0
+            if self.policy.protocol == "legacy"
+            or (self.policy.evidence_contract == "typed-v1" and member["role"] == "supervisor")
+            else 1,
             "group_requests_remaining": max(0, self.policy.total_requests - group),
             "instruction": "Plan evidence reads and submission within work requests. "
             "Use complete inline evidence; multiple case_read calls may share one response. "
@@ -774,6 +836,21 @@ class CaseResearch(AdaptiveResearch):
                 "These handles name immutable entries within this case; "
                 "the ledger stores full hashes."
             )
+        if self.policy.evidence_contract == "typed-v1":
+            value["current_fact_refs"] = scope.get("current_fact_refs", [])
+            value["current_count_facts"] = scope.get("current_count_facts", {})
+            value["reporting_contract"] += (
+                " typed-v1: Findings use current_fact_refs and qualitative statements; no numeric "
+                "copies or count equations. The host counts warmup exclusions separately from "
+                "closes required per signal. Every inspection includes exact comparisons against "
+                "the assigned candidate, with named SD measure and paired or separate observation "
+                "cohort. Include chosen comparison_refs in the revision, or [] if unused. "
+                "Changed-score counts exclude floating-point noise (relative tolerance 1e-10, "
+                "absolute tolerance 1e-12); eligibility changes always count. "
+                "Host renders comparative results; qualitative text and decisions explain "
+                "motivation and uncertainty, not measured increases/decreases. Finalization "
+                "concludes the supervisor turn natively with settled team usage; no model summary."
+            )
         value["read_instruction"] = (
             "Inline values are complete. Read every needed non-inline resource with case_read; "
             "concatenate all its pages. Event IDs and source hashes pin immutable content. "
@@ -784,6 +861,12 @@ class CaseResearch(AdaptiveResearch):
             "both count toward the aggregate. After accepted submission end briefly; "
             "no additional work tools."
         )
+        if self.policy.evidence_contract == "typed-v1":
+            value["completion_allowance"] = (
+                "Workers have one reserved acknowledgement after acceptance. Supervisor "
+                "finalization concludes its native turn with host-rendered settled usage; "
+                "no additional paid supervisor acknowledgement. All calls share the group cap."
+            )
         if len(encoded(value)) > limit:
             raise ValueError("case manifest exceeds tool bound")
         # Prefer the exact artifact/review over historical versions. Include full sources
@@ -926,11 +1009,22 @@ class CaseResearch(AdaptiveResearch):
                 sum(e["kind"] == "inspection" and e["actor"] == member["actor"] for e in events) + 1
             )
             calc = self.board.calculation(spec)
+            extra = {}
+            if self.policy.evidence_contract == "typed-v1":
+                head = self.board._head(events)
+                if member.get("assigned_candidate_id") != head["id"]:
+                    raise ValueError("inspection requires the current assigned candidate")
+                extra = {
+                    "comparison_parent_id": head["id"],
+                    "comparisons": comparisons(
+                        self.board.calculation(self.board.spec_of(head)), calc
+                    ),
+                }
             event = self.board._append(
                 events,
                 member["actor"],
                 "inspection",
-                {k: v for k, v in calc.items() if k != "rows"},
+                {**{k: v for k, v in calc.items() if k != "rows"}, **extra},
             )
             atomic_new(self.directory / f"calculation-{event['id']}.json", calc)
         return {
@@ -941,6 +1035,15 @@ class CaseResearch(AdaptiveResearch):
                 else {}
             ),
             **event["body"],
+            **(
+                {
+                    "comparison_refs": [
+                        f"inspection:{own_number}/{key}" for key in extra["comparisons"]
+                    ]
+                }
+                if extra
+                else {}
+            ),
             "count_facts": self.board.counts(spec),
             **(
                 {
@@ -964,6 +1067,12 @@ class CaseResearch(AdaptiveResearch):
 
     def resolve_references(self, member, op, raw):
         schema = {"findings": TaskFindings, "revise": TaskRevision, "review": TaskReview}[op]
+        if self.policy.evidence_contract == "typed-v1":
+            schema = {
+                "findings": EvidenceTaskFindings,
+                "revise": EvidenceTaskRevision,
+                "review": TaskReview,
+            }[op]
         value = schema.model_validate_json(raw).model_dump()
         with self.board.locked() as events:
             self.board._open(events)
@@ -988,6 +1097,15 @@ class CaseResearch(AdaptiveResearch):
                 if index >= len(own):
                     raise ValueError("inspection reference is not an inspection by this task")
                 inspected = own[index]
+                if self.policy.evidence_contract == "typed-v1":
+                    resolved_refs = []
+                    for ref in value["comparison_refs"]:
+                        match = re.fullmatch(r"inspection:([1-6])/(.+)", ref)
+                        if not match or int(match[1]) > len(own):
+                            raise ValueError("use a comparison_ref from your inspection receipt")
+                        resolved_refs.append(own[int(match[1]) - 1]["id"] + "/" + match[2])
+                    value["comparison_refs"] = resolved_refs
+                    resolved["comparison_refs"] = resolved_refs
                 for decision in value["decisions"]:
                     decision["finding_id"] = self.referenced(
                         events, decision["finding_id"], "finding"
@@ -1057,10 +1175,27 @@ class CaseResearch(AdaptiveResearch):
             if self.policy.reference_mode == "task_bound":
                 payload = self.resolve_references(member, op, payload)
             if op == "findings":
-                batch = FindingBatch.model_validate_json(payload)
+                batch = (
+                    EvidenceFindings
+                    if self.policy.evidence_contract == "typed-v1"
+                    else FindingBatch
+                ).model_validate_json(payload)
                 for f in batch.findings:
                     if self.board.structured and (issue := universe_unit_issue(f.statement)):
                         raise ValueError(issue)
+                    if self.board.structured:
+                        issues = prose_checks({"statement": f.statement}, {})["issues"]
+                        if self.policy.evidence_contract == "typed-v1":
+                            head = self.board.snapshot(member["actor"])["head"]
+                            issues += finding_issues(
+                                f,
+                                facts(
+                                    self.board.episode,
+                                    self.board.calculation(self.board.spec_of(head)),
+                                ),
+                            )
+                        if issues:
+                            raise ValueError("finding issues: " + json.dumps(issues))
                     self.board._citations(f.citations)
                     if f.candidate_id != self.board.snapshot(member["actor"])["head"]["id"]:
                         raise ValueError("findings must target the current candidate")
@@ -1094,7 +1229,11 @@ class CaseResearch(AdaptiveResearch):
                     )
             elif op == "revise":
                 structured = (
-                    StructuredRevision.model_validate_json(payload)
+                    (
+                        EvidenceRevision
+                        if self.policy.evidence_contract == "typed-v1"
+                        else StructuredRevision
+                    ).model_validate_json(payload)
                     if self.board.structured
                     else None
                 )
@@ -1169,6 +1308,11 @@ class CaseResearch(AdaptiveResearch):
             return {"status": "rejected", "error": str(error)[:4000]}
 
     def finalize(self, session, output_id, review_id):
+        usage = None
+        if self.policy.evidence_contract == "typed-v1":
+            from qfh.case_usage import settled_usage
+
+            usage = settled_usage(self)
         if self.policy.reference_mode == "task_bound":
             with self.board.locked() as events:
                 output_id = self.referenced(events, output_id, "candidate")["id"]
@@ -1188,6 +1332,16 @@ class CaseResearch(AdaptiveResearch):
             "Return only the candidate ID and pending independent audit status. "
             "Do not add a new unreviewed narrative or a performance claim."
         )
+        if usage is not None:
+            from qfh.case_usage import render_usage
+
+            atomic_new(self.directory / "FINAL_USAGE.json", usage)
+            result["settled_team_usage"] = usage
+            result["report_text"] += "\n\n" + render_usage(usage)
+            result["conclude_turn"] = True
+            result["instruction"] = (
+                "Host final receipt concludes the native turn; no model summary."
+            )
         return result
 
 

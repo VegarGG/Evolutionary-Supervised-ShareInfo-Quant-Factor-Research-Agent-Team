@@ -1,0 +1,10 @@
+{
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "machine": "arm64",
+  "logical_cpus": 18,
+  "physical_cpus": 18,
+  "physical_memory_bytes": 38654705664,
+  "browser_plugin": "not available",
+  "browser": "installed Chrome via Playwright",
+  "network_scope": "GLM Coding Plan only; no new data requests"
+}

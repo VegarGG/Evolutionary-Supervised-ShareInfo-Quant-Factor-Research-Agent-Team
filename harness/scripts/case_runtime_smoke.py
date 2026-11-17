@@ -111,6 +111,11 @@ class Scripted:
                                     "status": "supported",
                                     "citations": [citation],
                                     "contradicts": [],
+                                    **(
+                                        {"fact_refs": ["scope"]}
+                                        if self.host.policy.evidence_contract == "typed-v1"
+                                        else {}
+                                    ),
                                 }
                             ]
                         }
@@ -168,6 +173,10 @@ class Scripted:
                 }
             if self.host.policy.reference_mode == "task_bound":
                 own = [e for e in scope["inspections"] if e["actor"] == member["actor"]]
+                if self.host.policy.evidence_contract == "typed-v1":
+                    value["comparison_refs"] = [
+                        f"inspection:{len(own)}/{key}" for key in own[-1]["body"]["comparisons"]
+                    ]
                 for decision in value["decisions"]:
                     number = next(
                         i
@@ -240,6 +249,7 @@ if __name__ == "__main__":
     parser.add_argument("--output-cap", type=int, choices=[16384, 32768], default=16384)
     parser.add_argument("--protocol", choices=["bounded-v2", "structured-v3"], default="bounded-v2")
     parser.add_argument("--reference-mode", choices=["hashes", "task_bound"], default="hashes")
+    parser.add_argument("--evidence-contract", choices=["legacy", "typed-v1"], default="legacy")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     private = args.directory.resolve()
@@ -316,6 +326,7 @@ if __name__ == "__main__":
         max_inspections=6,
         protocol=args.protocol,
         reference_mode=args.reference_mode,
+        evidence_contract=args.evidence_contract,
     )
     package = private / "package.json"
     atomic_new(package, policy.model_dump())

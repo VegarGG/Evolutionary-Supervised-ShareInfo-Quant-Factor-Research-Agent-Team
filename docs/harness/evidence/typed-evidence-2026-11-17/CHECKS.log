@@ -1,0 +1,29 @@
+COMMAND .qfh-private/venv/bin/ruff check harness
+All checks passed!
+EXIT 0
+COMMAND .qfh-private/venv/bin/ruff format --check harness
+91 files already formatted
+EXIT 0
+COMMAND /Users/ziweihuang/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check harness/dsh-plugin/index.js
+EXIT 0
+COMMAND /Users/ziweihuang/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check harness/dsh-plugin/client.js
+EXIT 0
+COMMAND /Users/ziweihuang/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check harness/dsh-plugin/research.js
+EXIT 0
+COMMAND /Users/ziweihuang/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check harness/dsh-plugin/native-models.js
+EXIT 0
+COMMAND /Users/ziweihuang/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check harness/dsh-plugin/adaptive.js
+EXIT 0
+COMMAND /Users/ziweihuang/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check harness/dsh-plugin/case.js
+EXIT 0
+COMMAND .qfh-private/venv/bin/python scripts/check_licenses.py
+MIT notices verified: 5 packages, workspace, harness and plugin
+EXIT 0
+
+Offline full suite after the post-live definition regression:
+........................................................................ [ 22%]
+........................................................................ [ 44%]
+........................................................................ [ 66%]
+........................................................................ [ 89%]
+...................................                                      [100%]
+323 passed in 6.41s

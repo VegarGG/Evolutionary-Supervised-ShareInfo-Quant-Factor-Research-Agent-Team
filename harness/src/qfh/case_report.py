@@ -270,6 +270,29 @@ def render(report, review_id):
     for key in sorted(pinned["metrics"]):
         metric = pinned["metrics"][key]
         lines.append(f"{key}: {metric['value']} [{metric['unit']}]")
+    if "comparisons" in body:
+        lines.append(
+            "Changed-score count excludes numerical noise: relative tolerance 1e-10, "
+            "absolute tolerance 1e-12; eligibility changes always count."
+        )
+        lines.extend(["", "COMPUTED COMPARISONS — host calculations"])
+        for item in body["comparisons"]:
+            lines.extend(
+                [
+                    f"Measure: {item['measure']}; cohort: {item['cohort']}",
+                    f"Left candidate: {item['left_candidate_id']}; "
+                    f"right inspection: {item['right_inspection_id']}",
+                    f"Left: {item['left_value']}; right: {item['right_value']}; "
+                    f"direction: {item['direction_right_vs_left']}",
+                    f"Identical observation keys: {item['same_observations']}",
+                    "Counts left/right: "
+                    + ", ".join(
+                        f"{s} {v['count']}/{item['right_by_symbol'][s]['count']}"
+                        for s, v in item["left_by_symbol"].items()
+                    ),
+                    item["limits"],
+                ]
+            )
     lines.extend(
         [
             "",

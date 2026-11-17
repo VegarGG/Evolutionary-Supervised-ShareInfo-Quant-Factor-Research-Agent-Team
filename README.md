@@ -6,30 +6,37 @@ DSH owns sessions, model/tool loops, the Models editor and native Agent Teams.
 QRH adds bounded data access, evidence, accounting and deterministic research
 calculations. The independent evaluator remains separate.
 
-The latest [semantic-guard rerun](docs/harness/SEMANTIC_GUARDS_2026-11-17.md)
-uses **GLM 5.3 / maximum effort** on the same frozen 186 BaoStock rows under identical
-144-file runtime snapshots. Fixed/adaptive complete in **17/19 real calls**; fixed
-retains the baseline and adaptive adopts normalization, changing 171 scores.
-Independent arithmetic, report binding and actual native task checks pass. The
-adaptive final research report passes descriptive review with limits. The fixed
-comparison still omits its aggregate dispersion measure. Both model chat summaries
-also repeat an outdated request count; settled host accounting remains correct.
-The complete clean-pair/core checkpoint is **still provisional**.
+The latest [typed-evidence trial](docs/harness/TYPED_EVIDENCE_2026-11-17.md)
+uses **GLM 5.3 / maximum effort** on the same frozen 186 BaoStock rows. Completed
+fixed/adaptive arms use **17/18 calls** and identical 151-file runtime snapshots.
+Named statistic/cohort comparisons, host count references and final settled team
+receipts pass independent audits. Fixed retains the baseline; adaptive normalizes
+171 scores and corrects the analyst's mistaken warmup-loss expectation.
 
-**294 offline tests pass.** The 36 new requests all settle: **1,002,810 tokens**,
-**69.99% input cache hits** and **9.613800 CNY** conservative exposure. Current
-accounting is **86.552168 CNY accounted**, **14.090240 reserved** and **99.357592
-unreserved**, inside the original 200 CNY ceiling. Coding Plan estimates are not
-incremental subscription invoices or account-quota readings. The old reservations
-and every earlier failure remain unchanged; no further paid pair is scheduled.
-See [per-agent work, TPM/RPM, cache and machine measurements](docs/harness/evidence/semantic-guards-2026-11-17/METRICS.md).
+The adaptive model prose still omits `sqrt(lookback)` from its denominator, although
+the executable formula is correct. Its reviewer misses that defect. A post-run
+offline guard catches the exact omission; it has not been rerun live. The complete
+clean-report/core checkpoint remains **provisional**. [Earlier semantic-guard
+results](docs/harness/SEMANTIC_GUARDS_2026-11-17.md) remain immutable.
 
-Next bind comparison measures and observation cohorts to typed inspection records,
-reference host count facts in findings, and render settled team usage outside model
-prose. Then verify the clean-pair condition before attaching evolution. The
-[structured-report and reference work](docs/harness/STRUCTURED_REPORT_2026-11-17.md)
-and [earlier bounded-completion checkpoint](docs/harness/CHECKPOINT_2026-11-17.md)
-retain their immutable failed and successful attempts.
+**323 offline tests pass.** All four attempts, including a false-positive guard
+failure and a local budget stop, total **52 settled calls**, **1,459,650 tokens**,
+**67.29% input cache hits** and **14.633000 CNY** conservative exposure. Accounting
+is **101.185168 CNY accounted**, **14.090240 reserved** and **84.724592 unreserved**
+inside the original 200 CNY. The local historical sublimit was explicitly amended
+from 100 to 120 CNY for the final adaptive arm; request and credit caps remain
+443 and 10000. This administrative difference is disclosed in the comparison.
+All prior ledger rows and reservations are unchanged. Coding Plan estimates are
+not incremental invoices or account-quota readings. No further paid trial is scheduled.
+See [per-agent work, TPM/RPM, cache and machine measurements](docs/harness/evidence/typed-evidence-2026-11-17/METRICS.md).
+
+Next verify complete definition binding and supervisor assignment consistency,
+then close the remaining descriptive-report gate before integrating parent-child
+evolution. DSH's root footer remains session-only; the host final receipt includes
+all team calls. Reports still live inside compact tool cards and full mobile
+workflow acceptance remains open. The [structured-report work](docs/harness/STRUCTURED_REPORT_2026-11-17.md)
+and [bounded-completion checkpoint](docs/harness/CHECKPOINT_2026-11-17.md) retain
+all earlier failures and successful attempts.
 
 The [earlier verified GLM Flash/BaoStock trial](docs/harness/LIVE_GLM_NATIVE_2026-11-13.md)
 passed at **12:12–12:20 Beijing on 13 November**: one supervisor, two workers,

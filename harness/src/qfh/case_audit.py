@@ -58,9 +58,14 @@ def close(a, b):
     ), (a, b)
 
 
-def changed_rows(computed, original):
+def changed_rows(computed, original, *, tolerant=False):
     return sum(
-        a["score"] != b["score"] or a["excluded_reason"] != b["excluded_reason"]
+        a["excluded_reason"] != b["excluded_reason"]
+        or (
+            a["score"] != b["score"]
+            if not tolerant or a["score"] is None or b["score"] is None
+            else not math.isclose(a["score"], b["score"], rel_tol=1e-10, abs_tol=1e-12)
+        )
         for a, b in zip(computed, original, strict=True)
     )
 
@@ -109,7 +114,10 @@ def audit(directory):
         computed = decimal_scores(rows, saved["spec"])
         assert len(computed) == len(saved["rows"])
         event = next(e for e in events if path.stem == "calculation-" + e["id"])
-        assert {k: v for k, v in saved.items() if k != "rows"} == event["body"]
+        computed_body = {k: v for k, v in saved.items() if k != "rows"}
+        extra = set(event["body"]) - set(computed_body)
+        assert extra in (set(), {"comparison_parent_id", "comparisons"})
+        assert computed_body == {k: v for k, v in event["body"].items() if k not in extra}
         assert digest(saved["spec"]) == saved["spec_sha256"]
         assert digest(saved["rows"]) == saved["summary"]["score_rows_sha256"]
         for expected, actual in zip(computed, saved["rows"], strict=True):
@@ -118,7 +126,9 @@ def audit(directory):
                 k: v for k, v in expected.items() if k != "score"
             }
         summary_checks(saved["summary"], computed)
-        changed_count = changed_rows(computed, baseline)
+        changed_count = changed_rows(
+            computed, baseline, tolerant=policy.get("evidence_contract") == "typed-v1"
+        )
         assert saved["summary"]["changed_score_or_eligibility_rows_from_initial"] == changed_count
         # Temporal check: changing the last close cannot change any earlier score.
         changed = [dict(r) for r in rows]
@@ -198,7 +208,7 @@ def audit_report(directory, episode, events):
     expected = {}
     computed = decimal_scores(episode["rows"], pinned["spec"])
     original = decimal_scores(episode["rows"], episode["initial_spec"])
-    changed = changed_rows(computed, original)
+    changed = changed_rows(computed, original, tolerant="comparisons" in body)
     assert pinned["changed_rows_from_initial"] == changed
     assert (
         inspection["body"]["summary"]["changed_score_or_eligibility_rows_from_initial"] == changed
@@ -227,6 +237,69 @@ def audit_report(directory, episode, events):
             if key.endswith("score"):
                 expected[f"{symbol}.{key}"] = {"value": value, "unit": "dimensionless"}
     assert pinned["metrics"] == expected
+    for item in body.get("comparisons", []):
+        left_head = next(e for e in events if e["id"] == item["left_candidate_id"])
+        right_event = next(e for e in events if e["id"] == item["right_inspection_id"])
+        assert right_event["actor"] == head["actor"]
+        assert item["left_candidate_id"] == head["body"]["parent_id"]
+        left_spec = left_head["body"].get("spec", episode["initial_spec"])
+        right_spec = right_event["body"]["spec"]
+        assert item["left_spec_sha256"] == digest(left_spec)
+        assert item["right_spec_sha256"] == digest(right_spec)
+        panels = [
+            {
+                (r["symbol"], r["signal_date"]): r["score"]
+                for r in decimal_scores(episode["rows"], s)
+                if r["score"] is not None
+            }
+            for s in (left_spec, right_spec)
+        ]
+        common = set(panels[0]) & set(panels[1])
+        assert item["cohort"] in ("paired_eligible_symbol_dates", "each_spec_eligible_symbol_dates")
+        keys = [common, common] if item["cohort"].startswith("paired") else [set(p) for p in panels]
+        assert item["same_observations"] == (keys[0] == keys[1])
+        values = []
+        for side, panel, selected in zip(("left", "right"), panels, keys, strict=True):
+            deviations = []
+            for symbol in episode["symbols"]:
+                own = sorted(k for k in selected if k[0] == symbol)
+                saved = item[f"{side}_by_symbol"][symbol]
+                assert saved["count"] == len(own)
+                assert saved["dates_sha256"] == digest([k[1] for k in own])
+                if len(own) < 2:
+                    assert saved["sample_sd"] is None
+                    deviations.append(None)
+                    continue
+                numbers = [Decimal(str(panel[k])) for k in own]
+                mean = sum(numbers) / len(numbers)
+                sd = (sum((v - mean) ** 2 for v in numbers) / (len(numbers) - 1)).sqrt()
+                assert math.isclose(saved["sample_sd"], float(sd), rel_tol=1e-10, abs_tol=1e-12)
+                deviations.append(sd)
+            assert item["measure"] in ("score_sd_max_minus_min", "score_sd_max_over_min")
+            if any(v is None for v in deviations):
+                value = None
+            elif item["measure"].endswith("minus_min"):
+                value = max(deviations) - min(deviations)
+            else:
+                value = max(deviations) / min(deviations) if min(deviations) > 0 else None
+            observed = item[f"{side}_value"]
+            assert (
+                observed is None
+                if value is None
+                else math.isclose(observed, float(value), rel_tol=1e-10, abs_tol=1e-12)
+            )
+            values.append(value)
+        a, b = values
+        direction = (
+            "undefined"
+            if a is None or b is None
+            else "equal"
+            if a == b
+            else "increased"
+            if b > a
+            else "decreased"
+        )
+        assert item["direction_right_vs_left"] == direction
     return {
         "status": "pass",
         "report_sha256": report["sha256"],

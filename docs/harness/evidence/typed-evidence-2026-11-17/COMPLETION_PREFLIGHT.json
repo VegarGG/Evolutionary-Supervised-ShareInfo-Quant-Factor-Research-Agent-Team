@@ -1,0 +1,17 @@
+{
+  "status": "pass_with_disclosed_local_sublimit_difference",
+  "source_files": 151,
+  "identical_runtime_sources": true,
+  "identical_data_prompt_model_effort_per_arm_limits": true,
+  "packages": [
+    "typed-repair-fixed-03",
+    "typed-completion-adaptive-05"
+  ],
+  "fixed_local_historical_sublimit_cny": 100,
+  "adaptive_local_historical_sublimit_cny": 120,
+  "original_total_cny": 200,
+  "request_ceiling": 443,
+  "credit_ceiling": 10000,
+  "operator_outcomes_injected": false,
+  "limit": "Not an identical-route matched experiment. The completed control did not bind its lower sublimit. No causal superiority claim."
+}

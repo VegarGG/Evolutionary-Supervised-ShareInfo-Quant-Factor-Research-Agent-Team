@@ -1,0 +1,20 @@
+{
+  "acceptance": [
+    "all paid requests GLM 5.3/max with enabled thinking and no fallback",
+    "same question, source, baseline, caps and runtime snapshots across arms",
+    "counts reference host facts; required closes distinct from warmup exclusions",
+    "comparisons name two exact specs, SD measure and cohort; results independently recomputed",
+    "final report and exact review hashes agree",
+    "native final host receipt equals pinned report plus settled team usage",
+    "no paid supervisor message after finalization",
+    "all intermediate claims reviewed with hypotheses distinguished",
+    "all failures, rejected submissions, cost/cache/rates/resources retained",
+    "no alpha, general capability or production-readiness inference"
+  ],
+  "limits": [
+    "one previously seen three-stock 186-row case",
+    "bounded comparison statistics and limited prose grammar",
+    "real repair loop only if actually observed; synthetic fixture distinct",
+    "Coding Plan exposure is not invoice or account quota"
+  ]
+}
