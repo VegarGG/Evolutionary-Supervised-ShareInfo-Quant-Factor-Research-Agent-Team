@@ -1,0 +1,40 @@
+admission_mode: until_stopped
+authority: Owner requests fixing comparison, warm-up and usage issues and rerunning
+  fixed/adaptive with GLM5.3/max inside the original200CNY. Operator records the pre-dispatch
+  local100CNY sublimit stop, retains all four settled adaptive calls, and extends
+  only that historical sublimit to120CNY to finish one fresh adaptive arm. Request443
+  and credit10000 limits stay unchanged. Preserve the completed fixed control, all
+  old reservations and original200CNY atomic enforcement. No additional pair or fallback.
+cash_input_micro_cny_per_token: 8
+cash_output_micro_cny_per_token: 28
+cash_package_micro_cny: 120000000
+concurrency: 1
+eligibility_authority: Owner confirmed DSH eligibility directly with Zhipu.
+endpoint: https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+ends_at: null
+funding: coding_plan
+id: glm53-typed-completion-2026-11-17
+input_microcredits_per_token: 690
+max_microcredits: 10000000000
+max_requests: 443
+maximum_input_tokens: 1048576
+maximum_output_tokens: 131072
+model: glm-5.3
+output_microcredits_per_token: 2400
+platform: bigmodel-cn
+pricing_source: https://docs.bigmodel.cn/cn/coding-plan/overview
+pricing_verified_on: '2026-11-16'
+provider: glm_coding
+reasoning_effort: max
+reserved_connection_timeouts:
+- authority: 'Same owner work package: one fresh adaptive arm after a known pre-dispatch
+    budget refusal. Original200CNY and old timeout reservation stay intact; any new
+    unknown blocks.'
+  call_sha256: 72efe09d51ec4710e3a9aec2df5257bfb7d7185ef679d79d29cb6641f687a425
+  groups:
+  - typed-completion-adaptive-05
+  request_id: a56ac7e768ab433ca20f0523548d73b3
+  request_sha256: ffb88e05a6ba8b8d29c99275ea4847abbc39d22b480a515d28a3065749108eaf
+starts_at: '2026-11-16T00:00:00+08:00'
+subscription_tier: Pro
+transport: openai-completions
